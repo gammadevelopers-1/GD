@@ -37,10 +37,7 @@ export const metadata: Metadata = {
   },
   description:
     "We analyze how SMBs actually run, then build production-grade AI agents that reach production and double their output.",
-  openGraph: {
-    type: "website",
-    siteName: "Gamma Developers",
-  },
+  openGraph: { type: "website", siteName: "Gamma Developers" },
 };
 
 export default function RootLayout({
@@ -55,7 +52,11 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="bg-background text-foreground font-sans antialiased">
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+        >
           {children}
         </ThemeProvider>
       </body>

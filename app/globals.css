@@ -13,6 +13,29 @@
   --color-brand: #2fe85c;
   --color-mint: #6ee7b7;
   --color-glow: #10b981;
+
+  --animate-marquee: marquee 34s linear infinite;
+  --animate-scroll-hint: scroll-hint 2.2s ease-in-out infinite;
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes scroll-hint {
+
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scaleY(0.6);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
 }
 
 /* LIGHT */
@@ -28,11 +51,11 @@
   --primary: #2fe85c;
   --primary-foreground: #14171a;
 
-  --secondary: #e8e8e0;
+  --secondary: #eceae1;
   --secondary-foreground: #14171a;
 
   --muted: #e8e8e0;
-  --muted-foreground: #4b5148;
+  --muted-foreground: #5a6058;
 
   --accent: #059669;
   --accent-foreground: #f4f4ee;
@@ -42,7 +65,7 @@
   --ring: #059669;
 }
 
-/* DARK */
+/* DARK — kept for section-scoped `.dark` wrappers, not a site-wide toggle */
 .dark {
   --background: #16181c;
   --foreground: #ecece4;
@@ -67,4 +90,20 @@
   --border: #2a2e35;
   --input: #2a2e35;
   --ring: #34d399;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
 }
