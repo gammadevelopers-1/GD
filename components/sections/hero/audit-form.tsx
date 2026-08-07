@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useRef, useState, type FormEvent } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { hero } from "@/lib/content/home";
 import { site } from "@/lib/content/site";
@@ -34,8 +34,8 @@ export function AuditForm() {
     { dependencies: [finished, reduced] },
   );
 
-  function submit(e?: FormEvent) {
-    e?.preventDefault();
+  function submit(event?: FormEvent) {
+    event?.preventDefault();
     const text = value.trim();
     if (text.length < 8) {
       setLocalError("Tell us a bit more about the business.");
@@ -45,19 +45,15 @@ export function AuditForm() {
     void runAudit(text);
   }
 
-  function pick(v: string) {
-    setValue(v);
+  function pick(nextValue: string) {
+    setValue(nextValue);
     setLocalError("");
-    void runAudit(v);
+    void runAudit(nextValue);
   }
 
   return (
     <div className="mx-auto mt-9 max-w-[630px]">
-      <form onSubmit={submit} className="contents">
-        {/*
-          Focus is a colour change only — the border stays 1px so nothing shifts
-          or thickens. Matches how the example chips below behave.
-        */}
+      <form onSubmit={submit}>
         <div className="border-border focus-within:border-accent/45 flex flex-wrap items-center gap-2 rounded-2xl border bg-white/95 p-3 shadow-[0_14px_40px_rgba(20,23,26,0.09)] backdrop-blur-md transition-colors duration-200 sm:flex-nowrap sm:rounded-full sm:py-1.5 sm:pr-1.5 sm:pl-5.5">
           <label htmlFor="audit-input" className="sr-only">
             Describe your business
@@ -65,11 +61,11 @@ export function AuditForm() {
           <input
             id="audit-input"
             value={value}
-            onChange={(e) => setValue(e.target.value)}
+            onChange={(event) => setValue(event.target.value)}
             placeholder={hero.placeholder}
-            maxLength={200}
+            maxLength={300}
             disabled={busy}
-            className="text-foreground placeholder:text-muted-foreground h-11 w-full flex-1 border-0 bg-transparent text-[15.5px] outline-none focus:outline-none focus-visible:outline-none disabled:opacity-60"
+            className="text-foreground placeholder:text-muted-foreground h-11 w-full flex-1 border-0 bg-transparent text-[15.5px] outline-none disabled:opacity-60"
           />
           <button
             type="submit"
@@ -87,14 +83,15 @@ export function AuditForm() {
           dimmed && "pointer-events-none opacity-25",
         )}
       >
-        {hero.examples.map((ex) => (
+        {hero.examples.map((example) => (
           <button
-            key={ex.label}
+            key={example.label}
             type="button"
-            onClick={() => pick(ex.value)}
+            disabled={busy}
+            onClick={() => pick(example.value)}
             className="text-muted-foreground border-border hover:border-accent/45 hover:text-accent cursor-pointer rounded-full border bg-white/70 px-3 py-1.5 font-mono text-[10.5px] transition-colors hover:bg-white"
           >
-            {ex.label}
+            {example.label}
           </button>
         ))}
       </div>
@@ -107,9 +104,7 @@ export function AuditForm() {
         {localError ? (
           <span className="text-[#b4402c]">{localError}</span>
         ) : status ? (
-          <span
-            className={phase === "error" ? "text-[#b4402c]" : "text-accent"}
-          >
+          <span className={phase === "error" ? "text-[#b4402c]" : "text-accent"}>
             {phase !== "error" && (
               <span className="bg-brand mr-2 inline-block size-[5px] animate-pulse rounded-full align-middle" />
             )}

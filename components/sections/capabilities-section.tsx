@@ -52,9 +52,7 @@ export function CapabilitiesSection() {
                   aria-pressed={active === i}
                   className={cn(
                     "border-border relative block w-full cursor-pointer border-b py-7 pr-10 pl-8 text-left transition-colors",
-                    active === i
-                      ? "bg-white/70 dark:bg-white/5"
-                      : "hover:bg-white/40 dark:hover:bg-white/[0.02]",
+                    active === i ? "bg-white/70" : "hover:bg-white/40",
                   )}
                 >
                   <span

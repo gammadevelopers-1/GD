@@ -11,7 +11,7 @@ import {
 } from "react";
 import { gsap } from "@/lib/gsap";
 import { hero } from "@/lib/content/home";
-import type { AuditPhase, AuditResponse, AuditResult } from "@/types/audit";
+import type { AuditPhase, AuditResponse, AuditResult } from "@/lib/audit/types";
 
 /**
  * Per-frame values live in a plain object, not in state. The canvas reads them

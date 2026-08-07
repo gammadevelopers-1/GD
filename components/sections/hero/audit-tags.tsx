@@ -27,8 +27,14 @@ export function AuditTags() {
   useGSAP(
     () => {
       if (reduced || !scope.current) return;
+
+      const tags = scope.current.querySelectorAll<HTMLElement>(
+        "[data-tag]:not(:empty)",
+      );
+      if (tags.length === 0) return;
+
       gsap.fromTo(
-        scope.current.querySelectorAll("[data-tag]:not(:empty)"),
+        tags,
         { opacity: 0, y: 8, filter: "blur(3px)" },
         {
           opacity: 1,

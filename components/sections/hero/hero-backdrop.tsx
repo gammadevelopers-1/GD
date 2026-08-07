@@ -1,7 +1,4 @@
-/**
- * Purely decorative layers. Server component — no interactivity, no JS shipped.
- * Order matters: grid and edges sit under the canvas, veil and vignette sit over it.
- */
+/** Decorative layers kept separate from the interactive canvas. */
 export function HeroBackdropBase() {
   return (
     <>
@@ -47,14 +44,15 @@ export function HeroBackdropOverlay() {
 }
 
 function Rule({ side }: { side: "left" | "right" }) {
-  const pos = side === "left" ? "left-[88px]" : "right-[88px]";
+  const position = side === "left" ? "left-[88px]" : "right-[88px]";
   const tick =
     side === "left" ? "left-[84px] border-l" : "right-[84px] border-r";
+
   return (
     <>
       <div
         aria-hidden
-        className={`absolute top-[8%] bottom-[8%] z-0 hidden w-px lg:block ${pos} [background:linear-gradient(180deg,transparent,var(--border)_18%,var(--border)_82%,transparent)]`}
+        className={`absolute top-[8%] bottom-[8%] z-0 hidden w-px lg:block ${position} [background:linear-gradient(180deg,transparent,var(--border)_18%,var(--border)_82%,transparent)]`}
       />
       <i
         aria-hidden

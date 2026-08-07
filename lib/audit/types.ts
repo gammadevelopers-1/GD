@@ -1,7 +1,3 @@
-export interface AuditRequest {
-  description: string;
-}
-
 export interface AuditResult {
   problems: string[];
   fixes: string[];

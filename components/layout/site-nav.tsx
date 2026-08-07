@@ -55,7 +55,6 @@ export function SiteNav() {
       </Group>
 
       <Group className="ml-auto md:ml-0">
-        <NavLink href="/sign-in">Sign in</NavLink>
         <Link
           href={site.calendly}
           className="bg-brand rounded-full px-[18px] py-2 text-sm font-medium text-[#14171a] transition-colors hover:bg-[#26d150]"
@@ -76,7 +75,7 @@ function Group({
 }) {
   return (
     <div
-      className={`border-border/70 flex items-center rounded-full border bg-white/70 p-1 shadow-[0_2px_14px_rgba(20,23,26,0.04)] backdrop-blur-lg dark:bg-white/5 ${className}`}
+      className={`border-border/70 flex items-center rounded-full border bg-white/70 p-1 shadow-[0_2px_14px_rgba(20,23,26,0.04)] backdrop-blur-lg ${className}`}
     >
       {children}
     </div>

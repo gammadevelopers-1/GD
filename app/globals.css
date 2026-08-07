@@ -1,31 +1,15 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
-
-@plugin "@tailwindcss/typography";
-
-@custom-variant dark (&:is(.dark *));
 
 @theme {
   --font-sans: var(--font-general-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, monospace;
 
   --color-brand: #2fe85c;
-  --color-mint: #6ee7b7;
-  --color-glow: #10b981;
-
-  --animate-marquee: marquee 34s linear infinite;
   --animate-scroll-hint: scroll-hint 2.2s ease-in-out infinite;
 }
 
-@keyframes marquee {
-  to {
-    transform: translateX(-50%);
-  }
-}
-
 @keyframes scroll-hint {
-
   0%,
   100% {
     opacity: 0.3;
@@ -44,56 +28,16 @@
   --foreground: #14171a;
 
   --card: #fbfbf7;
-  --card-foreground: #14171a;
-  --popover: #fbfbf7;
-  --popover-foreground: #14171a;
-
-  --primary: #2fe85c;
-  --primary-foreground: #14171a;
-
   --secondary: #eceae1;
-  --secondary-foreground: #14171a;
-
-  --muted: #e8e8e0;
   --muted-foreground: #5a6058;
 
   --accent: #059669;
-  --accent-foreground: #f4f4ee;
 
   --border: #dcdcd2;
-  --input: #dcdcd2;
   --ring: #059669;
 }
 
-/* DARK — kept for section-scoped `.dark` wrappers, not a site-wide toggle */
-.dark {
-  --background: #16181c;
-  --foreground: #ecece4;
-
-  --card: #1c1f24;
-  --card-foreground: #ecece4;
-  --popover: #1c1f24;
-  --popover-foreground: #ecece4;
-
-  --primary: #2fe85c;
-  --primary-foreground: #16181c;
-
-  --secondary: #24282e;
-  --secondary-foreground: #ecece4;
-
-  --muted: #24282e;
-  --muted-foreground: #c5c8bd;
-
-  --accent: #34d399;
-  --accent-foreground: #16181c;
-
-  --border: #2a2e35;
-  --input: #2a2e35;
-  --ring: #34d399;
-}
-
 @media (prefers-reduced-motion: reduce) {
-
   *,
   *::before,
   *::after {

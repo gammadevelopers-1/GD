@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
+import { hashIp, logAuditRun } from "@/lib/audit/log";
+import { generateAudit } from "@/lib/audit/openai";
 import {
-  AUDIT_MAX_TOKENS,
-  AUDIT_MODEL,
-  buildAuditPrompt,
+  AUDIT_SYSTEM_PROMPT,
+  buildUserMessage,
   parseAuditResult,
 } from "@/lib/audit/prompt";
 import {
@@ -11,7 +12,7 @@ import {
   rateLimit,
   setCached,
 } from "@/lib/audit/rate-limit";
-import type { AuditResponse, AuditResult } from "@/types/audit";
+import type { AuditResponse, AuditResult } from "@/lib/audit/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,17 +21,19 @@ const MIN_LEN = 8;
 const MAX_LEN = 300;
 
 function clientIp(req: Request): string {
-  const fwd = req.headers.get("x-forwarded-for");
-  return fwd?.split(",")[0]?.trim() ?? "unknown";
+  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
 }
 
 function fail(error: string, status: number) {
   return NextResponse.json<AuditResponse>({ ok: false, error }, { status });
 }
 
+function logAfterResponse(input: Parameters<typeof logAuditRun>[0]) {
+  after(() => logAuditRun(input));
+}
+
 export async function POST(req: Request) {
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) return fail("Audit is not configured.", 500);
+  const started = Date.now();
 
   let body: unknown;
   try {
@@ -48,9 +51,18 @@ export async function POST(req: Request) {
     return fail("Tell us a bit more about the business.", 400);
   }
 
+  const ipHash = hashIp(clientIp(req));
+
   const ck = cacheKey(description);
   const cached = getCached<AuditResult>(ck);
   if (cached) {
+    logAfterResponse({
+      description,
+      result: cached,
+      ipHash,
+      latencyMs: Date.now() - started,
+      cached: true,
+    });
     return NextResponse.json<AuditResponse>({
       ok: true,
       data: cached,
@@ -58,7 +70,7 @@ export async function POST(req: Request) {
     });
   }
 
-  const limit = rateLimit(clientIp(req));
+  const limit = rateLimit(ipHash);
   if (!limit.allowed) {
     return NextResponse.json<AuditResponse>(
       {
@@ -70,34 +82,39 @@ export async function POST(req: Request) {
   }
 
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": key,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: AUDIT_MODEL,
-        max_tokens: AUDIT_MAX_TOKENS,
-        messages: [{ role: "user", content: buildAuditPrompt(description) }],
-      }),
-      signal: AbortSignal.timeout(20_000),
-    });
+    const gen = await generateAudit(
+      AUDIT_SYSTEM_PROMPT,
+      buildUserMessage(description),
+      ipHash,
+    );
 
-    if (!res.ok) return fail("The model is busy. Try again in a moment.", 502);
+    if (gen.refused) {
+      return fail(
+        "Could not read that. Try describing the business differently.",
+        422,
+      );
+    }
+    if (gen.truncated) {
+      return fail(
+        "That response was cut short. Try a shorter description.",
+        502,
+      );
+    }
 
-    const json = (await res.json()) as {
-      content?: Array<{ type: string; text?: string }>;
-    };
-    const raw =
-      json.content
-        ?.filter((c) => c.type === "text")
-        .map((c) => c.text ?? "")
-        .join("") ?? "";
+    const data = parseAuditResult(gen.text);
+    const latencyMs = Date.now() - started;
 
-    const data = parseAuditResult(raw);
     if (!data) {
+      logAfterResponse({
+        description,
+        result: null,
+        ipHash,
+        latencyMs,
+        cached: false,
+        error: "unparseable_or_not_a_business",
+        inputTokens: gen.inputTokens,
+        outputTokens: gen.outputTokens,
+      });
       return fail(
         "Could not read that. Try describing the business differently.",
         422,
@@ -105,8 +122,30 @@ export async function POST(req: Request) {
     }
 
     setCached(ck, data);
+    logAfterResponse({
+      description,
+      result: data,
+      ipHash,
+      latencyMs,
+      cached: false,
+      inputTokens: gen.inputTokens,
+      outputTokens: gen.outputTokens,
+    });
+
     return NextResponse.json<AuditResponse>({ ok: true, data, cached: false });
-  } catch {
+  } catch (err) {
+    if (process.env.NODE_ENV !== "production") {
+      console.error("[audit] OpenAI request failed", err);
+    }
+
+    logAfterResponse({
+      description,
+      result: null,
+      ipHash,
+      latencyMs: Date.now() - started,
+      cached: false,
+      error: err instanceof Error ? err.message : "unknown",
+    });
     return fail("Could not reach the model just now.", 503);
   }
 }

@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { JetBrains_Mono } from "next/font/google";
-import { ThemeProvider } from "@/components/providers/theme-provider";
 import "./globals.css";
 
 const generalSans = localFont({
@@ -21,15 +19,15 @@ const generalSans = localFont({
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
+const jetbrainsMono = localFont({
+  src: "./fonts/JetBrainsMono-Regular.ttf",
   variable: "--font-jetbrains",
   display: "swap",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000",
   ),
   title: {
     default: "Gamma Developers — AI agents that actually ship",
@@ -49,16 +47,9 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${generalSans.variable} ${jetbrainsMono.variable}`}
-      suppressHydrationWarning
     >
       <body className="bg-background text-foreground font-sans antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-        >
-          {children}
-        </ThemeProvider>
+        {children}
       </body>
     </html>
   );

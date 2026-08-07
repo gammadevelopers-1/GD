@@ -54,7 +54,7 @@ export function SiteFooter() {
           </Link>
         </Reveal>
 
-        <div className="grid gap-8 md:grid-cols-[2.1fr_1fr_1fr_1fr]">
+        <div className="grid gap-8 md:grid-cols-[2.1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2.5 text-[17px] font-semibold tracking-[-0.02em]">
               <Mark className="!bg-[#eceae2]" />

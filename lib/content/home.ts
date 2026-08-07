@@ -1,4 +1,3 @@
-
 export const hero = {
   headline: { before: "Messy in.", accent: "Aligned", after: "out." },
   lead: "Tell us what's not working in your business. We'll show you what's broken, and what it looks like fixed.",
@@ -43,7 +42,6 @@ export const hero = {
         "accounting firm, 12 people, client onboarding documents chased over email",
     },
   ],
-  
 } as const;
 
 export const flow = {
@@ -168,7 +166,7 @@ export const proof = {
       status: "In production",
       title: "10,000 CVs ranked without a recruiter",
       body: "Semantic matching that reads the role and the person, not keyword overlap.",
-      meta: "HR tech → Lambda, DynamoDB, Claude API",
+      meta: "HR tech → Lambda, DynamoDB, OpenAI API",
       thumb: ["w8", "w4-accent", "w6"] as const,
     },
   ],
