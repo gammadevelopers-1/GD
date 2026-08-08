@@ -9,7 +9,11 @@ import { LineField } from "./line-field";
 export function HeroSection() {
   return (
     <HeroProvider>
-      <section className="relative flex min-h-[780px] items-center overflow-hidden max-lg:min-h-0 max-lg:py-33 lg:h-screen">
+      <section
+        data-cursor-zone="threads"
+        data-cursor-tone="mint"
+        className="relative flex min-h-[780px] items-center overflow-hidden max-lg:min-h-0 max-lg:py-33 lg:h-screen"
+      >
         <HeroBackdropBase />
         <LineField />
         <HeroBackdropOverlay />
@@ -31,7 +35,7 @@ export function HeroSection() {
 
             <p
               data-hero="lead"
-              className="text-muted-foreground mx-auto mt-5.5 max-w-[44ch] text-[17.5px] leading-[1.62]"
+              className="text-muted-foreground mx-auto mt-5 max-w-[36ch] text-[16px] leading-[1.55]"
             >
               {hero.lead}
             </p>
@@ -46,7 +50,6 @@ export function HeroSection() {
           aria-hidden
           className="text-muted-foreground absolute bottom-6 left-1/2 z-[5] flex -translate-x-1/2 flex-col items-center gap-2 font-mono text-[10px] tracking-[0.2em] uppercase max-lg:hidden"
         >
-          <span>scroll</span>
           <span className="animate-scroll-hint block h-6 w-px bg-[linear-gradient(180deg,var(--border),transparent)]" />
         </div>
       </section>

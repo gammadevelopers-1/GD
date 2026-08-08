@@ -4,24 +4,35 @@ import { useEffect, useRef } from "react";
 import { useReducedMotion } from "@/lib/hooks/use-reduced-motion";
 import { BASE_LINES, MAX_LINES, useHero } from "./hero-provider";
 
-/* Band geometry. Extra lines pack into the SAME height — they never spread. */
-const BAND_TOP = 0.3;
-const BAND_SPAN = 0.4;
+// Messy on the left, calm and aligned on the right.
+const MESSY_TOP = 0.3;
+const MESSY_SPAN = 0.4;
+const ORDERED_TOP = 0.445;
+const ORDERED_SPAN = 0.11;
+const CHAOS_START = 0.02;
+const CHAOS_END = 0.54;
 
-/* Where the mess resolves into order, as a fraction of width. */
-const CHAOS_START = 0.07;
-const CHAOS_END = 0.5;
+const CHARCOAL = [12, 16, 18] as const;
+const FOREST = [2, 70, 48] as const;
+const EMERALD = [5, 150, 105] as const;
+const RED = [184, 46, 38] as const;
+const AMBER = [157, 104, 29] as const;
+const GREEN = [7, 147, 91] as const;
 
-const COOL = [126, 134, 146] as const;
-const WARM = [92, 150, 126] as const;
-const ACCENT = [5, 150, 105] as const;
-const BRAND = [47, 232, 92] as const;
-
-const clamp = (v: number, a: number, b: number) => (v < a ? a : v > b ? b : v);
+const clamp = (value: number, min: number, max: number) =>
+  value < min ? min : value > max ? max : value;
 const smooth = (t: number) => t * t * (3 - 2 * t);
-
-/** 0 = stays grey, 1 = mixed, 2 = bright brand green. */
-type LineKind = 0 | 1 | 2;
+const mix = (from: number, to: number, t: number) => from + (to - from) * t;
+const mixRgb = (
+  from: readonly [number, number, number],
+  to: readonly [number, number, number],
+  t: number,
+) =>
+  [
+    mix(from[0], to[0], t),
+    mix(from[1], to[1], t),
+    mix(from[2], to[2], t),
+  ] as const;
 
 interface Line {
   amp: number;
@@ -30,53 +41,32 @@ interface Line {
   speed: number;
   offset: number;
   width: number;
-  kind: LineKind;
   tint: number;
-  greenMax: number;
-  lift: number;
-  /* mutable per frame */
-  base: number;
+  messyBase: number;
+  orderedBase: number;
   alive: number;
-  disturb: number;
-  glow: number;
-  flash: number;
-  ring: number;
   dot: number;
   dotSpeed: number;
+  hover: number;
+  hoverPush: number;
 }
 
 function makeLine(index: number): Line {
-  const r = Math.random();
-  const kind: LineKind = r < 0.38 ? 0 : r < 0.76 ? 1 : 2;
   return {
-    amp: 16 + Math.random() * 26,
-    f1: 0.0064 + Math.random() * 0.0052,
-    f2: 0.017 + Math.random() * 0.012,
-    speed: 0.5 + Math.random() * 0.7,
+    amp: 24 + Math.random() * 42,
+    f1: 0.005 + Math.random() * 0.006,
+    f2: 0.014 + Math.random() * 0.014,
+    speed: 0.42 + Math.random() * 0.7,
     offset: Math.random() * 99,
-    width:
-      kind === 2
-        ? 1.5 + Math.random() * 0.6
-        : kind === 1
-          ? 1 + Math.random() * 0.35
-          : 0.75 + Math.random() * 0.2,
-    kind,
-    tint:
-      kind === 0
-        ? 0.05 + Math.random() * 0.12
-        : kind === 1
-          ? 0.42 + Math.random() * 0.28
-          : 0.88 + Math.random() * 0.12,
-    greenMax: kind === 0 ? 0.2 : kind === 1 ? 0.74 : 1,
-    lift: kind === 0 ? 0 : kind === 1 ? 0.07 : 0.22,
-    base: 0,
+    width: 1.1 + Math.random() * 1.05,
+    tint: 0.2 + Math.random() * 0.8,
+    messyBase: 0,
+    orderedBase: 0,
     alive: index < BASE_LINES ? 1 : 0,
-    disturb: 0,
-    glow: 0,
-    flash: 0,
-    ring: 0,
     dot: Math.random(),
-    dotSpeed: 0.09 + Math.random() * 0.12,
+    dotSpeed: 0.1 + Math.random() * 0.13,
+    hover: 0,
+    hoverPush: 0,
   };
 }
 
@@ -86,220 +76,250 @@ export function LineField() {
   const reduced = useReducedMotion();
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    const canvasElement = canvasRef.current;
+    if (!canvasElement) return;
+    const drawingContext = canvasElement.getContext("2d");
+    if (!drawingContext) return;
+    const canvas: HTMLCanvasElement = canvasElement;
+    const context: CanvasRenderingContext2D = drawingContext;
 
-    const lines: Line[] = Array.from({ length: MAX_LINES }, (_, i) =>
-      makeLine(i),
+    const lines = Array.from({ length: MAX_LINES }, (_, index) =>
+      makeLine(index),
     );
-    const dots: { x: number; y: number; line: Line }[] = [];
-
     let width = 0;
     let height = 0;
     let phase = 0;
+    let frame = 0;
     let pointerX = -9999;
     let pointerY = -9999;
-    let hovered: Line | null = null;
-    let frame = 0;
+    let pointerTargetX = -9999;
+    let pointerTargetY = -9999;
+    let pointerVelocityY = 0;
+    let pointerActive = false;
+    let inView = true;
 
     function fit() {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      width = canvas!.clientWidth;
-      height = canvas!.clientHeight;
-      canvas!.width = width * dpr;
-      canvas!.height = height * dpr;
-      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      width = canvas.clientWidth;
+      height = canvas.clientHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    function colour(line: Line, k: number, alpha: number) {
-      const b0 = COOL[0] + (WARM[0] - COOL[0]) * line.tint;
-      const b1 = COOL[1] + (WARM[1] - COOL[1]) * line.tint;
-      const b2 = COOL[2] + (WARM[2] - COOL[2]) * line.tint;
-      const resolve = motionRef.current.resolve;
-      const target =
-        line.kind === 2 || line.flash > 0.05 || resolve > 0.5 ? BRAND : ACCENT;
-      const mix =
-        clamp(k, 0, 1) * Math.max(line.greenMax, line.flash, resolve * 0.92);
-      const a = clamp(
-        (alpha +
-          line.lift * clamp(k, 0, 1) +
-          line.flash * 0.28 +
-          resolve * 0.12) *
-          line.alive,
-        0,
-        1,
+    function orderAt(x: number) {
+      const n = x / Math.max(width, 1);
+      const resolveShift = motionRef.current.resolve * 0.07;
+      return smooth(
+        clamp(
+          (n - (CHAOS_START - resolveShift)) / (CHAOS_END - CHAOS_START),
+          0,
+          1,
+        ),
       );
-      return `rgba(${Math.round(b0 + (target[0] - b0) * mix)},${Math.round(b1 + (target[1] - b1) * mix)},${Math.round(b2 + (target[2] - b2) * mix)},${a})`;
     }
 
     function yAt(line: Line, x: number) {
-      const n = x / width;
-      const calm = smooth(
-        clamp((n - CHAOS_START) / (CHAOS_END - CHAOS_START), 0, 1),
-      );
-      const amp =
-        (line.amp + line.disturb * 28 + motionRef.current.chaos * 40) *
-        (1 - calm);
+      const order = orderAt(x);
+      const chaos = motionRef.current.chaos;
+      const amplitude =
+        (line.amp + chaos * 48 + line.hover * 62) * Math.pow(1 - order, 1.28);
+      const waves =
+        Math.sin(x * line.f1 - phase * line.speed * 7 + line.offset) *
+          amplitude +
+        Math.sin(x * line.f2 - phase * 4.5 + line.offset * 1.7) *
+          amplitude *
+          0.34;
+      const hoverRadius = width < 700 ? 138 : 230;
+      const pointerDistance = (x - pointerX) / hoverRadius;
+      const hoverEnvelope =
+        line.hover > 0.001
+          ? Math.exp(-pointerDistance * pointerDistance * 2.2) * (1 - order)
+          : 0;
+      const ripple =
+        Math.sin((x - pointerX) * 0.027 - phase * 7) * line.hover * 11;
+
       return (
-        line.base +
-        Math.sin(x * line.f1 - phase * line.speed * 7 + line.offset) * amp +
-        Math.sin(x * line.f2 - phase * 4.6 + line.offset * 1.7) * amp * 0.3
+        mix(line.messyBase, line.orderedBase, order) +
+        waves +
+        (line.hoverPush + ripple) * hoverEnvelope
       );
+    }
+
+    function lineColour(line: Line, progress: number, alpha: number) {
+      const ordered = smooth(clamp((progress - 0.34) / 0.42, 0, 1));
+      const left = mixRgb(CHARCOAL, FOREST, line.tint * 0.2);
+      const right = mixRgb(FOREST, EMERALD, 0.42 + line.tint * 0.34);
+      const colour = mixRgb(left, right, ordered);
+      return `rgba(${Math.round(colour[0])},${Math.round(colour[1])},${Math.round(colour[2])},${alpha})`;
+    }
+
+    function dotColour(progress: number) {
+      const colour =
+        progress < 0.5
+          ? mixRgb(RED, AMBER, smooth(progress * 2))
+          : mixRgb(AMBER, GREEN, smooth((progress - 0.5) * 2));
+      return colour;
     }
 
     function draw() {
-      const m = motionRef.current;
-      ctx!.clearRect(0, 0, width, height);
-      if (!reduced) phase += 0.0042 + m.chaos * 0.0036;
+      frame = 0;
+      if (!inView) return;
+      const motion = motionRef.current;
+      context.clearRect(0, 0, width, height);
+      if (!reduced) phase += 0.0044 + motion.chaos * 0.0034;
+      if (pointerActive) {
+        const previousY = pointerY;
+        pointerX += (pointerTargetX - pointerX) * 0.15;
+        pointerY += (pointerTargetY - pointerY) * 0.15;
+        pointerVelocityY =
+          pointerVelocityY * 0.72 + (pointerY - previousY) * 0.28;
+      } else {
+        pointerVelocityY *= 0.82;
+      }
 
-      const top = height * BAND_TOP;
-      const span = height * BAND_SPAN;
-      const gap = span / Math.max(1, m.activeLines - 1);
-      const split = width * 0.5;
-      dots.length = 0;
+      const activeCount = Math.max(2, Math.round(motion.activeLines));
+      const messyGap = (height * MESSY_SPAN) / Math.max(1, activeCount - 1);
+      const orderedGap = (height * ORDERED_SPAN) / Math.max(1, activeCount - 1);
 
-      lines.forEach((line, i) => {
-        const live = i < m.activeLines ? 1 : 0;
-        line.alive += (live - line.alive) * 0.045;
+      lines.forEach((line, index) => {
+        const live = index < activeCount ? 1 : 0;
+        line.alive += (live - line.alive) * 0.055;
         if (line.alive < 0.01) return;
 
-        const targetBase = top + Math.min(i, m.activeLines - 1) * gap;
-        line.base = line.base
-          ? line.base + (targetBase - line.base) * 0.06
-          : targetBase;
+        const messyTarget = height * MESSY_TOP + index * messyGap;
+        const orderedTarget = height * ORDERED_TOP + index * orderedGap;
+        line.messyBase = line.messyBase
+          ? line.messyBase + (messyTarget - line.messyBase) * 0.07
+          : messyTarget;
+        line.orderedBase = line.orderedBase
+          ? line.orderedBase + (orderedTarget - line.orderedBase) * 0.07
+          : orderedTarget;
 
-        const near = Math.abs(pointerY - line.base);
-        if (pointerX > -1000 && near < 48) {
-          const prox = 1 - near / 48;
-          if (pointerX < split) {
-            // Disturb the messy half — it gets worse and compounds.
-            line.disturb = Math.min(1, line.disturb + prox * 0.05);
-            line.glow = Math.min(1, line.glow + prox * 0.08);
-          } else {
-            // The resolved half only glows. It does not move.
-            line.glow = Math.min(1, line.glow + prox * 0.12);
-          }
-        }
-        line.disturb *= 0.977;
-        line.glow *= 0.955;
-        line.flash *= 0.955;
-        line.ring = line.flash > 0.02 ? line.ring + 0.035 : 0;
+        const canDisturb = pointerActive && pointerX < width * 0.5;
+        const lineAtPointer = yAt(line, clamp(pointerX, 0, width * 0.5));
+        const pointerGap = Math.abs(lineAtPointer - pointerY);
+        const hoverTarget = canDisturb
+          ? smooth(clamp(1 - pointerGap / 150, 0, 1))
+          : 0;
+        const pushDirection = lineAtPointer >= pointerY ? 1 : -1;
+        const pushTarget = clamp(
+          pushDirection * hoverTarget * 96 + pointerVelocityY * hoverTarget * 7,
+          -128,
+          128,
+        );
+        line.hover +=
+          (hoverTarget - line.hover) *
+          (hoverTarget > line.hover ? 0.13 : 0.055);
+        line.hoverPush += (pushTarget - line.hoverPush) * 0.095;
 
-        ctx!.beginPath();
-        for (let x = 0; x <= width; x += 6) {
+        context.beginPath();
+        for (let x = 0; x <= width; x += 5) {
           const y = yAt(line, x);
-          if (x === 0) ctx!.moveTo(x, y);
-          else ctx!.lineTo(x, y);
+          if (x === 0) context.moveTo(x, y);
+          else context.lineTo(x, y);
         }
 
-        const gk = Math.max(line.glow, line.flash, m.resolve * 0.6);
-        const grad = ctx!.createLinearGradient(0, 0, width, 0);
-        grad.addColorStop(
-          0,
-          colour(
-            line,
-            gk,
-            0.14 + gk * 0.42 + line.disturb * 0.3 + m.chaos * 0.14,
-          ),
+        const pulse = 0.5 + Math.sin(phase * 4 + line.offset) * 0.5;
+        const gradient = context.createLinearGradient(0, 0, width, 0);
+        gradient.addColorStop(0, lineColour(line, 0, 0.52 * line.alive));
+        gradient.addColorStop(0.38, lineColour(line, 0.38, 0.7 * line.alive));
+        gradient.addColorStop(0.6, lineColour(line, 0.6, 0.84 * line.alive));
+        gradient.addColorStop(
+          1,
+          lineColour(line, 1, (0.82 + pulse * 0.13) * line.alive),
         );
-        grad.addColorStop(
-          0.36,
-          colour(line, gk * 0.6 + 0.15, 0.21 + gk * 0.44 + line.disturb * 0.24),
-        );
-        grad.addColorStop(0.72, colour(line, 1, 0.49 + gk * 0.42));
-        grad.addColorStop(1, colour(line, 1, 0.27 + gk * 0.3));
-        ctx!.strokeStyle = grad;
-        ctx!.lineWidth =
-          line.width + gk * 1.2 + line.disturb * 0.6 + m.chaos * 0.45;
-        ctx!.stroke();
+
+        context.save();
+        context.lineCap = "round";
+        context.lineJoin = "round";
+        context.strokeStyle = "rgba(47,232,92,0.16)";
+        context.lineWidth = line.width + 2.2;
+        context.shadowColor = "rgba(5,150,105,0.72)";
+        context.shadowBlur = 16 + pulse * 10 + motion.resolve * 8;
+        context.stroke();
+        context.shadowBlur = 0;
+        context.strokeStyle = gradient;
+        context.lineWidth = line.width + motion.resolve * 0.35;
+        context.stroke();
+        context.restore();
 
         if (!reduced) {
-          line.dot += line.dotSpeed * 0.011 * (1 + m.resolve * 0.8);
-          if (line.dot > 1.1) line.dot = -0.08;
+          line.dot += line.dotSpeed * 0.012 * (1 + motion.resolve * 0.55);
+          if (line.dot > 1.08) line.dot = -0.06;
         }
+
         const dx = line.dot * width;
-        if (dx > -10 && dx < width + 10) {
-          const dy = yAt(line, dx);
-          const bright = smooth(clamp((line.dot - 0.26) / 0.38, 0, 1));
-          dots.push({ x: dx, y: dy, line });
-          const isHover = hovered === line ? 1 : 0;
-          const r = 1.6 + isHover * 0.6 + line.flash * 1.2 + m.resolve * 0.7;
+        if (dx < -10 || dx > width + 10) return;
+        const dy = yAt(line, dx);
+        const progress = clamp(line.dot, 0, 1);
+        const colour = dotColour(progress);
+        const radius = 3.1 + smooth(progress) * 0.7 + motion.resolve * 0.35;
 
-          ctx!.fillStyle = colour(
-            line,
-            1,
-            0.56 + bright * 0.2 + isHover * 0.15 + line.flash * 0.18,
-          );
-          ctx!.beginPath();
-          ctx!.arc(dx, dy, r, 0, Math.PI * 2);
-          ctx!.fill();
-
-          if (isHover) {
-            ctx!.strokeStyle = colour(line, 1, 0.3);
-            ctx!.lineWidth = 1;
-            ctx!.beginPath();
-            ctx!.arc(dx, dy, r + 5, 0, Math.PI * 2);
-            ctx!.stroke();
-          }
-          if (line.flash > 0.02) {
-            ctx!.strokeStyle = colour(line, 1, clamp(line.flash * 0.7, 0, 1));
-            ctx!.lineWidth = 1.4;
-            ctx!.beginPath();
-            ctx!.arc(dx, dy, line.ring * width * 0.12, 0, Math.PI * 2);
-            ctx!.stroke();
-          }
-        }
+        context.save();
+        context.fillStyle = `rgba(${Math.round(colour[0])},${Math.round(colour[1])},${Math.round(colour[2])},${0.94 * line.alive})`;
+        context.shadowColor = `rgba(${Math.round(colour[0])},${Math.round(colour[1])},${Math.round(colour[2])},0.92)`;
+        context.shadowBlur = 12 + progress * 6;
+        context.beginPath();
+        context.arc(dx, dy, radius, 0, Math.PI * 2);
+        context.fill();
+        context.shadowBlur = 0;
+        context.strokeStyle = "rgba(8,12,13,0.42)";
+        context.lineWidth = 0.75;
+        context.stroke();
+        context.restore();
       });
 
-      hovered = null;
-      if (pointerX > -1000) {
-        let best = Infinity;
-        for (const d of dots) {
-          const dist = Math.hypot(d.x - pointerX, d.y - pointerY);
-          if (dist < 26 && dist < best) {
-            best = dist;
-            hovered = d.line;
-          }
+      if (inView) frame = requestAnimationFrame(draw);
+    }
+
+    function onPointerMove(event: PointerEvent) {
+      const rect = canvas.getBoundingClientRect();
+      const nextX = event.clientX - rect.left;
+      const nextY = event.clientY - rect.top;
+      const nextActive = nextX < width * 0.52;
+      if (nextActive && !pointerActive) {
+        pointerX = nextX;
+        pointerY = nextY;
+      }
+      pointerTargetX = nextX;
+      pointerTargetY = nextY;
+      pointerActive = nextActive;
+    }
+
+    function onPointerLeave() {
+      pointerActive = false;
+      pointerTargetX = -9999;
+      pointerTargetY = -9999;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const nextInView = entry.isIntersecting;
+        if (nextInView === inView) return;
+        inView = nextInView;
+        if (inView && frame === 0) frame = requestAnimationFrame(draw);
+        if (!inView && frame !== 0) {
+          cancelAnimationFrame(frame);
+          frame = 0;
         }
-      }
-      canvas!.style.cursor = hovered ? "pointer" : "crosshair";
-
-      m.chaos *= 0.985;
-      frame = requestAnimationFrame(draw);
-    }
-
-    function onMove(e: PointerEvent) {
-      const rect = canvas!.getBoundingClientRect();
-      pointerX = e.clientX - rect.left;
-      pointerY = e.clientY - rect.top;
-    }
-    function onLeave() {
-      pointerX = -9999;
-      pointerY = -9999;
-      hovered = null;
-    }
-    function onDown() {
-      if (hovered) {
-        hovered.flash = 1;
-        hovered.ring = 0;
-      }
-    }
+      },
+      { rootMargin: "180px 0px" },
+    );
 
     fit();
+    observer.observe(canvas);
     frame = requestAnimationFrame(draw);
     window.addEventListener("resize", fit);
-    canvas.addEventListener("pointermove", onMove);
-    canvas.addEventListener("pointerleave", onLeave);
-    canvas.addEventListener("pointerdown", onDown);
+    canvas.addEventListener("pointermove", onPointerMove);
+    canvas.addEventListener("pointerleave", onPointerLeave);
 
     return () => {
       cancelAnimationFrame(frame);
+      observer.disconnect();
       window.removeEventListener("resize", fit);
-      canvas.removeEventListener("pointermove", onMove);
-      canvas.removeEventListener("pointerleave", onLeave);
-      canvas.removeEventListener("pointerdown", onDown);
+      canvas.removeEventListener("pointermove", onPointerMove);
+      canvas.removeEventListener("pointerleave", onPointerLeave);
     };
   }, [motionRef, reduced]);
 
@@ -307,7 +327,7 @@ export function LineField() {
     <canvas
       ref={canvasRef}
       aria-hidden
-      className="absolute inset-0 z-[1] size-full cursor-crosshair"
+      className="absolute inset-0 z-[1] size-full"
     />
   );
 }

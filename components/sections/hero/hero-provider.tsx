@@ -13,19 +13,23 @@ import { gsap } from "@/lib/gsap";
 import { hero } from "@/lib/content/home";
 import type { AuditPhase, AuditResponse, AuditResult } from "@/lib/audit/types";
 
-/**
- * Per-frame values live in a plain object, not in state. The canvas reads them
- * inside requestAnimationFrame and GSAP tweens them directly, so neither one
- * ever triggers a React render.
- */
+// Keep the fast moving canvas values outside React 
 export interface HeroMotion {
   chaos: number;
   resolve: number;
   activeLines: number;
 }
 
-export const BASE_LINES = 13;
-export const MAX_LINES = 23;
+export interface AuditFinding {
+  id: number;
+  index: number;
+  total: number;
+  label: string;
+  tone: "bad" | "ok";
+}
+
+export const BASE_LINES = 8;
+export const MAX_LINES = 13;
 
 interface HeroContextValue {
   motionRef: React.RefObject<HeroMotion>;
@@ -33,6 +37,7 @@ interface HeroContextValue {
   status: string;
   problems: string[];
   fixes: string[];
+  activeFinding: AuditFinding | null;
   result: AuditResult | null;
   runAudit: (description: string) => Promise<void>;
   reset: () => void;
@@ -57,9 +62,9 @@ export function HeroProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState("");
   const [problems, setProblems] = useState<string[]>([...hero.idleProblems]);
   const [fixes, setFixes] = useState<string[]>([...hero.idleFixes]);
+  const [activeFinding, setActiveFinding] = useState<AuditFinding | null>(null);
   const [result, setResult] = useState<AuditResult | null>(null);
 
-  /** One timeline owns the whole audit sequence, so reset is a single .kill(). */
   const timeline = useRef<gsap.core.Timeline | null>(null);
 
   const killTimeline = useCallback(() => {
@@ -80,6 +85,7 @@ export function HeroProvider({ children }: { children: ReactNode }) {
     });
     setPhase("idle");
     setStatus("");
+    setActiveFinding(null);
     setResult(null);
     setProblems([...hero.idleProblems]);
     setFixes([...hero.idleFixes]);
@@ -90,6 +96,7 @@ export function HeroProvider({ children }: { children: ReactNode }) {
       killTimeline();
       setPhase("loading");
       setResult(null);
+      setActiveFinding(null);
       setProblems([]);
       setFixes([]);
       setStatus("reading how you work…");
@@ -97,7 +104,6 @@ export function HeroProvider({ children }: { children: ReactNode }) {
       const m = motionRef.current;
       m.resolve = 0;
 
-      // Spike, then a long eased settle. Linear intervals looked mechanical.
       gsap.fromTo(
         m,
         { chaos: 0 },
@@ -105,7 +111,6 @@ export function HeroProvider({ children }: { children: ReactNode }) {
       );
       gsap.to(m, { chaos: 0.22, duration: 5, ease: "power2.out", delay: 0.45 });
 
-      // The mess grows while it thinks — same band height, more lines packed in.
       gsap.to(m, {
         activeLines: MAX_LINES,
         duration: 1.9,
@@ -139,30 +144,66 @@ export function HeroProvider({ children }: { children: ReactNode }) {
         const data = json.data;
         const tl = gsap.timeline();
         timeline.current = tl;
+        const total = Math.min(data.problems.length, data.fixes.length);
+        const findingStep = 1.45;
+        let sequenceAt = 0;
 
-        // 1 — the faults land on the messy side
-        tl.call(() => {
-          setPhase("problems");
-          setStatus("here's what we'd expect to find");
-          setProblems(data.problems);
-        });
+        setProblems(data.problems);
+        setFixes(data.fixes);
 
-        // 2 — the field resolves and the fixes land on the straight side
+        // Show one matched pair at a time 
+        for (let index = 0; index < total; index += 1) {
+          tl.call(
+            () => {
+              setPhase("problems");
+              setStatus(`flaw ${index + 1} of ${total}`);
+              setActiveFinding({
+                id: index * 2,
+                index,
+                total,
+                label: data.problems[index],
+                tone: "bad",
+              });
+            },
+            undefined,
+            sequenceAt,
+          );
+          sequenceAt += findingStep;
+
+          tl.call(
+            () => {
+              setPhase("fixes");
+              setStatus(`solution ${index + 1} of ${total}`);
+              setActiveFinding({
+                id: index * 2 + 1,
+                index,
+                total,
+                label: data.fixes[index],
+                tone: "ok",
+              });
+
+              if (index === 0) {
+                gsap.to(m, {
+                  chaos: 0,
+                  duration: 1.5,
+                  ease: "power2.inOut",
+                });
+                gsap.to(m, {
+                  resolve: 1,
+                  duration: 2.15,
+                  ease: "power3.inOut",
+                });
+              }
+            },
+            undefined,
+            sequenceAt,
+          );
+          sequenceAt += findingStep;
+        }
+
         tl.call(
           () => {
-            setPhase("fixes");
-            setStatus("and the same business, fixed");
-            setFixes(data.fixes);
-            gsap.to(m, { chaos: 0, duration: 1.2, ease: "power2.inOut" });
-            gsap.to(m, { resolve: 1, duration: 1.6, ease: "power2.inOut" });
-          },
-          undefined,
-          1.7,
-        );
-
-        // 3 — hand over to the booking CTA
-        tl.call(
-          () => {
+            setActiveFinding(null);
             setPhase("done");
             setStatus(
               `${data.problems.length} found · this is the short version`,
@@ -170,7 +211,7 @@ export function HeroProvider({ children }: { children: ReactNode }) {
             setResult(data);
           },
           undefined,
-          3.4,
+          sequenceAt,
         );
       } catch {
         gsap.to(m, {
@@ -196,11 +237,12 @@ export function HeroProvider({ children }: { children: ReactNode }) {
       status,
       problems,
       fixes,
+      activeFinding,
       result,
       runAudit,
       reset,
     }),
-    [phase, status, problems, fixes, result, runAudit, reset],
+    [phase, status, problems, fixes, activeFinding, result, runAudit, reset],
   );
 
   return <HeroContext.Provider value={value}>{children}</HeroContext.Provider>;

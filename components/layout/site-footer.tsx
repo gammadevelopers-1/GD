@@ -9,6 +9,7 @@ export function SiteFooter() {
   return (
     <footer
       id="book"
+      data-cursor-tone="dark"
       className="relative min-h-[940px] scroll-mt-24 overflow-hidden bg-[#080b0e] pt-30 text-[#eceae2] max-lg:min-h-[860px]"
     >
       <div

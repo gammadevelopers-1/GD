@@ -38,13 +38,13 @@ export function LogoMarquee() {
   return (
     <div
       aria-label="Clients"
-      className="border-border bg-background overflow-hidden border-y [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)] py-6"
+      className="marquee-surface border-border bg-background relative overflow-hidden border-y mask-[linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)] py-6 [background:linear-gradient(180deg,#f7f6f2_0%,#f3f1ea_100%)]"
     >
-      <div ref={track} className="flex w-max items-center gap-16">
+      <div ref={track} className="relative z-1 flex w-max items-center gap-16">
         {row.map((name, i) => (
           <span
             key={`${name}-${i}`}
-            className="text-[19px] font-semibold tracking-[-0.02em] whitespace-nowrap text-[#9a9b91]"
+            className="text-[19px] font-semibold tracking-[-0.02em] whitespace-nowrap text-[#8a8b84] transition-colors duration-300 hover:text-[#14171a]"
           >
             {name}
           </span>

@@ -6,7 +6,6 @@ import { gsap, useGSAP } from "@/lib/gsap";
 import { hero } from "@/lib/content/home";
 import { site } from "@/lib/content/site";
 import { useReducedMotion } from "@/lib/hooks/use-reduced-motion";
-import { cn } from "@/lib/utils";
 import { useHero } from "./hero-provider";
 
 export function AuditForm() {
@@ -14,11 +13,11 @@ export function AuditForm() {
   const [value, setValue] = useState("");
   const [localError, setLocalError] = useState("");
   const resultRef = useRef<HTMLDivElement>(null);
+  const statusRef = useRef<HTMLParagraphElement>(null);
   const reduced = useReducedMotion();
 
   const busy = phase === "loading";
   const finished = phase === "done";
-  const dimmed = phase !== "idle" && phase !== "error";
 
   useGSAP(
     () => {
@@ -34,6 +33,24 @@ export function AuditForm() {
     { dependencies: [finished, reduced] },
   );
 
+  useGSAP(
+    () => {
+      if (reduced || !statusRef.current || !status) return;
+      gsap.fromTo(
+        statusRef.current,
+        { opacity: 0, y: 4, filter: "blur(3px)" },
+        {
+          opacity: 1,
+          y: 0,
+          filter: "blur(0px)",
+          duration: 0.34,
+          ease: "power2.out",
+        },
+      );
+    },
+    { dependencies: [status, reduced] },
+  );
+
   function submit(event?: FormEvent) {
     event?.preventDefault();
     const text = value.trim();
@@ -45,14 +62,8 @@ export function AuditForm() {
     void runAudit(text);
   }
 
-  function pick(nextValue: string) {
-    setValue(nextValue);
-    setLocalError("");
-    void runAudit(nextValue);
-  }
-
   return (
-    <div className="mx-auto mt-9 max-w-[630px]">
+    <div className="mx-auto mt-7 max-w-[630px]">
       <form onSubmit={submit}>
         <div className="border-border focus-within:border-accent/45 flex flex-wrap items-center gap-2 rounded-2xl border bg-white/95 p-3 shadow-[0_14px_40px_rgba(20,23,26,0.09)] backdrop-blur-md transition-colors duration-200 sm:flex-nowrap sm:rounded-full sm:py-1.5 sm:pr-1.5 sm:pl-5.5">
           <label htmlFor="audit-input" className="sr-only">
@@ -77,34 +88,18 @@ export function AuditForm() {
         </div>
       </form>
 
-      <div
-        className={cn(
-          "mt-4 flex flex-wrap justify-center gap-2 transition-opacity duration-500",
-          dimmed && "pointer-events-none opacity-25",
-        )}
-      >
-        {hero.examples.map((example) => (
-          <button
-            key={example.label}
-            type="button"
-            disabled={busy}
-            onClick={() => pick(example.value)}
-            className="text-muted-foreground border-border hover:border-accent/45 hover:text-accent cursor-pointer rounded-full border bg-white/70 px-3 py-1.5 font-mono text-[10.5px] transition-colors hover:bg-white"
-          >
-            {example.label}
-          </button>
-        ))}
-      </div>
-
       <p
+        ref={statusRef}
         role="status"
         aria-live="polite"
-        className="text-muted-foreground mt-4.5 min-h-[18px] font-mono text-[11px] tracking-[0.05em]"
+        className="text-muted-foreground mt-3 min-h-[18px] font-mono text-[11px] tracking-[0.05em]"
       >
         {localError ? (
           <span className="text-[#b4402c]">{localError}</span>
         ) : status ? (
-          <span className={phase === "error" ? "text-[#b4402c]" : "text-accent"}>
+          <span
+            className={phase === "error" ? "text-[#b4402c]" : "text-accent"}
+          >
             {phase !== "error" && (
               <span className="bg-brand mr-2 inline-block size-[5px] animate-pulse rounded-full align-middle" />
             )}
@@ -115,11 +110,10 @@ export function AuditForm() {
 
       {finished && result ? (
         <div ref={resultRef} className="mt-6">
-          <p className="text-muted-foreground mx-auto mb-5 max-w-[47ch] text-base">
+          <p className="text-muted-foreground mx-auto mb-5 max-w-[42ch] text-[15px]">
             <b className="text-foreground font-medium">{result.headline}</b>
             <br />
-            We&apos;d expect the first one live in about {result.weeks} weeks.
-            The full audit goes through all of it properly.
+            First version in about {result.weeks} weeks.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link

@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { Reveal } from "@/components/common/reveal";
+import { AmbientField } from "@/components/common/ambient-field";
 import { SectionHeading } from "@/components/common/section-heading";
 import { flow } from "@/lib/content/home";
 import { useReducedMotion } from "@/lib/hooks/use-reduced-motion";
@@ -71,8 +72,13 @@ export function FlowSection() {
   );
 
   return (
-    <section id="flow" className="bg-background scroll-mt-24 py-28">
-      <div className="mx-auto max-w-[1240px] px-5 md:px-9">
+    <section
+      id="flow"
+      data-cursor-tone="blue"
+      className="bg-background relative isolate scroll-mt-24 overflow-hidden py-28 [background:radial-gradient(ellipse_70%_45%_at_50%_0%,rgba(69,125,168,0.10),transparent_62%),linear-gradient(180deg,#f2f5f3_0%,#f8f8f4_100%)]"
+    >
+      <AmbientField variant="blue" />
+      <div className="relative z-1 mx-auto max-w-310 px-5 md:px-9">
         <Reveal>
           <SectionHeading eyebrow={flow.eyebrow} title={flow.title} />
         </Reveal>
@@ -81,16 +87,16 @@ export function FlowSection() {
           ref={scope}
           className="relative mt-16 grid grid-cols-2 gap-9 lg:grid-cols-5 lg:gap-0"
         >
-          <div className="border-border absolute top-[38px] right-[9%] left-[9%] hidden h-px bg-current/20 lg:block">
-            <span className="flow-fill bg-accent absolute inset-y-0 left-0 block w-0 shadow-[0_0_10px_rgba(5,150,105,0.5)]" />
+          <div className="border-border absolute top-9.5 right-[9%] left-[9%] hidden h-px bg-current/20 lg:block">
+            <span className="flow-fill bg-accent absolute inset-y-0 left-0 block w-0 shadow-[0_0_18px_rgba(5,150,105,0.72)]" />
           </div>
-          <span className="flow-packet bg-brand absolute top-[34px] left-[9%] z-[2] hidden size-[9px] rounded-full shadow-[0_0_16px_rgba(47,232,92,0.95)] lg:block" />
+          <span className="flow-packet bg-brand absolute top-8.5 left-[9%] z-2 hidden size-2.25 rounded-full shadow-[0_0_22px_rgba(47,232,92,0.98)] lg:block" />
 
           {flow.steps.map((step) => (
             <div key={step.key} className="relative px-3 text-center">
-              <div className="flow-node border-border bg-card text-muted-foreground relative mx-auto mb-5 grid size-[76px] place-items-center rounded-[17px] border font-mono text-[11px]">
+              <div className="flow-node reactive-tile border-border bg-card text-muted-foreground relative mx-auto mb-5 grid size-19 place-items-center overflow-hidden rounded-[17px] border font-mono text-[11px] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_34px_rgba(20,23,26,0.12)]">
                 {step.key}
-                <span className="flow-ring absolute -inset-2 scale-95 rounded-[22px] border border-[rgba(5,150,105,0.22)] opacity-0" />
+                <span className="flow-ring absolute -inset-2 scale-95 rounded-[22px] border border-[rgba(5,150,105,0.22)] opacity-0 shadow-[0_0_18px_rgba(47,232,92,0.1)]" />
               </div>
               <span className="text-muted-foreground mb-2.5 block font-mono text-[10px] tracking-[0.14em]">
                 {step.num}

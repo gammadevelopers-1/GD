@@ -2,13 +2,6 @@ import { createHash } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import type { AuditResult } from "./types";
 
-/**
- * Every audit is a visitor telling you their industry and what hurts. That is
- * lead intelligence — worth keeping.
- *
- * IPs are hashed, never stored raw: enough to count uniques and spot abuse,
- * not enough to identify anyone.
- */
 export function hashIp(ip: string): string {
   const salt = process.env.IP_HASH_SALT ?? "gamma-default-salt";
   return createHash("sha256")
@@ -51,6 +44,6 @@ export async function logAuditRun(input: LogInput): Promise<void> {
       error: input.error ?? null,
     });
   } catch {
-    // Logging must never break the response the visitor is waiting on.
+    // A logging hiccup should never interrupt the visitor.
   }
 }

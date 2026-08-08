@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { Reveal } from "@/components/common/reveal";
+import { AmbientField } from "@/components/common/ambient-field";
 import { SectionHeading } from "@/components/common/section-heading";
 import { capabilities } from "@/lib/content/home";
 import { useReducedMotion } from "@/lib/hooks/use-reduced-motion";
@@ -29,9 +30,11 @@ export function CapabilitiesSection() {
   return (
     <section
       id="capabilities"
-      className="border-border bg-secondary scroll-mt-24 border-t"
+      data-cursor-tone="mint"
+      className="border-border bg-secondary relative isolate scroll-mt-24 overflow-hidden border-t [background:radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(47,232,92,0.09),transparent_66%),linear-gradient(180deg,#f1f5ed_0%,#e9eee6_100%)]"
     >
-      <div className="mx-auto max-w-[1240px] px-5 pt-22 md:px-9">
+      <AmbientField variant="mint" className="opacity-75" />
+      <div className="relative z-1 mx-auto max-w-310 px-5 pt-22 md:px-9">
         <Reveal>
           <SectionHeading
             eyebrow={capabilities.eyebrow}
@@ -40,7 +43,7 @@ export function CapabilitiesSection() {
         </Reveal>
       </div>
 
-      <div className="mx-auto max-w-[1240px] px-5 md:px-9">
+      <div className="relative z-1 mx-auto max-w-310 px-5 md:px-9">
         <Reveal delay={0.08}>
           <div className="border-border mt-14 grid border-t lg:grid-cols-[1.05fr_1fr]">
             <div className="border-border lg:border-r">
@@ -51,13 +54,15 @@ export function CapabilitiesSection() {
                   onClick={() => setActive(i)}
                   aria-pressed={active === i}
                   className={cn(
-                    "border-border relative block w-full cursor-pointer border-b py-7 pr-10 pl-8 text-left transition-colors",
-                    active === i ? "bg-white/70" : "hover:bg-white/40",
+                    "border-border relative block w-full cursor-pointer border-b py-7 pr-10 pl-8 text-left transition-all duration-300",
+                    active === i
+                      ? "bg-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]"
+                      : "hover:translate-x-1 hover:bg-white/55",
                   )}
                 >
                   <span
                     className={cn(
-                      "bg-brand absolute inset-y-0 left-0 w-0.5 origin-center transition-transform duration-300",
+                      "bg-brand absolute inset-y-0 left-0 w-0.5 origin-center shadow-[0_0_18px_rgba(47,232,92,0.7)] transition-transform duration-300",
                       active === i ? "scale-y-100" : "scale-y-0",
                     )}
                   />
@@ -77,8 +82,8 @@ export function CapabilitiesSection() {
             </div>
 
             <div className="flex items-center justify-center p-9">
-              <div className="w-full max-w-[400px] overflow-hidden rounded-[15px] border border-black/40 bg-[#14171a] font-mono text-xs shadow-[0_24px_60px_rgba(20,23,26,0.16)]">
-                <div className="border-b border-white/10 px-4 py-3.5 text-[10.5px] tracking-[0.11em] text-[#7d837a] uppercase">
+              <div className="terminal-glare w-full max-w-100 overflow-hidden rounded-[18px] border border-black/45 bg-[#0d1013] font-mono text-xs shadow-[0_28px_70px_rgba(20,23,26,0.22)] ring-1 ring-white/5">
+                <div className="border-b border-white/10 bg-[linear-gradient(90deg,rgba(47,232,92,0.08),transparent_36%,rgba(20,23,26,0.18))] px-4 py-3.5 text-[10.5px] tracking-[0.11em] text-[#90978d] uppercase">
                   {panel.label}
                 </div>
                 <div ref={panelScope} className="p-4">
@@ -86,10 +91,10 @@ export function CapabilitiesSection() {
                     <div
                       key={k}
                       data-panel-row
-                      className="flex items-center justify-between border-b border-white/[0.055] py-2.5 text-[#9aa096] last:border-0"
+                      className="flex items-center justify-between border-b border-white/5.5 py-2.5 text-[#9aa096] transition-transform duration-300 last:border-0 hover:translate-x-0.5"
                     >
                       <span className="flex items-center text-[#eceae2]">
-                        <span className="bg-brand mr-2 size-1.5 animate-pulse rounded-full" />
+                        <span className="bg-brand mr-2 size-1.5 animate-pulse rounded-full shadow-[0_0_12px_rgba(47,232,92,0.75)]" />
                         {k}
                       </span>
                       <span className="text-[11px] text-[#34d399]">{v}</span>

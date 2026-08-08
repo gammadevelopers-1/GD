@@ -3,11 +3,7 @@ import type { AuditResult } from "./types";
 
 export const AUDIT_MAX_OUTPUT_TOKENS = 800;
 
-/**
- * Fixed, trusted instructions. The visitor's text never appears in here — it
- * goes in the user turn. That separation is both a quality lever (system
- * instructions carry more weight) and the prompt-injection boundary.
- */
+// Our trusted AI instructions live here, safely away from visitor text.
 export const AUDIT_SYSTEM_PROMPT = `
 You are the operations analyst at Gamma Developers. A visitor to the website has
 described their business in one line. Name the four places that business most
@@ -59,12 +55,12 @@ Input: "car rental company, 40 vehicles, bookings by email, approvals done manua
 }
 `.trim();
 
-/** The untrusted half. Nothing but the visitor's own words. */
+// Keep the visitor's words in their own neat little message.
 export function buildUserMessage(description: string): string {
   return `Business description: ${description}`;
 }
 
-/** Passed to the Responses API as a strict Structured Outputs schema. */
+// This shape keeps every AI answer tidy and predictable.
 export const AUDIT_JSON_SCHEMA = {
   type: "object",
   properties: {

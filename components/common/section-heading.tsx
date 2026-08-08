@@ -13,7 +13,7 @@ export function SectionHeading({
 }: SectionHeadingProps) {
   return (
     <div className={cn("max-w-[620px]", className)}>
-      <span className="text-muted-foreground mb-5 inline-flex items-center gap-2 font-mono text-[10.5px] tracking-[0.18em] uppercase">
+      <span className="shimmer-label mb-5 inline-flex items-center gap-2 font-mono text-[10.5px] tracking-[0.18em] uppercase">
         <span className="bg-brand size-1.5 rounded-full shadow-[0_0_9px_rgba(47,232,92,0.6)]" />
         {eyebrow}
       </span>

@@ -5,10 +5,6 @@ import { gsap, useGSAP } from "@/lib/gsap";
 import { useReducedMotion } from "@/lib/hooks/use-reduced-motion";
 import { useHero } from "./hero-provider";
 
-/**
- * Hero entrance, and the dim-back once the audit result takes over.
- * Wraps the copy block so the section itself can stay a server component.
- */
 export function HeroCopy({ children }: { children: ReactNode }) {
   const scope = useRef<HTMLDivElement>(null);
   const { phase } = useHero();
@@ -26,14 +22,15 @@ export function HeroCopy({ children }: { children: ReactNode }) {
     { scope, dependencies: [reduced] },
   );
 
-  // Once the result appears, the headline steps back so the answer leads.
+  // Giving spotlight to card
   useGSAP(
     () => {
       if (reduced) return;
-      const dimmed = phase === "done";
+      const sequencing = phase === "problems" || phase === "fixes";
+      const dimmed = sequencing || phase === "done";
       gsap.to("[data-hero='title'], [data-hero='lead']", {
-        opacity: dimmed ? 0.3 : 1,
-        duration: 0.6,
+        opacity: sequencing ? 0.14 : dimmed ? 0.3 : 1,
+        duration: 0.7,
         ease: "power2.inOut",
       });
     },

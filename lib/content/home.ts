@@ -1,7 +1,7 @@
 export const hero = {
   headline: { before: "Messy in.", accent: "Aligned", after: "out." },
-  lead: "Tell us what's not working in your business. We'll show you what's broken, and what it looks like fixed.",
-  placeholder: "e.g. dental clinic, bookings come by phone and get lost",
+  lead: "Describe the bottleneck. See the system fixed.",
+  placeholder: "What keeps getting lost, delayed, or repeated?",
   cta: "Run the audit",
   idleProblems: [
     "leads going cold",
