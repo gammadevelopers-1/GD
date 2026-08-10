@@ -1,8 +1,15 @@
 export const hero = {
-  headline: { before: "Messy in.", accent: "Aligned", after: "out." },
+  headline: { before: "Messy in", accent: "Aligned", after: "out" },
   lead: "Describe the bottleneck. See the system fixed.",
   placeholder: "What keeps getting lost, delayed, or repeated?",
-  cta: "Run the audit",
+  typingPrompts: [
+    "Run an audit to spot workflow flaws",
+    "e.g. I run a dental clinic with three staff...",
+    "Leads arrive on WhatsApp and get missed...",
+    "We enter every booking into two systems...",
+    "Approvals still happen manually by email...",
+  ],
+  cta: "Analyze workflow",
   idleProblems: [
     "leads going cold",
     "manual data entry",

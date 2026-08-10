@@ -8,16 +8,19 @@ export function PointerGlow() {
   const orbit = useRef<HTMLDivElement>(null);
   const surface = useRef<HTMLDivElement>(null);
   const core = useRef<HTMLDivElement>(null);
+  const burst = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
 
   useEffect(() => {
     const orbitElement = orbit.current;
     const surfaceElement = surface.current;
     const coreElement = core.current;
+    const burstElement = burst.current;
     if (
       !orbitElement ||
       !surfaceElement ||
       !coreElement ||
+      !burstElement ||
       reduced ||
       !window.matchMedia("(pointer: fine)").matches
     ) {
@@ -27,9 +30,13 @@ export function PointerGlow() {
     const cursorOrbit = orbitElement;
     const cursorSurface = surfaceElement;
     const cursorCore = coreElement;
+    const cursorBurst = burstElement;
     const root = document.documentElement;
     root.classList.add("has-custom-cursor");
-    gsap.set([cursorOrbit, cursorCore], { xPercent: -50, yPercent: -50 });
+    gsap.set([cursorOrbit, cursorCore, cursorBurst], {
+      xPercent: -50,
+      yPercent: -50,
+    });
 
     const orbitX = gsap.quickTo(cursorOrbit, "x", {
       duration: 0.3,
@@ -48,8 +55,6 @@ export function PointerGlow() {
       ease: "power2.out",
     });
 
-    let lastX = window.innerWidth / 2;
-    let lastY = window.innerHeight / 2;
     let restingScale = 1;
 
     function onMove(event: PointerEvent) {
@@ -67,17 +72,12 @@ export function PointerGlow() {
       cursorCore.dataset.tone = tone;
 
       const interactive = Boolean(
-        target?.closest("a, button, input, textarea, select, [role='button']"),
+        target?.closest(
+          "a, button, input, textarea, select, [role='button'], [data-cursor-interactive]",
+        ),
       );
       const threads = Boolean(target?.closest("[data-cursor-zone='threads']"));
-      restingScale = interactive ? 1.62 : threads ? 0.72 : 1;
-
-      const deltaX = event.clientX - lastX;
-      const deltaY = event.clientY - lastY;
-      const speed = Math.min(0.32, Math.hypot(deltaX, deltaY) / 120);
-      const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
-      lastX = event.clientX;
-      lastY = event.clientY;
+      restingScale = interactive ? 1.38 : threads ? 0.86 : 1;
 
       cursorOrbit.dataset.mode = interactive
         ? "interactive"
@@ -86,10 +86,8 @@ export function PointerGlow() {
           : "default";
       gsap.to(cursorSurface, {
         autoAlpha: 1,
-        rotation: speed > 0.02 ? angle : "+=0",
-        scaleX: restingScale * (1 + speed),
-        scaleY: restingScale * (1 - speed * 0.28),
-        duration: 0.32,
+        scale: restingScale,
+        duration: 0.42,
         ease: "power3.out",
         overwrite: "auto",
       });
@@ -100,10 +98,22 @@ export function PointerGlow() {
       });
     }
 
-    function onDown() {
+    function onDown(event: PointerEvent) {
+      gsap.set(cursorBurst, {
+        x: event.clientX,
+        y: event.clientY,
+        scale: 0.25,
+        autoAlpha: 0.9,
+      });
+      gsap.to(cursorBurst, {
+        scale: 2.8,
+        autoAlpha: 0,
+        duration: 0.62,
+        ease: "power3.out",
+        overwrite: true,
+      });
       gsap.to(cursorSurface, {
-        scaleX: restingScale * 0.72,
-        scaleY: restingScale * 0.72,
+        scale: restingScale * 0.62,
         duration: 0.1,
         ease: "power2.out",
         overwrite: "auto",
@@ -113,10 +123,9 @@ export function PointerGlow() {
 
     function onUp() {
       gsap.to(cursorSurface, {
-        scaleX: restingScale,
-        scaleY: restingScale,
-        duration: 0.42,
-        ease: "back.out(2.3)",
+        scale: restingScale,
+        duration: 0.48,
+        ease: "elastic.out(1, 0.45)",
         overwrite: "auto",
       });
       gsap.to(cursorCore, { scale: 1, duration: 0.28, ease: "back.out(2)" });
@@ -141,7 +150,7 @@ export function PointerGlow() {
       window.removeEventListener("pointerdown", onDown);
       window.removeEventListener("pointerup", onUp);
       document.documentElement.removeEventListener("pointerleave", onLeave);
-      gsap.killTweensOf([cursorOrbit, cursorSurface, cursorCore]);
+      gsap.killTweensOf([cursorOrbit, cursorSurface, cursorCore, cursorBurst]);
     };
   }, [reduced]);
 
@@ -151,7 +160,7 @@ export function PointerGlow() {
         ref={orbit}
         aria-hidden
         data-tone="mint"
-        className="pointer-orbit pointer-events-none fixed top-0 left-0 z-[1000] hidden size-12 opacity-0 md:block"
+        className="pointer-orbit pointer-events-none fixed top-0 left-0 z-[1000] hidden size-8 opacity-0 md:block"
       >
         <div ref={surface} className="pointer-orbit-surface size-full" />
       </div>
@@ -160,6 +169,11 @@ export function PointerGlow() {
         aria-hidden
         data-tone="mint"
         className="pointer-core pointer-events-none fixed top-0 left-0 z-[1001] hidden size-1.5 opacity-0 md:block"
+      />
+      <div
+        ref={burst}
+        aria-hidden
+        className="pointer-burst pointer-events-none fixed top-0 left-0 z-[999] hidden size-5 opacity-0 md:block"
       />
     </>
   );

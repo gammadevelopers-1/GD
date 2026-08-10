@@ -15,22 +15,45 @@ export function HeroCopy({ children }: { children: ReactNode }) {
       if (reduced) return;
       gsap
         .timeline({ defaults: { ease: "power3.out" } })
-        .from("[data-hero='title']", { y: 28, opacity: 0, duration: 0.9 }, 0.25)
-        .from("[data-hero='lead']", { y: 20, opacity: 0, duration: 0.8 }, 0.4)
-        .from("[data-hero='form']", { y: 20, opacity: 0, duration: 0.8 }, 0.52);
+        .from(
+          "[data-hero-line]",
+          {
+            yPercent: 85,
+            rotateX: -18,
+            opacity: 0,
+            filter: "blur(10px)",
+            duration: 1,
+            stagger: 0.1,
+          },
+          0.2,
+        )
+        .from(
+          "[data-logo-letter]",
+          {
+            scale: 0.45,
+            rotate: -10,
+            opacity: 0,
+            duration: 0.75,
+            stagger: 0.12,
+            ease: "back.out(2.4)",
+          },
+          0.55,
+        )
+        .from("[data-hero='lead']", { y: 16, opacity: 0, duration: 0.75 }, 0.58)
+        .from("[data-hero='form']", { y: 18, opacity: 0, duration: 0.8 }, 0.68);
     },
     { scope, dependencies: [reduced] },
   );
 
-  // Giving spotlight to card
+  // Keep the promise legible while the findings take focus.
   useGSAP(
     () => {
       if (reduced) return;
       const sequencing = phase === "problems" || phase === "fixes";
       const dimmed = sequencing || phase === "done";
       gsap.to("[data-hero='title'], [data-hero='lead']", {
-        opacity: sequencing ? 0.14 : dimmed ? 0.3 : 1,
-        duration: 0.7,
+        opacity: sequencing ? 0.88 : dimmed ? 0.95 : 1,
+        duration: 0.45,
         ease: "power2.inOut",
       });
     },

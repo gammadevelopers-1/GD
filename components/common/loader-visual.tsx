@@ -24,61 +24,23 @@ export function LoaderVisual({
       aria-valuenow={safeProgress}
       style={loaderStyle}
       className={cn(
-        "site-loader fixed inset-0 z-[999] overflow-hidden bg-[#090b0d] text-[#f4f4ee]",
+        "site-loader fixed inset-0 z-[999] grid place-items-center overflow-hidden bg-[#141815] text-[#eef1ed]",
         leaving && "site-loader-leaving",
         className,
       )}
     >
-      <div aria-hidden className="loader-aurora absolute inset-0" />
-      <div aria-hidden className="loader-grain absolute inset-0" />
+      <div aria-hidden className="loader-grid absolute inset-0" />
 
-      <div className="loader-topline absolute inset-x-0 top-0 z-2 flex items-center justify-between px-5 pt-5 font-mono text-[9px] tracking-[0.18em] text-white/48 uppercase sm:px-8 sm:pt-7">
-        <span>Gamma Developers</span>
-        <span className="flex items-center gap-2.5">
-          <i className="loader-live-dot size-1.5 rounded-full bg-[#2fe85c] not-italic" />
-          system start
-        </span>
-      </div>
-
-      <div className="loader-stage relative z-1 flex h-full w-full items-center px-4 sm:px-8 lg:px-12">
-        <div
-          className="loader-word-shell relative w-full select-none"
-          aria-label="Gamma"
-        >
-          <span className="loader-word loader-word-ghost block">GAMMA</span>
-          <span
-            aria-hidden
-            className="loader-word loader-word-fill absolute inset-0 block"
-          >
+      <div className="loader-stage relative z-1 flex w-[min(84vw,420px)] flex-col items-center text-center">
+        <div className="loader-word-shell select-none" aria-label="Gamma">
+          <span aria-hidden className="loader-word font-display block">
             GAMMA
           </span>
         </div>
-      </div>
 
-      <div
-        aria-hidden
-        className="loader-side-pill absolute top-1/2 right-4 z-2 hidden -translate-y-1/2 sm:right-7 sm:grid"
-      >
-        GD
-      </div>
-
-      <div className="loader-bottomline absolute inset-x-0 bottom-0 z-2 flex items-end justify-between gap-6 px-5 pb-5 sm:px-8 sm:pb-7">
-        <div className="max-w-[22rem]">
-          <span className="block font-mono text-[9px] tracking-[0.19em] text-white/44 uppercase">
-            Preparing your experience
-          </span>
-          <span
-            aria-hidden
-            className="mt-2 block h-px w-[min(54vw,340px)] overflow-hidden bg-white/12"
-          >
-            <i className="loader-progress-bar block h-full bg-[#2fe85c]" />
-          </span>
-        </div>
-        <span className="loader-percentage font-mono text-[clamp(22px,3vw,42px)] leading-none tracking-[-0.08em] tabular-nums">
-          {String(safeProgress).padStart(3, "0")}
-          <small className="ml-1 text-[0.34em] tracking-normal text-white/42">
-            %
-          </small>
+        <span aria-hidden className="loader-progress-track mt-5 block w-full">
+          <i className="loader-progress-bar loader-progress-bar-left" />
+          <i className="loader-progress-bar loader-progress-bar-right" />
         </span>
       </div>
     </div>

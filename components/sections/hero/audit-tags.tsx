@@ -6,103 +6,131 @@ import { useReducedMotion } from "@/lib/hooks/use-reduced-motion";
 import { useHero } from "./hero-provider";
 
 export function AuditTags() {
-  const { activeFinding } = useHero();
+  const { activeFinding, fixes, phase, problems } = useHero();
   const scope = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
+  const visible = phase === "problems" || phase === "fixes" || phase === "done";
+  const signature = `${problems.join("|")}::${fixes.join("|")}`;
+
+  useGSAP(
+    () => {
+      if (!visible || reduced) return;
+      gsap
+        .timeline({ defaults: { ease: "power3.out" } })
+        .fromTo(
+          "[data-audit-table]",
+          {
+            opacity: 0,
+            y: 34,
+            scaleY: 0.82,
+            filter: "blur(12px)",
+            clipPath: "inset(0 0 100% 0 round 8px)",
+          },
+          {
+            opacity: 1,
+            y: 0,
+            scaleY: 1,
+            filter: "blur(0px)",
+            clipPath: "inset(0 0 0% 0 round 8px)",
+            duration: 0.8,
+            stagger: 0.13,
+          },
+        )
+        .from(
+          "[data-audit-row]",
+          { opacity: 0, x: -12, duration: 0.42, stagger: 0.045 },
+          0.3,
+        );
+    },
+    { scope, dependencies: [visible, signature, reduced] },
+  );
 
   useGSAP(
     () => {
       if (!activeFinding || reduced) return;
-
-      const isFlaw = activeFinding.tone === "bad";
-      gsap
-        .timeline()
-        .fromTo(
-          "[data-audit-signal]",
-          {
-            opacity: 0,
-            x: isFlaw ? -28 : -105,
-            scale: 0.94,
-            filter: "blur(7px)",
-          },
-          {
-            opacity: 1,
-            x: 0,
-            scale: 1,
-            filter: "blur(0px)",
-            duration: 0.34,
-            ease: "power3.out",
-          },
-        )
-        .fromTo(
-          "[data-audit-progress]",
-          { scaleX: 0, opacity: 0 },
-          {
-            scaleX: 1,
-            opacity: 1,
-            duration: 0.82,
-            ease: "power1.inOut",
-          },
-          0.16,
-        )
-        .to(
-          "[data-audit-signal]",
-          {
-            opacity: 0,
-            x: isFlaw ? 105 : 28,
-            scale: 0.96,
-            filter: "blur(7px)",
-            duration: 0.3,
-            ease: "power2.in",
-          },
-          1.02,
-        );
+      gsap.fromTo(
+        `[data-audit-row='${activeFinding.tone}-${activeFinding.index}']`,
+        { x: 0, scale: 1 },
+        {
+          x: activeFinding.tone === "bad" ? 5 : -5,
+          scale: 1.015,
+          duration: 0.38,
+          yoyo: true,
+          repeat: 1,
+          ease: "power2.inOut",
+        },
+      );
     },
     { scope, dependencies: [activeFinding?.id, reduced] },
   );
 
-  if (!activeFinding) return null;
+  if (!visible) return null;
 
-  const isFlaw = activeFinding.tone === "bad";
+  const panels = [
+    { title: "Flaws detected", tone: "bad" as const, items: problems },
+    { title: "Solutions mapped", tone: "ok" as const, items: fixes },
+  ];
+
   return (
     <div
       ref={scope}
       aria-live="polite"
-      className="pointer-events-none absolute inset-0 z-[3] block"
+      className="pointer-events-none mt-9 grid gap-3 text-left md:absolute md:inset-x-6 md:bottom-7 md:z-[5] md:mt-0 md:grid-cols-[minmax(0,370px)_1fr_minmax(0,370px)] md:gap-7"
     >
-      <div
-        key={activeFinding.id}
-        className={`absolute inset-x-5 top-[18%] flex justify-center md:top-[42%] ${isFlaw ? "md:justify-start" : "md:justify-end"}`}
-      >
-        <div
-          data-audit-signal
-          className={`w-full max-w-[340px] overflow-hidden rounded-2xl border px-4 py-3.5 text-left shadow-[0_14px_40px_rgba(20,23,26,0.12)] backdrop-blur-xl md:w-[28vw] ${
-            isFlaw
-              ? "border-[rgba(180,64,44,0.28)] bg-[#fff8f4]/90 text-[#8f3025]"
-              : "border-[rgba(5,150,105,0.30)] bg-[#f5fff8]/90 text-[#047857]"
+      {panels.map((panel, panelIndex) => (
+        <section
+          key={panel.tone}
+          data-audit-table
+          data-cursor-interactive
+          className={`audit-table pointer-events-auto overflow-hidden rounded-lg border bg-white/72 shadow-[0_18px_52px_rgba(20,23,26,0.10)] backdrop-blur-xl ${
+            panel.tone === "bad"
+              ? "border-[#303732]/18 text-[#303732] md:col-start-1"
+              : "border-[#059669]/24 text-[#047857] md:col-start-3"
           }`}
         >
-          <span className="mb-2 flex items-center justify-between font-mono text-[8.5px] tracking-[0.15em] uppercase opacity-65">
-            <span>{isFlaw ? "Flaw" : "Solution"}</span>
-            <span>
-              {String(activeFinding.index + 1).padStart(2, "0")} /{" "}
-              {String(activeFinding.total).padStart(2, "0")}
+          <header className="flex h-11 items-center justify-between border-b border-current/10 px-4">
+            <span className="flex items-center gap-2.5 text-[12px] font-semibold">
+              <i
+                className={`size-1.5 rounded-full not-italic ${panel.tone === "bad" ? "bg-[#58605a]" : "bg-brand shadow-[0_0_12px_rgba(47,232,92,0.75)]"}`}
+              />
+              {panel.title}
             </span>
-          </span>
-          <span className="flex items-center gap-2.5 text-[13px] font-medium text-current">
-            <i
-              className={`size-2 shrink-0 rounded-full not-italic shadow-[0_0_12px_currentColor] ${isFlaw ? "bg-[#c74a38]" : "bg-brand"}`}
-            />
-            {activeFinding.label}
-          </span>
-          <span className="mt-3 block h-px overflow-hidden bg-current/12">
-            <i
-              data-audit-progress
-              className="block h-full origin-left bg-current/55"
-            />
-          </span>
-        </div>
-      </div>
+            <span className="font-mono text-[9px] tracking-[0.12em] opacity-55">
+              0{panel.items.length}
+            </span>
+          </header>
+          <ol>
+            {panel.items.map((item, index) => {
+              const active =
+                activeFinding?.tone === panel.tone &&
+                activeFinding.index === index;
+              return (
+                <li
+                  key={`${panel.tone}-${item}`}
+                  data-audit-row={`${panel.tone}-${index}`}
+                  className={`audit-table-row group flex min-h-9 items-center gap-3 border-b border-current/8 px-4 py-2 text-[12px] leading-[1.35] last:border-b-0 ${
+                    active
+                      ? panel.tone === "bad"
+                        ? "bg-[#303732]/7"
+                        : "bg-[#2fe85c]/10"
+                      : "bg-transparent"
+                  }`}
+                >
+                  <span className="audit-table-index w-5 shrink-0 font-mono text-[9px] opacity-45">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <span className="audit-table-value font-medium text-[#252b27]">
+                    {item}
+                  </span>
+                  <i
+                    className={`audit-table-rule ml-auto h-px w-4 shrink-0 not-italic ${panelIndex === 0 ? "bg-[#4e5650]/35" : "bg-[#059669]/45"}`}
+                  />
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      ))}
     </div>
   );
 }

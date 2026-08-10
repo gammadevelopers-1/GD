@@ -29,7 +29,7 @@ export interface AuditFinding {
 }
 
 export const BASE_LINES = 8;
-export const MAX_LINES = 13;
+export const MAX_LINES = 10;
 
 interface HeroContextValue {
   motionRef: React.RefObject<HeroMotion>;

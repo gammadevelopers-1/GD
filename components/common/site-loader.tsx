@@ -19,13 +19,13 @@ export function SiteLoader() {
 
     const progressTimer = window.setInterval(() => {
       const elapsed = performance.now() - startedAt;
-      const normalized = Math.min(1, elapsed / 1450);
+      const normalized = Math.min(1, elapsed / 850);
       const eased = normalized * normalized * (3 - 2 * normalized);
       setProgress(Math.round(4 + eased * 90));
     }, 32);
 
     const minimum = new Promise<void>((resolve) =>
-      window.setTimeout(resolve, 1450),
+      window.setTimeout(resolve, 850),
     );
     const fonts = document.fonts?.ready ?? Promise.resolve();
     let onPageLoad: (() => void) | undefined;
@@ -45,8 +45,8 @@ export function SiteLoader() {
         if (cancelled) return;
         setStage("leaving");
         document.body.style.overflow = previousOverflow;
-        hideTimer = window.setTimeout(() => setStage("hidden"), 920);
-      }, 260);
+        hideTimer = window.setTimeout(() => setStage("hidden"), 520);
+      }, 140);
     });
 
     return () => {

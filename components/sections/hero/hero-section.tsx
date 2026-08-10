@@ -7,6 +7,11 @@ import { HeroProvider } from "./hero-provider";
 import { LineField } from "./line-field";
 
 export function HeroSection() {
+  const accent = hero.headline.accent.toUpperCase();
+  const gIndex = accent.indexOf("G");
+  const dIndex = accent.indexOf("D");
+  const after = hero.headline.after.toUpperCase();
+
   return (
     <HeroProvider>
       <section
@@ -17,20 +22,52 @@ export function HeroSection() {
         <HeroBackdropBase />
         <LineField />
         <HeroBackdropOverlay />
-        <AuditTags />
 
-        <div className="pointer-events-none relative z-[4] mx-auto w-full max-w-[1240px] px-5 text-center md:px-9">
+        <div className="pointer-events-none z-[4] mx-auto w-full max-w-[1240px] px-5 text-center md:px-9">
           <HeroCopy>
             <h1
               data-hero="title"
-              className="mx-auto max-w-[13ch] text-[clamp(42px,5.8vw,78px)] leading-none font-medium tracking-[-0.037em]"
+              data-cursor-interactive
+              className="hero-title mx-auto font-sans text-[27px] leading-[0.94] font-semibold tracking-[0] uppercase min-[360px]:text-[30px] min-[390px]:text-[33px] sm:text-[48px] md:text-[58px] lg:text-[66px] xl:text-[72px]"
             >
-              {hero.headline.before}
-              <br />
-              <em className="text-accent not-italic">
-                {hero.headline.accent}
-              </em>{" "}
-              {hero.headline.after}
+              <span className="sr-only">
+                {hero.headline.before} {hero.headline.accent}{" "}
+                {hero.headline.after}
+              </span>
+              <span
+                aria-hidden
+                data-hero-line
+                className="hero-title-line hero-title-gradient block"
+              >
+                {hero.headline.before.toUpperCase()}
+              </span>
+              <span
+                aria-hidden
+                data-hero-line
+                className="hero-title-line mt-[0.08em] block whitespace-nowrap"
+              >
+                <span className="hero-title-gradient">
+                  {accent.slice(0, gIndex)}
+                </span>
+                <span
+                  data-logo-letter
+                  data-letter={accent.charAt(gIndex)}
+                  className="hero-logo-letter hero-logo-g"
+                >
+                  {accent.charAt(gIndex)}
+                </span>
+                <span className="hero-title-gradient">
+                  {accent.slice(gIndex + 1, dIndex)}
+                </span>
+                <span
+                  data-logo-letter
+                  data-letter={accent.charAt(dIndex)}
+                  className="hero-logo-letter hero-logo-d"
+                >
+                  {accent.charAt(dIndex)}
+                </span>{" "}
+                <span className="hero-title-gradient">{after}</span>
+              </span>
             </h1>
 
             <p
@@ -44,6 +81,7 @@ export function HeroSection() {
               <AuditForm />
             </div>
           </HeroCopy>
+          <AuditTags />
         </div>
 
         <div
