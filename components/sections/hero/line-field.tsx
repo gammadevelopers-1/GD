@@ -125,10 +125,10 @@ export function LineField() {
       const order = orderAt(x);
       const chaos = motionRef.current.chaos;
       const amplitude = (line.amp + chaos * 14) * Math.pow(1 - order, 1.7);
+      const travel = phase * (120 + line.speed * 90);
       const waves =
-        Math.sin(x * line.f1 - phase * line.speed * 7 + line.offset) *
-          amplitude +
-        Math.sin(x * line.f2 - phase * 4.5 + line.offset * 1.7) *
+        Math.sin((x - travel) * line.f1 + line.offset) * amplitude +
+        Math.sin((x - travel * 1.18) * line.f2 + line.offset * 1.7) *
           amplitude *
           0.09;
       const hoverRadius = width < 700 ? 170 : 280;
