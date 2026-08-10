@@ -1,5 +1,4 @@
 import { ScrollProgress } from "@/components/layout/scroll-progress";
-import { PointerGlow } from "@/components/common/pointer-glow";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteNav } from "@/components/layout/site-nav";
 import { CapabilitiesSection } from "@/components/sections/capabilities-section";
@@ -13,7 +12,6 @@ export default function HomePage() {
   return (
     <>
       <ScrollProgress />
-      <PointerGlow />
       <SiteNav />
       <main>
         <HeroSection />

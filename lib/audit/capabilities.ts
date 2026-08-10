@@ -1,7 +1,6 @@
-
 export const GAMMA_CAPABILITIES = `
 Gamma Developers builds production software for established small and mid-sized
-businesses in the GCC, UK and US. Not pilots, not prototypes — systems that run
+businesses in the GCC, UK and US. Not pilots or prototypes, but systems that run
 the business afterwards.
 
 What we build, with real examples:

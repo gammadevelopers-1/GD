@@ -1,6 +1,5 @@
 import { hero } from "@/lib/content/home";
 import { AuditForm } from "./audit-form";
-import { AuditTags } from "./audit-tags";
 import { HeroBackdropBase, HeroBackdropOverlay } from "./hero-backdrop";
 import { HeroCopy } from "./hero-copy";
 import { HeroProvider } from "./hero-provider";
@@ -81,7 +80,6 @@ export function HeroSection() {
               <AuditForm />
             </div>
           </HeroCopy>
-          <AuditTags />
         </div>
 
         <div

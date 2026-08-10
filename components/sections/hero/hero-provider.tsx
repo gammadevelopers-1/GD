@@ -13,7 +13,7 @@ import { gsap } from "@/lib/gsap";
 import { hero } from "@/lib/content/home";
 import type { AuditPhase, AuditResponse, AuditResult } from "@/lib/audit/types";
 
-// Keep the fast moving canvas values outside React 
+// Keep the fast moving canvas values outside React
 export interface HeroMotion {
   chaos: number;
   resolve: number;
@@ -26,10 +26,14 @@ export interface AuditFinding {
   total: number;
   label: string;
   tone: "bad" | "ok";
+  visible: boolean;
 }
 
 export const BASE_LINES = 8;
-export const MAX_LINES = 10;
+export const MAX_LINES = 9;
+
+const FINDING_READ_TIME = 2;
+export const DOT_TRAVEL_TIME = 2.1;
 
 interface HeroContextValue {
   motionRef: React.RefObject<HeroMotion>;
@@ -135,7 +139,7 @@ export function HeroProvider({ children }: { children: ReactNode }) {
             snap: { activeLines: 1 },
           });
           setPhase("error");
-          setStatus(json.error);
+          setStatus(json.error.replace(/\s*[—–]\s*/g, ", "));
           setProblems([...hero.idleProblems]);
           setFixes([...hero.idleFixes]);
           return;
@@ -145,41 +149,42 @@ export function HeroProvider({ children }: { children: ReactNode }) {
         const tl = gsap.timeline();
         timeline.current = tl;
         const total = Math.min(data.problems.length, data.fixes.length);
-        const findingStep = 1.45;
         let sequenceAt = 0;
 
         setProblems(data.problems);
         setFixes(data.fixes);
 
-        // Show one matched pair at a time 
+        // Hold the flaw, route its dot into the ordered band, then hold the fix.
         for (let index = 0; index < total; index += 1) {
           tl.call(
             () => {
               setPhase("problems");
               setStatus(`flaw ${index + 1} of ${total}`);
               setActiveFinding({
-                id: index * 2,
+                id: index * 3,
                 index,
                 total,
                 label: data.problems[index],
                 tone: "bad",
+                visible: true,
               });
             },
             undefined,
             sequenceAt,
           );
-          sequenceAt += findingStep;
+          sequenceAt += FINDING_READ_TIME;
 
           tl.call(
             () => {
               setPhase("fixes");
-              setStatus(`solution ${index + 1} of ${total}`);
+              setStatus(`mapping solution ${index + 1} of ${total}…`);
               setActiveFinding({
-                id: index * 2 + 1,
+                id: index * 3 + 1,
                 index,
                 total,
                 label: data.fixes[index],
                 tone: "ok",
+                visible: false,
               });
 
               if (index === 0) {
@@ -198,7 +203,24 @@ export function HeroProvider({ children }: { children: ReactNode }) {
             undefined,
             sequenceAt,
           );
-          sequenceAt += findingStep;
+          sequenceAt += DOT_TRAVEL_TIME;
+
+          tl.call(
+            () => {
+              setStatus(`solution ${index + 1} of ${total}`);
+              setActiveFinding({
+                id: index * 3 + 2,
+                index,
+                total,
+                label: data.fixes[index],
+                tone: "ok",
+                visible: true,
+              });
+            },
+            undefined,
+            sequenceAt,
+          );
+          sequenceAt += FINDING_READ_TIME;
         }
 
         tl.call(
@@ -222,7 +244,7 @@ export function HeroProvider({ children }: { children: ReactNode }) {
           snap: { activeLines: 1 },
         });
         setPhase("error");
-        setStatus("Could not reach the model just now — try again.");
+        setStatus("Could not reach the model just now. Try again.");
         setProblems([...hero.idleProblems]);
         setFixes([...hero.idleFixes]);
       }

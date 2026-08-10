@@ -14,7 +14,20 @@
     var(--font-syne), var(--font-general-sans), ui-sans-serif, system-ui,
     sans-serif;
 
-  --color-brand: #2fe85c;
+  /* Approved GD palette. Use alpha variants of these tokens, not new hues. */
+  --color-gd-primary: #2fe85c;
+  --color-gd-dark-background: #16181c;
+  --color-gd-dark-headline: #ecece4;
+  --color-gd-dark-muted: #c5c8bd;
+  --color-gd-dark-emerald: #34d399;
+  --color-gd-dark-mint: #6ee7b7;
+  --color-gd-light-background: #f4f4ee;
+  --color-gd-light-headline: #14171a;
+  --color-gd-light-muted: #4b5148;
+  --color-gd-light-emerald: #059669;
+  --color-gd-light-green-glow: #10b981;
+
+  --color-brand: var(--color-gd-primary);
   --animate-scroll-hint: scroll-hint 2.2s ease-in-out infinite;
 }
 
@@ -98,6 +111,17 @@
   }
 }
 
+@keyframes audit-result-gradient {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
 @keyframes hero-aurora-left {
   0%,
   100% {
@@ -157,17 +181,22 @@
 }
 
 :root {
-  --background: #f4f4ee;
-  --foreground: #14171a;
+  --background: var(--color-gd-light-background);
+  --foreground: var(--color-gd-light-headline);
 
-  --card: #fbfbf7;
-  --secondary: #eceae1;
-  --muted-foreground: #5a6058;
+  --card: var(--color-gd-light-background);
+  --secondary: var(--color-gd-dark-headline);
+  --muted-foreground: var(--color-gd-light-muted);
 
-  --accent: #059669;
+  --accent: var(--color-gd-light-emerald);
+  --green-glow: var(--color-gd-light-green-glow);
 
-  --border: #dcdcd2;
-  --ring: #059669;
+  --border: color-mix(
+    in srgb,
+    var(--color-gd-light-background) 88%,
+    var(--color-gd-light-headline)
+  );
+  --ring: var(--color-gd-light-emerald);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -334,10 +363,10 @@ body {
   color: transparent;
   background: linear-gradient(
     112deg,
-    #252a27 0%,
-    #555d57 42%,
-    #202522 72%,
-    #3c433e 100%
+    var(--color-gd-light-headline) 0%,
+    var(--color-gd-light-muted) 42%,
+    var(--color-gd-light-headline) 72%,
+    var(--color-gd-light-muted) 100%
   );
   background-clip: text;
   -webkit-background-clip: text;
@@ -347,7 +376,12 @@ body {
   position: relative;
   display: inline-block;
   color: transparent;
-  background: linear-gradient(145deg, #067a49 4%, #2fe85c 52%, #079153 96%);
+  background: linear-gradient(
+    145deg,
+    var(--color-gd-light-emerald) 4%,
+    var(--color-gd-primary) 52%,
+    var(--color-gd-light-green-glow) 96%
+  );
   background-clip: text;
   -webkit-background-clip: text;
   text-shadow: 0 0 18px rgba(47, 232, 92, 0.14);
@@ -381,23 +415,6 @@ body {
 
 .hero-title:hover .hero-logo-letter {
   filter: drop-shadow(0 0 0.12em rgba(47, 232, 92, 0.34));
-}
-
-.hero-logo-d {
-  margin-right: 0.07em;
-}
-
-.hero-logo-d::after {
-  position: absolute;
-  top: 0.15em;
-  right: 0.09em;
-  width: 0.15em;
-  aspect-ratio: 1;
-  border: 0.014em solid rgba(255, 255, 255, 0.78);
-  border-radius: 50%;
-  background: #101311;
-  box-shadow: 0 0.025em 0.06em rgba(10, 13, 11, 0.32);
-  content: "";
 }
 
 .audit-table {
@@ -472,6 +489,30 @@ body {
   border-color: rgba(5, 150, 105, 0.38);
   box-shadow: 0 18px 48px rgba(20, 23, 26, 0.12);
   transform: translateY(-2px);
+}
+
+.audit-result-strip {
+  background: linear-gradient(
+    118deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(222, 226, 223, 0.92) 32%,
+    rgba(248, 249, 247, 0.96) 58%,
+    rgba(207, 214, 210, 0.88) 100%
+  );
+  background-size: 220% 220%;
+  animation: audit-result-gradient 8s ease-in-out infinite;
+  transition:
+    border-color 300ms ease,
+    box-shadow 360ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 360ms ease;
+}
+
+.audit-result-strip:hover {
+  border-color: rgba(5, 150, 105, 0.3);
+  box-shadow:
+    0 28px 82px rgba(20, 23, 26, 0.17),
+    0 5px 24px rgba(5, 150, 105, 0.12);
+  filter: saturate(1.05) contrast(1.015);
 }
 
 .ambient-field {
@@ -658,19 +699,6 @@ body {
   box-shadow: 0 0 0 2px rgba(47, 232, 92, 0.25);
 }
 
-@media (pointer: fine) {
-  html.has-custom-cursor,
-  html.has-custom-cursor body,
-  html.has-custom-cursor a,
-  html.has-custom-cursor button,
-  html.has-custom-cursor input,
-  html.has-custom-cursor textarea,
-  html.has-custom-cursor select,
-  html.has-custom-cursor [role="button"] {
-    cursor: none !important;
-  }
-}
-
 .marquee-surface::after {
   position: absolute;
   inset-block: 0;
@@ -689,13 +717,13 @@ body {
 }
 
 .hero-aurora {
-  filter: blur(88px);
-  opacity: 0.34;
+  filter: blur(76px);
+  opacity: 0.46;
   will-change: transform;
 }
 
 .hero-aurora-left {
-  background: linear-gradient(135deg, rgba(92, 108, 174, 0.7), transparent 72%);
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.7), transparent 72%);
   animation: hero-aurora-left 16s ease-in-out infinite;
 }
 

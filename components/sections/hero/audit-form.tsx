@@ -95,7 +95,7 @@ export function AuditForm() {
   }
 
   return (
-    <div className="mx-auto mt-7 max-w-[630px]">
+    <div className="relative mx-auto mt-7 max-w-[630px]">
       <form onSubmit={submit}>
         <div className="audit-form-shell border-border focus-within:border-accent/45 flex flex-wrap items-center gap-2 rounded-2xl border bg-white/95 p-3 shadow-[0_14px_40px_rgba(20,23,26,0.09)] backdrop-blur-md sm:flex-nowrap sm:rounded-full sm:py-1.5 sm:pr-1.5 sm:pl-5.5">
           <label htmlFor="audit-input" className="sr-only">
@@ -142,7 +142,7 @@ export function AuditForm() {
       >
         {localError ? (
           <span className="text-[#b4402c]">{localError}</span>
-        ) : status ? (
+        ) : status && !finished ? (
           <span
             className={phase === "error" ? "text-[#b4402c]" : "text-accent"}
           >
@@ -155,30 +155,97 @@ export function AuditForm() {
       </p>
 
       {finished && result ? (
-        <div ref={resultRef} className="mt-6">
-          <p className="text-muted-foreground mx-auto mb-5 max-w-[42ch] text-[15px]">
-            <b className="text-foreground font-medium">{result.headline}</b>
-            <br />
-            First version in about {result.weeks} weeks.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
+        <div
+          ref={resultRef}
+          className="relative left-1/2 mt-3 w-[min(940px,calc(100vw-32px))] -translate-x-1/2 text-left lg:absolute lg:top-full "
+        >
+          <section className="audit-result-strip group relative grid items-center gap-4 overflow-hidden rounded-[24px] border border-white/80 p-4 shadow-[0_22px_70px_rgba(20,23,26,0.13),0_3px_16px_rgba(5,150,105,0.08)] backdrop-blur-xl md:grid-cols-[auto_minmax(0,1fr)_auto_auto] md:gap-5">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -top-20 right-[10%] size-52 rounded-full bg-[radial-gradient(circle,rgba(47,232,92,0.18),transparent_70%)]"
+            />
+            <div
+              aria-hidden
+              className="absolute inset-x-12 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(47,232,92,0.88),transparent)]"
+            />
+
+            <div className="relative flex items-center gap-3 md:min-w-[170px]">
+              <span className="bg-brand/18 border-brand/35 grid size-9 shrink-0 place-items-center rounded-full border transition-transform duration-300 group-hover:scale-110">
+                <svg
+                  aria-hidden
+                  viewBox="0 0 20 20"
+                  className="size-4 text-[#087844]"
+                  fill="none"
+                >
+                  <path
+                    d="m5.5 10.2 2.8 2.8 6.2-6.3"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+              <div>
+                <p className="font-mono text-[9px] font-semibold tracking-[0.18em] text-[#168154] uppercase">
+                  Audit complete
+                </p>
+                <p className="mt-0.5 text-[12px] font-medium text-[#536159]">
+                  {result.problems.length} found · short version
+                </p>
+              </div>
+            </div>
+
+            <div className="relative border-[#dfe7df] md:border-l md:pl-5">
+              <p className="font-mono text-[9px] font-semibold tracking-[0.16em] text-[#738079] uppercase">
+                Recommended first move
+              </p>
+              <h2 className="mt-1 max-w-[54ch] text-[15px] leading-[1.45] font-semibold tracking-[-0.012em] text-[#111714] md:text-[16px]">
+                {result.headline}
+              </h2>
+            </div>
+
+            <div className="audit-result-delivery relative flex min-w-[205px] items-center gap-3 rounded-2xl bg-[#151a17] px-3.5 py-3 shadow-[0_12px_28px_rgba(20,23,26,0.15)] transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-[0_16px_34px_rgba(20,23,26,0.22)]">
+              <span className="bg-brand grid size-8 shrink-0 place-items-center rounded-xl text-[#101512]">
+                <svg
+                  aria-hidden
+                  viewBox="0 0 20 20"
+                  className="size-3.5"
+                  fill="none"
+                >
+                  <circle
+                    cx="10"
+                    cy="10"
+                    r="6.5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  />
+                  <path
+                    d="M10 6.5V10l2.5 1.5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+              <div>
+                <p className="font-mono text-[8px] tracking-[0.15em] text-[#8ea096] uppercase">
+                  Delivery target
+                </p>
+                <p className="mt-0.5 text-[13px] font-medium text-[#f1f4ef]">
+                  First version in about {result.weeks} weeks.
+                </p>
+              </div>
+            </div>
+
             <Link
               href={site.calendly}
-              className="bg-brand inline-flex h-12 items-center rounded-full px-6 text-[15px] font-medium text-[#14171a] transition-all hover:-translate-y-0.5 hover:bg-[#26d150] hover:shadow-[0_8px_26px_rgba(47,232,92,0.3)]"
+              className="bg-brand relative inline-flex h-11 items-center justify-center rounded-full px-5 text-[13px] font-medium whitespace-nowrap text-[#14171a] transition-all hover:-translate-y-0.5 hover:bg-[#26d150] hover:shadow-[0_8px_24px_rgba(47,232,92,0.28)]"
             >
-              Book the full audit · 30 min
+              Book full audit
             </Link>
-            <button
-              type="button"
-              onClick={() => {
-                setValue("");
-                window.requestAnimationFrame(() => inputRef.current?.focus());
-              }}
-              className="border-border hover:border-foreground inline-flex h-12 cursor-pointer items-center rounded-full border px-6 text-[15px] font-medium transition-all hover:-translate-y-0.5"
-            >
-              Audit another workflow
-            </button>
-          </div>
+          </section>
         </div>
       ) : null}
     </div>

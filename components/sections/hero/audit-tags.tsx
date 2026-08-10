@@ -68,7 +68,7 @@ export function AuditTags() {
 
   const panels = [
     { title: "Flaws detected", tone: "bad" as const, items: problems },
-    { title: "Solutions mapped", tone: "ok" as const, items: fixes },
+    { title: "Solutions Found", tone: "ok" as const, items: fixes },
   ];
 
   return (

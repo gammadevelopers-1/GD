@@ -63,7 +63,6 @@ export function SiteNav() {
 
       <Group className="gap-2 py-1 pr-1 pl-3">
         <span className="text-muted-foreground hidden items-center gap-2 font-mono text-[9.5px] tracking-[0.1em] uppercase lg:inline-flex">
-          <span className="bg-brand size-1.5 animate-pulse rounded-full shadow-[0_0_10px_rgba(47,232,92,0.72)]" />
           Building now
         </span>
         <Link
