@@ -11,10 +11,7 @@ import { faq } from "@/lib/content/home";
 
 export function FaqSection() {
   return (
-    <section
-      data-cursor-tone="warm"
-      className="border-border bg-secondary relative isolate overflow-hidden border-t py-25 [background:radial-gradient(ellipse_70%_55%_at_85%_0%,rgba(211,146,72,0.10),transparent_66%),linear-gradient(180deg,#f1eee7_0%,#e9e6de_100%)]"
-    >
+    <section className="border-border bg-secondary relative isolate overflow-hidden border-t py-25 [background:radial-gradient(ellipse_70%_55%_at_85%_0%,rgba(211,146,72,0.10),transparent_66%),linear-gradient(180deg,#f1eee7_0%,#e9e6de_100%)]">
       <AmbientField variant="warm" className="opacity-70" />
       <div className="relative z-1 mx-auto max-w-[1240px] px-5 md:px-9">
         <Reveal>

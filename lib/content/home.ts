@@ -1,7 +1,6 @@
 export const hero = {
   headline: { before: "Messy in", accent: "Aligned", after: "out" },
   lead: "AI powered workflow analysis that turns operational friction into a clear build plan",
-  placeholder: "What keeps getting lost, delayed, or repeated?",
   typingPrompts: [
     "Run an audit to spot workflow flaws",
     "What’s slowing your team down?",
@@ -11,45 +10,6 @@ export const hero = {
     "Approvals still happen manually by email...",
   ],
   cta: "Analyze my workflow",
-  idleProblems: [
-    "leads going cold",
-    "manual data entry",
-    "stale records",
-    "missed follow-ups",
-  ],
-  idleFixes: [
-    "every lead answered",
-    "entered once",
-    "one source of truth",
-    "follow-ups run themselves",
-  ],
-  examples: [
-    {
-      label: "dental clinic",
-      value:
-        "dental clinic, 3 staff, bookings come by phone and WhatsApp and get lost",
-    },
-    {
-      label: "agency",
-      value:
-        "marketing agency, 8 people, projects and invoices tracked in spreadsheets",
-    },
-    {
-      label: "car rental",
-      value:
-        "car rental company, 40 vehicles, bookings by email, approvals done manually",
-    },
-    {
-      label: "trades",
-      value:
-        "plumbing business, 6 engineers, jobs booked by phone, quotes written by hand",
-    },
-    {
-      label: "accounting",
-      value:
-        "accounting firm, 12 people, client onboarding documents chased over email",
-    },
-  ],
 } as const;
 
 export const flow = {

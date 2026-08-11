@@ -10,7 +10,6 @@ import {
   type ReactNode,
 } from "react";
 import { gsap } from "@/lib/gsap";
-import { hero } from "@/lib/content/home";
 import type { AuditPhase, AuditResponse } from "@/lib/audit/types";
 
 // Keep the fast moving canvas values outside React
@@ -36,17 +35,14 @@ export const BASE_LINES = 8;
 export const MAX_LINES = 9;
 
 // Fallback duration for reduced motion and defensive timing calculations.
-export const SIGNAL_TRAVEL_TIME = 8;
+export const SIGNAL_TRAVEL_TIME = 11;
 
 interface HeroContextValue {
   motionRef: React.RefObject<HeroMotion>;
   phase: AuditPhase;
   status: string;
-  problems: string[];
-  fixes: string[];
   activeFindings: AuditFinding[];
   runAudit: (description: string) => Promise<void>;
-  reset: () => void;
 }
 
 const HeroContext = createContext<HeroContextValue | null>(null);
@@ -66,8 +62,6 @@ export function HeroProvider({ children }: { children: ReactNode }) {
 
   const [phase, setPhase] = useState<AuditPhase>("idle");
   const [status, setStatus] = useState("");
-  const [problems, setProblems] = useState<string[]>([...hero.idleProblems]);
-  const [fixes, setFixes] = useState<string[]>([...hero.idleFixes]);
   const [activeFindings, setActiveFindings] = useState<AuditFinding[]>([]);
 
   const timeline = useRef<gsap.core.Timeline | null>(null);
@@ -78,30 +72,11 @@ export function HeroProvider({ children }: { children: ReactNode }) {
     gsap.killTweensOf(motionRef.current);
   }, []);
 
-  const reset = useCallback(() => {
-    killTimeline();
-    gsap.to(motionRef.current, {
-      chaos: 0,
-      resolve: 0,
-      activeLines: BASE_LINES,
-      duration: 0.9,
-      ease: "power2.inOut",
-      snap: { activeLines: 1 },
-    });
-    setPhase("idle");
-    setStatus("");
-    setActiveFindings([]);
-    setProblems([...hero.idleProblems]);
-    setFixes([...hero.idleFixes]);
-  }, [killTimeline]);
-
   const runAudit = useCallback(
     async (description: string) => {
       killTimeline();
       setPhase("loading");
       setActiveFindings([]);
-      setProblems([]);
-      setFixes([]);
       setStatus("Understanding your business…");
 
       const m = motionRef.current;
@@ -139,8 +114,6 @@ export function HeroProvider({ children }: { children: ReactNode }) {
           });
           setPhase("error");
           setStatus(json.error.replace(/\s*[—–]\s*/g, ", "));
-          setProblems([...hero.idleProblems]);
-          setFixes([...hero.idleFixes]);
           return;
         }
 
@@ -152,18 +125,15 @@ export function HeroProvider({ children }: { children: ReactNode }) {
         let lastSignalAt = 0;
         let firstSolutionAt = Number.POSITIVE_INFINITY;
 
-        setProblems(data.problems);
-        setFixes(data.fixes);
-
         // GSAP staggers independent, uninterrupted signal journeys. The canvas
         // reads each tweened journey and swaps the flaw card for its solution
         // only while the point is hidden behind the central message.
         for (let index = 0; index < total; index += 1) {
           const entryAt = nextEntryAt;
-          const messyHalfTime = gsap.utils.random(2.05, 2.45, 0.05);
-          const messyFinishTime = gsap.utils.random(0.72, 0.94, 0.02);
-          const centerCrossTime = gsap.utils.random(0.78, 1.02, 0.02);
-          const rightTravelTime = gsap.utils.random(3.25, 3.85, 0.05);
+          const messyHalfTime = gsap.utils.random(3, 3.5, 0.05);
+          const messyFinishTime = gsap.utils.random(1.1, 1.35, 0.05);
+          const centerCrossTime = gsap.utils.random(1, 1.25, 0.05);
+          const rightTravelTime = gsap.utils.random(4.4, 5, 0.05);
           const travelTime =
             messyHalfTime + messyFinishTime + centerCrossTime + rightTravelTime;
           lastSignalAt = Math.max(lastSignalAt, entryAt + travelTime);
@@ -246,8 +216,6 @@ export function HeroProvider({ children }: { children: ReactNode }) {
         });
         setPhase("error");
         setStatus("Could not reach the model just now. Try again.");
-        setProblems([...hero.idleProblems]);
-        setFixes([...hero.idleFixes]);
       }
     },
     [killTimeline],
@@ -258,13 +226,10 @@ export function HeroProvider({ children }: { children: ReactNode }) {
       motionRef,
       phase,
       status,
-      problems,
-      fixes,
       activeFindings,
       runAudit,
-      reset,
     }),
-    [phase, status, problems, fixes, activeFindings, runAudit, reset],
+    [phase, status, activeFindings, runAudit],
   );
 
   return <HeroContext.Provider value={value}>{children}</HeroContext.Provider>;

@@ -5,8 +5,6 @@ const DEFAULT_MODEL = "gpt-5.6-terra";
 
 export interface AuditGeneration {
   text: string;
-  inputTokens?: number;
-  outputTokens?: number;
   refused: boolean;
   truncated: boolean;
 }
@@ -58,8 +56,6 @@ export async function generateAudit(
 
   return {
     text: response.output_text,
-    inputTokens: response.usage?.input_tokens,
-    outputTokens: response.usage?.output_tokens,
     refused:
       refused || response.incomplete_details?.reason === "content_filter",
     truncated:

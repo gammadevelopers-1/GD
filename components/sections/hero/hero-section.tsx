@@ -14,11 +14,7 @@ export function HeroSection() {
 
   return (
     <HeroProvider>
-      <section
-        data-cursor-zone="threads"
-        data-cursor-tone="mint"
-        className="relative min-h-[980px] overflow-hidden sm:min-h-[940px] lg:h-screen lg:min-h-[850px]"
-      >
+      <section className="relative min-h-[980px] overflow-hidden sm:min-h-[940px] lg:h-screen lg:min-h-[850px]">
         <HeroBackdropBase />
         <LineField />
         <HeroBackdropOverlay />
@@ -28,8 +24,7 @@ export function HeroSection() {
             <HeroCopy>
               <h1
                 data-hero="title"
-                data-cursor-interactive
-                className="hero-title mx-auto w-fit font-display text-[27px] leading-[0.94] font-semibold tracking-[-0.035em] uppercase min-[360px]:text-[30px] min-[390px]:text-[33px] sm:text-[48px] md:text-[58px] lg:text-[66px] xl:text-[72px]"
+                className="hero-title font-display mx-auto w-fit text-[27px] leading-[0.94] font-semibold tracking-[-0.035em] uppercase min-[360px]:text-[30px] min-[390px]:text-[33px] sm:text-[48px] md:text-[58px] lg:text-[66px] xl:text-[72px]"
               >
                 <span className="sr-only">
                   {hero.headline.before} {hero.headline.accent}{" "}

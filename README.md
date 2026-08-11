@@ -8,8 +8,6 @@ The marketing website for Gamma Developers, an AI-first software agency that bui
 2. Run `npm install`.
 3. Run `npm run dev` and open `http://localhost:3000`.
 
-The homepage works without Supabase. Add the Supabase variables and apply the migration in `supabase/migrations` to persist AI audit runs.
-
 ## Checks
 
 Run `npm run check` for lint and TypeScript validation, and `npm run build` for a production build.

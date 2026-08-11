@@ -74,7 +74,6 @@ export function FlowSection() {
   return (
     <section
       id="flow"
-      data-cursor-tone="blue"
       className="bg-background relative isolate scroll-mt-24 overflow-hidden py-28 [background:radial-gradient(ellipse_70%_45%_at_50%_0%,rgba(69,125,168,0.10),transparent_62%),linear-gradient(180deg,#f2f5f3_0%,#f8f8f4_100%)]"
     >
       <AmbientField variant="blue" />

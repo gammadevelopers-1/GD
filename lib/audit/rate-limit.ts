@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 
 const WINDOW_MS = 60 * 60 * 1000;
 const MAX_PER_WINDOW = 12;
@@ -7,6 +8,14 @@ type Hit = { count: number; resetAt: number };
 
 const hits = new Map<string, Hit>();
 const cache = new Map<string, { value: unknown; expiresAt: number }>();
+
+export function hashIp(ip: string): string {
+  const salt = process.env.IP_HASH_SALT ?? "gamma-default-salt";
+  return createHash("sha256")
+    .update(`${salt}:${ip}`)
+    .digest("hex")
+    .slice(0, 32);
+}
 
 export function rateLimit(key: string): {
   allowed: boolean;

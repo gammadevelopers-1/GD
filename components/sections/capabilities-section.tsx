@@ -30,7 +30,6 @@ export function CapabilitiesSection() {
   return (
     <section
       id="capabilities"
-      data-cursor-tone="mint"
       className="border-border bg-secondary relative isolate scroll-mt-24 overflow-hidden border-t [background:radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(47,232,92,0.09),transparent_66%),linear-gradient(180deg,#f1f5ed_0%,#e9eee6_100%)]"
     >
       <AmbientField variant="mint" className="opacity-75" />

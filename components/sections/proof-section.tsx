@@ -25,7 +25,6 @@ export function ProofSection() {
   return (
     <section
       id="work"
-      data-cursor-tone="violet"
       className="relative isolate scroll-mt-24 overflow-hidden border-t border-white/[0.07] py-26 text-[#f2f3ed] [background:radial-gradient(ellipse_62%_48%_at_16%_0%,rgba(91,75,174,0.24),transparent_68%),radial-gradient(ellipse_54%_46%_at_88%_14%,rgba(5,150,105,0.18),transparent_70%),linear-gradient(180deg,#101419_0%,#090c10_100%)]"
     >
       <AmbientField

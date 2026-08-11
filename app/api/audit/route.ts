@@ -1,5 +1,4 @@
-import { after, NextResponse } from "next/server";
-import { hashIp, logAuditRun } from "@/lib/audit/log";
+import { NextResponse } from "next/server";
 import { generateAudit } from "@/lib/audit/openai";
 import {
   AUDIT_SYSTEM_PROMPT,
@@ -9,6 +8,7 @@ import {
 import {
   cacheKey,
   getCached,
+  hashIp,
   rateLimit,
   setCached,
 } from "@/lib/audit/rate-limit";
@@ -28,13 +28,7 @@ function fail(error: string, status: number) {
   return NextResponse.json<AuditResponse>({ ok: false, error }, { status });
 }
 
-function logAfterResponse(input: Parameters<typeof logAuditRun>[0]) {
-  after(() => logAuditRun(input));
-}
-
 export async function POST(req: Request) {
-  const started = Date.now();
-
   let body: unknown;
   try {
     body = await req.json();
@@ -56,13 +50,6 @@ export async function POST(req: Request) {
   const ck = cacheKey(description);
   const cached = getCached<AuditResult>(ck);
   if (cached) {
-    logAfterResponse({
-      description,
-      result: cached,
-      ipHash,
-      latencyMs: Date.now() - started,
-      cached: true,
-    });
     return NextResponse.json<AuditResponse>({
       ok: true,
       data: cached,
@@ -102,19 +89,8 @@ export async function POST(req: Request) {
     }
 
     const data = parseAuditResult(gen.text);
-    const latencyMs = Date.now() - started;
 
     if (!data) {
-      logAfterResponse({
-        description,
-        result: null,
-        ipHash,
-        latencyMs,
-        cached: false,
-        error: "unparseable_or_not_a_business",
-        inputTokens: gen.inputTokens,
-        outputTokens: gen.outputTokens,
-      });
       return fail(
         "Could not read that. Try describing the business differently.",
         422,
@@ -122,15 +98,6 @@ export async function POST(req: Request) {
     }
 
     setCached(ck, data);
-    logAfterResponse({
-      description,
-      result: data,
-      ipHash,
-      latencyMs,
-      cached: false,
-      inputTokens: gen.inputTokens,
-      outputTokens: gen.outputTokens,
-    });
 
     return NextResponse.json<AuditResponse>({ ok: true, data, cached: false });
   } catch (err) {
@@ -138,14 +105,6 @@ export async function POST(req: Request) {
       console.error("[audit] OpenAI request failed", err);
     }
 
-    logAfterResponse({
-      description,
-      result: null,
-      ipHash,
-      latencyMs: Date.now() - started,
-      cached: false,
-      error: err instanceof Error ? err.message : "unknown",
-    });
     return fail("Could not reach the model just now.", 503);
   }
 }

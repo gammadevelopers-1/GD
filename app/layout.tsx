@@ -11,11 +11,6 @@ const generalSans = localFont({
       weight: "200 700",
       style: "normal",
     },
-    {
-      path: "./fonts/GeneralSans-VariableItalic.woff2",
-      weight: "200 700",
-      style: "italic",
-    },
   ],
   variable: "--font-general-sans",
   display: "swap",

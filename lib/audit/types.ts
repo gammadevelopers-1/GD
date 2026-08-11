@@ -1,8 +1,6 @@
 export interface AuditResult {
   problems: string[];
   fixes: string[];
-  headline: string;
-  weeks: number;
 }
 
 export type AuditResponse =

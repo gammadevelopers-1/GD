@@ -62,7 +62,6 @@ export function HeroAuditCta() {
 
         <Link
           href={site.calendly}
-          data-cursor-interactive
           data-button-fill
           className="button-fill-fx group/button bg-brand relative mt-6 inline-flex h-14 items-center gap-4 overflow-hidden rounded-full px-7 text-[15px] font-semibold text-[#0b110d] shadow-[0_16px_42px_rgba(47,232,92,0.2),inset_0_1px_0_rgba(255,255,255,0.42)] transition-all duration-300 hover:-translate-y-1 hover:scale-[1.025] hover:bg-[#101512] hover:shadow-[0_22px_56px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.12)] focus-visible:bg-[#101512] active:translate-y-0 active:scale-[0.99] active:bg-[#101512]"
         >
