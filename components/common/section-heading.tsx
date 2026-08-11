@@ -17,7 +17,7 @@ export function SectionHeading({
         <span className="bg-brand size-1.5 rounded-full shadow-[0_0_9px_rgba(47,232,92,0.6)]" />
         {eyebrow}
       </span>
-      <h2 className="text-3xl leading-[1.06] font-medium tracking-[-0.03em] md:text-5xl">
+      <h2 className="font-display text-3xl leading-[1.02] font-semibold tracking-[-0.045em] md:text-5xl">
         {title}
       </h2>
     </div>

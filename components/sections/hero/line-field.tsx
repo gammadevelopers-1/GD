@@ -1,32 +1,34 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { gsap } from "@/lib/gsap";
 import { useReducedMotion } from "@/lib/hooks/use-reduced-motion";
 import {
   BASE_LINES,
-  DOT_TRAVEL_TIME,
   MAX_LINES,
+  type AuditFinding,
   useHero,
 } from "./hero-provider";
 
 // Eight or nine separate signal lanes: unsettled on the left, ordered on the right.
-const FIELD_TOP = 0.31;
-const FIELD_SPAN = 0.38;
+const FIELD_TOP = 0.18;
+const FIELD_SPAN = 0.64;
 const TRANSITION_START = 0.36;
 const TRANSITION_END = 0.64;
 const WAVE_AMPLITUDE = 20;
-const WAVE_SPEED_MIN = 165;
-const WAVE_SPEED_MAX = 295;
+const WAVE_SPEED_MIN = 34;
+const WAVE_SPEED_MAX = 58;
 const WAVE_GENERATION_FADE_TIME = 0.34;
-const FLAW_ZONE_START = 0.01;
-const FLAW_ZONE_END = 0.075;
-const FLAW_START = 0.018;
-const FLAW_ANCHOR = 0.055;
-const FLAW_DRIFT_SPEED = 0.019;
+const SIGNAL_START = -0.045;
+const SIGNAL_END = 1.055;
+const MESSY_HALF_PROGRESS = 0.14;
+const MESSY_END_PROGRESS = 0.34;
+const SOLUTION_START_PROGRESS = 0.76;
+const FLAW_FADE_IN_END = 0.035;
+const CARD_GAP = 14;
+const CONTENT_SAFETY_GAP = 18;
+const CONTENT_FADE_DISTANCE = 56;
 const SOLUTION_ZONE_START = 0.88;
-const SOLUTION_ANCHOR = 0.91;
-const SOLUTION_TRAVEL_SPEED =
-  (SOLUTION_ZONE_START - FLAW_ANCHOR) / DOT_TRAVEL_TIME;
 const BASE_DOT_LINE_INDICES = [0, 1, 2, 3, 4, 5, 6, 7] as const;
 
 const DARK_BACKGROUND = [22, 24, 28] as const;
@@ -67,6 +69,18 @@ interface Line {
   hoverPush: number;
 }
 
+interface SignalJourney {
+  finding: AuditFinding;
+  lineIndex: number;
+  progress: number;
+  timeline?: gsap.core.Timeline;
+}
+
+interface HorizontalBoundary {
+  left: number;
+  right: number;
+}
+
 function makeLine(index: number): Line {
   return {
     offset: index * 1.73,
@@ -79,7 +93,7 @@ function makeLine(index: number): Line {
     orderedBase: 0,
     alive: index < BASE_LINES ? 1 : 0,
     dot: (0.06 + index * 0.137) % 1,
-    dotSpeed: 190 + (index % 4) * 15,
+    dotSpeed: 92 + (index % 4) * 9,
     hover: 0,
     hoverPush: 0,
   };
@@ -87,19 +101,80 @@ function makeLine(index: number): Line {
 
 export function LineField() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const notificationRef = useRef<HTMLDivElement>(null);
-  const { activeFinding, motionRef, phase: auditPhase } = useHero();
-  const activeFindingRef = useRef(activeFinding);
+  const notificationRefs = useRef(new Map<number, HTMLDivElement>());
+  const journeysRef = useRef(new Map<number, SignalJourney>());
+  const { activeFindings, motionRef, phase: auditPhase } = useHero();
   const auditPhaseRef = useRef(auditPhase);
   const reduced = useReducedMotion();
 
   useEffect(() => {
-    activeFindingRef.current = activeFinding;
-  }, [activeFinding]);
+    const activeIds = new Set(activeFindings.map((finding) => finding.id));
+
+    for (const [id, journey] of journeysRef.current) {
+      if (activeIds.has(id)) continue;
+      journey.timeline?.kill();
+      gsap.killTweensOf(journey);
+      journeysRef.current.delete(id);
+    }
+
+    for (const finding of activeFindings) {
+      if (journeysRef.current.has(finding.id)) continue;
+      const lineIndex = clamp(
+        Math.round(
+          ((finding.index + 0.5) / Math.max(finding.total, 1)) * BASE_LINES -
+            0.5,
+        ),
+        0,
+        BASE_LINES - 1,
+      );
+      const journey: SignalJourney = {
+        finding,
+        lineIndex,
+        progress: reduced ? 0.78 : SIGNAL_START,
+      };
+      journeysRef.current.set(finding.id, journey);
+
+      if (!reduced) {
+        journey.timeline = gsap
+          .timeline()
+          .to(journey, {
+            progress: MESSY_HALF_PROGRESS,
+            duration: finding.messyHalfTime,
+            ease: "none",
+          })
+          .to(journey, {
+            progress: MESSY_END_PROGRESS,
+            duration: finding.messyFinishTime,
+            ease: "none",
+          })
+          .to(journey, {
+            progress: SOLUTION_START_PROGRESS,
+            duration: finding.centerCrossTime,
+            ease: "none",
+          })
+          .to(journey, {
+            progress: SIGNAL_END,
+            duration: finding.rightTravelTime,
+            ease: "none",
+          });
+      }
+    }
+  }, [activeFindings, reduced]);
 
   useEffect(() => {
     auditPhaseRef.current = auditPhase;
   }, [auditPhase]);
+
+  useEffect(
+    () => () => {
+      for (const journey of journeysRef.current.values()) {
+        journey.timeline?.kill();
+        gsap.killTweensOf(journey);
+      }
+      journeysRef.current.clear();
+    },
+    [],
+  );
 
   useEffect(() => {
     const canvasElement = canvasRef.current;
@@ -126,9 +201,37 @@ export function LineField() {
     let pointerVelocityY = 0;
     let pointerActive = false;
     let inView = true;
-    let trackedFindingId = -1;
-    let trackedLineIndex = -1;
-    let trackedDotProgress = FLAW_START;
+    let nextBoundaryRead = 0;
+    let headlineBoundary: HorizontalBoundary = { left: 0, right: 0 };
+    let formBoundary: HorizontalBoundary = { left: 0, right: 0 };
+
+    function fallbackBoundary(): HorizontalBoundary {
+      return { left: width * 0.31, right: width * 0.69 };
+    }
+
+    function readBoundary(
+      element: Element | null,
+      canvasRect: DOMRect,
+    ): HorizontalBoundary {
+      if (!element) return fallbackBoundary();
+      const rect = element.getBoundingClientRect();
+      return {
+        left: rect.left - canvasRect.left - CONTENT_SAFETY_GAP,
+        right: rect.right - canvasRect.left + CONTENT_SAFETY_GAP,
+      };
+    }
+
+    function updateContentBoundaries() {
+      const canvasRect = canvas.getBoundingClientRect();
+      headlineBoundary = readBoundary(
+        document.querySelector("[data-hero='title']"),
+        canvasRect,
+      );
+      formBoundary = readBoundary(
+        document.querySelector("[data-hero-audit-boundary]"),
+        canvasRect,
+      );
+    }
 
     function fit() {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -137,7 +240,9 @@ export function LineField() {
       canvas.width = width * dpr;
       canvas.height = height * dpr;
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
-      currentWaveSpeed = clamp(width * 0.105, WAVE_SPEED_MIN, WAVE_SPEED_MAX);
+      currentWaveSpeed = clamp(width * 0.04, WAVE_SPEED_MIN, WAVE_SPEED_MAX);
+      updateContentBoundaries();
+      nextBoundaryRead = 0;
     }
 
     function orderAt(x: number) {
@@ -225,11 +330,11 @@ export function LineField() {
         : 1 / 60;
       lastFrameTime = timestamp;
       const motion = motionRef.current;
-      const finding = activeFindingRef.current;
       const isAuditing = !["idle", "error"].includes(auditPhaseRef.current);
-      const notification = notificationRef.current;
       context.clearRect(0, 0, width, height);
-      if (notification) notification.style.opacity = "0";
+      for (const notification of notificationRefs.current.values()) {
+        notification.style.opacity = "0";
+      }
       if (!reduced) animationTime += deltaSeconds * (1 + motion.chaos * 0.28);
       if (pointerActive) {
         const previousY = pointerY;
@@ -245,20 +350,9 @@ export function LineField() {
       const lineGap = (height * FIELD_SPAN) / Math.max(1, activeCount - 1);
       // Even opposite wave peaks retain a visible gap between adjacent lanes.
       currentWaveAmplitude = Math.min(WAVE_AMPLITUDE, lineGap * 0.3);
-
-      if (!finding) {
-        trackedFindingId = -1;
-        trackedLineIndex = -1;
-      } else if (finding.id !== trackedFindingId) {
-        trackedFindingId = finding.id;
-
-        if (finding.tone === "bad") {
-          trackedLineIndex =
-            (Math.floor(activeCount / 2) + finding.index * 2) % activeCount;
-          trackedDotProgress = FLAW_START;
-        } else if (reduced && trackedLineIndex >= 0) {
-          trackedDotProgress = SOLUTION_ANCHOR;
-        }
+      if (isAuditing && timestamp >= nextBoundaryRead) {
+        updateContentBoundaries();
+        nextBoundaryRead = timestamp + 180;
       }
 
       lines.forEach((line, index) => {
@@ -384,8 +478,6 @@ export function LineField() {
           : BASE_DOT_LINE_INDICES.some((lineIndex) => lineIndex === index);
         if (!showsDot) return;
 
-        const trackedFinding = index === trackedLineIndex ? finding : null;
-
         if (!reduced) {
           // Normal dots only ever advance. They wrap after leaving the right edge.
           line.dot +=
@@ -457,38 +549,117 @@ export function LineField() {
             context.arc(dx, dy, radius + 3 + pulse * 1.5, 0, Math.PI * 2);
             context.stroke();
             context.restore();
-
-            if (trackedFinding && notification) {
-              const inNotificationZone =
-                trackedFinding.visible &&
-                (trackedFinding.tone === "bad"
-                  ? progress >= FLAW_ZONE_START && progress <= FLAW_ZONE_END
-                  : progress >= SOLUTION_ZONE_START);
-              notification.style.setProperty("--signal-x", `${dx}px`);
-              notification.style.setProperty("--signal-y", `${dy}px`);
-              notification.style.opacity = inNotificationZone ? "1" : "0";
-            }
           }
         }
 
         drawDot(line.dot, false);
-
-        if (trackedFinding) {
-          if (!reduced) {
-            trackedDotProgress =
-              trackedFinding.tone === "bad"
-                ? Math.min(
-                    trackedDotProgress + FLAW_DRIFT_SPEED * deltaSeconds,
-                    FLAW_ANCHOR,
-                  )
-                : Math.min(
-                    trackedDotProgress + SOLUTION_TRAVEL_SPEED * deltaSeconds,
-                    SOLUTION_ANCHOR,
-                  );
-          }
-          drawDot(trackedDotProgress, true);
-        }
       });
+
+      // Audit signals are separate GSAP journeys. Each point keeps the same
+      // speed across the whole field while its attached card changes behind
+      // the protected center area.
+      for (const journey of journeysRef.current.values()) {
+        const line = lines[Math.min(journey.lineIndex, activeCount - 1)];
+        if (!line || line.alive < 0.01) continue;
+
+        const dotProgress = journey.progress;
+        const dx = dotProgress * width;
+        const dy = yAt(line, dx);
+        const progress = clamp(dotProgress, 0, 1);
+        const colour = dotColour(progress);
+        const pulse = 0.5 + Math.sin(animationTime * 2.15 + line.offset) * 0.5;
+        const radius = 3.6 + smooth(progress) * 0.7;
+
+        if (dx >= -28 && dx <= width + 28) {
+          const tailLength = 30;
+          const tailStart = Math.max(-20, dx - tailLength);
+          const tailGradient = context.createLinearGradient(
+            tailStart,
+            0,
+            dx,
+            0,
+          );
+          tailGradient.addColorStop(
+            0,
+            `rgba(${Math.round(colour[0])},${Math.round(colour[1])},${Math.round(colour[2])},0)`,
+          );
+          tailGradient.addColorStop(
+            1,
+            `rgba(${Math.round(colour[0])},${Math.round(colour[1])},${Math.round(colour[2])},0.72)`,
+          );
+
+          context.save();
+          context.beginPath();
+          for (let x = tailStart; x <= dx; x += 2) {
+            const y = yAt(line, x);
+            if (x === tailStart) context.moveTo(x, y);
+            else context.lineTo(x, y);
+          }
+          context.strokeStyle = tailGradient;
+          context.lineWidth = 1.6;
+          context.lineCap = "round";
+          context.stroke();
+
+          context.fillStyle = `rgb(${Math.round(colour[0])} ${Math.round(colour[1])} ${Math.round(colour[2])})`;
+          context.shadowColor = `rgba(${Math.round(colour[0])},${Math.round(colour[1])},${Math.round(colour[2])},0.92)`;
+          context.shadowBlur = 10;
+          context.beginPath();
+          context.arc(dx, dy, radius, 0, Math.PI * 2);
+          context.fill();
+          context.shadowBlur = 0;
+          context.strokeStyle = "rgba(8,12,13,0.48)";
+          context.lineWidth = 0.8;
+          context.stroke();
+
+          context.strokeStyle = `rgba(${Math.round(colour[0])},${Math.round(colour[1])},${Math.round(colour[2])},${0.34 + pulse * 0.3})`;
+          context.lineWidth = 1;
+          context.beginPath();
+          context.arc(dx, dy, radius + 3.5 + pulse * 1.5, 0, Math.PI * 2);
+          context.stroke();
+          context.restore();
+        }
+
+        const notification = notificationRefs.current.get(journey.finding.id);
+        if (!notification) continue;
+
+        const boundary =
+          journey.lineIndex >= BASE_LINES - 3 ? formBoundary : headlineBoundary;
+        const cardWidth = Math.min(210, window.innerWidth * 0.54);
+        const showingSolution = dx >= (boundary.left + boundary.right) / 2;
+        const flawCardRight = dx + CARD_GAP + cardWidth;
+        const flawBoundaryOpacity = smooth(
+          clamp((boundary.left - flawCardRight) / CONTENT_FADE_DISTANCE, 0, 1),
+        );
+        const flawOpacity =
+          smooth(
+            clamp((dotProgress + 0.005) / (FLAW_FADE_IN_END + 0.005), 0, 1),
+          ) * flawBoundaryOpacity;
+        const solutionCardLeft = dx + CARD_GAP;
+        const solutionBoundaryOpacity = smooth(
+          clamp(
+            (solutionCardLeft - boundary.right) / CONTENT_FADE_DISTANCE,
+            0,
+            1,
+          ),
+        );
+        const solutionOpacity =
+          solutionBoundaryOpacity *
+          (1 - smooth(clamp((dotProgress - 1) / (SIGNAL_END - 1), 0, 1)));
+        const opacity = showingSolution ? solutionOpacity : flawOpacity;
+        const flawCard = notification.children.item(0) as HTMLElement | null;
+        const solutionCard = notification.children.item(
+          1,
+        ) as HTMLElement | null;
+
+        if (flawCard)
+          flawCard.style.display = showingSolution ? "none" : "block";
+        if (solutionCard)
+          solutionCard.style.display = showingSolution ? "block" : "none";
+        notification.style.opacity = `${opacity}`;
+        notification.style.transform = showingSolution
+          ? `translate3d(${dx}px, ${dy}px, 0) translate(${CARD_GAP}px, calc(-100% - 10px))`
+          : `translate3d(${dx}px, ${dy}px, 0) translate(${CARD_GAP}px, -50%)`;
+      }
 
       if (inView) frame = requestAnimationFrame(draw);
     }
@@ -544,53 +715,61 @@ export function LineField() {
   }, [motionRef, reduced]);
 
   return (
-    <>
+    <div className="absolute inset-x-0 top-[88px] bottom-[370px] sm:bottom-[340px] lg:top-[96px] lg:bottom-[320px]">
       <canvas
         ref={canvasRef}
         aria-hidden
         className="absolute inset-0 z-[1] size-full"
       />
-      <div
-        ref={notificationRef}
-        role="status"
-        aria-live={activeFinding?.visible ? "polite" : "off"}
-        className={`bg-background/94 pointer-events-none absolute top-0 left-0 z-[3] rounded-xl border px-3.5 py-3 text-left opacity-0 shadow-[0_16px_42px_rgba(20,23,26,0.16)] backdrop-blur-xl transition-opacity duration-200 ${
-          activeFinding?.tone === "ok"
-            ? "border-brand/45 text-accent w-[min(230px,58vw)]"
-            : "w-[min(190px,52vw)] border-[#b82e26]/35 text-[#9f241e]"
-        }`}
-        style={{
-          transform:
-            activeFinding?.tone === "ok"
-              ? "translate3d(var(--signal-x, 0px), var(--signal-y, 0px), 0) translate(calc(-100% - 14px), -50%)"
-              : "translate3d(var(--signal-x, 0px), var(--signal-y, 0px), 0) translate(14px, -50%)",
-        }}
-      >
-        <i
-          aria-hidden
-          className={`bg-background absolute top-1/2 size-2.5 -translate-y-1/2 rotate-45 border not-italic ${
-            activeFinding?.tone === "ok"
-              ? "border-brand/45 -right-1.5 border-b-0 border-l-0"
-              : "-left-1.5 border-t-0 border-r-0 border-[#b82e26]/35"
-          }`}
-        />
-        <span className="mb-1.5 flex items-center justify-between gap-3 font-mono text-[9px] font-semibold tracking-[0.14em] uppercase">
-          <span className="flex items-center gap-2">
+      {activeFindings.map((finding) => (
+        <div
+          key={finding.id}
+          ref={(element) => {
+            if (element) notificationRefs.current.set(finding.id, element);
+            else notificationRefs.current.delete(finding.id);
+          }}
+          role="status"
+          aria-live="polite"
+          className="pointer-events-none absolute top-0 left-0 z-[3] w-[min(210px,54vw)] opacity-0 will-change-transform"
+        >
+          <div className="relative rounded-lg border border-[#b82e26]/35 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(248,244,242,0.91))] px-3 py-2 text-left text-[#9f241e] shadow-[0_12px_34px_rgba(88,34,29,0.14)] backdrop-blur-xl">
             <i
               aria-hidden
-              className={`size-1.5 rounded-full not-italic ${
-                activeFinding?.tone === "ok"
-                  ? "bg-brand shadow-[0_0_10px_rgba(47,232,92,0.75)]"
-                  : "bg-[#b82e26] shadow-[0_0_10px_rgba(184,46,38,0.48)]"
-              }`}
+              className="absolute top-1/2 -left-1.5 size-2.5 -translate-y-1/2 rotate-45 border border-t-0 border-r-0 border-[#b82e26]/35 bg-[#fcf9f7] not-italic"
             />
-            {activeFinding?.tone === "ok" ? "Solution" : "Flaw detected"}
-          </span>
-        </span>
-        <p className="text-foreground text-[12px] leading-[1.35] font-medium">
-          {activeFinding?.label ?? ""}
-        </p>
-      </div>
-    </>
+            <span className="mb-0.5 flex items-center gap-1.5 font-mono text-[8px] font-semibold tracking-[0.14em] uppercase">
+              <i
+                aria-hidden
+                className="size-1.5 shrink-0 rounded-full bg-[#b82e26] not-italic shadow-[0_0_9px_rgba(184,46,38,0.5)]"
+              />
+              Flaw detected
+            </span>
+            <p className="text-foreground text-[10px] leading-[1.3] font-medium sm:text-[11px]">
+              {finding.problem}
+            </p>
+          </div>
+
+          <div
+            className="relative rounded-lg border border-[#159a55]/40 bg-[linear-gradient(135deg,rgba(247,255,249,0.97),rgba(233,249,239,0.92))] px-3 py-2 text-left text-[#087442] shadow-[0_12px_34px_rgba(8,116,66,0.14)] backdrop-blur-xl"
+            style={{ display: "none" }}
+          >
+            <i
+              aria-hidden
+              className="absolute -bottom-1.5 left-3 size-2.5 rotate-45 border border-t-0 border-l-0 border-[#159a55]/40 bg-[#effaf2] not-italic"
+            />
+            <span className="mb-0.5 flex items-center gap-1.5 font-mono text-[8px] font-semibold tracking-[0.14em] uppercase">
+              <i
+                aria-hidden
+                className="bg-brand size-1.5 shrink-0 rounded-full not-italic shadow-[0_0_9px_rgba(47,232,92,0.72)]"
+              />
+              Solution
+            </span>
+            <p className="text-foreground text-[10px] leading-[1.3] font-medium sm:text-[11px]">
+              {finding.fix}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

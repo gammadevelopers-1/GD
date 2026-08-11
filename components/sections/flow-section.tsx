@@ -101,7 +101,7 @@ export function FlowSection() {
               <span className="text-muted-foreground mb-2.5 block font-mono text-[10px] tracking-[0.14em]">
                 {step.num}
               </span>
-              <h3 className="mb-2 text-[17px] leading-tight font-medium tracking-[-0.012em]">
+              <h3 className="font-display mb-2 text-[17px] leading-tight font-semibold tracking-[-0.025em]">
                 {step.title}
               </h3>
               <p className="text-muted-foreground text-[13.5px] leading-[1.55]">

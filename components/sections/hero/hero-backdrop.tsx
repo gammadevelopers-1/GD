@@ -39,11 +39,11 @@ export function HeroBackdropOverlay() {
     <>
       <div
         aria-hidden
-        className="pointer-events-none absolute top-1/2 left-1/2 z-[2] h-[520px] w-[900px] -translate-x-1/2 -translate-y-1/2 [background:radial-gradient(ellipse_at_center,rgba(248,250,247,0.24)_0%,rgba(242,247,243,0.08)_48%,transparent_74%)]"
+        className="pointer-events-none absolute top-[36%] left-1/2 z-[2] h-[520px] w-[900px] -translate-x-1/2 -translate-y-1/2 [background:radial-gradient(ellipse_at_center,rgba(248,250,247,0.24)_0%,rgba(242,247,243,0.08)_48%,transparent_74%)] lg:top-[38%]"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-[2] [background:radial-gradient(ellipse_36%_30%_at_50%_50%,rgba(248,250,247,0.3)_22%,rgba(244,248,245,0.12)_58%,rgba(246,248,245,0)_88%)] max-lg:[background:radial-gradient(ellipse_84%_44%_at_50%_44%,rgba(248,250,247,0.26)_32%,rgba(246,248,245,0)_92%)]"
+        className="pointer-events-none absolute inset-0 z-[2] [background:radial-gradient(ellipse_36%_30%_at_50%_38%,rgba(248,250,247,0.3)_22%,rgba(244,248,245,0.12)_58%,rgba(246,248,245,0)_88%)] max-lg:[background:radial-gradient(ellipse_84%_44%_at_50%_36%,rgba(248,250,247,0.26)_32%,rgba(246,248,245,0)_92%)]"
       />
       <div
         aria-hidden

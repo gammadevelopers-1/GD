@@ -11,7 +11,7 @@ import {
 } from "react";
 import { gsap } from "@/lib/gsap";
 import { hero } from "@/lib/content/home";
-import type { AuditPhase, AuditResponse, AuditResult } from "@/lib/audit/types";
+import type { AuditPhase, AuditResponse } from "@/lib/audit/types";
 
 // Keep the fast moving canvas values outside React
 export interface HeroMotion {
@@ -24,16 +24,19 @@ export interface AuditFinding {
   id: number;
   index: number;
   total: number;
-  label: string;
-  tone: "bad" | "ok";
-  visible: boolean;
+  problem: string;
+  fix: string;
+  messyHalfTime: number;
+  messyFinishTime: number;
+  centerCrossTime: number;
+  rightTravelTime: number;
 }
 
 export const BASE_LINES = 8;
 export const MAX_LINES = 9;
 
-const FINDING_READ_TIME = 2;
-export const DOT_TRAVEL_TIME = 2.1;
+// Fallback duration for reduced motion and defensive timing calculations.
+export const SIGNAL_TRAVEL_TIME = 8;
 
 interface HeroContextValue {
   motionRef: React.RefObject<HeroMotion>;
@@ -41,8 +44,7 @@ interface HeroContextValue {
   status: string;
   problems: string[];
   fixes: string[];
-  activeFinding: AuditFinding | null;
-  result: AuditResult | null;
+  activeFindings: AuditFinding[];
   runAudit: (description: string) => Promise<void>;
   reset: () => void;
 }
@@ -66,8 +68,7 @@ export function HeroProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState("");
   const [problems, setProblems] = useState<string[]>([...hero.idleProblems]);
   const [fixes, setFixes] = useState<string[]>([...hero.idleFixes]);
-  const [activeFinding, setActiveFinding] = useState<AuditFinding | null>(null);
-  const [result, setResult] = useState<AuditResult | null>(null);
+  const [activeFindings, setActiveFindings] = useState<AuditFinding[]>([]);
 
   const timeline = useRef<gsap.core.Timeline | null>(null);
 
@@ -89,8 +90,7 @@ export function HeroProvider({ children }: { children: ReactNode }) {
     });
     setPhase("idle");
     setStatus("");
-    setActiveFinding(null);
-    setResult(null);
+    setActiveFindings([]);
     setProblems([...hero.idleProblems]);
     setFixes([...hero.idleFixes]);
   }, [killTimeline]);
@@ -99,11 +99,10 @@ export function HeroProvider({ children }: { children: ReactNode }) {
     async (description: string) => {
       killTimeline();
       setPhase("loading");
-      setResult(null);
-      setActiveFinding(null);
+      setActiveFindings([]);
       setProblems([]);
       setFixes([]);
-      setStatus("reading how you work…");
+      setStatus("Understanding your business…");
 
       const m = motionRef.current;
       m.resolve = 0;
@@ -149,91 +148,93 @@ export function HeroProvider({ children }: { children: ReactNode }) {
         const tl = gsap.timeline();
         timeline.current = tl;
         const total = Math.min(data.problems.length, data.fixes.length);
-        let sequenceAt = 0;
+        let nextEntryAt = 0;
+        let lastSignalAt = 0;
+        let firstSolutionAt = Number.POSITIVE_INFINITY;
 
         setProblems(data.problems);
         setFixes(data.fixes);
 
-        // Hold the flaw, route its dot into the ordered band, then hold the fix.
+        // GSAP staggers independent, uninterrupted signal journeys. The canvas
+        // reads each tweened journey and swaps the flaw card for its solution
+        // only while the point is hidden behind the central message.
         for (let index = 0; index < total; index += 1) {
+          const entryAt = nextEntryAt;
+          const messyHalfTime = gsap.utils.random(2.05, 2.45, 0.05);
+          const messyFinishTime = gsap.utils.random(0.72, 0.94, 0.02);
+          const centerCrossTime = gsap.utils.random(0.78, 1.02, 0.02);
+          const rightTravelTime = gsap.utils.random(3.25, 3.85, 0.05);
+          const travelTime =
+            messyHalfTime + messyFinishTime + centerCrossTime + rightTravelTime;
+          lastSignalAt = Math.max(lastSignalAt, entryAt + travelTime);
+          firstSolutionAt = Math.min(
+            firstSolutionAt,
+            entryAt + messyHalfTime + messyFinishTime + centerCrossTime,
+          );
           tl.call(
             () => {
-              setPhase("problems");
-              setStatus(`flaw ${index + 1} of ${total}`);
-              setActiveFinding({
-                id: index * 3,
-                index,
-                total,
-                label: data.problems[index],
-                tone: "bad",
-                visible: true,
-              });
+              if (index === 0) setPhase("problems");
+              setActiveFindings((current) => [
+                ...current,
+                {
+                  id: index,
+                  index,
+                  total,
+                  problem: data.problems[index],
+                  fix: data.fixes[index],
+                  messyHalfTime,
+                  messyFinishTime,
+                  centerCrossTime,
+                  rightTravelTime,
+                },
+              ]);
             },
             undefined,
-            sequenceAt,
+            entryAt,
           );
-          sequenceAt += FINDING_READ_TIME;
 
-          tl.call(
-            () => {
-              setPhase("fixes");
-              setStatus(`mapping solution ${index + 1} of ${total}…`);
-              setActiveFinding({
-                id: index * 3 + 1,
-                index,
-                total,
-                label: data.fixes[index],
-                tone: "ok",
-                visible: false,
-              });
-
-              if (index === 0) {
-                gsap.to(m, {
-                  chaos: 0,
-                  duration: 1.5,
-                  ease: "power2.inOut",
-                });
-                gsap.to(m, {
-                  resolve: 1,
-                  duration: 2.15,
-                  ease: "power3.inOut",
-                });
-              }
-            },
-            undefined,
-            sequenceAt,
-          );
-          sequenceAt += DOT_TRAVEL_TIME;
-
-          tl.call(
-            () => {
-              setStatus(`solution ${index + 1} of ${total}`);
-              setActiveFinding({
-                id: index * 3 + 2,
-                index,
-                total,
-                label: data.fixes[index],
-                tone: "ok",
-                visible: true,
-              });
-            },
-            undefined,
-            sequenceAt,
-          );
-          sequenceAt += FINDING_READ_TIME;
+          // The next finding enters exactly as this one reaches the midpoint
+          // of the visible messy section. Small timing variation keeps the
+          // conveyor organic without collapsing every flaw onto the left.
+          nextEntryAt += messyHalfTime;
         }
+
+        const resolveAt = SIGNAL_TRAVEL_TIME * 0.29;
+        tl.call(
+          () => {
+            gsap.to(m, {
+              chaos: 0,
+              duration: 2.8,
+              ease: "power2.inOut",
+            });
+            gsap.to(m, {
+              resolve: 1,
+              duration: 3.6,
+              ease: "power2.inOut",
+            });
+          },
+          undefined,
+          resolveAt,
+        );
 
         tl.call(
           () => {
-            setActiveFinding(null);
-            setPhase("done");
-            setStatus(
-              `${data.problems.length} found · this is the short version`,
-            );
-            setResult(data);
+            setPhase("fixes");
           },
           undefined,
-          sequenceAt,
+          Number.isFinite(firstSolutionAt)
+            ? firstSolutionAt
+            : SIGNAL_TRAVEL_TIME * 0.74,
+        );
+
+        tl.call(
+          () => {
+            setActiveFindings([]);
+            setPhase("done");
+            setStatus("");
+          },
+          undefined,
+          lastSignalAt + 0.2,
         );
       } catch {
         gsap.to(m, {
@@ -259,12 +260,11 @@ export function HeroProvider({ children }: { children: ReactNode }) {
       status,
       problems,
       fixes,
-      activeFinding,
-      result,
+      activeFindings,
       runAudit,
       reset,
     }),
-    [phase, status, problems, fixes, activeFinding, result, runAudit, reset],
+    [phase, status, problems, fixes, activeFindings, runAudit, reset],
   );
 
   return <HeroContext.Provider value={value}>{children}</HeroContext.Provider>;

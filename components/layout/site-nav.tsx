@@ -67,9 +67,10 @@ export function SiteNav() {
         </span>
         <Link
           href={site.calendly}
-          className="nav-cta bg-brand relative overflow-hidden rounded-full px-4 py-2 text-[13px] font-medium text-[#101512] shadow-[0_5px_18px_rgba(47,232,92,0.22)] transition-all hover:-translate-y-px hover:bg-[#27d954] hover:shadow-[0_8px_24px_rgba(47,232,92,0.34)] md:px-[18px] md:text-sm"
+          data-button-fill
+          className="button-fill-fx nav-cta bg-brand relative overflow-hidden rounded-full px-4 py-2 text-[13px] font-medium text-[#101512] shadow-[0_5px_18px_rgba(47,232,92,0.22)] transition-all hover:-translate-y-px hover:shadow-[0_8px_24px_rgba(47,232,92,0.34)] md:px-[18px] md:text-sm"
         >
-          Book a call
+          <span className="button-fill-fx__label">Book a call</span>
         </Link>
       </Group>
     </nav>

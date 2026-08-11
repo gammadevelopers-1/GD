@@ -8,6 +8,7 @@
 }
 
 @theme {
+  --font-body: var(--font-general-sans), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-general-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, monospace;
   --font-display:
@@ -111,17 +112,6 @@
   }
 }
 
-@keyframes audit-result-gradient {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
 @keyframes hero-aurora-left {
   0%,
   100% {
@@ -216,6 +206,19 @@ html {
 
 body {
   overflow-x: hidden;
+  font-family: var(--font-general-sans), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.006em;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+p {
+  text-wrap: pretty;
 }
 
 .site-loader {
@@ -491,28 +494,60 @@ body {
   transform: translateY(-2px);
 }
 
-.audit-result-strip {
-  background: linear-gradient(
-    118deg,
-    rgba(255, 255, 255, 0.96) 0%,
-    rgba(222, 226, 223, 0.92) 32%,
-    rgba(248, 249, 247, 0.96) 58%,
-    rgba(207, 214, 210, 0.88) 100%
-  );
-  background-size: 220% 220%;
-  animation: audit-result-gradient 8s ease-in-out infinite;
-  transition:
-    border-color 300ms ease,
-    box-shadow 360ms cubic-bezier(0.16, 1, 0.3, 1),
-    filter 360ms ease;
+.button-fill-fx {
+  --button-fill-color: #232825;
+  --button-fill-hover-text: #f4f8f5;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
 }
 
-.audit-result-strip:hover {
-  border-color: rgba(5, 150, 105, 0.3);
-  box-shadow:
-    0 28px 82px rgba(20, 23, 26, 0.17),
-    0 5px 24px rgba(5, 150, 105, 0.12);
-  filter: saturate(1.05) contrast(1.015);
+.button-fill-fx::before {
+  position: absolute;
+  top: var(--button-fill-y, 50%);
+  left: var(--button-fill-x, 50%);
+  z-index: 0;
+  width: max(240%, 16rem);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: var(--button-fill-color);
+  content: "";
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 880ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.button-fill-fx:not(.button-fill-fx--soft):is(
+    :hover,
+    :focus-visible,
+    :active
+  ):not(:disabled) {
+  color: var(--button-fill-hover-text) !important;
+}
+
+.button-fill-fx:is(:hover, :focus-visible, :active):not(:disabled)::before {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.button-fill-fx:disabled::before,
+.button-fill-fx[aria-disabled="true"]::before {
+  transform: translate(-50%, -50%) scale(0);
+}
+
+.button-fill-fx__label {
+  position: relative;
+  z-index: 1;
+}
+
+.button-fill-fx--soft {
+  --button-fill-color: rgba(47, 232, 92, 0.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button-fill-fx::before {
+    transition-duration: 1ms;
+  }
 }
 
 .ambient-field {

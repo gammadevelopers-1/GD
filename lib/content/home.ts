@@ -1,15 +1,16 @@
 export const hero = {
   headline: { before: "Messy in", accent: "Aligned", after: "out" },
-  lead: "Describe the bottleneck. See the system fixed.",
+  lead: "AI powered workflow analysis that turns operational friction into a clear build plan",
   placeholder: "What keeps getting lost, delayed, or repeated?",
   typingPrompts: [
     "Run an audit to spot workflow flaws",
+    "What’s slowing your team down?",
     "e.g. I run a dental clinic with three staff...",
     "Leads arrive on WhatsApp and get missed...",
     "We enter every booking into two systems...",
     "Approvals still happen manually by email...",
   ],
-  cta: "Analyze workflow",
+  cta: "Analyze my workflow",
   idleProblems: [
     "leads going cold",
     "manual data entry",

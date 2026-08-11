@@ -6,7 +6,8 @@ import { useReducedMotion } from "@/lib/hooks/use-reduced-motion";
 import { useHero } from "./hero-provider";
 
 export function AuditTags() {
-  const { activeFinding, fixes, phase, problems } = useHero();
+  const { activeFindings, fixes, phase, problems } = useHero();
+  const newestFinding = activeFindings[activeFindings.length - 1];
   const scope = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
   const visible = phase === "problems" || phase === "fixes" || phase === "done";
@@ -47,12 +48,12 @@ export function AuditTags() {
 
   useGSAP(
     () => {
-      if (!activeFinding || reduced) return;
+      if (!newestFinding || reduced) return;
       gsap.fromTo(
-        `[data-audit-row='${activeFinding.tone}-${activeFinding.index}']`,
+        `[data-audit-row='bad-${newestFinding.index}']`,
         { x: 0, scale: 1 },
         {
-          x: activeFinding.tone === "bad" ? 5 : -5,
+          x: 5,
           scale: 1.015,
           duration: 0.38,
           yoyo: true,
@@ -61,7 +62,7 @@ export function AuditTags() {
         },
       );
     },
-    { scope, dependencies: [activeFinding?.id, reduced] },
+    { scope, dependencies: [newestFinding?.id, reduced] },
   );
 
   if (!visible) return null;
@@ -90,9 +91,6 @@ export function AuditTags() {
         >
           <header className="flex h-11 items-center justify-between border-b border-current/10 px-4">
             <span className="flex items-center gap-2.5 text-[12px] font-semibold">
-              <i
-                className={`size-1.5 rounded-full not-italic ${panel.tone === "bad" ? "bg-[#58605a]" : "bg-brand shadow-[0_0_12px_rgba(47,232,92,0.75)]"}`}
-              />
               {panel.title}
             </span>
             <span className="font-mono text-[9px] tracking-[0.12em] opacity-55">
@@ -101,9 +99,9 @@ export function AuditTags() {
           </header>
           <ol>
             {panel.items.map((item, index) => {
-              const active =
-                activeFinding?.tone === panel.tone &&
-                activeFinding.index === index;
+              const active = activeFindings.some(
+                (finding) => finding.index === index,
+              );
               return (
                 <li
                   key={`${panel.tone}-${item}`}

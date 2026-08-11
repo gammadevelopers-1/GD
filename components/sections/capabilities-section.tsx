@@ -53,8 +53,9 @@ export function CapabilitiesSection() {
                   type="button"
                   onClick={() => setActive(i)}
                   aria-pressed={active === i}
+                  data-button-fill
                   className={cn(
-                    "border-border relative block w-full cursor-pointer border-b py-7 pr-10 pl-8 text-left transition-all duration-300",
+                    "button-fill-fx button-fill-fx--soft border-border relative block w-full cursor-pointer overflow-hidden border-b py-7 pr-10 pl-8 text-left transition-all duration-300",
                     active === i
                       ? "bg-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]"
                       : "hover:translate-x-1 hover:bg-white/55",
@@ -62,19 +63,19 @@ export function CapabilitiesSection() {
                 >
                   <span
                     className={cn(
-                      "bg-brand absolute inset-y-0 left-0 w-0.5 origin-center shadow-[0_0_18px_rgba(47,232,92,0.7)] transition-transform duration-300",
+                      "bg-brand absolute inset-y-0 left-0 z-[2] w-0.5 origin-center shadow-[0_0_18px_rgba(47,232,92,0.7)] transition-transform duration-300",
                       active === i ? "scale-y-100" : "scale-y-0",
                     )}
                   />
                   <h3
                     className={cn(
-                      "mb-2 text-[17px] leading-tight font-medium tracking-[-0.012em] transition-colors",
+                      "font-display relative z-[1] mb-2 text-[17px] leading-tight font-semibold tracking-[-0.025em] transition-colors",
                       active === i && "text-accent",
                     )}
                   >
                     {item.title}
                   </h3>
-                  <p className="text-muted-foreground max-w-[46ch] text-sm leading-relaxed">
+                  <p className="text-muted-foreground relative z-[1] max-w-[46ch] text-sm leading-relaxed">
                     {item.body}
                   </p>
                 </button>

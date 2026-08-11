@@ -72,7 +72,7 @@ export function ProofSection() {
                     <span className="bg-brand size-1.25 animate-pulse rounded-full" />
                     {c.status}
                   </span>
-                  <h3 className="mt-3.5 mb-2 text-[17px] leading-tight font-medium tracking-[-0.012em]">
+                  <h3 className="font-display mt-3.5 mb-2 text-[17px] leading-tight font-semibold tracking-[-0.025em]">
                     {c.title}
                   </h3>
                   <p className="text-sm leading-relaxed text-[#a8aea5]">

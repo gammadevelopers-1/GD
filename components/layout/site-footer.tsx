@@ -41,7 +41,7 @@ export function SiteFooter() {
             <span className="bg-brand size-1.5 rounded-full shadow-[0_0_9px_rgba(47,232,92,0.6)]" />
             {closing.eyebrow}
           </span>
-          <h2 className="mb-4 text-3xl leading-[1.06] font-medium tracking-[-0.03em] md:text-5xl">
+          <h2 className="font-display mb-4 text-3xl leading-[1.02] font-semibold tracking-[-0.045em] md:text-5xl">
             {closing.title}
           </h2>
           <p className="mx-auto mb-8 max-w-[44ch] text-[#9aa096]">
@@ -49,9 +49,10 @@ export function SiteFooter() {
           </p>
           <Link
             href={site.calendly}
-            className="bg-brand inline-flex h-12 items-center rounded-full px-6 text-[15px] font-medium text-[#14171a] transition-all hover:-translate-y-0.5 hover:bg-[#26d150]"
+            data-button-fill
+            className="button-fill-fx bg-brand inline-flex h-12 items-center rounded-full px-6 text-[15px] font-medium text-[#14171a] transition-all hover:-translate-y-0.5"
           >
-            {closing.cta}
+            <span className="button-fill-fx__label">{closing.cta}</span>
           </Link>
         </Reveal>
 
