@@ -40,7 +40,17 @@ export function HeroCopy({ children }: { children: ReactNode }) {
           0.55,
         )
         .from("[data-hero='lead']", { y: 16, opacity: 0, duration: 0.75 }, 0.58)
-        .from("[data-hero='form']", { y: 18, opacity: 0, duration: 0.8 }, 0.68);
+        .from("[data-hero='form']", { y: 18, opacity: 0, duration: 0.8 }, 0.68)
+        .from(
+          "[data-hero='cta-copy']",
+          { y: 18, opacity: 0, duration: 0.75 },
+          0.82,
+        )
+        .from(
+          "[data-hero='cta-button']",
+          { y: 16, opacity: 0, scale: 0.96, duration: 0.7 },
+          0.92,
+        );
     },
     { scope, dependencies: [reduced] },
   );

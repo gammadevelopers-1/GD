@@ -1,6 +1,6 @@
 export const hero = {
   headline: { before: "Messy in", accent: "Aligned", after: "out" },
-  lead: "AI powered workflow analysis that turns operational friction into a clear build plan",
+  lead: "Tell us what’s broken. We’ll show you the fix",
   typingPrompts: [
     "Run an audit to spot workflow flaws",
     "What’s slowing your team down?",

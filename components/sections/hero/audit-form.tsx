@@ -79,10 +79,7 @@ export function AuditForm() {
   return (
     <div className="relative mx-auto mt-7 max-w-[630px]">
       <form onSubmit={submit}>
-        <div
-          data-hero-audit-boundary
-          className="audit-form-shell border-border focus-within:border-accent/45 flex flex-wrap items-center gap-2 rounded-2xl border bg-white/95 p-3 shadow-[0_14px_40px_rgba(20,23,26,0.09)] backdrop-blur-md sm:flex-nowrap sm:rounded-full sm:py-1.5 sm:pr-1.5 sm:pl-5.5"
-        >
+        <div className="audit-form-shell border-border focus-within:border-accent/45 flex flex-wrap items-center gap-2 rounded-2xl border bg-white/95 p-3 shadow-[0_14px_40px_rgba(20,23,26,0.09)] backdrop-blur-md sm:flex-nowrap sm:rounded-full sm:py-1.5 sm:pr-1.5 sm:pl-5.5">
           <label htmlFor="audit-input" className="sr-only">
             Describe your business
           </label>
@@ -126,7 +123,7 @@ export function AuditForm() {
         ref={statusRef}
         role="status"
         aria-live="polite"
-        className="text-muted-foreground mt-3 min-h-[20px] font-body text-[12px] leading-[1.45] font-medium tracking-[-0.008em]"
+        className="text-muted-foreground font-body mt-3 min-h-[20px] text-[12px] leading-[1.45] font-medium tracking-[-0.008em]"
       >
         {localError ? (
           <span className="text-[#b4402c]">{localError}</span>

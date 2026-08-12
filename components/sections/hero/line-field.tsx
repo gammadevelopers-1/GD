@@ -202,8 +202,7 @@ export function LineField() {
     let pointerActive = false;
     let inView = true;
     let nextBoundaryRead = 0;
-    let headlineBoundary: HorizontalBoundary = { left: 0, right: 0 };
-    let formBoundary: HorizontalBoundary = { left: 0, right: 0 };
+    let contentBoundary: HorizontalBoundary = { left: 0, right: 0 };
 
     function fallbackBoundary(): HorizontalBoundary {
       return { left: width * 0.31, right: width * 0.69 };
@@ -223,12 +222,8 @@ export function LineField() {
 
     function updateContentBoundaries() {
       const canvasRect = canvas.getBoundingClientRect();
-      headlineBoundary = readBoundary(
-        document.querySelector("[data-hero='title']"),
-        canvasRect,
-      );
-      formBoundary = readBoundary(
-        document.querySelector("[data-hero-audit-boundary]"),
+      contentBoundary = readBoundary(
+        document.querySelector("[data-hero-content-boundary]"),
         canvasRect,
       );
     }
@@ -622,8 +617,7 @@ export function LineField() {
         const notification = notificationRefs.current.get(journey.finding.id);
         if (!notification) continue;
 
-        const boundary =
-          journey.lineIndex >= BASE_LINES - 3 ? formBoundary : headlineBoundary;
+        const boundary = contentBoundary;
         const cardWidth = Math.min(210, window.innerWidth * 0.54);
         const showingSolution = dx >= (boundary.left + boundary.right) / 2;
         const flawCardRight = dx + CARD_GAP + cardWidth;
@@ -715,7 +709,7 @@ export function LineField() {
   }, [motionRef, reduced]);
 
   return (
-    <div className="absolute inset-x-0 top-[88px] bottom-[370px] sm:bottom-[340px] lg:top-[96px] lg:bottom-[320px]">
+    <div className="absolute inset-x-0 top-[76px] bottom-[32%] lg:top-[82px]">
       <canvas
         ref={canvasRef}
         aria-hidden

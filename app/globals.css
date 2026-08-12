@@ -355,6 +355,259 @@ p {
   pointer-events: auto;
 }
 
+.hero-gradient-base {
+  background:
+    radial-gradient(
+      ellipse 46% 34% at 8% 8%,
+      rgba(255, 255, 255, 0.76),
+      transparent 76%
+    ),
+    radial-gradient(
+      ellipse 44% 34% at 92% 10%,
+      rgba(255, 255, 255, 0.7),
+      transparent 76%
+    ),
+    radial-gradient(
+      ellipse 76% 58% at 50% 32%,
+      rgba(244, 244, 238, 0.78),
+      transparent 78%
+    ),
+    linear-gradient(
+      180deg,
+      var(--color-gd-light-background) 0%,
+      color-mix(
+          in srgb,
+          var(--color-gd-light-background) 94%,
+          var(--color-gd-light-emerald)
+        )
+        35%,
+      color-mix(
+          in srgb,
+          var(--color-gd-light-background) 84%,
+          var(--color-gd-light-emerald)
+        )
+        50%,
+      color-mix(
+          in srgb,
+          var(--color-gd-light-background) 70%,
+          var(--color-gd-light-emerald)
+        )
+        62%,
+      color-mix(
+          in srgb,
+          var(--color-gd-light-background) 52%,
+          var(--color-gd-light-emerald)
+        )
+        71%,
+      color-mix(
+          in srgb,
+          var(--color-gd-light-background) 30%,
+          var(--color-gd-light-emerald)
+        )
+        78%,
+      color-mix(
+          in srgb,
+          var(--color-gd-dark-background) 10%,
+          var(--color-gd-light-emerald)
+        )
+        84%,
+      color-mix(
+          in srgb,
+          var(--color-gd-dark-background) 30%,
+          var(--color-gd-light-emerald)
+        )
+        90%,
+      color-mix(
+          in srgb,
+          var(--color-gd-dark-background) 58%,
+          var(--color-gd-light-emerald)
+        )
+        95%,
+      #121b16 100%
+    );
+}
+
+.hero-gradient-ridge {
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 27% 66% at -7% 57%,
+      rgba(5, 150, 105, 0.38) 0%,
+      rgba(5, 150, 105, 0.16) 44%,
+      transparent 82%
+    ),
+    radial-gradient(
+      ellipse 26% 62% at 107% 53%,
+      rgba(47, 232, 92, 0.3) 0%,
+      rgba(16, 185, 129, 0.13) 44%,
+      transparent 82%
+    ),
+    radial-gradient(
+      ellipse 72% 26% at 50% 100%,
+      rgba(5, 150, 105, 0.18),
+      transparent 82%
+    ),
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      transparent 48%,
+      rgba(5, 150, 105, 0.035) 62%,
+      rgba(5, 150, 105, 0.08) 76%,
+      rgba(18, 27, 22, 0.12) 90%,
+      rgba(18, 27, 22, 0.24) 100%
+    );
+  filter: blur(46px);
+  opacity: 0.76;
+  transform: translateZ(0);
+}
+
+.hero-gradient-floor {
+  inset: 0;
+  /* The original standalone CTA surface, now blended into the hero. */
+  background:
+    radial-gradient(
+      circle at 12% 15%,
+      rgba(47, 232, 92, 0.13),
+      transparent 31%
+    ),
+    radial-gradient(
+      circle at 86% 85%,
+      rgba(5, 150, 105, 0.18),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 50% -28%,
+      rgba(47, 232, 92, 0.2),
+      transparent 45%
+    ),
+    linear-gradient(132deg, #080d0b 0%, #121b16 48%, #090f0c 100%);
+  mask-image: radial-gradient(
+    ellipse 118% 116% at 50% -8%,
+    transparent 0%,
+    transparent 46%,
+    rgba(0, 0, 0, 0.012) 51%,
+    rgba(0, 0, 0, 0.035) 57%,
+    rgba(0, 0, 0, 0.08) 63%,
+    rgba(0, 0, 0, 0.15) 69%,
+    rgba(0, 0, 0, 0.25) 75%,
+    rgba(0, 0, 0, 0.4) 81%,
+    rgba(0, 0, 0, 0.58) 87%,
+    rgba(0, 0, 0, 0.76) 93%,
+    rgba(0, 0, 0, 0.91) 97%,
+    #000 100%
+  );
+  -webkit-mask-image: radial-gradient(
+    ellipse 118% 116% at 50% -8%,
+    transparent 0%,
+    transparent 46%,
+    rgba(0, 0, 0, 0.012) 51%,
+    rgba(0, 0, 0, 0.035) 57%,
+    rgba(0, 0, 0, 0.08) 63%,
+    rgba(0, 0, 0, 0.15) 69%,
+    rgba(0, 0, 0, 0.25) 75%,
+    rgba(0, 0, 0, 0.4) 81%,
+    rgba(0, 0, 0, 0.58) 87%,
+    rgba(0, 0, 0, 0.76) 93%,
+    rgba(0, 0, 0, 0.91) 97%,
+    #000 100%
+  );
+}
+
+.hero-corner-glow {
+  background:
+    radial-gradient(
+      ellipse 34% 72% at -10% 67%,
+      rgba(8, 13, 11, 0.5) 0%,
+      rgba(18, 27, 22, 0.32) 28%,
+      rgba(5, 150, 105, 0.14) 49%,
+      rgba(5, 150, 105, 0.045) 66%,
+      transparent 84%
+    ),
+    radial-gradient(
+      ellipse 34% 72% at 110% 67%,
+      rgba(8, 13, 11, 0.5) 0%,
+      rgba(18, 27, 22, 0.32) 28%,
+      rgba(5, 150, 105, 0.14) 49%,
+      rgba(5, 150, 105, 0.045) 66%,
+      transparent 84%
+    );
+  filter: blur(34px);
+  mask-image: linear-gradient(
+    180deg,
+    transparent 18%,
+    rgba(0, 0, 0, 0.02) 28%,
+    rgba(0, 0, 0, 0.08) 38%,
+    rgba(0, 0, 0, 0.2) 49%,
+    rgba(0, 0, 0, 0.38) 60%,
+    rgba(0, 0, 0, 0.6) 72%,
+    rgba(0, 0, 0, 0.82) 84%,
+    #000 96%
+  );
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 18%,
+    rgba(0, 0, 0, 0.02) 28%,
+    rgba(0, 0, 0, 0.08) 38%,
+    rgba(0, 0, 0, 0.2) 49%,
+    rgba(0, 0, 0, 0.38) 60%,
+    rgba(0, 0, 0, 0.6) 72%,
+    rgba(0, 0, 0, 0.82) 84%,
+    #000 96%
+  );
+}
+
+@media (max-width: 640px) {
+  .hero-corner-glow {
+    background:
+      radial-gradient(
+        ellipse 44% 68% at -16% 66%,
+        rgba(8, 13, 11, 0.46) 0%,
+        rgba(18, 27, 22, 0.28) 30%,
+        rgba(5, 150, 105, 0.11) 52%,
+        transparent 84%
+      ),
+      radial-gradient(
+        ellipse 44% 68% at 116% 66%,
+        rgba(8, 13, 11, 0.46) 0%,
+        rgba(18, 27, 22, 0.28) 30%,
+        rgba(5, 150, 105, 0.11) 52%,
+        transparent 84%
+      );
+  }
+
+  .hero-gradient-floor {
+    mask-image: radial-gradient(
+      ellipse 132% 112% at 50% -8%,
+      transparent 0%,
+      transparent 45%,
+      rgba(0, 0, 0, 0.018) 51%,
+      rgba(0, 0, 0, 0.05) 58%,
+      rgba(0, 0, 0, 0.11) 65%,
+      rgba(0, 0, 0, 0.21) 72%,
+      rgba(0, 0, 0, 0.36) 79%,
+      rgba(0, 0, 0, 0.54) 86%,
+      rgba(0, 0, 0, 0.73) 93%,
+      rgba(0, 0, 0, 0.9) 97%,
+      #000 100%
+    );
+    -webkit-mask-image: radial-gradient(
+      ellipse 132% 112% at 50% -8%,
+      transparent 0%,
+      transparent 45%,
+      rgba(0, 0, 0, 0.018) 51%,
+      rgba(0, 0, 0, 0.05) 58%,
+      rgba(0, 0, 0, 0.11) 65%,
+      rgba(0, 0, 0, 0.21) 72%,
+      rgba(0, 0, 0, 0.36) 79%,
+      rgba(0, 0, 0, 0.54) 86%,
+      rgba(0, 0, 0, 0.73) 93%,
+      rgba(0, 0, 0, 0.9) 97%,
+      #000 100%
+    );
+  }
+
+}
+
 .hero-title-line {
   width: fit-content;
   max-width: 100%;
