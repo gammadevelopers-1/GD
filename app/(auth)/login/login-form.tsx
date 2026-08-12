@@ -1,0 +1,69 @@
+"use client";
+
+import { useActionState } from "react";
+import { ArrowRight, LoaderCircle, LockKeyhole } from "lucide-react";
+import { login, type LoginState } from "./actions";
+
+const initialState: LoginState = {};
+
+export function LoginForm({ next = "/dashboard" }: { next?: string }) {
+  const [state, action, pending] = useActionState(login, initialState);
+
+  return (
+    <form action={action} className="mt-8 space-y-5">
+      <input type="hidden" name="next" value={next} />
+
+      <label className="block space-y-2">
+        <span className="text-[13px] font-medium text-white/70">
+          Work email
+        </span>
+        <input
+          name="email"
+          type="email"
+          autoComplete="email"
+          placeholder="you@gammadevelopers.ai"
+          className="h-12 w-full rounded-xl border border-white/10 bg-white/[0.055] px-4 text-[15px] text-white transition outline-none placeholder:text-white/25 focus:border-[#2fe85c]/60 focus:ring-4 focus:ring-[#2fe85c]/10"
+          required
+        />
+      </label>
+
+      <label className="block space-y-2">
+        <span className="text-[13px] font-medium text-white/70">Password</span>
+        <input
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          placeholder="Your password"
+          className="h-12 w-full rounded-xl border border-white/10 bg-white/[0.055] px-4 text-[15px] text-white transition outline-none placeholder:text-white/25 focus:border-[#2fe85c]/60 focus:ring-4 focus:ring-[#2fe85c]/10"
+          required
+        />
+      </label>
+
+      {state.error ? (
+        <p
+          role="alert"
+          className="rounded-xl bg-red-400/10 px-3.5 py-3 text-sm text-red-200"
+        >
+          {state.error}
+        </p>
+      ) : null}
+
+      <button
+        type="submit"
+        disabled={pending}
+        className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#2fe85c] px-4 text-sm font-semibold text-[#101512] shadow-[0_12px_35px_rgba(47,232,92,0.2)] transition hover:bg-[#54ed77] disabled:cursor-wait disabled:opacity-60"
+      >
+        {pending ? (
+          <LoaderCircle className="size-4 animate-spin" />
+        ) : (
+          <>
+            Sign in securely
+            <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+          </>
+        )}
+      </button>
+
+     
+    </form>
+  );
+}

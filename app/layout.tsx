@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { ButtonFillEffects } from "@/components/common/button-fill-effects";
-import { SiteLoader } from "@/components/common/site-loader";
 import "./globals.css";
 
 const generalSans = localFont({
@@ -61,8 +59,6 @@ export default function RootLayout({
       className={`${generalSans.variable} ${jetbrainsMono.variable} ${syne.variable}`}
     >
       <body className="bg-background text-foreground font-body antialiased">
-        <ButtonFillEffects />
-        <SiteLoader />
         {children}
       </body>
     </html>
