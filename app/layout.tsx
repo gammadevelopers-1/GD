@@ -20,13 +20,6 @@ const jetbrainsMono = localFont({
   display: "swap",
 });
 
-const syne = localFont({
-  src: "./fonts/Syne-Variable.ttf",
-  variable: "--font-syne",
-  weight: "400 800",
-  display: "swap",
-});
-
 export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000",
@@ -56,7 +49,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${generalSans.variable} ${jetbrainsMono.variable} ${syne.variable}`}
+      className={`${generalSans.variable} ${jetbrainsMono.variable}`}
     >
       <body className="bg-background text-foreground font-body antialiased">
         {children}

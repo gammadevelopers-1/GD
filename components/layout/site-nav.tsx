@@ -61,13 +61,7 @@ export function SiteNav() {
         </div>
       </Group>
 
-      <Group className="gap-1 py-1 pr-1 pl-1">
-        <Link
-          href="/login"
-          className="text-muted-foreground hover:text-foreground rounded-full px-3 py-2 text-[13px] font-medium transition-colors sm:px-4 md:text-sm"
-        >
-          Login
-        </Link>
+      <Group className="py-1 pr-1 pl-1">
         <Link
           href={site.calendly}
           data-button-fill

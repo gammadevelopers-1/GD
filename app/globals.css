@@ -12,10 +12,8 @@
   --font-sans: var(--font-general-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, monospace;
   --font-display:
-    var(--font-syne), var(--font-general-sans), ui-sans-serif, system-ui,
-    sans-serif;
+    var(--font-general-sans), ui-sans-serif, system-ui, sans-serif;
 
-  /* Approved GD palette. Use alpha variants of these tokens, not new hues. */
   --color-gd-primary: #2fe85c;
   --color-gd-dark-background: #16181c;
   --color-gd-dark-headline: #ecece4;
@@ -605,7 +603,6 @@ p {
       #000 100%
     );
   }
-
 }
 
 .hero-title-line {
