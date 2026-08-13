@@ -1,13 +1,9 @@
--- Gamma Developers internal platform — development demo data.
---
--- Run this manually in the Supabase SQL Editor only after creating these users
--- in Authentication > Users:
+-- Run this in the SQL Editor after creating these Auth users:
 --   ghulam.owner@example.com
 --   hamna.member@example.com
---
--- Passwords belong to Supabase Auth and are intentionally not stored here.
--- This script is repeatable: running it again refreshes the same demo records.
--- Do not run it against a database that contains real company/client data.
+-- Keep passwords in Supabase Auth so this file stores no credentials.
+-- Rerun this script to refresh the same demo records.
+-- Use this only in a database without real data.
 
 begin;
 
@@ -518,7 +514,6 @@ $$;
 
 commit;
 
--- A compact verification result appears after a successful run.
 select
   profile.full_name,
   auth_user.email,

@@ -10,7 +10,6 @@ import {
   useHero,
 } from "./hero-provider";
 
-// Eight or nine separate signal lanes: unsettled on the left, ordered on the right.
 const FIELD_TOP = 0.18;
 const FIELD_SPAN = 0.64;
 const TRANSITION_START = 0.36;
@@ -36,7 +35,7 @@ const LIGHT_EMERALD = [5, 150, 105] as const;
 const GREEN_GLOW = [16, 185, 129] as const;
 const RED = [184, 46, 38] as const;
 const AMBER = [157, 104, 29] as const;
-const PRIMARY_GREEN = [47, 232, 92] as const; // GD primary: #2FE85C
+const PRIMARY_GREEN = [47, 232, 92] as const;
 
 const clamp = (value: number, min: number, max: number) =>
   value < min ? min : value > max ? max : value;
@@ -343,7 +342,7 @@ export function LineField() {
 
       const activeCount = Math.max(2, Math.round(motion.activeLines));
       const lineGap = (height * FIELD_SPAN) / Math.max(1, activeCount - 1);
-      // Even opposite wave peaks retain a visible gap between adjacent lanes.
+      // Limit wave height so adjacent lines stay separated.
       currentWaveAmplitude = Math.min(WAVE_AMPLITUDE, lineGap * 0.3);
       if (isAuditing && timestamp >= nextBoundaryRead) {
         updateContentBoundaries();
@@ -474,7 +473,7 @@ export function LineField() {
         if (!showsDot) return;
 
         if (!reduced) {
-          // Normal dots only ever advance. They wrap after leaving the right edge.
+          // Wrap dots so motion keeps moving forward.
           line.dot +=
             (line.dotSpeed / Math.max(width, 1)) *
             deltaSeconds *
@@ -550,9 +549,7 @@ export function LineField() {
         drawDot(line.dot, false);
       });
 
-      // Audit signals are separate GSAP journeys. Each point keeps the same
-      // speed across the whole field while its attached card changes behind
-      // the protected center area.
+      // Track audit signals separately so cards change behind the center message.
       for (const journey of journeysRef.current.values()) {
         const line = lines[Math.min(journey.lineIndex, activeCount - 1)];
         if (!line || line.alive < 0.01) continue;

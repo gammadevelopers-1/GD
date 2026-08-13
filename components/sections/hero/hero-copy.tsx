@@ -55,7 +55,7 @@ export function HeroCopy({ children }: { children: ReactNode }) {
     { scope, dependencies: [reduced] },
   );
 
-  // Keep the promise legible while the findings take focus.
+  // Dim the promise so audit findings remain readable.
   useGSAP(
     () => {
       if (reduced) return;

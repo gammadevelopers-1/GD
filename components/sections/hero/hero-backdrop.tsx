@@ -1,5 +1,3 @@
-// One continuous field: mineral light above, emerald energy through the
-// middle, and the original deep CTA colour at the bottom.
 export function HeroBackdropBase() {
   return (
     <>

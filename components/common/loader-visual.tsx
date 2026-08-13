@@ -33,7 +33,7 @@ export function LoaderVisual({
 
       <div className="loader-stage relative z-1 flex w-[min(84vw,420px)] flex-col items-center text-center">
         <div className="loader-word-shell select-none" aria-label="Gamma">
-          <span aria-hidden className="loader-word font-display block">
+          <span aria-hidden className="loader-word block">
             GAMMA
           </span>
         </div>

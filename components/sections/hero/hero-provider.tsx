@@ -12,7 +12,6 @@ import {
 import { gsap } from "@/lib/gsap";
 import type { AuditPhase, AuditResponse } from "@/lib/audit/types";
 
-// Keep the fast moving canvas values outside React
 export interface HeroMotion {
   chaos: number;
   resolve: number;
@@ -34,7 +33,7 @@ export interface AuditFinding {
 export const BASE_LINES = 8;
 export const MAX_LINES = 9;
 
-// Fallback duration for reduced motion and defensive timing calculations.
+// Keep this fallback so reduced motion uses safe timing.
 export const SIGNAL_TRAVEL_TIME = 11;
 
 interface HeroContextValue {
@@ -125,9 +124,7 @@ export function HeroProvider({ children }: { children: ReactNode }) {
         let lastSignalAt = 0;
         let firstSolutionAt = Number.POSITIVE_INFINITY;
 
-        // GSAP staggers independent, uninterrupted signal journeys. The canvas
-        // reads each tweened journey and swaps the flaw card for its solution
-        // only while the point is hidden behind the central message.
+        // Stagger journeys so cards change behind the center message.
         for (let index = 0; index < total; index += 1) {
           const entryAt = nextEntryAt;
           const messyHalfTime = gsap.utils.random(3, 3.5, 0.05);
@@ -163,9 +160,7 @@ export function HeroProvider({ children }: { children: ReactNode }) {
             entryAt,
           );
 
-          // The next finding enters exactly as this one reaches the midpoint
-          // of the visible messy section. Small timing variation keeps the
-          // conveyor organic without collapsing every flaw onto the left.
+          // Add each finding at midpoint so signals stay separated.
           nextEntryAt += messyHalfTime;
         }
 

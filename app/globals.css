@@ -261,6 +261,7 @@ p {
 }
 
 .loader-word {
+  font-family: var(--font-syne), var(--font-general-sans), sans-serif;
   color: transparent;
   background: linear-gradient(
     108deg,
@@ -461,7 +462,6 @@ p {
 
 .hero-gradient-floor {
   inset: 0;
-  /* The original standalone CTA surface, now blended into the hero. */
   background:
     radial-gradient(
       circle at 12% 15%,
