@@ -822,7 +822,7 @@ p {
     :focus-visible,
     :active
   ):not(:disabled) {
-  animation: button-fill-surface-seal 1ms linear 760ms forwards;
+  animation: button-fill-surface-seal 1ms linear 220ms forwards;
   color: var(--button-fill-hover-text) !important;
 }
 
@@ -846,7 +846,7 @@ p {
     :active
   ):not(:disabled)::after {
   opacity: 1;
-  transition-delay: 680ms;
+  transition-delay: 220ms;
 }
 
 .button-fill-fx:disabled::before,
