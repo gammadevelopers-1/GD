@@ -4,17 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Building2,
-  ChevronDown,
+  CircleDollarSign,
   CircleGauge,
+  ContactRound,
   FilePenLine,
   FolderKanban,
+  Library,
   LogOut,
   Menu,
   Search,
   UsersRound,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Mark } from "@/components/layout/site-nav";
 import { logout } from "@/app/(auth)/login/actions";
 import type { AppRole, Viewer } from "@/data/auth";
@@ -25,6 +27,7 @@ const navigation: Array<{
   href: string;
   icon: typeof CircleGauge;
   roles: AppRole[];
+  inProgress?: boolean;
 }> = [
   {
     label: "Overview",
@@ -43,9 +46,36 @@ const navigation: Array<{
     href: "/people",
     icon: UsersRound,
     roles: ["owner", "member"],
+    inProgress: true,
   },
-  { label: "Clients", href: "/clients", icon: Building2, roles: ["owner"] },
-  { label: "CMS", href: "/cms", icon: FilePenLine, roles: ["owner"] },
+  {
+    label: "Clients",
+    href: "/clients",
+    icon: Building2,
+    roles: ["owner"],
+    inProgress: true,
+  },
+  {
+    label: "CMS",
+    href: "/cms",
+    icon: FilePenLine,
+    roles: ["owner"],
+    inProgress: true,
+  },
+];
+
+const plannedNavigation: Array<{
+  label: string;
+  icon: typeof CircleGauge;
+  roles: AppRole[];
+}> = [
+  {
+    label: "Finance",
+    icon: CircleDollarSign,
+    roles: ["owner", "finance"],
+  },
+  { label: "Leads", icon: ContactRound, roles: ["owner"] },
+  { label: "Assets", icon: Library, roles: ["owner", "member"] },
 ];
 
 const titles: Record<string, string> = {
@@ -66,11 +96,31 @@ export function AdminShell({
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const items = navigation.filter((item) => item.roles.includes(viewer.role));
+  const plannedItems = plannedNavigation.filter((item) =>
+    item.roles.includes(viewer.role),
+  );
   const root = pathname.split("/").filter(Boolean)[0] ?? "dashboard";
 
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [menuOpen]);
+
   return (
-    <div className="min-h-dvh bg-[#eef0e9] text-[#14171a]">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[248px] flex-col border-r border-white/[0.07] bg-[#15181b] px-3 py-4 text-white lg:flex">
+    <div className="min-h-dvh overflow-x-clip bg-[#eef0e9] text-[#14171a]">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[248px] flex-col overflow-y-auto border-r border-white/[0.07] bg-[#15181b] px-3 py-4 text-white lg:flex">
         <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2">
           <Mark className="size-8 rounded-[9px] border border-white/10" />
           <div>
@@ -78,7 +128,7 @@ export function AdminShell({
               Gamma Developers
             </p>
             <p className="mt-0.5 font-mono text-[8px] tracking-[0.16em] text-white/30 uppercase">
-              Team Dashboard
+              Dashboard
             </p>
           </div>
         </Link>
@@ -98,12 +148,27 @@ export function AdminShell({
           ))}
         </nav>
 
-        <div className="mt-auto">
-          
+        {plannedItems.length ? (
+          <div className="mt-8">
+            <p className="mb-3 px-3 font-mono text-[9px] tracking-[0.15em] text-white/25 uppercase">
+              Next release
+            </p>
+            <div className="space-y-1">
+              {plannedItems.map((item) => (
+                <PlannedNavItem key={item.label} item={item} />
+              ))}
+            </div>
+          </div>
+        ) : null}
 
+        <div className="mt-auto">
           <form action={logout}>
-            <button className="bg-white/[0.055] flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-white/45 transition hover:bg-white/[0.025] hover:text-white">
-              <LogOut className="size-[17px]" /> Sign out
+            <button
+              data-button-fill
+              className="button-fill-fx button-fill-fx--lift flex w-full items-center gap-3 rounded-xl bg-white/[0.055] px-3 py-2.5 text-left text-sm text-white/45 transition [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512]"
+            >
+              <LogOut className="size-[17px]" />
+              <span className="button-fill-fx__label">Sign out</span>
             </button>
           </form>
         </div>
@@ -115,8 +180,11 @@ export function AdminShell({
             <button
               type="button"
               aria-label="Open navigation"
+              aria-expanded={menuOpen}
+              aria-controls="mobile-platform-navigation"
               onClick={() => setMenuOpen(true)}
-              className="grid size-10 place-items-center rounded-xl border border-black/[0.08] bg-white/55 lg:hidden"
+              data-button-fill
+              className="button-fill-fx button-fill-fx--lift grid size-10 shrink-0 place-items-center rounded-xl border border-black/[0.08] bg-white/55 transition [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512] hover:border-black/15 focus-visible:ring-2 focus-visible:ring-[#16a34a] focus-visible:outline-none lg:hidden"
             >
               <Menu className="size-5" />
             </button>
@@ -130,14 +198,22 @@ export function AdminShell({
             </div>
 
             <div className="ml-auto flex items-center gap-2 sm:gap-3">
-              <button className="hidden h-10 items-center gap-2 rounded-xl border border-black/[0.07] bg-white/50 px-3 text-sm text-black/45 transition hover:bg-white md:flex">
+              <button
+                type="button"
+                disabled
+                title="Search is coming soon"
+                className="hidden h-10 cursor-not-allowed items-center gap-2 rounded-xl border border-black/[0.07] bg-white/38 px-3 text-sm text-black/35 md:flex"
+              >
                 <Search className="size-4" />
                 <span>Search</span>
-                <kbd className="ml-4 rounded-md border border-black/[0.07] bg-black/[0.025] px-1.5 py-0.5 font-mono text-[9px]">
-                  ⌘K
-                </kbd>
+                <span className="ml-3 rounded-full bg-[#15181b] px-2 py-1 font-mono text-[7px] tracking-wider text-[#2fe85c] uppercase">
+                  Soon
+                </span>
               </button>
-              <div className="flex items-center gap-2 rounded-xl border border-black/[0.07] bg-white/55 p-1.5 pr-2.5">
+              <div
+                title="Profile controls are coming soon"
+                className="flex items-center gap-2 rounded-xl border border-black/[0.07] bg-white/55 p-1.5 pr-2.5"
+              >
                 <span className="grid size-7 place-items-center rounded-lg bg-[#15181b] text-[10px] font-semibold text-[#2fe85c]">
                   {viewer.initials}
                 </span>
@@ -149,28 +225,34 @@ export function AdminShell({
                     {viewer.role}
                   </p>
                 </div>
-                <ChevronDown className="hidden size-3.5 text-black/35 sm:block" />
+                <span className="hidden rounded-full bg-black/[0.045] px-1.5 py-1 font-mono text-[6px] tracking-wider text-black/35 uppercase sm:block">
+                  Soon
+                </span>
               </div>
             </div>
           </div>
         </header>
 
-        <main className="px-4 py-6 pb-24 sm:px-6 lg:px-8 lg:py-8 lg:pb-10 xl:px-10">
+        <main className="min-w-0 px-4 py-6 pb-8 sm:px-6 sm:pb-10 lg:px-8 lg:py-8 xl:px-10">
           {children}
         </main>
       </div>
 
-      <MobileNavigation items={items} pathname={pathname} />
-
       {menuOpen ? (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div
+          id="mobile-platform-navigation"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Platform navigation"
+          className="fixed inset-0 z-50 lg:hidden"
+        >
           <button
             className="absolute inset-0 bg-black/55 backdrop-blur-sm"
             aria-label="Close navigation"
             onClick={() => setMenuOpen(false)}
           />
-          <aside className="absolute inset-y-0 left-0 w-[min(86vw,330px)] bg-[#15181b] p-4 text-white shadow-2xl">
-            <div className="flex items-center justify-between">
+          <aside className="absolute inset-y-0 left-0 flex w-[min(88vw,330px)] flex-col overflow-y-auto bg-[#15181b] p-4 text-white shadow-2xl">
+            <div className="flex shrink-0 items-center justify-between">
               <Link
                 href="/dashboard"
                 onClick={() => setMenuOpen(false)}
@@ -181,13 +263,14 @@ export function AdminShell({
               </Link>
               <button
                 onClick={() => setMenuOpen(false)}
-                className="grid size-10 place-items-center rounded-xl bg-white/[0.06]"
+                data-button-fill
+                className="button-fill-fx button-fill-fx--lift grid size-10 place-items-center rounded-xl bg-white/[0.06] transition [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512]"
                 aria-label="Close navigation"
               >
                 <X className="size-5" />
               </button>
             </div>
-            <nav className="mt-10 space-y-1">
+            <nav className="mt-8 space-y-1">
               {items.map((item) => (
                 <div key={item.href} onClick={() => setMenuOpen(false)}>
                   <NavItem
@@ -200,9 +283,25 @@ export function AdminShell({
                 </div>
               ))}
             </nav>
-            <form action={logout} className="absolute inset-x-4 bottom-5">
-              <button className="flex w-full items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.04] px-4 py-3 text-sm text-white/55">
-                <LogOut className="size-4" /> Sign out
+            {plannedItems.length ? (
+              <div className="mt-8 border-t border-white/[0.07] pt-6">
+                <p className="mb-3 px-3 font-mono text-[9px] tracking-[0.15em] text-white/25 uppercase">
+                  Next release
+                </p>
+                <div className="space-y-1">
+                  {plannedItems.map((item) => (
+                    <PlannedNavItem key={item.label} item={item} />
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            <form action={logout} className="mt-auto pt-8">
+              <button
+                data-button-fill
+                className="button-fill-fx button-fill-fx--lift flex w-full items-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.04] px-4 py-3 text-sm text-white/55 transition [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512]"
+              >
+                <LogOut className="size-4" />
+                <span className="button-fill-fx__label">Sign out</span>
               </button>
             </form>
           </aside>
@@ -237,40 +336,39 @@ function NavItem({
         )}
       />
       {item.label}
+      {item.inProgress ? (
+        <span
+          className={cn(
+            "ml-auto rounded-full px-2 py-1 font-mono text-[6px] tracking-wider uppercase",
+            active
+              ? "bg-[#101512]/10 text-[#101512]/55"
+              : "bg-[#2fe85c]/10 text-[#69ee88]/75",
+          )}
+        >
+          Soon
+        </span>
+      ) : null}
     </Link>
   );
 }
 
-function MobileNavigation({
-  items,
-  pathname,
+function PlannedNavItem({
+  item,
 }: {
-  items: typeof navigation;
-  pathname: string;
+  item: (typeof plannedNavigation)[number];
 }) {
+  const Icon = item.icon;
   return (
-    <nav
-      aria-label="Mobile platform navigation"
-      className="fixed inset-x-3 bottom-3 z-40 flex h-[66px] items-center justify-around rounded-2xl border border-white/10 bg-[#15181b]/96 px-1.5 shadow-[0_18px_55px_rgba(0,0,0,0.32)] backdrop-blur-xl lg:hidden"
+    <div
+      aria-disabled="true"
+      title={`${item.label} is coming soon`}
+      className="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/25"
     >
-      {items.slice(0, 5).map((item) => {
-        const Icon = item.icon;
-        const active =
-          pathname === item.href || pathname.startsWith(`${item.href}/`);
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex min-w-14 flex-col items-center gap-1 rounded-xl px-2 py-2 text-[9px]",
-              active ? "text-[#2fe85c]" : "text-white/38",
-            )}
-          >
-            <Icon className="size-[18px]" />
-            <span>{item.label}</span>
-          </Link>
-        );
-      })}
-    </nav>
+      <Icon className="size-[17px]" />
+      <span>{item.label}</span>
+      <span className="ml-auto rounded-full border border-[#2fe85c]/10 bg-[#2fe85c]/[0.06] px-2 py-1 font-mono text-[6px] tracking-wider text-[#69ee88]/55 uppercase">
+        Coming soon
+      </span>
+    </div>
   );
 }

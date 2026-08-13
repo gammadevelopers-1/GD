@@ -14,7 +14,7 @@ export function HeroSection() {
 
   return (
     <HeroProvider>
-      <section className="relative isolate h-[100svh] min-h-[860px] overflow-hidden sm:min-h-[880px] lg:min-h-[800px]">
+      <section className="relative isolate h-[100svh] min-h-[780px] overflow-hidden min-[390px]:min-h-[840px] sm:min-h-[880px] lg:min-h-[800px]">
         <HeroBackdropBase />
         <LineField />
         <HeroBackdropOverlay />
@@ -72,7 +72,7 @@ export function HeroSection() {
 
                 <p
                   data-hero="lead"
-                  className="text-foreground/72 mx-auto mt-4 max-w-full text-[13px] leading-[1.4] font-medium tracking-[-0.012em] whitespace-nowrap min-[390px]:text-[14px] sm:text-[18px]"
+                  className="text-foreground/72 mx-auto mt-4 max-w-[30ch] text-[13px] leading-[1.4] font-medium tracking-[-0.012em] min-[390px]:max-w-full min-[390px]:text-[14px] min-[390px]:whitespace-nowrap sm:text-[18px]"
                 >
                   {hero.lead}
                 </p>

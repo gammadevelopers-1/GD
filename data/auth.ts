@@ -1,7 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
-import { redirect } from "next/navigation";
+import { forbidden, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 
@@ -26,8 +26,10 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
 
   const { data: profile, error: profileError } = await supabase
     .from("app_profiles")
-    .select("id, full_name, role")
+    .select("id, full_name, role, is_active, archived_at")
     .eq("id", claims.sub)
+    .eq("is_active", true)
+    .is("archived_at", null)
     .single();
 
   if (profileError || !profile) return null;
@@ -50,12 +52,12 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
 
 export async function requireViewer() {
   const viewer = await getViewer();
-  if (!viewer) redirect("/login");
+  if (!viewer) redirect("/login?reason=access");
   return viewer;
 }
 
 export async function requireRole(roles: AppRole[]) {
   const viewer = await requireViewer();
-  if (!roles.includes(viewer.role)) redirect("/dashboard");
+  if (!roles.includes(viewer.role)) forbidden();
   return viewer;
 }

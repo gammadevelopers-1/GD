@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { ArrowRight, LoaderCircle, LockKeyhole } from "lucide-react";
+import { ArrowRight, LoaderCircle } from "lucide-react";
 import { login, type LoginState } from "./actions";
 
 const initialState: LoginState = {};
@@ -51,19 +51,18 @@ export function LoginForm({ next = "/dashboard" }: { next?: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#2fe85c] px-4 text-sm font-semibold text-[#101512] shadow-[0_12px_35px_rgba(47,232,92,0.2)] transition hover:bg-[#54ed77] disabled:cursor-wait disabled:opacity-60"
+        data-button-fill
+        className="button-fill-fx button-fill-fx--lift group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#2fe85c] px-4 text-sm font-semibold text-[#101512] shadow-[0_12px_35px_rgba(47,232,92,0.2)] transition hover:shadow-[0_18px_45px_rgba(47,232,92,0.3)] disabled:cursor-wait disabled:opacity-60"
       >
         {pending ? (
-          <LoaderCircle className="size-4 animate-spin" />
+          <LoaderCircle className="relative size-4 animate-spin" />
         ) : (
           <>
-            Sign in securely
-            <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+            <span className="button-fill-fx__label">Sign in securely</span>
+            <ArrowRight className="relative size-4 transition-transform group-hover:translate-x-0.5" />
           </>
         )}
       </button>
-
-     
     </form>
   );
 }

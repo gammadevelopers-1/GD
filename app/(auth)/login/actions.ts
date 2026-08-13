@@ -23,10 +23,29 @@ export async function login(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
-  if (error) {
+  if (error || !data.user) {
     return { error: "Those sign-in details were not accepted." };
+  }
+
+  const { data: profile } = await supabase
+    .from("app_profiles")
+    .select("id")
+    .eq("id", data.user.id)
+    .eq("is_active", true)
+    .is("archived_at", null)
+    .maybeSingle();
+
+  if (!profile) {
+    await supabase.auth.signOut();
+    return {
+      error:
+        "This account is not active on the internal platform. Ask an owner for access.",
+    };
   }
 
   redirect(

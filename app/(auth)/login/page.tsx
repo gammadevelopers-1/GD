@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 import { Mark } from "@/components/layout/site-nav";
+import { getViewer } from "@/data/auth";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { LoginForm } from "./login-form";
 
@@ -13,6 +15,7 @@ export default async function LoginPage({
 }) {
   const params = await searchParams;
   const configured = hasSupabaseConfig();
+  if (configured && (await getViewer())) redirect("/dashboard");
 
   return (
     <div className="relative grid min-h-dvh overflow-hidden lg:grid-cols-[1.05fr_0.95fr]">
@@ -68,6 +71,24 @@ export default async function LoginPage({
           <p className="mt-3 text-sm leading-6 text-white/40">
             Use the account created for your Gamma work email.
           </p>
+
+          {params.reason === "access" ? (
+            <div className="mt-8 rounded-2xl border border-amber-300/15 bg-amber-300/[0.07] p-5">
+              <div className="flex gap-3">
+                <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-200" />
+                <div>
+                  <p className="text-sm font-medium text-amber-100">
+                    Account access unavailable
+                  </p>
+                  <p className="mt-1.5 text-sm leading-6 text-amber-100/55">
+                    This account does not have an active internal-platform
+                    profile. Ask an owner to activate it, or sign in with a
+                    different account.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : null}
 
           {!configured ? (
             <div className="mt-8 rounded-2xl border border-amber-300/15 bg-amber-300/[0.07] p-5">

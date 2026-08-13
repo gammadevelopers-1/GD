@@ -72,9 +72,11 @@ function DashboardView({
           viewer.role === "owner" ? (
             <Link
               href="/projects/new"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#15181b] px-4 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5"
+              data-button-fill
+              className="button-fill-fx button-fill-fx--lift group inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#15181b] px-4 text-sm font-semibold text-white shadow-sm transition [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512]"
             >
-              <Plus className="size-4 text-[#2fe85c]" /> New project
+              <Plus className="size-4 text-[#2fe85c] transition-colors group-hover:text-[#101512]" />
+              <span className="button-fill-fx__label">New project</span>
             </Link>
           ) : undefined
         }
@@ -334,15 +336,19 @@ function ProjectCard({ project }: { project: DashboardProject }) {
       className="block p-4 active:bg-black/[0.02]"
     >
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm font-semibold">{project.name}</p>
-          <p className="mt-1 text-[11px] text-black/40">{project.client}</p>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold">{project.name}</p>
+          <p className="mt-1 truncate text-[11px] text-black/40">
+            {project.client}
+          </p>
         </div>
-        <Status status={project.status} />
+        <span className="shrink-0">
+          <Status status={project.status} />
+        </span>
       </div>
-      <div className="mt-5 flex items-center justify-between text-[11px] text-black/43">
-        <span>{project.lead}</span>
-        <span>{formatDate(project.dueOn)}</span>
+      <div className="mt-5 grid grid-cols-2 gap-3 text-[11px] text-black/43">
+        <span className="truncate">{project.lead}</span>
+        <span className="text-right">{formatDate(project.dueOn)}</span>
       </div>
       <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-black/[0.07]">
         <div

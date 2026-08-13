@@ -4,15 +4,22 @@ import { createClient } from "@/lib/supabase/server";
 import type { Viewer } from "@/data/auth";
 import type { ProjectStatus } from "@/data/dashboard";
 
-export async function getProjects() {
+export async function getProjects(viewer: Viewer) {
+  if (viewer.role !== "owner" && viewer.role !== "member") return [];
+
   const supabase = await createClient();
   const [projectsResult, clientsResult, profilesResult] = await Promise.all([
     supabase
       .from("app_projects")
       .select("id, name, status, starts_on, due_on, client_id, lead_id")
+      .is("archived_at", null)
       .order("created_at", { ascending: false }),
-    supabase.from("app_clients").select("id, name"),
-    supabase.from("app_profiles").select("id, full_name"),
+    supabase.from("app_clients").select("id, name").is("archived_at", null),
+    supabase
+      .from("app_profiles")
+      .select("id, full_name")
+      .eq("is_active", true)
+      .is("archived_at", null),
   ]);
   const clients = new Map(
     (clientsResult.data ?? []).map((row) => [String(row.id), String(row.name)]),
@@ -38,10 +45,13 @@ export async function getProjects() {
 }
 
 export async function getPeople(viewer: Viewer) {
+  if (viewer.role !== "owner" && viewer.role !== "member") return [];
+
   const supabase = await createClient();
   let query = supabase
     .from("app_profiles")
     .select("id, full_name, role, is_active, created_at")
+    .is("archived_at", null)
     .order("full_name");
 
   if (viewer.role !== "owner") query = query.eq("id", viewer.id);
@@ -57,11 +67,19 @@ export async function getPeople(viewer: Viewer) {
 export async function getClients() {
   const supabase = await createClient();
   const [clientsResult, projectsResult, contactsResult] = await Promise.all([
-    supabase.from("app_clients").select("id, name, website").order("name"),
-    supabase.from("app_projects").select("id, client_id, status"),
+    supabase
+      .from("app_clients")
+      .select("id, name, website")
+      .is("archived_at", null)
+      .order("name"),
+    supabase
+      .from("app_projects")
+      .select("id, client_id, status")
+      .is("archived_at", null),
     supabase
       .from("app_client_contacts")
-      .select("client_id, full_name, email, is_primary"),
+      .select("client_id, full_name, email, is_primary")
+      .is("archived_at", null),
   ]);
 
   return (clientsResult.data ?? []).map((client) => {
@@ -103,6 +121,8 @@ export async function getCmsPages() {
 }
 
 export async function getProjectDetail(projectId: string, viewer: Viewer) {
+  if (viewer.role !== "owner" && viewer.role !== "member") return null;
+
   const supabase = await createClient();
   const { data: project } = await supabase
     .from("app_projects")
@@ -110,6 +130,7 @@ export async function getProjectDetail(projectId: string, viewer: Viewer) {
       "id, name, description, status, starts_on, due_on, client_id, lead_id",
     )
     .eq("id", projectId)
+    .is("archived_at", null)
     .single();
 
   if (!project) return null;
@@ -124,11 +145,13 @@ export async function getProjectDetail(projectId: string, viewer: Viewer) {
       supabase
         .from("app_project_members")
         .select("profile_id, responsibility")
-        .eq("project_id", projectId),
+        .eq("project_id", projectId)
+        .is("archived_at", null),
       supabase
         .from("app_milestone_weeks")
         .select("id, week_number, starts_on, due_on")
         .eq("project_id", projectId)
+        .is("archived_at", null)
         .order("week_number"),
       supabase
         .from("app_project_technical_details")
@@ -171,28 +194,9 @@ export async function getProjectDetail(projectId: string, viewer: Viewer) {
       .from("app_milestone_items")
       .select("id, milestone_week_id, label, assigned_to, is_done")
       .in("milestone_week_id", weekIds)
+      .is("archived_at", null)
       .order("created_at");
     items = (data ?? []) as typeof items;
-  }
-
-  let financial: null | {
-    amount: number;
-    currency: "PKR" | "USD";
-    rate: number;
-  } = null;
-  if (viewer.role === "owner") {
-    const { data } = await supabase
-      .from("app_project_financials")
-      .select("value_amount, value_currency, exchange_rate_to_pkr")
-      .eq("project_id", projectId)
-      .maybeSingle();
-    if (data) {
-      financial = {
-        amount: Number(data.value_amount),
-        currency: data.value_currency as "PKR" | "USD",
-        rate: Number(data.exchange_rate_to_pkr),
-      };
-    }
   }
 
   return {
@@ -243,18 +247,44 @@ export async function getProjectDetail(projectId: string, viewer: Viewer) {
             string | null,
         }
       : null,
-    financial,
+  };
+}
+
+export async function getOwnerProjectFinancial(
+  projectId: string,
+  viewer: Viewer,
+) {
+  if (viewer.role !== "owner") return null;
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("app_project_financials")
+    .select("value_amount, value_currency, exchange_rate_to_pkr")
+    .eq("project_id", projectId)
+    .maybeSingle();
+
+  if (!data) return null;
+
+  return {
+    amount: Number(data.value_amount),
+    currency: data.value_currency as "PKR" | "USD",
+    rate: Number(data.exchange_rate_to_pkr),
   };
 }
 
 export async function getProjectFormOptions() {
   const supabase = await createClient();
   const [clientsResult, peopleResult] = await Promise.all([
-    supabase.from("app_clients").select("id, name").order("name"),
+    supabase
+      .from("app_clients")
+      .select("id, name")
+      .is("archived_at", null)
+      .order("name"),
     supabase
       .from("app_profiles")
       .select("id, full_name")
       .eq("is_active", true)
+      .is("archived_at", null)
       .order("full_name"),
   ]);
   return {

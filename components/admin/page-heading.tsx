@@ -22,7 +22,11 @@ export function PageHeading({
           {description}
         </p>
       </div>
-      {action}
+      {action ? (
+        <div className="flex w-full sm:w-auto sm:shrink-0 [&>*]:w-full sm:[&>*]:w-auto">
+          {action}
+        </div>
+      ) : null}
     </div>
   );
 }

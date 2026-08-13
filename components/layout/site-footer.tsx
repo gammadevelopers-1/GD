@@ -9,7 +9,7 @@ export function SiteFooter() {
   return (
     <footer
       id="book"
-      className="relative min-h-[940px] scroll-mt-24 overflow-hidden bg-[#080b0e] pt-30 text-[#eceae2] max-lg:min-h-[860px]"
+      className="relative min-h-[940px] scroll-mt-24 overflow-hidden bg-[#080b0e] pt-24 text-[#eceae2] max-lg:min-h-[860px] sm:pt-30"
     >
       <div
         aria-hidden
@@ -35,7 +35,7 @@ export function SiteFooter() {
       </div>
 
       <div className="relative z-[5] mx-auto max-w-[1240px] px-5 md:px-9">
-        <Reveal className="mb-24 text-center">
+        <Reveal className="mb-16 text-center sm:mb-24">
           <span className="mb-5 inline-flex items-center gap-2 font-mono text-[10.5px] tracking-[0.18em] text-[#9aa096] uppercase">
             <span className="bg-brand size-1.5 rounded-full shadow-[0_0_9px_rgba(47,232,92,0.6)]" />
             {closing.eyebrow}
@@ -55,8 +55,8 @@ export function SiteFooter() {
           </Link>
         </Reveal>
 
-        <div className="grid gap-8 md:grid-cols-[2.1fr_1fr_1fr]">
-          <div>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-[2.1fr_1fr_1fr] md:gap-8">
+          <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2.5 text-[17px] font-semibold tracking-[-0.02em]">
               <Mark className="!bg-[#eceae2]" />
               {site.name}
@@ -87,7 +87,7 @@ export function SiteFooter() {
           ))}
         </div>
 
-        <div className="mt-30 flex flex-wrap justify-between gap-3 border-t border-white/[0.07] pt-5.5 pb-6.5 font-mono text-[11px] text-[#6d736a]">
+        <div className="mt-20 flex flex-wrap justify-between gap-3 border-t border-white/[0.07] pt-5.5 pb-6.5 font-mono text-[11px] text-[#6d736a] sm:mt-30">
           <span>
             © {new Date().getFullYear()} {site.name}
           </span>

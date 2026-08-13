@@ -2,33 +2,27 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireRole, requireViewer } from "@/data/auth";
+import { requireRole } from "@/data/auth";
 import { createClient } from "@/lib/supabase/server";
 
+const UUID =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export async function toggleMilestoneItem(formData: FormData) {
-  const viewer = await requireViewer();
+  await requireRole(["owner", "member"]);
   const itemId = String(formData.get("itemId") ?? "");
   const projectId = String(formData.get("projectId") ?? "");
-  if (!itemId || !projectId) return;
+  if (!UUID.test(itemId) || !UUID.test(projectId)) return;
 
   const supabase = await createClient();
-  const { data: item } = await supabase
-    .from("app_milestone_items")
-    .select("is_done")
-    .eq("id", itemId)
-    .single();
-  if (!item) return;
+  const { error } = await supabase.rpc("app_toggle_milestone_item", {
+    target_item_id: itemId,
+  });
+  if (error) return;
 
-  const done = !item.is_done;
-  await supabase
-    .from("app_milestone_items")
-    .update({
-      is_done: done,
-      completed_at: done ? new Date().toISOString() : null,
-      completed_by: done ? viewer.id : null,
-    })
-    .eq("id", itemId);
   revalidatePath(`/projects/${projectId}`);
+  revalidatePath("/projects");
+  revalidatePath("/dashboard");
 }
 
 export async function createProject(formData: FormData) {

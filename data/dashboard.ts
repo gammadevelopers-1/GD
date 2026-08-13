@@ -69,13 +69,19 @@ export async function getDashboardData(viewer: Viewer): Promise<DashboardData> {
       supabase
         .from("app_projects")
         .select("id, name, status, due_on, client_id, lead_id")
+        .is("archived_at", null)
         .not("status", "in", '("paused","closed")')
         .order("due_on", { ascending: true, nullsFirst: false }),
-      supabase.from("app_clients").select("id, name"),
-      supabase.from("app_profiles").select("id, full_name"),
+      supabase.from("app_clients").select("id, name").is("archived_at", null),
+      supabase
+        .from("app_profiles")
+        .select("id, full_name")
+        .eq("is_active", true)
+        .is("archived_at", null),
       supabase
         .from("app_milestone_weeks")
         .select("id, project_id, due_on")
+        .is("archived_at", null)
         .lt("due_on", now.toISOString().slice(0, 10)),
     ]);
 
@@ -102,6 +108,7 @@ export async function getDashboardData(viewer: Viewer): Promise<DashboardData> {
       .from("app_milestone_items")
       .select("milestone_week_id, is_done")
       .in("milestone_week_id", weekIds)
+      .is("archived_at", null)
       .eq("is_done", false);
     itemRows = (data ?? []) as typeof itemRows;
     overdueMilestones = itemRows.length;
@@ -115,7 +122,8 @@ export async function getDashboardData(viewer: Viewer): Promise<DashboardData> {
     const { data: allWeeks } = await supabase
       .from("app_milestone_weeks")
       .select("id, project_id")
-      .in("project_id", projectIds);
+      .in("project_id", projectIds)
+      .is("archived_at", null);
     const weekProject = new Map(
       (allWeeks ?? []).map((week) => [
         String(week.id),
@@ -128,7 +136,8 @@ export async function getDashboardData(viewer: Viewer): Promise<DashboardData> {
       const { data: allItems } = await supabase
         .from("app_milestone_items")
         .select("milestone_week_id, is_done")
-        .in("milestone_week_id", allWeekIds);
+        .in("milestone_week_id", allWeekIds)
+        .is("archived_at", null);
 
       for (const item of allItems ?? []) {
         const projectId = weekProject.get(String(item.milestone_week_id));
@@ -163,6 +172,7 @@ export async function getDashboardData(viewer: Viewer): Promise<DashboardData> {
     const { data } = await supabase
       .from("app_invoices")
       .select("amount, currency, exchange_rate_to_pkr, status, paid_at")
+      .is("archived_at", null)
       .neq("status", "void");
     const invoices = (data ?? []) as RawInvoice[];
 

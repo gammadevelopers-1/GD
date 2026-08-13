@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Disable this CLI so Node 26 does not corrupt its output.
   experimental: {
+    authInterrupts: true,
     useTypeScriptCli: false,
   },
 };

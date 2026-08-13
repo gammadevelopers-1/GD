@@ -54,7 +54,7 @@ export function CapabilitiesSection() {
                   aria-pressed={active === i}
                   data-button-fill
                   className={cn(
-                    "button-fill-fx button-fill-fx--soft border-border relative block w-full cursor-pointer overflow-hidden border-b py-7 pr-10 pl-8 text-left transition-all duration-300",
+                    "button-fill-fx button-fill-fx--soft border-border relative block w-full cursor-pointer overflow-hidden border-b px-5 py-6 text-left transition-all duration-300 sm:py-7 sm:pr-10 sm:pl-8",
                     active === i
                       ? "bg-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]"
                       : "hover:translate-x-1 hover:bg-white/55",
@@ -81,7 +81,7 @@ export function CapabilitiesSection() {
               ))}
             </div>
 
-            <div className="flex items-center justify-center p-9">
+            <div className="flex items-center justify-center p-5 sm:p-7 lg:p-9">
               <div className="terminal-glare w-full max-w-100 overflow-hidden rounded-[18px] border border-black/45 bg-[#0d1013] font-mono text-xs shadow-[0_28px_70px_rgba(20,23,26,0.22)] ring-1 ring-white/5">
                 <div className="border-b border-white/10 bg-[linear-gradient(90deg,rgba(47,232,92,0.08),transparent_36%,rgba(20,23,26,0.18))] px-4 py-3.5 text-[10.5px] tracking-[0.11em] text-[#90978d] uppercase">
                   {panel.label}

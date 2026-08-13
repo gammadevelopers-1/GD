@@ -84,7 +84,7 @@ export function FlowSection() {
 
         <div
           ref={scope}
-          className="relative mt-16 grid grid-cols-2 gap-9 lg:grid-cols-5 lg:gap-0"
+          className="relative mt-12 grid grid-cols-1 gap-10 min-[360px]:grid-cols-2 sm:mt-16 sm:gap-9 lg:grid-cols-5 lg:gap-0"
         >
           <div className="border-border absolute top-9.5 right-[9%] left-[9%] hidden h-px bg-current/20 lg:block">
             <span className="flow-fill bg-accent absolute inset-y-0 left-0 block w-0 shadow-[0_0_18px_rgba(5,150,105,0.72)]" />

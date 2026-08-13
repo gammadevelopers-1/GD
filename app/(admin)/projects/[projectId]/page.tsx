@@ -10,8 +10,9 @@ import {
   LockKeyhole,
   UsersRound,
 } from "lucide-react";
-import { requireViewer } from "@/data/auth";
-import { getProjectDetail } from "@/data/resources";
+import { ComingSoon } from "@/components/admin/coming-soon";
+import { requireRole } from "@/data/auth";
+import { getOwnerProjectFinancial, getProjectDetail } from "@/data/resources";
 import { cn } from "@/lib/utils";
 import { toggleMilestoneItem } from "../actions";
 
@@ -25,7 +26,7 @@ export default async function ProjectPage({
   params: Promise<{ projectId: string }>;
   searchParams: Promise<{ tab?: string }>;
 }) {
-  const viewer = await requireViewer();
+  const viewer = await requireRole(["owner", "member"]);
   const { projectId } = await params;
   const query = await searchParams;
   const activeTab: Tab = tabs.includes(query.tab as Tab)
@@ -33,6 +34,7 @@ export default async function ProjectPage({
     : "overview";
   const project = await getProjectDetail(projectId, viewer);
   if (!project) notFound();
+  const financial = await getOwnerProjectFinancial(projectId, viewer);
 
   return (
     <div className="mx-auto max-w-[1480px]">
@@ -47,7 +49,7 @@ export default async function ProjectPage({
         <div className="relative px-5 pt-6 pb-7 sm:px-7 sm:pt-8 lg:px-9">
           <div className="pointer-events-none absolute -top-28 right-0 size-72 rounded-full bg-[#2fe85c]/12 blur-3xl" />
           <div className="relative flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-            <div>
+            <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-[#2fe85c]/12 px-2.5 py-1 text-[10px] font-semibold text-[#69ee88] capitalize">
                   {project.status}
@@ -64,7 +66,7 @@ export default async function ProjectPage({
                   "No project description has been added yet."}
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-2 sm:min-w-64">
+            <div className="grid min-w-0 grid-cols-1 gap-2 min-[360px]:grid-cols-2 sm:min-w-64">
               <DarkMeta label="Project lead" value={project.lead} />
               <DarkMeta label="Due date" value={date(project.dueOn)} />
             </div>
@@ -92,7 +94,9 @@ export default async function ProjectPage({
       </section>
 
       <div className="mt-5">
-        {activeTab === "overview" ? <Overview project={project} /> : null}
+        {activeTab === "overview" ? (
+          <Overview project={project} financial={financial} />
+        ) : null}
         {activeTab === "team" ? <Team project={project} /> : null}
         {activeTab === "milestones" ? <Milestones project={project} /> : null}
         {activeTab === "technical" ? <Technical project={project} /> : null}
@@ -103,8 +107,10 @@ export default async function ProjectPage({
 
 function Overview({
   project,
+  financial,
 }: {
   project: NonNullable<Awaited<ReturnType<typeof getProjectDetail>>>;
+  financial: Awaited<ReturnType<typeof getOwnerProjectFinancial>>;
 }) {
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_0.72fr]">
@@ -127,13 +133,13 @@ function Overview({
             ? `${project.weeks.length} milestone week${project.weeks.length === 1 ? "" : "s"} currently planned.`
             : "Weekly milestones have not been planned yet."}
         </p>
-        {project.financial ? (
+        {financial ? (
           <div className="mt-6 rounded-2xl bg-[#15181b] p-4 text-white">
             <p className="font-mono text-[8px] tracking-[0.13em] text-white/30 uppercase">
               Owner-only project value
             </p>
             <p className="mt-2 text-xl font-semibold tracking-[-0.04em]">
-              {money(project.financial.amount, project.financial.currency)}
+              {money(financial.amount, financial.currency)}
             </p>
           </div>
         ) : null}
@@ -313,16 +319,12 @@ function Technical({
         )}
       </Panel>
       <Panel title="Credentials" icon={LockKeyhole}>
-        <div className="rounded-2xl border border-dashed border-black/10 bg-black/[0.02] p-4">
-          <p className="text-sm font-semibold">
-            Secrets are intentionally not enabled
-          </p>
-          <p className="mt-2 text-xs leading-5 text-black/42">
-            The brief requires credentials to be built last, after access
-            grants, encryption and audit logging have received a separate
-            security review.
-          </p>
-        </div>
+        <ComingSoon
+          compact
+          title="Secure credentials vault"
+          description="Secrets will be built last, after encryption, individual access grants, instant revocation and audit logging receive a separate security review."
+          items={["Encrypted vault", "Per-person access", "Audit log"]}
+        />
         {technical?.stackNotes ? (
           <div className="mt-5">
             <p className="font-mono text-[8px] tracking-wider text-black/30 uppercase">
@@ -371,7 +373,7 @@ function Detail({
   capitalize?: boolean;
 }) {
   return (
-    <div>
+    <div className="min-w-0">
       <p className="font-mono text-[8px] tracking-wider text-black/30 uppercase">
         {label}
       </p>
@@ -388,7 +390,7 @@ function Detail({
 }
 function LinkDetail({ label, value }: { label: string; value: string | null }) {
   return (
-    <div>
+    <div className="min-w-0">
       <p className="font-mono text-[8px] tracking-wider text-black/30 uppercase">
         {label}
       </p>

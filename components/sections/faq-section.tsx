@@ -29,9 +29,9 @@ export function FaqSection() {
               <AccordionItem
                 key={item.q}
                 value={`item-${i}`}
-                className="faq-row px-4"
+                className="faq-row px-0 sm:px-4"
               >
-                <AccordionTrigger className="hover:text-accent py-6 text-[17px] font-medium tracking-[-0.01em] hover:no-underline">
+                <AccordionTrigger className="hover:text-accent py-5 text-left text-base font-medium tracking-[-0.01em] hover:no-underline sm:py-6 sm:text-[17px]">
                   {item.q}
                 </AccordionTrigger>
                 <AccordionContent className="text-muted-foreground max-w-[64ch] pb-6 text-[15px] leading-[1.66]">

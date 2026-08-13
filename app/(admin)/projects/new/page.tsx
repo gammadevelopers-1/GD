@@ -81,15 +81,19 @@ export default async function NewProjectPage() {
                 placeholder="What are we building and why?"
               />
             </label>
-            <div className="flex justify-end gap-3 border-t border-black/[0.06] pt-5 sm:col-span-2">
+            <div className="flex flex-col-reverse gap-3 border-t border-black/[0.06] pt-5 sm:col-span-2 sm:flex-row sm:justify-end">
               <Link
                 href="/projects"
-                className="inline-flex h-11 items-center rounded-xl px-4 text-sm font-medium text-black/45"
+                data-button-fill
+                className="button-fill-fx button-fill-fx--soft inline-flex h-11 items-center justify-center rounded-xl px-4 text-sm font-medium text-black/45 transition hover:text-black/65"
               >
-                Cancel
+                <span className="button-fill-fx__label">Cancel</span>
               </Link>
-              <button className="h-11 rounded-xl bg-[#15181b] px-5 text-sm font-semibold text-white">
-                Create project
+              <button
+                data-button-fill
+                className="button-fill-fx button-fill-fx--lift h-11 rounded-xl bg-[#15181b] px-5 text-sm font-semibold text-white transition [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512]"
+              >
+                <span className="button-fill-fx__label">Create project</span>
               </button>
             </div>
           </form>
