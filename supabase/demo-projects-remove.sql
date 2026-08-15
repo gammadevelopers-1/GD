@@ -1,6 +1,3 @@
--- Removes everything supabase/demo-projects.sql created, and nothing else.
--- Every demo row lives in the d0…… id range.
-
 begin;
 
 delete from public.app_milestone_items

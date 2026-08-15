@@ -342,7 +342,6 @@ export function LineField() {
 
       const activeCount = Math.max(2, Math.round(motion.activeLines));
       const lineGap = (height * FIELD_SPAN) / Math.max(1, activeCount - 1);
-      // Limit wave height so adjacent lines stay separated.
       currentWaveAmplitude = Math.min(WAVE_AMPLITUDE, lineGap * 0.3);
       if (isAuditing && timestamp >= nextBoundaryRead) {
         updateContentBoundaries();
@@ -473,7 +472,6 @@ export function LineField() {
         if (!showsDot) return;
 
         if (!reduced) {
-          // Wrap dots so motion keeps moving forward.
           line.dot +=
             (line.dotSpeed / Math.max(width, 1)) *
             deltaSeconds *
@@ -549,7 +547,6 @@ export function LineField() {
         drawDot(line.dot, false);
       });
 
-      // Track audit signals separately so cards change behind the center message.
       for (const journey of journeysRef.current.values()) {
         const line = lines[Math.min(journey.lineIndex, activeCount - 1)];
         if (!line || line.alive < 0.01) continue;

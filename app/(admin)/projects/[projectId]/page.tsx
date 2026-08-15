@@ -63,7 +63,10 @@ type Tab = (typeof tabs)[number];
 
 const NOTICES: Record<string, { tone: "ok" | "warning"; message: string }> = {
   created: { tone: "ok", message: "Project created." },
-  restored: { tone: "ok", message: "Project restored. It is back in the portfolio." },
+  restored: {
+    tone: "ok",
+    message: "Project restored. It is back in the portfolio.",
+  },
   "value-not-saved": {
     tone: "warning",
     message:
@@ -234,7 +237,7 @@ function ProjectHeader({
                 />
                 <Link
                   href={`/projects/${project.id}/edit`}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-full bg-white/[0.08] px-3.5 text-xs font-semibold text-white transition hover:bg-white/[0.14]"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-full bg-white/[0.08] px-3.5 text-xs font-semibold text-white transition duration-200 hover:bg-white/[0.16] hover:shadow-[0_8px_20px_rgba(0,0,0,0.25)] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none active:scale-[0.97]"
                 >
                   <Pencil className="size-3.5" />
                   Edit
@@ -254,9 +257,19 @@ function ProjectHeader({
         </div>
 
         <div className="relative mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <HeaderMeta label="Project lead" value={project.leadName ?? "Unassigned"} />
-          <HeaderMeta label="Team" value={`${project.members.length} assigned`} />
-          <HeaderMeta label="Due date" value={formatDate(project.dueOn)} note={deadline.label} />
+          <HeaderMeta
+            label="Project lead"
+            value={project.leadName ?? "Unassigned"}
+          />
+          <HeaderMeta
+            label="Team"
+            value={`${project.members.length} assigned`}
+          />
+          <HeaderMeta
+            label="Due date"
+            value={formatDate(project.dueOn)}
+            note={deadline.label}
+          />
           <HeaderMeta
             label="Milestones"
             value={
@@ -278,10 +291,10 @@ function ProjectHeader({
             href={tabHref(tab)}
             aria-current={activeTab === tab ? "page" : undefined}
             className={cn(
-              "relative shrink-0 px-3.5 py-3.5 text-xs font-medium capitalize transition sm:px-4",
+              "relative shrink-0 px-3.5 py-3.5 text-xs font-medium capitalize transition duration-150 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none sm:px-4",
               activeTab === tab
                 ? "text-white"
-                : "text-white/35 hover:text-white/65",
+                : "text-white/35 hover:bg-white/[0.04] hover:text-white/80",
             )}
           >
             {tab}
@@ -305,7 +318,7 @@ function HeaderMeta({
   note?: string;
 }) {
   return (
-    <div className="min-w-0 rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5">
+    <div className="min-w-0 rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5 transition-colors duration-200 hover:border-white/[0.14] hover:bg-white/[0.06]">
       <p className="font-mono text-[8px] tracking-wider text-white/25 uppercase">
         {label}
       </p>
@@ -378,7 +391,10 @@ function Overview({
                     Week {project.currentWeek.number}
                   </h3>
                   {project.currentWeek.isCurrent &&
-                  isThisWeek(project.currentWeek.dueOn, project.currentWeek.startsOn) ? (
+                  isThisWeek(
+                    project.currentWeek.dueOn,
+                    project.currentWeek.startsOn,
+                  ) ? (
                     <span className="rounded-full bg-[#2fe85c]/15 px-2 py-0.5 text-[9px] font-semibold text-[#08743d]">
                       Current week
                     </span>
@@ -395,7 +411,7 @@ function Overview({
                   {project.currentWeek.items.slice(0, 4).map((item) => (
                     <li
                       key={item.id}
-                      className="flex items-center gap-2.5 text-[13px]"
+                      className="flex items-center gap-2.5 rounded-lg px-1.5 py-1 text-[13px] transition-colors duration-150 hover:bg-black/[0.03]"
                     >
                       <span
                         className={cn(
@@ -410,7 +426,9 @@ function Overview({
                       <span
                         className={cn(
                           "min-w-0 truncate",
-                          item.done ? "text-black/35 line-through" : "text-black/70",
+                          item.done
+                            ? "text-black/35 line-through"
+                            : "text-black/70",
                         )}
                       >
                         {item.label}
@@ -431,7 +449,7 @@ function Overview({
 
               <Link
                 href={tabHref("milestones")}
-                className="mt-3 inline-flex text-[11px] font-semibold text-[#08743d] hover:underline"
+                className="mt-3 inline-flex rounded text-[11px] font-semibold text-[#08743d] transition hover:underline focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
               >
                 Open all milestone weeks →
               </Link>
@@ -445,7 +463,7 @@ function Overview({
               {gaps.map((gap) => (
                 <li
                   key={gap.label}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-black/[0.06] bg-white/50 px-3.5 py-2.5"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-black/[0.06] bg-white/50 px-3.5 py-2.5 transition duration-150 hover:border-black/[0.13] hover:bg-white"
                 >
                   <span className="text-[13px] text-black/60">{gap.label}</span>
                   {gap.href ? (
@@ -519,8 +537,14 @@ function ValuePanel({
             {formatMoney(financial.amount, financial.currency)}
           </p>
           <div className="mt-4 grid grid-cols-2 gap-2">
-            <MoneyCell label="In PKR" value={formatMoney(financial.amountPkr, "PKR")} />
-            <MoneyCell label="In USD" value={formatMoney(financial.amountUsd, "USD")} />
+            <MoneyCell
+              label="In PKR"
+              value={formatMoney(financial.amountPkr, "PKR")}
+            />
+            <MoneyCell
+              label="In USD"
+              value={formatMoney(financial.amountUsd, "USD")}
+            />
           </div>
           <p className="mt-3 text-[11px] leading-4 text-white/35">
             Booked {formatDate(financial.bookedOn)} at{" "}
@@ -535,7 +559,7 @@ function ValuePanel({
           </p>
           <Link
             href={`/projects/${projectId}/edit`}
-            className="mt-4 inline-flex h-9 items-center gap-1.5 rounded-xl bg-white/[0.08] px-3.5 text-xs font-semibold text-white transition hover:bg-white/[0.14]"
+            className="mt-4 inline-flex h-9 items-center gap-1.5 rounded-xl bg-white/[0.08] px-3.5 text-xs font-semibold text-white transition duration-200 hover:bg-white/[0.16] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none active:scale-[0.97]"
           >
             <Pencil className="size-3.5" />
             Record the value
@@ -548,7 +572,7 @@ function ValuePanel({
 
 function MoneyCell({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5">
+    <div className="rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5 transition-colors duration-200 hover:border-white/[0.14] hover:bg-white/[0.06]">
       <p className="font-mono text-[8px] tracking-wider text-white/25 uppercase">
         {label}
       </p>
@@ -575,7 +599,7 @@ function isThisWeek(dueOn: string, startsOn: string | null) {
   return (startsOn ?? dueOn) <= today && dueOn >= today;
 }
 
-/** Missing information is presented as the owner's next action, not as blank UI. */
+// Missing information is shown as the owner's next action, not a blank field.
 function missingInformation(
   project: ProjectDetail,
   isOwner: boolean,
@@ -622,8 +646,6 @@ function missingInformation(
 
   return gaps;
 }
-
-
 
 function Technical({ project }: { project: ProjectDetail }) {
   const technical = project.technical;
@@ -683,7 +705,7 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-[20px] border border-black/[0.07] bg-[#f8f8f3] p-5">
+    <section className="rounded-[20px] border border-black/[0.07] bg-[#f8f8f3] p-5 transition-colors duration-200 hover:border-black/[0.11]">
       <div className="mb-5 flex items-center gap-2.5">
         <span className="grid size-8 place-items-center rounded-lg bg-black/[0.045]">
           <Icon className="size-4 text-black/45" />

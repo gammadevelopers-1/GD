@@ -37,10 +37,7 @@ async function recordTeamEvent(
   });
 }
 
-/**
- * Adding an active assignment is what grants access to a project, so this is
- * an owner-only action and the database refuses inactive people outright.
- */
+// Adding someone here is what gives them access to the project.
 export async function addProjectMember(
   _state: SimpleFormState,
   formData: FormData,
@@ -105,11 +102,7 @@ export async function updateMemberResponsibility(
   return formSuccess("Responsibility updated.");
 }
 
-/**
- * Removing archives the assignment rather than deleting it, so the history
- * survives and the same row is reused if the person comes back. Access is gone
- * on their next request, not their next sign-in.
- */
+// Archives the assignment instead of deleting it, so it can be restored.
 export async function removeProjectMember(formData: FormData) {
   const viewer = await requireRole(["owner"]);
   const projectId = String(formData.get("projectId") ?? "");
@@ -118,8 +111,6 @@ export async function removeProjectMember(formData: FormData) {
 
   const supabase = await createClient();
 
-  // A project lead who is not on the team would be a lead who cannot open
-  // their own project, so removing the lead clears the lead field too.
   const { data: project } = await supabase
     .from("app_projects")
     .select("lead_id")
@@ -175,10 +166,7 @@ export async function restoreProjectMember(formData: FormData) {
   refresh(projectId);
 }
 
-/**
- * The lead is a project responsibility, not another role. Setting it grants
- * nothing beyond the ordinary project assignment the database creates.
- */
+// Lead is a job on the project, not an extra role. It grants nothing more.
 export async function setProjectLead(formData: FormData) {
   await requireRole(["owner"]);
   const projectId = String(formData.get("projectId") ?? "");

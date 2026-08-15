@@ -6,7 +6,10 @@ export function PortfolioSkeleton({ view = "grid" }: { view?: PortfolioView }) {
     <div className="space-y-4" aria-hidden>
       <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-black/[0.07] bg-black/[0.07] lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, index) => (
-          <div key={index} className="flex items-center gap-3 bg-[#f8f8f3] px-4 py-3.5">
+          <div
+            key={index}
+            className="flex items-center gap-3 bg-[#f8f8f3] px-4 py-3.5"
+          >
             <span className="size-8 shrink-0 animate-pulse rounded-lg bg-black/[0.06]" />
             <div className="w-full space-y-2">
               <span className="block h-3 w-8 animate-pulse rounded bg-black/[0.06]" />

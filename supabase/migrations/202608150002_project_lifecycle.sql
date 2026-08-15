@@ -1,20 +1,5 @@
--- Chunk 3 — Project lifecycle.
---
--- Owners create and manage a project from discovery through closure without
--- opening Supabase. Two invariants belong in the database rather than in a
--- server action, because they must hold whatever writes the row:
---
---   1. Choosing a project lead gives that person access to the project.
---   2. Lifecycle changes are recorded against the person who made them.
-
--- 1. Lead membership -------------------------------------------------------
---
--- "Adding someone to the team is what gives them access" is the access rule for
--- the whole module. A lead who was never added to the team would be a project
--- lead who cannot open their own project, so the trigger creates or restores
--- the membership row. It never removes one: a replaced lead stays on the team
--- until an owner removes them on the Team tab.
-
+-- Chunk 3, Picking a lead puts them on the team, or we get a lead who cannot
+-- open their own project. It never removes anyone.
 create or replace function private.sync_project_lead_membership()
 returns trigger
 language plpgsql
@@ -53,12 +38,7 @@ create trigger app_projects_lead_membership
 comment on function private.sync_project_lead_membership()
 is 'Keeps the project lead on the project team, so selecting a lead always grants that person access.';
 
--- 2. Lifecycle audit -------------------------------------------------------
---
--- app_audit_logs has no insert policy on purpose: it is append-only and no
--- client may write to it directly. This is the single authorized way in, and
--- only an owner can call it.
-
+-- The only way into the audit log. Owners only, and it never holds secrets.
 create or replace function public.app_record_project_event(
   target_project_id uuid,
   action_name text,
@@ -106,13 +86,6 @@ is 'The only write path into the append-only audit log. Owner-only. Never store 
 revoke all on function public.app_record_project_event(uuid, text, jsonb) from public;
 revoke all on function public.app_record_project_event(uuid, text, jsonb) from anon;
 grant execute on function public.app_record_project_event(uuid, text, jsonb) to authenticated;
-
--- 3. Money that stays true a year from now ---------------------------------
---
--- The stored amount, its currency and the rate on the booking date are never
--- rewritten. Conversion happens at display time only, so last year's numbers
--- cannot silently move when the rate does. The rate is recorded as PKR per one
--- USD so either direction can be shown from the same row.
 
 comment on column public.app_project_financials.exchange_rate_to_pkr
 is 'PKR per 1 USD on the booking date. Display-time conversion only — never rewritten when the rate moves.';

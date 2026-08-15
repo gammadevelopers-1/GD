@@ -1,4 +1,3 @@
-
 create or replace function private.has_active_account()
 returns boolean
 language sql
@@ -243,8 +242,7 @@ using (
   )
 );
 
--- Members may complete milestone items, but they must not be able to rewrite
--- labels, assignees, dates, or archival state with a direct table update.
+-- Members can tick items off, but never edit the label, assignee or dates.
 drop policy if exists "milestone_items_project_insert" on public.app_milestone_items;
 drop policy if exists "milestone_items_project_update" on public.app_milestone_items;
 
@@ -318,7 +316,7 @@ grant execute on function public.app_toggle_milestone_item(uuid) to authenticate
 revoke execute on function private.has_active_account() from public;
 grant execute on function private.has_active_account() to authenticated;
 
--- Future public-schema tables and functions begin closed to anonymous users.
+-- New tables and functions start closed to anonymous users.
 alter default privileges in schema public revoke all on tables from anon;
 alter default privileges in schema public revoke execute on functions from public;
 

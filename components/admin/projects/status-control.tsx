@@ -8,10 +8,6 @@ import {
   type ProjectStatus,
 } from "@/lib/projects/status";
 
-/**
- * Moving a project along its lifecycle is the most frequent owner action, so
- * it lives in the project header rather than behind the edit form.
- */
 export function StatusControl({
   projectId,
   status,
@@ -40,7 +36,7 @@ export function StatusControl({
           if (!form) return;
           startTransition(() => form.requestSubmit());
         }}
-        className="h-9 cursor-pointer appearance-none rounded-full border border-white/[0.12] bg-white/[0.06] py-0 pr-8 pl-3.5 text-xs font-semibold text-white capitalize outline-none transition hover:border-white/25 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/40 disabled:opacity-60"
+        className="h-9 cursor-pointer appearance-none rounded-full border border-white/[0.12] bg-white/[0.06] py-0 pr-8 pl-3.5 text-xs font-semibold text-white capitalize transition outline-none hover:border-white/25 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/40 disabled:opacity-60"
       >
         {PROJECT_STATUSES.map((value) => (
           <option key={value} value={value} className="text-black">

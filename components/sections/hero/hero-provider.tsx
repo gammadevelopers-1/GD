@@ -33,7 +33,6 @@ export interface AuditFinding {
 export const BASE_LINES = 8;
 export const MAX_LINES = 9;
 
-// Keep this fallback so reduced motion uses safe timing.
 export const SIGNAL_TRAVEL_TIME = 11;
 
 interface HeroContextValue {
@@ -124,7 +123,6 @@ export function HeroProvider({ children }: { children: ReactNode }) {
         let lastSignalAt = 0;
         let firstSolutionAt = Number.POSITIVE_INFINITY;
 
-        // Stagger journeys so cards change behind the center message.
         for (let index = 0; index < total; index += 1) {
           const entryAt = nextEntryAt;
           const messyHalfTime = gsap.utils.random(3, 3.5, 0.05);
@@ -160,7 +158,6 @@ export function HeroProvider({ children }: { children: ReactNode }) {
             entryAt,
           );
 
-          // Add each finding at midpoint so signals stay separated.
           nextEntryAt += messyHalfTime;
         }
 

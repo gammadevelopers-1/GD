@@ -38,9 +38,7 @@ export function PortfolioFilters({
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   const filterCount = activeFilterCount(query);
 
-  // Keep the field in step when the URL changes from outside the input —
-  // a back navigation or a bookmarked link — without overwriting what someone
-  // is still typing while their previous keystrokes are in flight.
+  // Keep the box in step with the URL without wiping what someone is typing.
   if (query.search !== urlSearch) {
     setUrlSearch(query.search);
     if (query.search !== submitted) {
@@ -115,7 +113,7 @@ export function PortfolioFilters({
           />
         </div>
 
-        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:ml-auto lg:w-auto lg:grid-cols-none lg:grid-flow-col">
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:ml-auto lg:w-auto lg:grid-flow-col lg:grid-cols-none">
           <Select
             label="Client"
             value={query.clientId ?? ""}

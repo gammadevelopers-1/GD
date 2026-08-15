@@ -51,10 +51,8 @@ export type ProjectDetail = {
   leadId: string | null;
   leadName: string | null;
   members: ProjectMember[];
-  /** Owners only — removed assignments, kept so they can be restored. */
   formerMembers: FormerProjectMember[];
   weeks: MilestoneWeek[];
-  /** Owners only — archived weeks, shown separately from the live plan. */
   archivedWeeks: MilestoneWeek[];
   totalItems: number;
   doneItems: number;
@@ -73,7 +71,6 @@ export type ProjectDetail = {
   } | null;
 };
 
-/** Owner-only. Read separately from the project so members have no code path to it. */
 export type ProjectFinancial = {
   amount: number;
   currency: "PKR" | "USD";
@@ -87,11 +84,8 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-/**
- * The week containing today. If planning has not reached today, the next week
- * due; if every week is in the past, the last one — so a project always has a
- * "where we are" answer.
- */
+// The week we are in now. If planning has not reached today, the next one.
+// If every week has passed, the last one, so there is always an answer.
 function pickCurrentWeek(weeks: MilestoneWeek[]) {
   const now = today();
   const containing = weeks.find(
@@ -113,9 +107,6 @@ export async function getProjectDetail(
 
   const supabase = await createClient();
 
-  // No archived filter: an owner must be able to open an archived project to
-  // restore it. Row-level security still keeps archived projects away from
-  // members, so this cannot widen anyone else's access.
   const { data: project } = await supabase
     .from("app_projects")
     .select(
@@ -126,8 +117,6 @@ export async function getProjectDetail(
 
   if (!project) return null;
 
-  // Owners see archived assignments, weeks and items so they can restore them.
-  // Members only ever receive the live plan.
   const isOwner = viewer.role === "owner";
 
   const membersQuery = supabase
@@ -245,8 +234,6 @@ export async function getProjectDetail(
     };
   });
 
-  // Archived weeks are not part of the plan, so they never count towards
-  // progress and never become the current week.
   const weeks = allWeeks.filter((week) => !week.isArchived);
   const archivedWeeks = allWeeks.filter((week) => week.isArchived);
 
@@ -325,6 +312,7 @@ export async function getProjectDetail(
   };
 }
 
+// Owner only
 export async function getProjectFinancial(
   projectId: string,
   viewer: Viewer,
@@ -344,8 +332,6 @@ export async function getProjectFinancial(
   const currency = data.value_currency as "PKR" | "USD";
   const rate = Number(data.exchange_rate_to_pkr);
 
-  // The rate is PKR per one USD on the booking date. Converting at display
-  // time keeps the recorded figure true no matter what the rate does later.
   return {
     amount,
     currency,

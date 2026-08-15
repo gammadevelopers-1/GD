@@ -44,9 +44,9 @@ export function daysUntil(date: string) {
   return Math.ceil((target.getTime() - today.getTime()) / 86_400_000);
 }
 
-/** The project due date read as a deadline, not as a health label. */
 export function deadlineSignal(dueOn: string | null, status: ProjectStatus) {
-  if (status === "closed") return { label: "Delivered", tone: "muted" as const };
+  if (status === "closed")
+    return { label: "Delivered", tone: "muted" as const };
   if (status === "paused") return { label: "Paused", tone: "muted" as const };
   if (!dueOn) return { label: "No due date", tone: "warning" as const };
 
@@ -59,10 +59,7 @@ export function deadlineSignal(dueOn: string | null, status: ProjectStatus) {
   return { label: `Due in ${days}d`, tone: "ok" as const };
 }
 
-/**
- * The delivery signal is calculated from real milestone data — unfinished work
- * in past weeks first, then the approaching due date. Nobody selects it.
- */
+// Worked out from real milestone data. Nobody picks this by hand.
 export function deliverySignal(project: {
   status: ProjectStatus;
   dueOn: string | null;

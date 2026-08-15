@@ -1,21 +1,5 @@
--- Chunk 2 — Project portfolio.
---
--- The portfolio screen answers "what is the state of every project right now".
--- It needs each project's delivery state (milestone progress, overdue work and
--- the current week) alongside search, status/client/person filters.
---
--- Doing that from the application would mean fetching every milestone week and
--- item for every project on every request. Instead the read is a single
--- authorized function that aggregates in the database.
---
--- The function is security definer, so it repeats the Chunk 1 access rules
--- explicitly rather than relying on the caller's RLS:
---   * Only active Owner and Member accounts receive rows. Finance has no
---     operational project workspace; anonymous callers have no privilege.
---   * A Member receives only projects with an active assignment.
---   * Project value is not a column of the result. It is not selected and then
---     hidden — it is never read here at all.
-
+-- Chunk 2. The portfolio needs milestone progress for every project, so we
+-- add it up in one query 
 create or replace function private.can_use_projects()
 returns boolean
 language sql
@@ -32,6 +16,8 @@ $$;
 comment on function private.can_use_projects()
 is 'True only for an active Owner or Member. Finance and inactive accounts are excluded from the Projects workspace.';
 
+-- Security definer, so it checks access itself: owners get everything,
+-- members only what they are assigned to. There is no value column at all.
 create or replace function public.app_project_portfolio(
   search_text text default null,
   filter_statuses public.app_project_status[] default null,
@@ -203,10 +189,7 @@ $$;
 comment on function public.app_project_portfolio(text, public.app_project_status[], uuid, uuid, boolean)
 is 'Portfolio read for the Projects screen. Owners receive every project, Members only active assignments. Project value is never returned.';
 
--- Filter options must describe the caller's own portfolio. An owner sees every
--- client and person that appears on a project; a member sees only the clients
--- and colleagues attached to the projects they are assigned to.
-
+-- Filter dropdowns only list clients and people you can already see.
 create or replace function public.app_portfolio_clients()
 returns table (id uuid, name text)
 language sql

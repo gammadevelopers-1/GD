@@ -5,7 +5,6 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  // supabase/.temp holds bundles the CLI writes when the local stack starts.
   globalIgnores([
     ".next/**",
     "out/**",

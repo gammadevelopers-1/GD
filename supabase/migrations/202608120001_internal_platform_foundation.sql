@@ -85,7 +85,7 @@ create table public.app_projects (
   check (due_on is null or starts_on is null or due_on >= starts_on)
 );
 
--- Store project money separately so members cannot read it.
+-- Project money lives in its own table so members can never read it.
 create table public.app_project_financials (
   project_id uuid primary key references public.app_projects(id) on delete restrict,
   value_amount numeric(14, 2) not null check (value_amount >= 0),
@@ -179,7 +179,7 @@ create table public.app_audit_logs (
   occurred_at timestamptz not null default now()
 );
 
--- Keep CMS data separate so public users only read published content.
+-- CMS is separate so the public site only ever reads published rows.
 create table public.cms_pages (
   id uuid primary key default gen_random_uuid(),
   slug text not null unique check (slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'),
@@ -558,7 +558,7 @@ grant execute on function private.can_work_on_project(uuid) to authenticated;
 grant execute on function private.can_view_profile(uuid) to authenticated;
 grant execute on function private.can_view_client(uuid) to authenticated;
 
--- Keep employee documents private so public URLs cannot expose them.
+-- Private bucket, so no contract is reachable on a public URL.
 insert into storage.buckets (id, name, public, file_size_limit)
 values ('app-private-documents', 'app-private-documents', false, 10485760)
 on conflict (id) do update set public = false, file_size_limit = excluded.file_size_limit;

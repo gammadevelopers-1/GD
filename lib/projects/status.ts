@@ -1,6 +1,4 @@
-// One definition of the seven project statuses so the portfolio, the dashboard
-// and the project workspace never drift apart on wording or colour.
-
+// One place for the seven statuses, so every screen says the same thing.
 export const PROJECT_STATUSES = [
   "discovery",
   "building",
@@ -23,7 +21,7 @@ export const PROJECT_STATUS_LABEL: Record<ProjectStatus, string> = {
   closed: "Closed",
 };
 
-/** Bordered chip used on light panels and cards. */
+// Chip with a border, for cards and light panels.
 export const PROJECT_STATUS_CHIP: Record<ProjectStatus, string> = {
   discovery: "border-sky-200/70 bg-sky-50 text-sky-700",
   building: "border-[#2fe85c]/25 bg-[#2fe85c]/10 text-[#08743d]",
@@ -34,7 +32,7 @@ export const PROJECT_STATUS_CHIP: Record<ProjectStatus, string> = {
   closed: "border-black/[0.07] bg-black/[0.035] text-black/50",
 };
 
-/** Borderless tone used inside dense tables and summary rows. */
+// Flat version, for dense rows and tables.
 export const PROJECT_STATUS_TONE: Record<ProjectStatus, string> = {
   discovery: "bg-sky-500/10 text-sky-700",
   building: "bg-[#2fe85c]/15 text-[#08743d]",
@@ -45,7 +43,6 @@ export const PROJECT_STATUS_TONE: Record<ProjectStatus, string> = {
   closed: "bg-black/5 text-black/45",
 };
 
-/** Paused and Closed are exits: findable, but never mistaken for live delivery. */
 export const EXIT_STATUSES: ProjectStatus[] = ["paused", "closed"];
 
 export function isProjectStatus(value: string): value is ProjectStatus {

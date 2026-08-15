@@ -3,7 +3,6 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { Viewer } from "@/data/auth";
 
-
 export async function getPeople(viewer: Viewer) {
   if (viewer.role !== "owner" && viewer.role !== "member") return [];
 
@@ -79,6 +78,3 @@ export async function getCmsPages() {
     updatedAt: String(row.updated_at),
   }));
 }
-
-
-

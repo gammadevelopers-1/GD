@@ -27,7 +27,6 @@ export type PortfolioProject = {
     total: number;
     done: number;
   } | null;
-  /** Owner-only. Members never receive this key at all. */
   value: { amount: number; currency: "PKR" | "USD" } | null;
 };
 
@@ -117,11 +116,7 @@ export async function getPortfolio(
   });
 }
 
-/**
- * Project value is read in a separate owner-only request against the separate
- * financial table. It is never joined into the portfolio response, so a member
- * request has no code path that could return it.
- */
+// owner only
 async function getProjectValues(viewer: Viewer, projectIds: string[]) {
   const values = new Map<string, { amount: number; currency: "PKR" | "USD" }>();
   if (viewer.role !== "owner" || !projectIds.length) return values;
@@ -153,8 +148,9 @@ export async function getPortfolioOptions(
   ]);
 
   return {
-    clients: ((clientsResult.data ?? []) as Array<{ id: string; name: string }>)
-      .map((row) => ({ id: String(row.id), name: String(row.name) })),
+    clients: (
+      (clientsResult.data ?? []) as Array<{ id: string; name: string }>
+    ).map((row) => ({ id: String(row.id), name: String(row.name) })),
     people: (
       (peopleResult.data ?? []) as Array<{ id: string; full_name: string }>
     ).map((row) => ({ id: String(row.id), name: String(row.full_name) })),

@@ -97,8 +97,9 @@ export function PortfolioResults({
     if (isExitStatus(project.status) || !project.dueOn) return false;
     return deadlineSignal(project.dueOn, project.status).tone === "warning";
   }).length;
-  const parked = projects.filter((project) => isExitStatus(project.status))
-    .length;
+  const parked = projects.filter((project) =>
+    isExitStatus(project.status),
+  ).length;
 
   return (
     <div className="space-y-4">
@@ -316,7 +317,9 @@ function ProjectRow({
       </p>
 
       <div className="min-w-0">
-        <p className="text-xs text-black/60">{formatDateShort(project.dueOn)}</p>
+        <p className="text-xs text-black/60">
+          {formatDateShort(project.dueOn)}
+        </p>
         <p className={cn("mt-0.5 text-[10px]", TONE_TEXT[deadline.tone])}>
           {deadline.label}
         </p>

@@ -19,9 +19,7 @@ function refresh(projectId?: string) {
   revalidatePath("/dashboard");
 }
 
-function failure(
-  state: Omit<ProjectFormState, "status">,
-): ProjectFormState {
+function failure(state: Omit<ProjectFormState, "status">): ProjectFormState {
   return { ...state, status: "error" };
 }
 
@@ -97,8 +95,6 @@ export async function createProject(
       });
 
     if (financialError) {
-      // The project exists and is usable; only the value is missing. Say so
-      // rather than pretending the whole thing failed.
       await supabase.rpc("app_record_project_event", {
         target_project_id: projectId,
         action_name: "project.created",
@@ -257,11 +253,7 @@ export async function setProjectStatus(formData: FormData) {
   refresh(projectId);
 }
 
-/**
- * Archiving is how a project is removed. Nothing is deleted: the row keeps its
- * history and an owner can restore it. Members lose access immediately because
- * project access requires a project that is not archived.
- */
+// Archiving hides the project and cuts member access. Nothing is deleted.
 export async function archiveProject(formData: FormData) {
   await requireRole(["owner"]);
   const projectId = String(formData.get("projectId") ?? "");

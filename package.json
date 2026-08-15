@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "check": "npm run lint && npm run typecheck",
     "test:db": "supabase test db",
-    "test:api": "node scripts/project-api-check.mjs"
+    "test:api": "node scripts/project-api-check.mjs",
+    "seed:demo": "node scripts/seed-demo.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

@@ -186,8 +186,6 @@ on conflict (project_id, profile_id) do update
   set responsibility = excluded.responsibility,
       archived_at = null;
 
--- Deactivated after the assignment exists: someone is switched off while they
--- are still on a project, which is the case that has to stay safe.
 update public.app_profiles
 set is_active = false
 where id = '90000000-0000-4000-8000-000000000005';

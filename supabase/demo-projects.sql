@@ -1,17 +1,3 @@
--- Demo portfolio data for the Chunk 2 walkthrough.
---
--- Run it in the Supabase SQL editor. It finds the first active owner and the
--- first two active members already in the database, so it works on any
--- environment without editing ids.
---
--- Rerunning it is safe: it removes its own rows first, then recreates them.
--- To remove it entirely, run supabase/demo-projects-remove.sql.
---
--- WARNING: this writes real rows into whatever database you run it against.
--- Every row it creates is inside the d0…… id range and its clients are tagged
--- 'DEMO DATA' in their notes column, so nothing of yours is touched — but do
--- not leave it in a database the owners are using for real work.
-
 begin;
 
 do $$
@@ -25,6 +11,8 @@ declare
   client_atlas     constant uuid := 'd0c00000-0000-4000-8000-000000000003';
   client_brightline constant uuid := 'd0c00000-0000-4000-8000-000000000004';
   client_meridian  constant uuid := 'd0c00000-0000-4000-8000-000000000005';
+  client_vertex    constant uuid := 'd0c00000-0000-4000-8000-000000000006';
+  client_lumen     constant uuid := 'd0c00000-0000-4000-8000-000000000007';
 
   p_operations constant uuid := 'd0900000-0000-4000-8000-000000000001';
   p_launch     constant uuid := 'd0900000-0000-4000-8000-000000000002';
@@ -36,6 +24,8 @@ declare
   p_refresh    constant uuid := 'd0900000-0000-4000-8000-000000000008';
   p_legacy     constant uuid := 'd0900000-0000-4000-8000-000000000009';
   p_bare       constant uuid := 'd0900000-0000-4000-8000-000000000010';
+  p_vertex     constant uuid := 'd0900000-0000-4000-8000-000000000011';
+  p_lumen      constant uuid := 'd0900000-0000-4000-8000-000000000012';
 
   w_ops_1 constant uuid := 'd0e00000-0000-4000-8000-000000000011';
   w_ops_2 constant uuid := 'd0e00000-0000-4000-8000-000000000012';
@@ -48,6 +38,9 @@ declare
   w_ord_1 constant uuid := 'd0e00000-0000-4000-8000-000000000041';
   w_mig_1 constant uuid := 'd0e00000-0000-4000-8000-000000000051';
   w_ref_1 constant uuid := 'd0e00000-0000-4000-8000-000000000061';
+  w_ops_5 constant uuid := 'd0e00000-0000-4000-8000-000000000015';
+  w_ver_1 constant uuid := 'd0e00000-0000-4000-8000-000000000071';
+  w_ver_2 constant uuid := 'd0e00000-0000-4000-8000-000000000072';
 begin
   select id into owner_id
   from public.app_profiles
@@ -72,7 +65,6 @@ begin
   order by created_at
   offset 0 limit 1;
 
-  -- Clear a previous run so this stays rerunnable.
   delete from public.app_milestone_items
   where milestone_week_id in (
     select id from public.app_milestone_weeks
@@ -99,12 +91,15 @@ begin
   delete from public.app_projects where id::text like 'd0900000%';
   delete from public.app_clients where id::text like 'd0c00000%';
 
+  -- Wipe the last run so this can be re-run any time.
   insert into public.app_clients (id, name, website, notes) values
     (client_northstar, 'Northstar Industries', 'https://northstar.example', 'DEMO DATA'),
     (client_cedar, 'Cedar Analytics', 'https://cedar.example', 'DEMO DATA'),
     (client_atlas, 'Atlas Holdings', 'https://atlas.example', 'DEMO DATA'),
     (client_brightline, 'Brightline Co.', 'https://brightline.example', 'DEMO DATA'),
-    (client_meridian, 'Meridian Foods', 'https://meridian.example', 'DEMO DATA');
+    (client_meridian, 'Meridian Foods', 'https://meridian.example', 'DEMO DATA'),
+    (client_vertex, 'Vertex Solutions', 'https://vertex.example', 'DEMO DATA'),
+    (client_lumen, 'Lumen Labs', 'https://lumen.example', 'DEMO DATA');
 
   insert into public.app_projects
     (id, client_id, name, description, status, lead_id, starts_on, due_on, archived_at, created_by)
@@ -145,13 +140,17 @@ begin
      'Superseded by the marketing site rebuild.',
      'closed', owner_id, current_date - 400, current_date - 300, now(), owner_id),
 
-    -- Deliberately bare: no description, no dates, no lead, no team, no
-    -- milestones. This is what the Overview looks like before anyone fills it
-    -- in, and it exercises every "worth completing" prompt at once.
     (p_bare, client_meridian, 'Meridian Loyalty Programme',
-     null, 'discovery', null, null, null, null, owner_id);
+     null, 'discovery', null, null, null, null, owner_id),
 
-  -- Owner-only money. Members must never see any of this.
+    (p_vertex, client_vertex, 'Vertex HR Platform',
+     'Recruitment and onboarding platform replacing a spreadsheet-driven process.',
+     'building', coalesce(member_two, owner_id), current_date - 21, current_date + 9, null, owner_id),
+
+    (p_lumen, client_lumen, 'Lumen Design System',
+     'Component library and design tokens shared across three Lumen products.',
+     'discovery', coalesce(member_one, owner_id), current_date - 4, current_date + 45, null, owner_id);
+
   insert into public.app_project_financials
     (project_id, value_amount, value_currency, exchange_rate_to_pkr, booked_on)
   values
@@ -162,14 +161,18 @@ begin
     (p_ordering, 32000, 'USD', 276.50, current_date - 150),
     (p_retainer, 180000, 'PKR', 279.10, current_date - 90),
     (p_migration, 4800, 'USD', 279.00, current_date - 60),
-    (p_refresh, 850000, 'PKR', 276.80, current_date - 200);
+    (p_refresh, 850000, 'PKR', 276.80, current_date - 200),
+    (p_vertex, 19500, 'USD', 279.60, current_date - 21),
+    (p_lumen, 7400, 'USD', 278.40, current_date - 4);
 
   if member_one is not null then
     insert into public.app_project_members (project_id, profile_id, responsibility, added_by)
     values
       (p_operations, member_one, 'Delivery engineer', owner_id),
       (p_launch, member_one, 'Frontend', owner_id),
-      (p_migration, member_one, 'Data migration', owner_id)
+      (p_migration, member_one, 'Data migration', owner_id),
+      (p_marketing, member_one, 'Frontend', owner_id),
+      (p_lumen, member_one, 'Design engineer', owner_id)
     on conflict (project_id, profile_id) do update
       set responsibility = excluded.responsibility, archived_at = null;
   end if;
@@ -178,7 +181,8 @@ begin
     insert into public.app_project_members (project_id, profile_id, responsibility, added_by)
     values
       (p_marketing, member_two, 'Project lead', owner_id),
-      (p_operations, member_two, 'Backend', owner_id)
+      (p_operations, member_two, 'Backend', owner_id),
+      (p_vertex, member_two, 'Full stack', owner_id)
     on conflict (project_id, profile_id) do update
       set responsibility = excluded.responsibility, archived_at = null;
   end if;
@@ -209,9 +213,6 @@ begin
     'Ask an owner for env access. Staging resets every Sunday.'
   );
 
-  -- Weekly milestones. Week 4 of the operations platform contains today, and
-  -- week 2 has an unfinished item in the past, so the portfolio shows a real
-  -- derived overdue signal rather than a label somebody picked.
   insert into public.app_milestone_weeks (id, project_id, week_number, starts_on, due_on) values
     (w_ops_1, p_operations, 1, current_date - 28, current_date - 22),
     (w_ops_2, p_operations, 2, current_date - 21, current_date - 15),
@@ -223,14 +224,24 @@ begin
     (w_mkt_2, p_marketing, 2, current_date - 13, current_date - 7),
     (w_ord_1, p_ordering, 1, current_date - 60, current_date - 54),
     (w_mig_1, p_migration, 1, current_date - 30, current_date - 24),
-    (w_ref_1, p_refresh, 1, current_date - 120, current_date - 114);
+    (w_ref_1, p_refresh, 1, current_date - 120, current_date - 114),
+    (w_ver_1, p_vertex, 1, current_date - 21, current_date - 15),
+    (w_ver_2, p_vertex, 2, current_date - 5, current_date + 2);
+
+  insert into public.app_milestone_weeks
+    (id, project_id, week_number, starts_on, due_on, archived_at)
+  values (w_ops_5, p_operations, 5, current_date + 5, current_date + 12, now());
 
   insert into public.app_milestone_items
     (milestone_week_id, label, assigned_to, is_done, completed_at, completed_by)
   select
     entry.week_id,
     entry.label,
-    case entry.owner_of when 'member' then coalesce(member_one, owner_id) else owner_id end,
+    case entry.owner_of
+      when 'member' then member_one
+      when 'member2' then member_two
+      else owner_id
+    end,
     entry.done,
     case when entry.done then now() - interval '2 days' else null end,
     case when entry.done then owner_id else null end
@@ -268,8 +279,27 @@ begin
     (w_mig_1, 'Migration dry run', 'member', false),
 
     (w_ref_1, 'Logo and type system', 'owner', true),
-    (w_ref_1, 'Brand guidelines delivered', 'owner', true)
+    (w_ref_1, 'Brand guidelines delivered', 'owner', true),
+
+    (w_ver_1, 'Candidate pipeline screens', 'member2', true),
+    (w_ver_1, 'Offer letter templates', 'member2', false),
+    (w_ver_2, 'Onboarding checklist flow', 'member2', false),
+    (w_ver_2, 'Payroll export', 'member2', false)
   ) as entry(week_id, label, owner_of, done);
+
+  insert into public.app_milestone_items
+    (milestone_week_id, label, assigned_to, is_done, archived_at)
+  values
+    (w_ops_4, 'Dark mode pass', null, false, now()),
+    (w_ops_4, 'Duplicate of the mobile pass', null, false, now());
+
+  if member_two is not null then
+    insert into public.app_project_members
+      (project_id, profile_id, responsibility, added_by, archived_at, archived_by)
+    values (p_launch, member_two, 'Reporting charts', owner_id, now() - interval '9 days', owner_id)
+    on conflict (project_id, profile_id) do update
+      set archived_at = excluded.archived_at, archived_by = excluded.archived_by;
+  end if;
 
   raise notice 'Demo portfolio seeded. Owner: %, members wired: %',
     owner_id,

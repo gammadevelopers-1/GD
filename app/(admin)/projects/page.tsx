@@ -121,11 +121,7 @@ async function PortfolioList({
           {isPortfolioFiltered(query) ? " matching your filters" : ""}
         </p>
       </div>
-      <PortfolioResults
-        projects={projects}
-        query={query}
-        role={viewer.role}
-      />
+      <PortfolioResults projects={projects} query={query} role={viewer.role} />
     </div>
   );
 }

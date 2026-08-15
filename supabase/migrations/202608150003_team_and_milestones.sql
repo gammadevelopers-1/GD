@@ -1,19 +1,11 @@
--- Chunks 5 and 6 — Team and project access, weekly milestones.
---
--- Chunk 1 revoked UPDATE on app_milestone_items from every authenticated user
--- so that no member could ever rewrite a label, an assignee or an archive flag
--- through a direct request. That guarantee is worth keeping, so owner planning
--- goes through authorized functions here instead of granting the privilege
--- back and relying on a policy alone.
-
--- 1. Who may be assigned ----------------------------------------------------
-
+--milestone and team management
 alter table public.app_project_members
   add column if not exists archived_by uuid references public.app_profiles(id) on delete restrict;
 
 comment on column public.app_project_members.archived_by
 is 'Who removed this person from the project. added_by records who put them on it.';
 
+-- Keeps deactivated people off project teams, whatever writes the row.
 create or replace function private.assert_assignable_profile()
 returns trigger
 language plpgsql
@@ -21,9 +13,6 @@ security definer
 set search_path = ''
 as $$
 begin
-  -- Only guard assignments that grant access: a new one, a different person,
-  -- or a removed assignment being restored. Editing the responsibility of
-  -- someone who has since been deactivated stays possible.
   if tg_op = 'UPDATE'
     and new.profile_id is not distinct from old.profile_id
     and not (old.archived_at is not null and new.archived_at is null) then
@@ -56,15 +45,7 @@ create trigger app_project_members_assignable
 comment on function private.assert_assignable_profile()
 is 'Keeps deactivated and archived people off project teams, whatever writes the assignment.';
 
--- When Chunk 9 adds credentials, revoking a project assignment must revoke
--- that person's credential grants for the project in the same step. The hook
--- belongs here, next to the assignment rules, not in a server action.
-
--- 2. Week numbers -----------------------------------------------------------
---
--- The original constraint covered archived weeks too, so archiving Week 3 made
--- the number unusable forever. Only live weeks need to be unique.
-
+-- Only live weeks need a unique number, so archiving Week 3 frees it again.
 alter table public.app_milestone_weeks
   drop constraint if exists app_milestone_weeks_project_id_week_number_key;
 
@@ -72,8 +53,8 @@ create unique index if not exists app_milestone_weeks_live_number_idx
   on public.app_milestone_weeks (project_id, week_number)
   where archived_at is null;
 
--- 3. Milestone item assignees ----------------------------------------------
-
+-- An item can only go to someone on the team. Checked when the assignee
+-- changes, so removing a person does not freeze their unfinished items.
 create or replace function private.assert_item_assignee_on_team()
 returns trigger
 language plpgsql
@@ -87,8 +68,6 @@ begin
     return new;
   end if;
 
-  -- Completing an item must keep working after its assignee leaves the
-  -- project, so only a changed assignee is checked.
   if tg_op = 'UPDATE' and new.assigned_to is not distinct from old.assigned_to then
     return new;
   end if;
@@ -120,8 +99,7 @@ create trigger app_milestone_items_assignee
   before insert or update on public.app_milestone_items
   for each row execute function private.assert_item_assignee_on_team();
 
--- 4. Owner-only item planning ----------------------------------------------
-
+-- Owner-only editing, since the table itself is closed to everyone.
 create or replace function private.owner_editable_item_project(target_item_id uuid)
 returns uuid
 language plpgsql
@@ -210,10 +188,7 @@ revoke all on function public.app_set_milestone_item_archived(uuid, boolean) fro
 grant execute on function public.app_save_milestone_item(uuid, text, uuid) to authenticated;
 grant execute on function public.app_set_milestone_item_archived(uuid, boolean) to authenticated;
 
--- 5. Owners must be able to see what they archived --------------------------
---
--- Restoring a removed assignment requires reading the archived row first.
-
+-- Owners need to read archived assignments to restore them.
 drop policy if exists "project_members_select_allowed" on public.app_project_members;
 create policy "project_members_select_allowed"
 on public.app_project_members

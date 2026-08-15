@@ -1,14 +1,3 @@
-// Project module — direct API permission check (chunks 2 and 3).
-//
-// pgTAP proves the database rules. This proves the same rules survive the
-// PostgREST layer: real accounts, real access tokens, real HTTP requests, no
-// interface involved. It creates its own accounts and data and removes them
-// again.
-//
-// Local only. It refuses to run against a hosted Supabase project because it
-// writes data and deletes accounts.
-//
-//   npx supabase start && npm run test:api
 
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -41,10 +30,8 @@ function check(name, condition, detail = "") {
   }
 }
 
-// Seeding runs as postgres inside the local database container rather than
-// through the service role. The service role deliberately has no privileges on
-// the internal tables, so even a leaked service key cannot read them — that is
-// worth keeping, so the harness does not grant itself a way around it.
+// Seeds through postgres, not the service role. The service role has no rights
+// on these tables and we want to keep it that way.
 function dbContainer() {
   const name = execFileSync(
     "docker",
@@ -56,7 +43,9 @@ function dbContainer() {
     .filter(Boolean)[0];
 
   if (!name) {
-    console.error("No local Supabase database container. Run `npx supabase start`.");
+    console.error(
+      "No local Supabase database container. Run `npx supabase start`.",
+    );
     process.exit(1);
   }
   return name;
@@ -128,7 +117,9 @@ if (!/^https?:\/\/(127\.0\.0\.1|localhost)(:|\/|$)/.test(BASE)) {
   process.exit(1);
 }
 if (!SECRET || !PUBLISHABLE) {
-  console.error("Could not read local Supabase keys. Run `npx supabase start`.");
+  console.error(
+    "Could not read local Supabase keys. Run `npx supabase start`.",
+  );
   process.exit(1);
 }
 
@@ -160,13 +151,20 @@ async function signIn(email) {
     body: { email, password: PASSWORD },
   });
   if (!response.ok) {
-    throw new Error(`Could not sign in ${email}: ${JSON.stringify(response.data)}`);
+    throw new Error(
+      `Could not sign in ${email}: ${JSON.stringify(response.data)}`,
+    );
   }
   return response.data.access_token;
 }
 
 async function seed() {
-  await createUser(ID.owner, "chunk2-api-owner@gamma.test", "owner", "API Owner");
+  await createUser(
+    ID.owner,
+    "chunk2-api-owner@gamma.test",
+    "owner",
+    "API Owner",
+  );
   await createUser(
     ID.assigned,
     "chunk2-api-assigned@gamma.test",
@@ -186,10 +184,6 @@ async function seed() {
     "API Finance",
   );
 
-  // GoTrue writes custom app_metadata after the row is inserted, so the profile
-  // trigger has already defaulted every new account to 'member'. The platform
-  // role is set on the profile afterwards — the same thing an owner does when
-  // they onboard somebody.
   sql(`
     update public.app_profiles set role = 'owner' where id = '${ID.owner}';
     update public.app_profiles set role = 'finance' where id = '${ID.finance}';
@@ -214,8 +208,6 @@ async function seed() {
       (project_id, value_amount, value_currency, exchange_rate_to_pkr, booked_on)
     values ('${ID.projectAssigned}', 18000, 'USD', 280, current_date);
 
-    -- The assigned engineer is also the lead, and the lead-membership trigger
-    -- has already created that row.
     insert into public.app_project_members
       (project_id, profile_id, responsibility, added_by)
     values ('${ID.projectAssigned}', '${ID.assigned}', 'Delivery engineer', '${ID.owner}')
@@ -269,11 +261,8 @@ function hasMoneyKey(rows) {
   );
 }
 
-/**
- * Owner responses legitimately contain every project in the database, which on
- * a working environment includes real or demo data. Owner assertions therefore
- * count only the rows this harness created.
- */
+// An owner sees every project, including your real ones, so owner checks only
+// count the rows this script created.
 const HARNESS_PROJECTS = new Set([
   ID.projectAssigned,
   ID.projectOwnerOnly,
@@ -285,9 +274,6 @@ function ours(response) {
 }
 
 async function run() {
-  // Clear anything a previous interrupted run left behind. The profile row has
-  // to go before the auth user, because the platform never permits a cascade
-  // delete of an account that still owns records.
   await cleanup();
   await seed();
 
@@ -296,14 +282,19 @@ async function run() {
   const strangerToken = await signIn("chunk2-api-unassigned@gamma.test");
   const financeToken = await signIn("chunk2-api-finance@gamma.test");
 
-  // Owner ------------------------------------------------------------------
   const ownerRows = await portfolio(ownerToken);
-  check("owner receives every active project", ours(ownerRows).length === 2,
-    `got ${ours(ownerRows).length}`);
+  check(
+    "owner receives every active project",
+    ours(ownerRows).length === 2,
+    `got ${ours(ownerRows).length}`,
+  );
 
   const ownerArchived = await portfolio(ownerToken, { include_archived: true });
-  check("owner can request archived projects", ours(ownerArchived).length === 3,
-    `got ${ours(ownerArchived).length}`);
+  check(
+    "owner can request archived projects",
+    ours(ownerArchived).length === 3,
+    `got ${ours(ownerArchived).length}`,
+  );
 
   check(
     "the portfolio response carries no money field for anyone",
@@ -313,77 +304,106 @@ async function run() {
   const ownerProject = ours(ownerRows).find(
     (row) => row.id === ID.projectAssigned,
   );
-  check("milestone progress is aggregated server-side",
+  check(
+    "milestone progress is aggregated server-side",
     ownerProject?.total_items === 2 && ownerProject?.done_items === 1,
-    JSON.stringify(ownerProject));
+    JSON.stringify(ownerProject),
+  );
 
   const ownerSearch = await portfolio(ownerToken, { search_text: "api cedar" });
-  check("search matches the client name over the API",
-    ownerSearch.data?.length === 1, `got ${ownerSearch.data?.length}`);
+  check(
+    "search matches the client name over the API",
+    ownerSearch.data?.length === 1,
+    `got ${ownerSearch.data?.length}`,
+  );
 
   const ownerStatus = await portfolio(ownerToken, {
     filter_statuses: ["review"],
   });
-  check("status filter is applied by the database",
+  check(
+    "status filter is applied by the database",
     ours(ownerStatus).length === 1 &&
       ours(ownerStatus)[0]?.id === ID.projectOwnerOnly,
-    `got ${ours(ownerStatus).length}`);
+    `got ${ours(ownerStatus).length}`,
+  );
 
   const ownerValue = await api(
     `/rest/v1/app_project_financials?select=value_amount&project_id=eq.${ID.projectAssigned}`,
     { key: PUBLISHABLE, token: ownerToken },
   );
-  check("owner can still read project value from the financial table",
-    ownerValue.data?.length === 1, JSON.stringify(ownerValue.data));
+  check(
+    "owner can still read project value from the financial table",
+    ownerValue.data?.length === 1,
+    JSON.stringify(ownerValue.data),
+  );
 
-  // Assigned member --------------------------------------------------------
   const memberRows = await portfolio(memberToken);
-  check("member receives only assigned projects", memberRows.data?.length === 1,
-    `got ${memberRows.data?.length}`);
-  check("member portfolio row is the assigned project",
-    memberRows.data?.[0]?.id === ID.projectAssigned);
-  check("member portfolio response contains no money field",
-    !hasMoneyKey(memberRows.data ?? []));
+  check(
+    "member receives only assigned projects",
+    memberRows.data?.length === 1,
+    `got ${memberRows.data?.length}`,
+  );
+  check(
+    "member portfolio row is the assigned project",
+    memberRows.data?.[0]?.id === ID.projectAssigned,
+  );
+  check(
+    "member portfolio response contains no money field",
+    !hasMoneyKey(memberRows.data ?? []),
+  );
 
   const memberArchived = await portfolio(memberToken, {
     include_archived: true,
   });
-  check("member asking for archived rows still receives only their own",
-    memberArchived.data?.length === 1, `got ${memberArchived.data?.length}`);
+  check(
+    "member asking for archived rows still receives only their own",
+    memberArchived.data?.length === 1,
+    `got ${memberArchived.data?.length}`,
+  );
 
   const memberOtherPerson = await portfolio(memberToken, {
     filter_person_id: ID.owner,
   });
-  check("member filtering by another person cannot widen their access",
+  check(
+    "member filtering by another person cannot widen their access",
     memberOtherPerson.data?.length === 0,
-    `got ${memberOtherPerson.data?.length}`);
-
-  const memberValue = await api(
-    "/rest/v1/app_project_financials?select=*",
-    { key: PUBLISHABLE, token: memberToken },
+    `got ${memberOtherPerson.data?.length}`,
   );
-  check("member reading the financial table directly gets nothing",
+
+  const memberValue = await api("/rest/v1/app_project_financials?select=*", {
+    key: PUBLISHABLE,
+    token: memberToken,
+  });
+  check(
+    "member reading the financial table directly gets nothing",
     Array.isArray(memberValue.data) && memberValue.data.length === 0,
-    JSON.stringify(memberValue.data));
+    JSON.stringify(memberValue.data),
+  );
 
   const memberGuessesUrl = await api(
     `/rest/v1/app_projects?select=*&id=eq.${ID.projectOwnerOnly}`,
     { key: PUBLISHABLE, token: memberToken },
   );
-  check("member guessing an unassigned project id gets nothing",
+  check(
+    "member guessing an unassigned project id gets nothing",
     Array.isArray(memberGuessesUrl.data) && memberGuessesUrl.data.length === 0,
-    JSON.stringify(memberGuessesUrl.data));
+    JSON.stringify(memberGuessesUrl.data),
+  );
 
-  // Unassigned member and finance -------------------------------------------
   const strangerRows = await portfolio(strangerToken);
-  check("unassigned member receives no projects",
-    strangerRows.data?.length === 0, `got ${strangerRows.data?.length}`);
+  check(
+    "unassigned member receives no projects",
+    strangerRows.data?.length === 0,
+    `got ${strangerRows.data?.length}`,
+  );
 
   const financeRows = await portfolio(financeToken);
-  check("finance receives no operational project workspace",
-    financeRows.data?.length === 0, `got ${financeRows.data?.length}`);
+  check(
+    "finance receives no operational project workspace",
+    financeRows.data?.length === 0,
+    `got ${financeRows.data?.length}`,
+  );
 
-  // Lifecycle: only an owner changes a project ------------------------------
   const memberCreates = await api("/rest/v1/app_projects", {
     key: PUBLISHABLE,
     token: memberToken,
@@ -394,8 +414,11 @@ async function run() {
       created_by: ID.assigned,
     },
   });
-  check("member cannot create a project over the API", !memberCreates.ok,
-    `status ${memberCreates.status}`);
+  check(
+    "member cannot create a project over the API",
+    !memberCreates.ok,
+    `status ${memberCreates.status}`,
+  );
 
   await api(`/rest/v1/app_projects?id=eq.${ID.projectAssigned}`, {
     key: PUBLISHABLE,
@@ -404,9 +427,11 @@ async function run() {
     body: { name: "Renamed by a member" },
   });
   const afterMemberPatch = await portfolio(memberToken);
-  check("member cannot rename a project they are assigned to",
+  check(
+    "member cannot rename a project they are assigned to",
     afterMemberPatch.data?.[0]?.name === "API Assigned Platform",
-    afterMemberPatch.data?.[0]?.name);
+    afterMemberPatch.data?.[0]?.name,
+  );
 
   const memberAudits = await api("/rest/v1/rpc/app_record_project_event", {
     key: PUBLISHABLE,
@@ -418,10 +443,12 @@ async function run() {
       event_metadata: {},
     },
   });
-  check("member cannot write to the audit log", !memberAudits.ok,
-    `status ${memberAudits.status}`);
+  check(
+    "member cannot write to the audit log",
+    !memberAudits.ok,
+    `status ${memberAudits.status}`,
+  );
 
-  // Archiving revokes access on the next request, not on the next login.
   await api(`/rest/v1/app_projects?id=eq.${ID.projectAssigned}`, {
     key: PUBLISHABLE,
     token: ownerToken,
@@ -429,8 +456,11 @@ async function run() {
     body: { archived_at: new Date().toISOString() },
   });
   const afterArchive = await portfolio(memberToken);
-  check("archiving removes member access immediately",
-    afterArchive.data?.length === 0, `got ${afterArchive.data?.length}`);
+  check(
+    "archiving removes member access immediately",
+    afterArchive.data?.length === 0,
+    `got ${afterArchive.data?.length}`,
+  );
 
   await api(`/rest/v1/app_projects?id=eq.${ID.projectAssigned}`, {
     key: PUBLISHABLE,
@@ -439,28 +469,153 @@ async function run() {
     body: { archived_at: null },
   });
   const afterRestore = await portfolio(memberToken);
-  check("restoring gives member access back",
-    afterRestore.data?.length === 1, `got ${afterRestore.data?.length}`);
+  check(
+    "restoring gives member access back",
+    afterRestore.data?.length === 1,
+    `got ${afterRestore.data?.length}`,
+  );
 
-  // Anonymous ---------------------------------------------------------------
+  const ownerAdds = await api("/rest/v1/app_project_members", {
+    key: PUBLISHABLE,
+    token: ownerToken,
+    method: "POST",
+    body: {
+      project_id: ID.projectAssigned,
+      profile_id: ID.unassigned,
+      responsibility: "Added over the API",
+      added_by: ID.owner,
+    },
+  });
+  check(
+    "owner can add someone to a project",
+    ownerAdds.ok,
+    `status ${ownerAdds.status}`,
+  );
+
+  const strangerAfterAdd = await portfolio(strangerToken);
+  check(
+    "being added grants the project immediately",
+    strangerAfterAdd.data?.length === 1,
+    `got ${strangerAfterAdd.data?.length}`,
+  );
+
+  const memberAdds = await api("/rest/v1/app_project_members", {
+    key: PUBLISHABLE,
+    token: memberToken,
+    method: "POST",
+    body: {
+      project_id: ID.projectAssigned,
+      profile_id: ID.finance,
+      responsibility: "Added by a member",
+      added_by: ID.assigned,
+    },
+  });
+  check(
+    "member cannot add anyone to a project",
+    !memberAdds.ok,
+    `status ${memberAdds.status}`,
+  );
+
+  await api(
+    `/rest/v1/app_project_members?project_id=eq.${ID.projectAssigned}&profile_id=eq.${ID.unassigned}`,
+    {
+      key: PUBLISHABLE,
+      token: ownerToken,
+      method: "PATCH",
+      body: { archived_at: new Date().toISOString(), archived_by: ID.owner },
+    },
+  );
+  const strangerAfterRemoval = await portfolio(strangerToken);
+  check(
+    "removing someone revokes access on their next request",
+    strangerAfterRemoval.data?.length === 0,
+    `got ${strangerAfterRemoval.data?.length}`,
+  );
+
+  const memberToggles = await api("/rest/v1/rpc/app_toggle_milestone_item", {
+    key: PUBLISHABLE,
+    token: memberToken,
+    method: "POST",
+    body: { target_item_id: ID.itemOpen },
+  });
+  check(
+    "assigned member can complete a milestone item",
+    memberToggles.ok,
+    `status ${memberToggles.status}`,
+  );
+
+  const memberEdits = await api("/rest/v1/rpc/app_save_milestone_item", {
+    key: PUBLISHABLE,
+    token: memberToken,
+    method: "POST",
+    body: {
+      target_item_id: ID.itemOpen,
+      new_label: "Rewritten by a member",
+      new_assigned_to: null,
+    },
+  });
+  check(
+    "member cannot rewrite a milestone item",
+    !memberEdits.ok,
+    `status ${memberEdits.status}`,
+  );
+
+  const memberPatchesItem = await api(
+    `/rest/v1/app_milestone_items?id=eq.${ID.itemOpen}`,
+    {
+      key: PUBLISHABLE,
+      token: memberToken,
+      method: "PATCH",
+      body: { label: "Patched by a member" },
+    },
+  );
+  check(
+    "member cannot patch a milestone item directly",
+    !memberPatchesItem.ok,
+    `status ${memberPatchesItem.status}`,
+  );
+
+  const memberPlansWeek = await api("/rest/v1/app_milestone_weeks", {
+    key: PUBLISHABLE,
+    token: memberToken,
+    method: "POST",
+    body: {
+      project_id: ID.projectAssigned,
+      week_number: 9,
+      due_on: new Date(Date.now() + 20 * 86_400_000).toISOString().slice(0, 10),
+    },
+  });
+  check(
+    "member cannot plan a milestone week",
+    !memberPlansWeek.ok,
+    `status ${memberPlansWeek.status}`,
+  );
+
   const anonRpc = await portfolio(undefined);
-  check("anonymous callers cannot execute the portfolio function",
-    !anonRpc.ok, `status ${anonRpc.status}`);
+  check(
+    "anonymous callers cannot execute the portfolio function",
+    !anonRpc.ok,
+    `status ${anonRpc.status}`,
+  );
 
   const anonTable = await api("/rest/v1/app_projects?select=*", {
     key: PUBLISHABLE,
   });
-  check("anonymous callers cannot read internal project rows",
+  check(
+    "anonymous callers cannot read internal project rows",
     !anonTable.ok || (Array.isArray(anonTable.data) && !anonTable.data.length),
-    JSON.stringify(anonTable.data));
+    JSON.stringify(anonTable.data),
+  );
 
   const anonFinancials = await api("/rest/v1/app_project_financials?select=*", {
     key: PUBLISHABLE,
   });
-  check("anonymous callers cannot read project value",
+  check(
+    "anonymous callers cannot read project value",
     !anonFinancials.ok ||
       (Array.isArray(anonFinancials.data) && !anonFinancials.data.length),
-    JSON.stringify(anonFinancials.data));
+    JSON.stringify(anonFinancials.data),
+  );
 }
 
 try {

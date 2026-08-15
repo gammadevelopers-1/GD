@@ -23,8 +23,7 @@ import {
 
 export const metadata = { title: "Overview · Internal platform" };
 
-// Status wording and colour come from the shared project status module so the
-// dashboard, the portfolio and the project workspace always agree.
+// Same wording and colours as the portfolio.
 const statusLabels = PROJECT_STATUS_LABEL;
 const statusStyles = PROJECT_STATUS_TONE;
 

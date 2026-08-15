@@ -4,10 +4,7 @@ import {
   isProjectStatus,
 } from "@/lib/projects/status";
 
-// Filters live in the URL so a portfolio view can be bookmarked, refreshed and
-// shared. Everything here is validated: an unknown status or a malformed id is
-// dropped rather than passed to the database.
-
+// Filters live in the URL so a view can be bookmarked, shared and refreshed.
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -44,10 +41,7 @@ function uuidOrNull(value: string | string[] | undefined) {
   return raw && UUID.test(raw) ? raw : null;
 }
 
-/**
- * @param canSeeArchived Only owners may ask for archived rows. The database
- * refuses either way; this keeps the URL honest for everyone else.
- */
+// Anything unknown is dropped here rather than passed to the database.
 export function parsePortfolioQuery(
   params: RawSearchParams,
   canSeeArchived = false,
@@ -80,12 +74,10 @@ export function portfolioQueryToSearchParams(query: PortfolioQuery) {
   return params;
 }
 
-/** A stable key for the current filters, used to re-suspend the results list. */
 export function portfolioQueryKey(query: PortfolioQuery) {
   return portfolioQueryToSearchParams(query).toString();
 }
 
-/** The view toggle is a preference, not a filter, so it never counts here. */
 export function activeFilterCount(query: PortfolioQuery) {
   return (
     (query.search ? 1 : 0) +

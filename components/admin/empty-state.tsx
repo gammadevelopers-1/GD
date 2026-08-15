@@ -21,7 +21,9 @@ export function EmptyState({
         <p className="mx-auto mt-2 max-w-sm text-xs leading-5 text-black/42">
           {description}
         </p>
-        {action ? <div className="mt-5 flex justify-center">{action}</div> : null}
+        {action ? (
+          <div className="mt-5 flex justify-center">{action}</div>
+        ) : null}
       </div>
     </div>
   );

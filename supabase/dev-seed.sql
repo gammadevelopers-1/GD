@@ -1,10 +1,3 @@
--- Run this in the SQL Editor after creating these Auth users:
---   ghulam.owner@example.com
---   hamna.member@example.com
--- Keep passwords in Supabase Auth so this file stores no credentials.
--- Rerun this script to refresh the same demo records.
--- Use this only in a database without real data.
-
 begin;
 
 do $$

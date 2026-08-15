@@ -4,10 +4,7 @@ import {
   isProjectStatus,
 } from "@/lib/projects/status";
 
-// Validation lives here so the server action and the form agree on the rules.
-// The server is the authority: every check below runs again on submit even
-// though the browser also enforces required fields and input types.
-
+// The form and the server share these rules. The server is the one that counts.
 export const PROJECT_FIELDS = [
   "name",
   "clientId",
@@ -64,7 +61,6 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export const NAME_MAX = 120;
 export const DESCRIPTION_MAX = 2000;
-/** numeric(14,2) — twelve digits before the decimal point. */
 export const AMOUNT_MAX = 999_999_999_999;
 
 export function isUuid(value: string) {
@@ -95,12 +91,6 @@ function parseAmount(raw: string) {
   return Number.isFinite(value) ? value : Number.NaN;
 }
 
-/**
- * @param options.allowFinancial Only owners submit money. For anyone else the
- * financial fields are ignored rather than trusted.
- * @param options.hasExistingValue A recorded project value can be corrected but
- * not removed, the same way projects are archived rather than deleted.
- */
 export function validateProject(
   values: ProjectFormValues,
   options: { allowFinancial: boolean; hasExistingValue?: boolean },

@@ -55,7 +55,6 @@ export function HeroCopy({ children }: { children: ReactNode }) {
     { scope, dependencies: [reduced] },
   );
 
-  // Dim the promise so audit findings remain readable.
   useGSAP(
     () => {
       if (reduced) return;

@@ -32,7 +32,11 @@ function validateWeek({
   startsOn,
   dueOn,
 }: ReturnType<typeof readWeekFields>) {
-  if (!Number.isInteger(weekNumber) || weekNumber < 1 || weekNumber > WEEK_MAX) {
+  if (
+    !Number.isInteger(weekNumber) ||
+    weekNumber < 1 ||
+    weekNumber > WEEK_MAX
+  ) {
     return "Week number must be a whole number from 1 upwards.";
   }
   if (!isIsoDate(dueOn)) return "Give the week a due date.";
@@ -169,7 +173,7 @@ export async function addMilestoneItem(
   return formSuccess("Item added.");
 }
 
-/** Owner-only. Members reach milestone items through the completion RPC alone. */
+// Goes through the RPC because nobody can update this table directly.
 export async function saveMilestoneItem(
   _state: SimpleFormState,
   formData: FormData,

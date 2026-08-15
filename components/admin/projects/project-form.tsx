@@ -11,10 +11,7 @@ import {
   IDLE_PROJECT_FORM,
   NAME_MAX,
 } from "@/lib/projects/validation";
-import {
-  PROJECT_STATUSES,
-  PROJECT_STATUS_LABEL,
-} from "@/lib/projects/status";
+import { PROJECT_STATUSES, PROJECT_STATUS_LABEL } from "@/lib/projects/status";
 import { cn } from "@/lib/utils";
 
 type Option = { id: string; name: string };
@@ -183,7 +180,10 @@ export function ProjectForm({
             defaultValue={values.description}
             maxLength={DESCRIPTION_MAX}
             aria-invalid={Boolean(errors.description)}
-            className={cn(inputClass(Boolean(errors.description)), "h-auto resize-none py-3")}
+            className={cn(
+              inputClass(Boolean(errors.description)),
+              "h-auto resize-none py-3",
+            )}
           />
         </Field>
 
@@ -267,7 +267,7 @@ export function ProjectForm({
       <div className="flex flex-col-reverse gap-3 border-t border-black/[0.06] pt-5 sm:flex-row sm:justify-end">
         <Link
           href={cancelHref}
-          className="inline-flex h-11 items-center justify-center rounded-xl px-4 text-sm font-medium text-black/45 transition hover:text-black/70"
+          className="inline-flex h-11 items-center justify-center rounded-xl px-4 text-sm font-medium text-black/45 transition duration-150 hover:bg-black/[0.045] hover:text-black/75 focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
         >
           Cancel
         </Link>
@@ -275,7 +275,7 @@ export function ProjectForm({
           type="submit"
           disabled={pending}
           data-button-fill
-          className="button-fill-fx button-fill-fx--lift inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#15181b] px-5 text-sm font-semibold text-white transition disabled:opacity-60 [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512]"
+          className="button-fill-fx button-fill-fx--lift inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#15181b] px-5 text-sm font-semibold text-white transition [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512] disabled:opacity-60"
         >
           {pending ? <Loader2 className="size-4 animate-spin" /> : null}
           <span className="button-fill-fx__label">
@@ -293,14 +293,14 @@ export function ProjectForm({
 
 function inputClass(hasError: boolean) {
   return cn(
-    "h-11 w-full rounded-xl border bg-white px-3 text-sm outline-none transition focus:border-[#16a34a] focus-visible:ring-2 focus-visible:ring-[#16a34a]/20",
+    "h-11 w-full rounded-xl border bg-white px-3 text-sm outline-none transition duration-150 hover:border-black/20 focus:border-[#16a34a] focus-visible:ring-2 focus-visible:ring-[#16a34a]/20",
     hasError ? "border-red-300 bg-red-50/40" : "border-black/[0.09]",
   );
 }
 
 function darkInputClass(hasError: boolean) {
   return cn(
-    "h-11 w-full rounded-xl border bg-white/[0.06] px-3 text-sm text-white outline-none transition focus:border-[#2fe85c]/60 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/20",
+    "h-11 w-full rounded-xl border bg-white/[0.06] px-3 text-sm text-white outline-none transition duration-150 hover:border-white/25 focus:border-[#2fe85c]/60 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/20",
     hasError ? "border-red-400/60 bg-red-500/10" : "border-white/[0.09]",
   );
 }

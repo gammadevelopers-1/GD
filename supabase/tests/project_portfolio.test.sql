@@ -1,8 +1,3 @@
--- Chunk 2 — Project portfolio permission and behaviour tests.
---
--- These run against the database directly, not through the interface, so a
--- passing run proves the portfolio is safe even if the UI is bypassed.
-
 begin;
 
 create extension if not exists pgtap with schema extensions;
@@ -124,8 +119,6 @@ values (
   current_date
 );
 
--- The assigned engineer is on the active project and on the archived one, so
--- the archived exclusion is proven rather than assumed.
 insert into public.app_project_members (
   project_id,
   profile_id,
@@ -217,8 +210,6 @@ values
   );
 
 set local role authenticated;
-
--- Owner ---------------------------------------------------------------------
 
 select set_config(
   'request.jwt.claim.sub',
@@ -360,8 +351,6 @@ select is(
   'active delivery is ordered by the nearest due date'
 );
 
--- Assigned member -----------------------------------------------------------
-
 select set_config(
   'request.jwt.claim.sub',
   '80000000-0000-4000-8000-000000000002',
@@ -399,8 +388,6 @@ select is(
   'member still cannot read project value while using the portfolio'
 );
 
--- Unassigned member ---------------------------------------------------------
-
 select set_config(
   'request.jwt.claim.sub',
   '80000000-0000-4000-8000-000000000003',
@@ -422,8 +409,6 @@ select is(
   0::bigint,
   'unassigned member receives no person options'
 );
-
--- Finance -------------------------------------------------------------------
 
 select set_config(
   'request.jwt.claim.sub',

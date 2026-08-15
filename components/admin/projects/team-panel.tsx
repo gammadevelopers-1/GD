@@ -11,12 +11,20 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import type {
-  FormerProjectMember,
-  ProjectMember,
-} from "@/data/project-detail";
+import type { FormerProjectMember, ProjectMember } from "@/data/project-detail";
 import { type SimpleFormState, IDLE_FORM } from "@/lib/projects/form-state";
 import { formatDate, initials } from "@/lib/projects/format";
+import {
+  BUTTON_DANGER,
+  BUTTON_GHOST,
+  BUTTON_PRIMARY,
+  BUTTON_SECONDARY,
+  FOCUS_RING,
+  INPUT,
+  INPUT_SMALL,
+  PANEL,
+  REVEAL_ON_HOVER,
+} from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 
 type Person = { id: string; name: string };
@@ -54,7 +62,7 @@ export function TeamPanel({
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-      <section className="rounded-[20px] border border-black/[0.07] bg-[#f8f8f3] p-5">
+      <section className={cn(PANEL, "p-5")}>
         <div className="mb-5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <span className="grid size-8 place-items-center rounded-lg bg-black/[0.045]">
@@ -106,7 +114,7 @@ export function TeamPanel({
           addMember={addMember}
         />
       ) : (
-        <section className="rounded-[20px] border border-black/[0.07] bg-[#f8f8f3] p-5">
+        <section className={cn(PANEL, "p-5")}>
           <h2 className="text-[15px] font-semibold tracking-[-0.025em]">
             Who can see this project
           </h2>
@@ -143,9 +151,23 @@ function MemberRow({
   );
 
   return (
-    <li className="rounded-2xl border border-black/[0.065] bg-white/50 p-3.5">
+    <li
+      className={cn(
+        "group/member rounded-2xl border bg-white/50 p-3.5 transition duration-200",
+        confirming
+          ? "border-red-200 bg-red-50/40"
+          : "border-black/[0.065] hover:border-black/[0.14] hover:bg-white hover:shadow-[0_10px_26px_rgba(20,23,26,0.05)]",
+      )}
+    >
       <div className="flex items-start gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#15181b] text-[10px] font-semibold text-[#2fe85c]">
+        <span
+          className={cn(
+            "grid size-10 shrink-0 place-items-center rounded-xl text-[10px] font-semibold transition duration-200",
+            member.isLead
+              ? "bg-[#15181b] text-[#2fe85c] ring-2 ring-[#2fe85c]/25"
+              : "bg-[#15181b] text-[#2fe85c]",
+          )}
+        >
           {initials(member.name)}
         </span>
 
@@ -169,12 +191,12 @@ function MemberRow({
                 maxLength={120}
                 autoFocus
                 aria-label={`Responsibility for ${member.name}`}
-                className="h-9 min-w-0 flex-1 rounded-lg border border-black/[0.09] bg-white px-2.5 text-xs outline-none focus:border-[#16a34a]"
+                className={cn(INPUT_SMALL, "h-9 min-w-0 flex-1")}
               />
               <button
                 type="submit"
                 disabled={pending}
-                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#15181b] px-3 text-xs font-semibold text-white disabled:opacity-60"
+                className={cn(BUTTON_PRIMARY, "h-9 px-3 text-xs")}
               >
                 {pending ? <Loader2 className="size-3 animate-spin" /> : null}
                 Save
@@ -182,7 +204,7 @@ function MemberRow({
               <button
                 type="button"
                 onClick={() => setEditing(false)}
-                className="inline-flex h-9 items-center rounded-lg px-2.5 text-xs text-black/45 hover:text-black"
+                className={cn(BUTTON_GHOST, "h-9")}
               >
                 Cancel
               </button>
@@ -211,35 +233,18 @@ function MemberRow({
         </div>
 
         {isOwner && !editing ? (
-          <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              className="rounded-lg px-2 py-1 text-[11px] font-medium text-black/45 transition hover:bg-black/[0.04] hover:text-black"
-            >
-              Edit role
-            </button>
-            {member.isLead ? null : (
-              <form action={setLead}>
-                <input type="hidden" name="projectId" value={projectId} />
-                <input type="hidden" name="profileId" value={member.id} />
-                <button
-                  type="submit"
-                  className="rounded-lg px-2 py-1 text-[11px] font-medium text-black/45 transition hover:bg-black/[0.04] hover:text-black"
-                >
-                  Make lead
-                </button>
-              </form>
+          <div
+            className={cn(
+              "flex shrink-0 flex-wrap items-center justify-end gap-1",
+              confirming ? "opacity-100" : REVEAL_ON_HOVER,
             )}
+          >
             {confirming ? (
               <>
                 <form action={removeMember}>
                   <input type="hidden" name="projectId" value={projectId} />
                   <input type="hidden" name="profileId" value={member.id} />
-                  <button
-                    type="submit"
-                    className="rounded-lg bg-red-600 px-2 py-1 text-[11px] font-semibold text-white transition hover:bg-red-700"
-                  >
+                  <button type="submit" className={cn(BUTTON_DANGER, "h-8")}>
                     Remove access
                   </button>
                 </form>
@@ -247,28 +252,53 @@ function MemberRow({
                   type="button"
                   onClick={() => setConfirming(false)}
                   aria-label="Keep them on the project"
-                  className="rounded-lg p-1 text-black/40 hover:text-black"
+                  className={cn(
+                    "grid size-8 place-items-center rounded-lg text-black/40 transition hover:bg-black/[0.05] hover:text-black",
+                    FOCUS_RING,
+                  )}
                 >
                   <X className="size-3.5" />
                 </button>
               </>
             ) : (
-              <button
-                type="button"
-                onClick={() => setConfirming(true)}
-                className="rounded-lg px-2 py-1 text-[11px] font-medium text-black/45 transition hover:bg-red-50 hover:text-red-700"
-              >
-                Remove
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => setEditing(true)}
+                  className={cn(BUTTON_GHOST, "h-8")}
+                >
+                  Edit role
+                </button>
+                {member.isLead ? null : (
+                  <form action={setLead}>
+                    <input type="hidden" name="projectId" value={projectId} />
+                    <input type="hidden" name="profileId" value={member.id} />
+                    <button type="submit" className={cn(BUTTON_GHOST, "h-8")}>
+                      Make lead
+                    </button>
+                  </form>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setConfirming(true)}
+                  className={cn(
+                    BUTTON_GHOST,
+                    "h-8 hover:bg-red-50 hover:text-red-700",
+                  )}
+                >
+                  Remove
+                </button>
+              </>
             )}
           </div>
         ) : null}
       </div>
 
-      {confirming && member.isLead ? (
-        <p className="mt-2.5 rounded-lg bg-amber-50 px-3 py-2 text-[11px] text-amber-800">
-          They are the project lead. Removing them clears the lead as well, so
-          pick a new one afterwards.
+      {confirming ? (
+        <p className="mt-2.5 rounded-lg bg-white/70 px-3 py-2 text-[11px] leading-4 text-black/60">
+          {member.isLead
+            ? "They are the project lead. Removing them clears the lead as well, so pick a new one afterwards."
+            : "They lose access to this project immediately. The assignment is archived, not deleted, so you can restore it."}
         </p>
       ) : null}
     </li>
@@ -297,7 +327,7 @@ function FormerMembers({
         {formerMembers.map((member) => (
           <li
             key={member.id}
-            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-black/[0.06] px-3 py-2"
+            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-black/[0.06] px-3 py-2 transition duration-150 hover:border-black/[0.14] hover:bg-white"
           >
             <div className="min-w-0">
               <p className="truncate text-[13px] font-medium text-black/60">
@@ -312,7 +342,7 @@ function FormerMembers({
               <input type="hidden" name="profileId" value={member.id} />
               <button
                 type="submit"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-black/[0.1] bg-white px-2.5 py-1.5 text-[11px] font-semibold text-black/60 transition hover:border-black/25 hover:text-black"
+                className={cn(BUTTON_SECONDARY, "h-8 px-2.5 text-[11px]")}
               >
                 <RotateCcw className="size-3" />
                 Restore
@@ -337,7 +367,7 @@ function AddMemberPanel({
   const [state, formAction, pending] = useActionState(addMember, IDLE_FORM);
 
   return (
-    <section className="rounded-[20px] border border-black/[0.07] bg-[#f8f8f3] p-5">
+    <section className={cn(PANEL, "h-fit p-5")}>
       <div className="mb-4 flex items-center gap-2.5">
         <span className="grid size-8 place-items-center rounded-lg bg-black/[0.045]">
           <UserPlus className="size-4 text-black/45" />
@@ -360,7 +390,7 @@ function AddMemberPanel({
             <select
               name="profileId"
               required
-              className="h-10 w-full rounded-xl border border-black/[0.09] bg-white px-3 text-sm outline-none focus:border-[#16a34a]"
+              className={cn(INPUT, "h-10 cursor-pointer")}
             >
               <option value="">Choose a team member</option>
               {addable.map((person) => (
@@ -378,13 +408,13 @@ function AddMemberPanel({
               name="responsibility"
               maxLength={120}
               placeholder="Frontend, QA, client contact…"
-              className="h-10 w-full rounded-xl border border-black/[0.09] bg-white px-3 text-sm outline-none focus:border-[#16a34a]"
+              className={cn(INPUT, "h-10")}
             />
           </label>
           <button
             type="submit"
             disabled={pending}
-            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#15181b] px-4 text-sm font-semibold text-white transition hover:bg-black disabled:opacity-60"
+            className={cn(BUTTON_PRIMARY, "h-10 w-full")}
           >
             {pending ? <Loader2 className="size-4 animate-spin" /> : null}
             Add to project

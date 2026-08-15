@@ -19,7 +19,7 @@ export async function createClient() {
             cookieStore.set(name, value, options),
           );
         } catch {
-          // Let proxy.ts refresh cookies because Server Components cannot write them.
+          // proxy.ts refreshes the cookies. Server components cannot write them.
         }
       },
     },

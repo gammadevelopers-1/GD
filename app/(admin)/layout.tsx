@@ -5,7 +5,7 @@ import { requireViewer } from "@/data/auth";
 export default async function AdminLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  // Force dynamic rendering so authenticated pages are never shared.
+  // Render per request, so a signed-in page is never cached and shared.
   await connection();
   const viewer = await requireViewer();
   return <AdminShell viewer={viewer}>{children}</AdminShell>;

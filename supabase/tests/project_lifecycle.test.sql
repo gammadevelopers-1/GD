@@ -1,5 +1,3 @@
--- Chunk 3 — Project lifecycle permission and invariant tests.
-
 begin;
 
 create extension if not exists pgtap with schema extensions;
@@ -23,8 +21,6 @@ where id = '60000000-0000-4000-8000-000000000001';
 insert into public.app_clients (id, name)
 values ('61000000-0000-4000-8000-000000000001', 'Lifecycle Client');
 
--- Creating a project with a lead ---------------------------------------------
-
 insert into public.app_projects (id, client_id, name, status, lead_id, created_by)
 values (
   '62000000-0000-4000-8000-000000000001',
@@ -46,8 +42,6 @@ select is(
   1::bigint,
   'choosing a lead on create puts that person on the project team'
 );
-
--- Changing the lead ----------------------------------------------------------
 
 update public.app_projects
 set lead_id = '60000000-0000-4000-8000-000000000003'
@@ -75,8 +69,6 @@ select is(
   1::bigint,
   'the previous lead keeps their assignment until an owner removes it'
 );
-
--- Restoring an archived assignment through the lead field --------------------
 
 update public.app_project_members
 set archived_at = now()
@@ -108,8 +100,6 @@ select is(
   'restoring reuses the existing row instead of creating a second one'
 );
 
--- Date order -----------------------------------------------------------------
-
 select throws_ok(
   $$update public.app_projects
     set starts_on = current_date, due_on = current_date - 5
@@ -128,8 +118,6 @@ insert into public.app_project_financials
 values (
   '62000000-0000-4000-8000-000000000001', 24000, 'USD', 279.40, current_date
 );
-
--- What a member may and may not do ------------------------------------------
 
 set local role authenticated;
 select set_config(
@@ -154,9 +142,6 @@ select throws_ok(
   null,
   'a member cannot record project money'
 );
--- A member's update matches no visible row, so it silently changes nothing
--- rather than raising. The assertion that it had no effect is below, once the
--- test is no longer running as that member.
 update public.app_project_financials
 set value_amount = 1
 where project_id = '62000000-0000-4000-8000-000000000001';
@@ -191,8 +176,6 @@ select is(
   24000::numeric,
   'a member update of a recorded project value changes nothing'
 );
-
--- Owner lifecycle actions ----------------------------------------------------
 
 set local role authenticated;
 select set_config(
@@ -232,8 +215,6 @@ select throws_ok(
   'an audit entry cannot be written without an action name'
 );
 
--- Archiving ------------------------------------------------------------------
-
 update public.app_projects
 set archived_at = now()
 where id = '62000000-0000-4000-8000-000000000001';
@@ -261,8 +242,6 @@ select is(
   0::bigint,
   'an archived project cannot be reached by its id either'
 );
-
--- Restoring ------------------------------------------------------------------
 
 select set_config(
   'request.jwt.claim.sub', '60000000-0000-4000-8000-000000000001', true
