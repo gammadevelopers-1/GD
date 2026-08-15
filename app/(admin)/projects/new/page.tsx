@@ -1,134 +1,71 @@
 import Link from "next/link";
 import { ArrowLeft, FolderPlus } from "lucide-react";
+import { ProjectForm } from "@/components/admin/projects/project-form";
 import { requireRole } from "@/data/auth";
-import { getProjectFormOptions } from "@/data/resources";
+import { getProjectFormOptions } from "@/data/project-detail";
+import type { ProjectFormValues } from "@/lib/projects/validation";
 import { createProject } from "../actions";
+
+export const metadata = { title: "New project · Internal platform" };
 
 export default async function NewProjectPage() {
   await requireRole(["owner"]);
   const options = await getProjectFormOptions();
+  const today = new Date().toISOString().slice(0, 10);
+
+  const defaults: ProjectFormValues = {
+    name: "",
+    clientId: "",
+    description: "",
+    leadId: "",
+    startsOn: today,
+    dueOn: "",
+    status: "discovery",
+    valueAmount: "",
+    valueCurrency: "USD",
+    exchangeRate: "",
+    bookedOn: today,
+  };
+
   return (
     <div className="mx-auto max-w-3xl">
       <Link
         href="/projects"
-        className="mb-6 inline-flex items-center gap-2 text-xs font-medium text-black/42 hover:text-black"
+        className="mb-5 inline-flex items-center gap-2 text-xs font-medium text-black/42 transition hover:text-black"
       >
         <ArrowLeft className="size-3.5" /> Projects
       </Link>
-      <div className="rounded-[24px] border border-black/[0.07] bg-[#f8f8f3] p-5 sm:p-7 lg:p-9">
+
+      <div className="rounded-[22px] border border-black/[0.07] bg-[#f8f8f3] p-5 sm:p-7">
         <span className="grid size-11 place-items-center rounded-xl bg-[#15181b] text-[#2fe85c]">
           <FolderPlus className="size-5" />
         </span>
-        <h1 className="font-display mt-6 text-3xl font-semibold tracking-[-0.05em]">
+        <h1 className="font-display mt-5 text-[1.75rem] leading-none font-semibold tracking-[-0.045em]">
           Create a project
         </h1>
-        <p className="mt-2 text-sm leading-6 text-black/45">
-          Start with the delivery basics. Team, milestones and technical details
-          come next.
+        <p className="mt-2.5 max-w-xl text-sm leading-6 text-black/45">
+          Delivery basics first. The team, weekly milestones and technical
+          details are added inside the project once it exists.
         </p>
-        {options.clients.length ? (
-          <form
-            action={createProject}
-            className="mt-8 grid gap-5 sm:grid-cols-2"
-          >
-            <Field
-              label="Project name"
-              name="name"
-              placeholder="Client portal rebuild"
-              required
+
+        <div className="mt-7">
+          {options.clients.length ? (
+            <ProjectForm
+              mode="create"
+              action={createProject}
+              clients={options.clients}
+              people={options.people}
+              defaults={defaults}
+              cancelHref="/projects"
             />
-            <label className="space-y-2">
-              <span className="text-xs font-medium text-black/55">Client</span>
-              <select
-                name="clientId"
-                required
-                className="h-11 w-full rounded-xl border border-black/[0.09] bg-white px-3 text-sm outline-none focus:border-[#16a34a]"
-              >
-                <option value="">Select client</option>
-                {options.clients.map((client) => (
-                  <option key={client.id} value={client.id}>
-                    {client.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="space-y-2">
-              <span className="text-xs font-medium text-black/55">
-                Project lead
-              </span>
-              <select
-                name="leadId"
-                className="h-11 w-full rounded-xl border border-black/[0.09] bg-white px-3 text-sm outline-none focus:border-[#16a34a]"
-              >
-                <option value="">Unassigned</option>
-                {options.people.map((person) => (
-                  <option key={person.id} value={person.id}>
-                    {person.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <Field label="Start date" name="startsOn" type="date" />
-            <Field label="Due date" name="dueOn" type="date" />
-            <label className="space-y-2 sm:col-span-2">
-              <span className="text-xs font-medium text-black/55">
-                Description
-              </span>
-              <textarea
-                name="description"
-                rows={4}
-                className="w-full resize-none rounded-xl border border-black/[0.09] bg-white px-3 py-3 text-sm outline-none focus:border-[#16a34a]"
-                placeholder="What are we building and why?"
-              />
-            </label>
-            <div className="flex flex-col-reverse gap-3 border-t border-black/[0.06] pt-5 sm:col-span-2 sm:flex-row sm:justify-end">
-              <Link
-                href="/projects"
-                data-button-fill
-                className="button-fill-fx button-fill-fx--soft inline-flex h-11 items-center justify-center rounded-xl px-4 text-sm font-medium text-black/45 transition hover:text-black/65"
-              >
-                <span className="button-fill-fx__label">Cancel</span>
-              </Link>
-              <button
-                data-button-fill
-                className="button-fill-fx button-fill-fx--lift h-11 rounded-xl bg-[#15181b] px-5 text-sm font-semibold text-white transition [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512]"
-              >
-                <span className="button-fill-fx__label">Create project</span>
-              </button>
+          ) : (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+              Add a client before creating a project. A project always belongs
+              to one.
             </div>
-          </form>
-        ) : (
-          <div className="mt-8 rounded-2xl bg-amber-500/10 p-4 text-sm text-amber-800">
-            Add a client before creating a project.
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
-  );
-}
-function Field({
-  label,
-  name,
-  type = "text",
-  placeholder,
-  required = false,
-}: {
-  label: string;
-  name: string;
-  type?: string;
-  placeholder?: string;
-  required?: boolean;
-}) {
-  return (
-    <label className="space-y-2">
-      <span className="text-xs font-medium text-black/55">{label}</span>
-      <input
-        name={name}
-        type={type}
-        placeholder={placeholder}
-        required={required}
-        className="h-11 w-full rounded-xl border border-black/[0.09] bg-white px-3 text-sm outline-none focus:border-[#16a34a]"
-      />
-    </label>
   );
 }

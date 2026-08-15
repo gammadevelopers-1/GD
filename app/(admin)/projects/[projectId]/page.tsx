@@ -1,30 +1,82 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
+  Archive,
   ArrowLeft,
   CalendarDays,
+  CalendarRange,
   Check,
-  Circle,
   Code2,
   ExternalLink,
+  Info,
   LockKeyhole,
-  UsersRound,
+  Pencil,
+  Signal,
+  X,
 } from "lucide-react";
 import { ComingSoon } from "@/components/admin/coming-soon";
+import { MilestonesPanel } from "@/components/admin/projects/milestones-panel";
+import { StatusControl } from "@/components/admin/projects/status-control";
+import { TeamPanel } from "@/components/admin/projects/team-panel";
 import { requireRole } from "@/data/auth";
-import { getOwnerProjectFinancial, getProjectDetail } from "@/data/resources";
+import type { Viewer } from "@/data/auth";
+import {
+  type ProjectDetail,
+  type ProjectFinancial,
+  getProjectDetail,
+  getProjectFinancial,
+  getProjectFormOptions,
+} from "@/data/project-detail";
+import {
+  TONE_BAR,
+  TONE_CHIP,
+  TONE_TEXT,
+  deadlineSignal,
+  deliverySignal,
+  formatDate,
+  formatMoney,
+} from "@/lib/projects/format";
+import {
+  PROJECT_STATUS_CHIP,
+  PROJECT_STATUS_LABEL,
+} from "@/lib/projects/status";
 import { cn } from "@/lib/utils";
-import { toggleMilestoneItem } from "../actions";
+import { setProjectStatus, toggleMilestoneItem } from "../actions";
+import {
+  addMilestoneItem,
+  addMilestoneWeek,
+  saveMilestoneItem,
+  setMilestoneItemArchived,
+  setMilestoneWeekArchived,
+  updateMilestoneWeek,
+} from "../milestone-actions";
+import {
+  addProjectMember,
+  removeProjectMember,
+  restoreProjectMember,
+  setProjectLead,
+  updateMemberResponsibility,
+} from "../team-actions";
 
 const tabs = ["overview", "team", "milestones", "technical"] as const;
 type Tab = (typeof tabs)[number];
+
+const NOTICES: Record<string, { tone: "ok" | "warning"; message: string }> = {
+  created: { tone: "ok", message: "Project created." },
+  restored: { tone: "ok", message: "Project restored. It is back in the portfolio." },
+  "value-not-saved": {
+    tone: "warning",
+    message:
+      "The project was created, but its value was not recorded. Add it from Edit project.",
+  },
+};
 
 export default async function ProjectPage({
   params,
   searchParams,
 }: {
   params: Promise<{ projectId: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; notice?: string }>;
 }) {
   const viewer = await requireRole(["owner", "member"]);
   const { projectId } = await params;
@@ -32,75 +84,237 @@ export default async function ProjectPage({
   const activeTab: Tab = tabs.includes(query.tab as Tab)
     ? (query.tab as Tab)
     : "overview";
+
   const project = await getProjectDetail(projectId, viewer);
   if (!project) notFound();
-  const financial = await getOwnerProjectFinancial(projectId, viewer);
+
+  const isOwner = viewer.role === "owner";
+  const [financial, options] = await Promise.all([
+    getProjectFinancial(projectId, viewer),
+    isOwner
+      ? getProjectFormOptions()
+      : Promise.resolve({ clients: [], people: [] }),
+  ]);
+  const notice = query.notice ? NOTICES[query.notice] : undefined;
+  const tabHref = (tab: Tab) =>
+    `/projects/${project.id}${tab === "overview" ? "" : `?tab=${tab}`}`;
 
   return (
     <div className="mx-auto max-w-[1480px]">
       <Link
         href="/projects"
-        className="mb-6 inline-flex items-center gap-2 text-xs font-medium text-black/42 transition hover:text-black"
+        className="mb-4 inline-flex items-center gap-2 text-xs font-medium text-black/42 transition hover:text-black"
       >
         <ArrowLeft className="size-3.5" /> All projects
       </Link>
 
-      <section className="overflow-hidden rounded-[24px] border border-black/[0.07] bg-[#15181b] text-white">
-        <div className="relative px-5 pt-6 pb-7 sm:px-7 sm:pt-8 lg:px-9">
-          <div className="pointer-events-none absolute -top-28 right-0 size-72 rounded-full bg-[#2fe85c]/12 blur-3xl" />
-          <div className="relative flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-[#2fe85c]/12 px-2.5 py-1 text-[10px] font-semibold text-[#69ee88] capitalize">
-                  {project.status}
-                </span>
-                <span className="text-[11px] text-white/35">
-                  {project.client}
-                </span>
-              </div>
-              <h1 className="font-display mt-5 text-3xl font-semibold tracking-[-0.05em] sm:text-4xl">
-                {project.name}
-              </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-white/42">
-                {project.description ??
-                  "No project description has been added yet."}
-              </p>
-            </div>
-            <div className="grid min-w-0 grid-cols-1 gap-2 min-[360px]:grid-cols-2 sm:min-w-64">
-              <DarkMeta label="Project lead" value={project.lead} />
-              <DarkMeta label="Due date" value={date(project.dueOn)} />
-            </div>
-          </div>
+      {notice ? (
+        <div
+          role="status"
+          className={cn(
+            "mb-4 flex items-start justify-between gap-3 rounded-xl border px-4 py-3 text-sm",
+            notice.tone === "ok"
+              ? "border-[#2fe85c]/30 bg-[#2fe85c]/10 text-[#08743d]"
+              : "border-amber-200 bg-amber-50 text-amber-800",
+          )}
+        >
+          <span>{notice.message}</span>
+          <Link
+            href={`/projects/${project.id}`}
+            aria-label="Dismiss"
+            className="shrink-0 opacity-60 transition hover:opacity-100"
+          >
+            <X className="size-4" />
+          </Link>
         </div>
-        <nav className="relative flex overflow-x-auto border-t border-white/[0.07] px-2 sm:px-5">
-          {tabs.map((tab) => (
-            <Link
-              key={tab}
-              href={`/projects/${project.id}${tab === "overview" ? "" : `?tab=${tab}`}`}
-              className={cn(
-                "relative shrink-0 px-4 py-4 text-xs font-medium capitalize transition",
-                activeTab === tab
-                  ? "text-white"
-                  : "text-white/35 hover:text-white/65",
-              )}
-            >
-              {tab}
-              {activeTab === tab ? (
-                <span className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-[#2fe85c]" />
-              ) : null}
-            </Link>
-          ))}
-        </nav>
-      </section>
+      ) : null}
 
-      <div className="mt-5">
+      <ProjectHeader
+        project={project}
+        viewer={viewer}
+        activeTab={activeTab}
+        tabHref={tabHref}
+      />
+
+      <div className="mt-4">
         {activeTab === "overview" ? (
-          <Overview project={project} financial={financial} />
+          <Overview
+            project={project}
+            financial={financial}
+            isOwner={isOwner}
+            tabHref={tabHref}
+          />
         ) : null}
-        {activeTab === "team" ? <Team project={project} /> : null}
-        {activeTab === "milestones" ? <Milestones project={project} /> : null}
+        {activeTab === "team" ? (
+          <TeamPanel
+            projectId={project.id}
+            members={project.members}
+            formerMembers={project.formerMembers}
+            people={options.people}
+            isOwner={isOwner}
+            addMember={addProjectMember}
+            updateResponsibility={updateMemberResponsibility}
+            removeMember={removeProjectMember}
+            restoreMember={restoreProjectMember}
+            setLead={setProjectLead}
+          />
+        ) : null}
+        {activeTab === "milestones" ? (
+          <MilestonesPanel
+            projectId={project.id}
+            weeks={project.weeks}
+            archivedWeeks={project.archivedWeeks}
+            members={project.members.map((member) => ({
+              id: member.id,
+              name: member.name,
+            }))}
+            isOwner={isOwner}
+            actions={{
+              toggleItem: toggleMilestoneItem,
+              addWeek: addMilestoneWeek,
+              updateWeek: updateMilestoneWeek,
+              setWeekArchived: setMilestoneWeekArchived,
+              addItem: addMilestoneItem,
+              saveItem: saveMilestoneItem,
+              setItemArchived: setMilestoneItemArchived,
+            }}
+          />
+        ) : null}
         {activeTab === "technical" ? <Technical project={project} /> : null}
       </div>
+    </div>
+  );
+}
+
+function ProjectHeader({
+  project,
+  viewer,
+  activeTab,
+  tabHref,
+}: {
+  project: ProjectDetail;
+  viewer: Viewer;
+  activeTab: Tab;
+  tabHref: (tab: Tab) => string;
+}) {
+  const isOwner = viewer.role === "owner";
+  const deadline = deadlineSignal(project.dueOn, project.status);
+
+  return (
+    <section className="overflow-hidden rounded-[20px] border border-black/[0.07] bg-[#15181b] text-white">
+      <div className="relative px-4 pt-5 pb-5 sm:px-6">
+        <div className="pointer-events-none absolute -top-28 right-0 size-72 rounded-full bg-[#2fe85c]/10 blur-3xl" />
+        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] text-white/40">
+                {project.clientName}
+              </span>
+              {project.isArchived ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] font-semibold text-amber-300">
+                  <Archive className="size-3" /> Archived
+                </span>
+              ) : null}
+            </div>
+            <h1 className="font-display mt-2 text-2xl font-semibold tracking-[-0.045em] sm:text-[2rem]">
+              {project.name}
+            </h1>
+            <p className="mt-2 max-w-2xl text-[13px] leading-5 text-white/45">
+              {project.description ?? "No description has been added yet."}
+            </p>
+          </div>
+
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            {isOwner ? (
+              <>
+                <StatusControl
+                  projectId={project.id}
+                  status={project.status}
+                  action={setProjectStatus}
+                />
+                <Link
+                  href={`/projects/${project.id}/edit`}
+                  className="inline-flex h-9 items-center gap-1.5 rounded-full bg-white/[0.08] px-3.5 text-xs font-semibold text-white transition hover:bg-white/[0.14]"
+                >
+                  <Pencil className="size-3.5" />
+                  Edit
+                </Link>
+              </>
+            ) : (
+              <span
+                className={cn(
+                  "inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold",
+                  "bg-[#2fe85c]/12 text-[#69ee88]",
+                )}
+              >
+                {PROJECT_STATUS_LABEL[project.status]}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="relative mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <HeaderMeta label="Project lead" value={project.leadName ?? "Unassigned"} />
+          <HeaderMeta label="Team" value={`${project.members.length} assigned`} />
+          <HeaderMeta label="Due date" value={formatDate(project.dueOn)} note={deadline.label} />
+          <HeaderMeta
+            label="Milestones"
+            value={
+              project.totalItems
+                ? `${project.doneItems}/${project.totalItems} done`
+                : "Not planned"
+            }
+          />
+        </div>
+      </div>
+
+      <nav
+        aria-label="Project sections"
+        className="flex overflow-x-auto border-t border-white/[0.07] px-2 sm:px-4"
+      >
+        {tabs.map((tab) => (
+          <Link
+            key={tab}
+            href={tabHref(tab)}
+            aria-current={activeTab === tab ? "page" : undefined}
+            className={cn(
+              "relative shrink-0 px-3.5 py-3.5 text-xs font-medium capitalize transition sm:px-4",
+              activeTab === tab
+                ? "text-white"
+                : "text-white/35 hover:text-white/65",
+            )}
+          >
+            {tab}
+            {activeTab === tab ? (
+              <span className="absolute inset-x-3.5 bottom-0 h-0.5 rounded-full bg-[#2fe85c] sm:inset-x-4" />
+            ) : null}
+          </Link>
+        ))}
+      </nav>
+    </section>
+  );
+}
+
+function HeaderMeta({
+  label,
+  value,
+  note,
+}: {
+  label: string;
+  value: string;
+  note?: string;
+}) {
+  return (
+    <div className="min-w-0 rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5">
+      <p className="font-mono text-[8px] tracking-wider text-white/25 uppercase">
+        {label}
+      </p>
+      <p className="mt-1.5 truncate text-[11px] font-medium text-white/70">
+        {value}
+      </p>
+      {note ? (
+        <p className="mt-0.5 truncate text-[10px] text-white/35">{note}</p>
+      ) : null}
     </div>
   );
 }
@@ -108,191 +322,310 @@ export default async function ProjectPage({
 function Overview({
   project,
   financial,
+  isOwner,
+  tabHref,
 }: {
-  project: NonNullable<Awaited<ReturnType<typeof getProjectDetail>>>;
-  financial: Awaited<ReturnType<typeof getOwnerProjectFinancial>>;
+  project: ProjectDetail;
+  financial: ProjectFinancial | null;
+  isOwner: boolean;
+  tabHref: (tab: Tab) => string;
 }) {
+  const signal = deliverySignal(project);
+  const deadline = deadlineSignal(project.dueOn, project.status);
+  const gaps = missingInformation(project, isOwner, tabHref);
+
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_0.72fr]">
-      <Panel title="Project information" icon={CalendarDays}>
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Detail label="Client" value={project.client} />
-          <Detail label="Status" value={project.status} capitalize />
-          <Detail label="Start date" value={date(project.startsOn)} />
-          <Detail label="Due date" value={date(project.dueOn)} />
-          <Detail label="Project lead" value={project.lead} />
-          <Detail
-            label="Team size"
-            value={`${project.members.length} people`}
-          />
-        </div>
-      </Panel>
-      <Panel title="Delivery signal" icon={Circle}>
-        <p className="text-sm leading-6 text-black/48">
-          {project.weeks.length
-            ? `${project.weeks.length} milestone week${project.weeks.length === 1 ? "" : "s"} currently planned.`
-            : "Weekly milestones have not been planned yet."}
-        </p>
-        {financial ? (
-          <div className="mt-6 rounded-2xl bg-[#15181b] p-4 text-white">
-            <p className="font-mono text-[8px] tracking-[0.13em] text-white/30 uppercase">
-              Owner-only project value
-            </p>
-            <p className="mt-2 text-xl font-semibold tracking-[-0.04em]">
-              {money(financial.amount, financial.currency)}
-            </p>
+    <div className="grid gap-4 lg:grid-cols-[1.35fr_1fr]">
+      <div className="space-y-4">
+        <Panel title="Delivery signal" icon={Signal}>
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={cn(
+                "inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold",
+                TONE_CHIP[signal.tone],
+              )}
+            >
+              {signal.label}
+            </span>
+            <span className={cn("text-[11px]", TONE_TEXT[deadline.tone])}>
+              {deadline.label}
+            </span>
           </div>
-        ) : null}
-      </Panel>
-    </div>
-  );
-}
 
-function Team({
-  project,
-}: {
-  project: NonNullable<Awaited<ReturnType<typeof getProjectDetail>>>;
-}) {
-  return (
-    <Panel title="Assigned team" icon={UsersRound}>
-      {project.members.length ? (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {project.members.map((member) => (
-            <div
-              key={member.id}
-              className="flex items-center gap-3 rounded-2xl border border-black/[0.065] p-3.5"
-            >
-              <span className="grid size-10 place-items-center rounded-xl bg-[#15181b] text-[10px] font-semibold text-[#2fe85c]">
-                {initials(member.name)}
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold">{member.name}</p>
-                <p className="mt-1 truncate text-[11px] text-black/40">
-                  {member.responsibility}
-                </p>
-              </div>
+          <p className="mt-3 text-sm leading-6 text-black/55">
+            {describeDelivery(project)}
+          </p>
+
+          <div className="mt-4">
+            <div className="flex items-center justify-between text-[11px] text-black/45">
+              <span>Overall progress</span>
+              <span className="font-mono">{project.progress}%</span>
             </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-sm text-black/42">
-          No team members have been assigned.
-        </p>
-      )}
-    </Panel>
-  );
-}
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-black/[0.07]">
+              <div
+                className={cn("h-full rounded-full", TONE_BAR[signal.tone])}
+                style={{ width: `${project.progress}%` }}
+              />
+            </div>
+          </div>
 
-function Milestones({
-  project,
-}: {
-  project: NonNullable<Awaited<ReturnType<typeof getProjectDetail>>>;
-}) {
-  const today = new Date().toISOString().slice(0, 10);
-  return (
-    <div className="space-y-3">
-      {project.weeks.length ? (
-        project.weeks.map((week) => {
-          const overdue =
-            week.dueOn < today && week.items.some((item) => !item.done);
-          const done = week.items.filter((item) => item.done).length;
-          return (
-            <section
-              key={week.id}
-              className="overflow-hidden rounded-[20px] border border-black/[0.07] bg-[#f8f8f3]"
-            >
-              <header className="flex flex-wrap items-center justify-between gap-3 border-b border-black/[0.06] px-4 py-4 sm:px-5">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-sm font-semibold">
-                      Week {week.number}
-                    </h2>
-                    {overdue ? (
-                      <span className="rounded-full bg-red-500/10 px-2 py-0.5 text-[9px] font-semibold text-red-700">
-                        Overdue
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="mt-1 text-[10px] text-black/38">
-                    Due {date(week.dueOn)}
-                  </p>
+          {project.currentWeek ? (
+            <div className="mt-5 rounded-2xl border border-black/[0.07] bg-white/60 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <CalendarRange className="size-4 text-black/35" />
+                  <h3 className="text-sm font-semibold">
+                    Week {project.currentWeek.number}
+                  </h3>
+                  {project.currentWeek.isCurrent &&
+                  isThisWeek(project.currentWeek.dueOn, project.currentWeek.startsOn) ? (
+                    <span className="rounded-full bg-[#2fe85c]/15 px-2 py-0.5 text-[9px] font-semibold text-[#08743d]">
+                      Current week
+                    </span>
+                  ) : null}
                 </div>
-                <span className="font-mono text-[9px] text-black/35">
-                  {done}/{week.items.length} done
+                <span className="font-mono text-[10px] text-black/40">
+                  {project.currentWeek.done}/{project.currentWeek.total} done ·
+                  due {formatDate(project.currentWeek.dueOn)}
                 </span>
-              </header>
-              <div className="divide-y divide-black/[0.055]">
-                {week.items.length ? (
-                  week.items.map((item) => (
-                    <form
+              </div>
+
+              {project.currentWeek.items.length ? (
+                <ul className="mt-3 space-y-1.5">
+                  {project.currentWeek.items.slice(0, 4).map((item) => (
+                    <li
                       key={item.id}
-                      action={toggleMilestoneItem}
-                      className="flex items-center gap-3 px-4 py-3.5 sm:px-5"
+                      className="flex items-center gap-2.5 text-[13px]"
                     >
-                      <input type="hidden" name="itemId" value={item.id} />
-                      <input
-                        type="hidden"
-                        name="projectId"
-                        value={project.id}
-                      />
-                      <button
-                        type="submit"
-                        aria-label={
-                          item.done
-                            ? `Mark ${item.label} incomplete`
-                            : `Mark ${item.label} complete`
-                        }
+                      <span
                         className={cn(
-                          "grid size-6 shrink-0 place-items-center rounded-lg border transition",
+                          "grid size-4 shrink-0 place-items-center rounded border",
                           item.done
                             ? "border-[#16a34a] bg-[#16a34a] text-white"
-                            : "border-black/15 bg-white text-transparent hover:border-[#16a34a]",
+                            : "border-black/15 bg-white text-transparent",
                         )}
                       >
-                        <Check className="size-3.5" />
-                      </button>
-                      <div className="min-w-0">
-                        <p
-                          className={cn(
-                            "text-sm",
-                            item.done && "text-black/35 line-through",
-                          )}
-                        >
-                          {item.label}
-                        </p>
-                        {item.assignee ? (
-                          <p className="mt-1 text-[10px] text-black/35">
-                            {item.assignee}
-                          </p>
-                        ) : null}
-                      </div>
-                    </form>
-                  ))
-                ) : (
-                  <p className="px-5 py-5 text-sm text-black/40">
-                    No items in this week.
-                  </p>
-                )}
-              </div>
-            </section>
-          );
-        })
-      ) : (
-        <Panel title="Weekly milestones" icon={CalendarDays}>
-          <p className="text-sm text-black/42">
-            No milestone weeks have been planned yet.
-          </p>
+                        <Check className="size-2.5" />
+                      </span>
+                      <span
+                        className={cn(
+                          "min-w-0 truncate",
+                          item.done ? "text-black/35 line-through" : "text-black/70",
+                        )}
+                      >
+                        {item.label}
+                      </span>
+                      {item.assignee ? (
+                        <span className="ml-auto shrink-0 text-[10px] text-black/35">
+                          {item.assignee}
+                        </span>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-3 text-[13px] text-black/40">
+                  This week has no items yet.
+                </p>
+              )}
+
+              <Link
+                href={tabHref("milestones")}
+                className="mt-3 inline-flex text-[11px] font-semibold text-[#08743d] hover:underline"
+              >
+                Open all milestone weeks →
+              </Link>
+            </div>
+          ) : null}
         </Panel>
-      )}
+
+        {gaps.length ? (
+          <Panel title="Worth completing" icon={Info}>
+            <ul className="space-y-2.5">
+              {gaps.map((gap) => (
+                <li
+                  key={gap.label}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-black/[0.06] bg-white/50 px-3.5 py-2.5"
+                >
+                  <span className="text-[13px] text-black/60">{gap.label}</span>
+                  {gap.href ? (
+                    <Link
+                      href={gap.href}
+                      className="text-[11px] font-semibold text-[#08743d] hover:underline"
+                    >
+                      {gap.action} →
+                    </Link>
+                  ) : (
+                    <span className="text-[11px] text-black/35">
+                      {gap.action}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </Panel>
+        ) : null}
+      </div>
+
+      <div className="space-y-4">
+        <Panel title="Project information" icon={CalendarDays}>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Detail label="Client" value={project.clientName} />
+            <Detail
+              label="Status"
+              value={PROJECT_STATUS_LABEL[project.status]}
+              chip={PROJECT_STATUS_CHIP[project.status]}
+            />
+            <Detail label="Start date" value={formatDate(project.startsOn)} />
+            <Detail label="Due date" value={formatDate(project.dueOn)} />
+            <Detail
+              label="Project lead"
+              value={project.leadName ?? "Unassigned"}
+            />
+            <Detail
+              label="Team size"
+              value={`${project.members.length} ${project.members.length === 1 ? "person" : "people"}`}
+            />
+          </div>
+        </Panel>
+
+        {isOwner ? (
+          <ValuePanel financial={financial} projectId={project.id} />
+        ) : null}
+      </div>
     </div>
   );
 }
 
-function Technical({
-  project,
+function ValuePanel({
+  financial,
+  projectId,
 }: {
-  project: NonNullable<Awaited<ReturnType<typeof getProjectDetail>>>;
+  financial: ProjectFinancial | null;
+  projectId: string;
 }) {
+  return (
+    <section className="rounded-[20px] border border-black/[0.07] bg-[#15181b] p-5 text-white">
+      <div className="flex items-center gap-2">
+        <LockKeyhole className="size-3.5 text-[#69ee88]" />
+        <p className="font-mono text-[9px] tracking-[0.14em] text-[#69ee88] uppercase">
+          Owner only · project value
+        </p>
+      </div>
+
+      {financial ? (
+        <>
+          <p className="mt-4 text-2xl font-semibold tracking-[-0.045em]">
+            {formatMoney(financial.amount, financial.currency)}
+          </p>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <MoneyCell label="In PKR" value={formatMoney(financial.amountPkr, "PKR")} />
+            <MoneyCell label="In USD" value={formatMoney(financial.amountUsd, "USD")} />
+          </div>
+          <p className="mt-3 text-[11px] leading-4 text-white/35">
+            Booked {formatDate(financial.bookedOn)} at{" "}
+            {financial.rate.toLocaleString("en-US")} PKR per USD. Stored as
+            agreed and converted only for display.
+          </p>
+        </>
+      ) : (
+        <>
+          <p className="mt-4 text-sm text-white/45">
+            No value recorded for this project yet.
+          </p>
+          <Link
+            href={`/projects/${projectId}/edit`}
+            className="mt-4 inline-flex h-9 items-center gap-1.5 rounded-xl bg-white/[0.08] px-3.5 text-xs font-semibold text-white transition hover:bg-white/[0.14]"
+          >
+            <Pencil className="size-3.5" />
+            Record the value
+          </Link>
+        </>
+      )}
+    </section>
+  );
+}
+
+function MoneyCell({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5">
+      <p className="font-mono text-[8px] tracking-wider text-white/25 uppercase">
+        {label}
+      </p>
+      <p className="mt-1.5 truncate text-[13px] font-semibold">{value}</p>
+    </div>
+  );
+}
+
+function describeDelivery(project: ProjectDetail) {
+  if (!project.weeks.length) {
+    return "No milestone weeks are planned yet, so there is nothing to measure progress against.";
+  }
+  if (project.overdueItems > 0) {
+    return `${project.overdueItems} item${project.overdueItems === 1 ? "" : "s"} from earlier weeks ${project.overdueItems === 1 ? "is" : "are"} still open. That is what makes this project look behind — not the due date.`;
+  }
+  if (project.doneItems === project.totalItems) {
+    return "Every planned milestone item is done. Plan the next week to keep the signal meaningful.";
+  }
+  return "Nothing is overdue from previous weeks. Current work is on schedule.";
+}
+
+function isThisWeek(dueOn: string, startsOn: string | null) {
+  const today = new Date().toISOString().slice(0, 10);
+  return (startsOn ?? dueOn) <= today && dueOn >= today;
+}
+
+/** Missing information is presented as the owner's next action, not as blank UI. */
+function missingInformation(
+  project: ProjectDetail,
+  isOwner: boolean,
+  tabHref: (tab: Tab) => string,
+) {
+  const gaps: Array<{ label: string; action: string; href?: string }> = [];
+  const editHref = `/projects/${project.id}/edit`;
+
+  if (!project.description) {
+    gaps.push({
+      label: "No description — a new joiner cannot tell what this project is.",
+      action: isOwner ? "Add one" : "Ask an owner",
+      href: isOwner ? editHref : undefined,
+    });
+  }
+  if (!project.startsOn || !project.dueOn) {
+    gaps.push({
+      label: "Dates are incomplete, so deadlines cannot be trusted.",
+      action: isOwner ? "Set dates" : "Ask an owner",
+      href: isOwner ? editHref : undefined,
+    });
+  }
+  if (!project.leadId) {
+    gaps.push({
+      label: "No project lead — nobody owns this delivery.",
+      action: isOwner ? "Assign a lead" : "Ask an owner",
+      href: isOwner ? editHref : undefined,
+    });
+  }
+  if (project.members.length === 0) {
+    gaps.push({
+      label: "Nobody is assigned, so no team member can open this project.",
+      action: "Open Team",
+      href: tabHref("team"),
+    });
+  }
+  if (!project.weeks.length) {
+    gaps.push({
+      label: "No milestone weeks planned, so there is no progress to report.",
+      action: "Open Milestones",
+      href: tabHref("milestones"),
+    });
+  }
+
+  return gaps;
+}
+
+
+
+function Technical({ project }: { project: ProjectDetail }) {
   const technical = project.technical;
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_0.72fr]">
@@ -322,7 +655,7 @@ function Technical({
         <ComingSoon
           compact
           title="Secure credentials vault"
-          description="Secrets will be built last, after encryption, individual access grants, instant revocation and audit logging receive a separate security review."
+          description="Secrets are built last, after encryption, individual access grants, instant revocation and audit logging receive a separate security review."
           items={["Encrypted vault", "Per-person access", "Audit log"]}
         />
         {technical?.stackNotes ? (
@@ -350,8 +683,8 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-[20px] border border-black/[0.07] bg-[#f8f8f3] p-5 sm:p-6">
-      <div className="mb-6 flex items-center gap-2.5">
+    <section className="rounded-[20px] border border-black/[0.07] bg-[#f8f8f3] p-5">
+      <div className="mb-5 flex items-center gap-2.5">
         <span className="grid size-8 place-items-center rounded-lg bg-black/[0.045]">
           <Icon className="size-4 text-black/45" />
         </span>
@@ -363,31 +696,37 @@ function Panel({
     </section>
   );
 }
+
 function Detail({
   label,
   value,
-  capitalize = false,
+  chip,
 }: {
   label: string;
   value: string;
-  capitalize?: boolean;
+  chip?: string;
 }) {
   return (
     <div className="min-w-0">
       <p className="font-mono text-[8px] tracking-wider text-black/30 uppercase">
         {label}
       </p>
-      <p
-        className={cn(
-          "mt-2 text-sm font-medium text-black/65",
-          capitalize && "capitalize",
-        )}
-      >
-        {value}
-      </p>
+      {chip ? (
+        <span
+          className={cn(
+            "mt-2 inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold",
+            chip,
+          )}
+        >
+          {value}
+        </span>
+      ) : (
+        <p className="mt-2 text-sm font-medium text-black/65">{value}</p>
+      )}
     </div>
   );
 }
+
 function LinkDetail({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="min-w-0">
@@ -409,40 +748,4 @@ function LinkDetail({ label, value }: { label: string; value: string | null }) {
       )}
     </div>
   );
-}
-function DarkMeta({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-3">
-      <p className="font-mono text-[8px] tracking-wider text-white/25 uppercase">
-        {label}
-      </p>
-      <p className="mt-1.5 truncate text-[11px] font-medium text-white/65">
-        {value}
-      </p>
-    </div>
-  );
-}
-function date(value: string | null) {
-  return value
-    ? new Intl.DateTimeFormat("en", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }).format(new Date(`${value}T00:00:00`))
-    : "Not set";
-}
-function money(value: number, currency: "PKR" | "USD") {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-function initials(name: string) {
-  return name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
 }

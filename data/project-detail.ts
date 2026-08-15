@@ -10,6 +10,7 @@ export type MilestoneItem = {
   assigneeId: string | null;
   assignee: string | null;
   done: boolean;
+  isArchived: boolean;
 };
 
 export type MilestoneWeek = {
@@ -18,10 +19,12 @@ export type MilestoneWeek = {
   startsOn: string | null;
   dueOn: string;
   items: MilestoneItem[];
+  archivedItems: MilestoneItem[];
   done: number;
   total: number;
   isCurrent: boolean;
   isOverdue: boolean;
+  isArchived: boolean;
 };
 
 export type ProjectMember = {
@@ -29,6 +32,10 @@ export type ProjectMember = {
   name: string;
   responsibility: string;
   isLead: boolean;
+};
+
+export type FormerProjectMember = ProjectMember & {
+  removedAt: string;
 };
 
 export type ProjectDetail = {
@@ -44,7 +51,11 @@ export type ProjectDetail = {
   leadId: string | null;
   leadName: string | null;
   members: ProjectMember[];
+  /** Owners only — removed assignments, kept so they can be restored. */
+  formerMembers: FormerProjectMember[];
   weeks: MilestoneWeek[];
+  /** Owners only — archived weeks, shown separately from the live plan. */
+  archivedWeeks: MilestoneWeek[];
   totalItems: number;
   doneItems: number;
   overdueItems: number;
@@ -115,6 +126,20 @@ export async function getProjectDetail(
 
   if (!project) return null;
 
+  // Owners see archived assignments, weeks and items so they can restore them.
+  // Members only ever receive the live plan.
+  const isOwner = viewer.role === "owner";
+
+  const membersQuery = supabase
+    .from("app_project_members")
+    .select("profile_id, responsibility, archived_at")
+    .eq("project_id", projectId);
+  const weeksQuery = supabase
+    .from("app_milestone_weeks")
+    .select("id, week_number, starts_on, due_on, archived_at")
+    .eq("project_id", projectId)
+    .order("week_number");
+
   const [clientResult, membersResult, weeksResult, technicalResult] =
     await Promise.all([
       supabase
@@ -122,17 +147,8 @@ export async function getProjectDetail(
         .select("id, name")
         .eq("id", project.client_id)
         .maybeSingle(),
-      supabase
-        .from("app_project_members")
-        .select("profile_id, responsibility")
-        .eq("project_id", projectId)
-        .is("archived_at", null),
-      supabase
-        .from("app_milestone_weeks")
-        .select("id, week_number, starts_on, due_on")
-        .eq("project_id", projectId)
-        .is("archived_at", null)
-        .order("week_number"),
+      isOwner ? membersQuery : membersQuery.is("archived_at", null),
+      isOwner ? weeksQuery : weeksQuery.is("archived_at", null),
       supabase
         .from("app_project_technical_details")
         .select(
@@ -165,15 +181,18 @@ export async function getProjectDetail(
     label: string;
     assigned_to: string | null;
     is_done: boolean;
+    archived_at: string | null;
   }> = [];
 
   if (weekIds.length) {
-    const { data } = await supabase
+    const itemsQuery = supabase
       .from("app_milestone_items")
-      .select("id, milestone_week_id, label, assigned_to, is_done")
+      .select("id, milestone_week_id, label, assigned_to, is_done, archived_at")
       .in("milestone_week_id", weekIds)
-      .is("archived_at", null)
       .order("created_at");
+    const { data } = await (isOwner
+      ? itemsQuery
+      : itemsQuery.is("archived_at", null));
     itemRows = (data ?? []) as typeof itemRows;
   }
 
@@ -192,18 +211,22 @@ export async function getProjectDetail(
   }
 
   const now = today();
-  const weeks: MilestoneWeek[] = (weeksResult.data ?? []).map((week) => {
-    const items = itemRows
-      .filter((item) => String(item.milestone_week_id) === String(week.id))
-      .map((item) => ({
-        id: String(item.id),
-        label: String(item.label),
-        assigneeId: item.assigned_to ? String(item.assigned_to) : null,
-        assignee: item.assigned_to
-          ? (names.get(String(item.assigned_to)) ?? "Team member")
-          : null,
-        done: Boolean(item.is_done),
-      }));
+  const toItem = (item: (typeof itemRows)[number]): MilestoneItem => ({
+    id: String(item.id),
+    label: String(item.label),
+    assigneeId: item.assigned_to ? String(item.assigned_to) : null,
+    assignee: item.assigned_to
+      ? (names.get(String(item.assigned_to)) ?? "Team member")
+      : null,
+    done: Boolean(item.is_done),
+    isArchived: Boolean(item.archived_at),
+  });
+
+  const allWeeks: MilestoneWeek[] = (weeksResult.data ?? []).map((week) => {
+    const rows = itemRows.filter(
+      (item) => String(item.milestone_week_id) === String(week.id),
+    );
+    const items = rows.filter((item) => !item.archived_at).map(toItem);
     const done = items.filter((item) => item.done).length;
     const dueOn = String(week.due_on);
 
@@ -213,12 +236,19 @@ export async function getProjectDetail(
       startsOn: week.starts_on ? String(week.starts_on) : null,
       dueOn,
       items,
+      archivedItems: rows.filter((item) => item.archived_at).map(toItem),
       done,
       total: items.length,
       isCurrent: false,
       isOverdue: dueOn < now && done < items.length,
+      isArchived: Boolean(week.archived_at),
     };
   });
+
+  // Archived weeks are not part of the plan, so they never count towards
+  // progress and never become the current week.
+  const weeks = allWeeks.filter((week) => !week.isArchived);
+  const archivedWeeks = allWeeks.filter((week) => week.isArchived);
 
   const currentWeek = pickCurrentWeek(weeks);
   if (currentWeek) currentWeek.isCurrent = true;
@@ -230,15 +260,30 @@ export async function getProjectDetail(
     0,
   );
 
-  const members: ProjectMember[] = (membersResult.data ?? []).map((member) => ({
-    id: String(member.profile_id),
-    name: names.get(String(member.profile_id)) ?? "Team member",
-    responsibility: member.responsibility
-      ? String(member.responsibility)
-      : "Contributor",
-    isLead: String(member.profile_id) === String(project.lead_id),
-  }));
+  const memberRows = membersResult.data ?? [];
+  const members: ProjectMember[] = memberRows
+    .filter((member) => !member.archived_at)
+    .map((member) => ({
+      id: String(member.profile_id),
+      name: names.get(String(member.profile_id)) ?? "Team member",
+      responsibility: member.responsibility
+        ? String(member.responsibility)
+        : "Contributor",
+      isLead: String(member.profile_id) === String(project.lead_id),
+    }));
   members.sort((a, b) => Number(b.isLead) - Number(a.isLead));
+
+  const formerMembers: FormerProjectMember[] = memberRows
+    .filter((member) => member.archived_at)
+    .map((member) => ({
+      id: String(member.profile_id),
+      name: names.get(String(member.profile_id)) ?? "Team member",
+      responsibility: member.responsibility
+        ? String(member.responsibility)
+        : "Contributor",
+      isLead: false,
+      removedAt: String(member.archived_at),
+    }));
 
   return {
     id: String(project.id),
@@ -257,7 +302,9 @@ export async function getProjectDetail(
       ? (names.get(String(project.lead_id)) ?? "Unassigned")
       : null,
     members,
+    formerMembers,
     weeks,
+    archivedWeeks,
     totalItems,
     doneItems,
     overdueItems,

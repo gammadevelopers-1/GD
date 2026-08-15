@@ -61,10 +61,6 @@ update public.app_profiles
 set role = 'finance'
 where id = '90000000-0000-4000-8000-000000000004';
 
-update public.app_profiles
-set is_active = false
-where id = '90000000-0000-4000-8000-000000000005';
-
 insert into public.app_employment_private (
   profile_id,
   employment_type,
@@ -185,7 +181,16 @@ values
     '90000000-0000-4000-8000-000000000005',
     'Inactive engineer',
     '90000000-0000-4000-8000-000000000001'
-  );
+  )
+on conflict (project_id, profile_id) do update
+  set responsibility = excluded.responsibility,
+      archived_at = null;
+
+-- Deactivated after the assignment exists: someone is switched off while they
+-- are still on a project, which is the case that has to stay safe.
+update public.app_profiles
+set is_active = false
+where id = '90000000-0000-4000-8000-000000000005';
 
 insert into public.app_milestone_weeks (
   id,

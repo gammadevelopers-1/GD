@@ -1,4 +1,4 @@
-// Chunk 2 — direct API permission check.
+// Project module — direct API permission check (chunks 2 and 3).
 //
 // pgTAP proves the database rules. This proves the same rules survive the
 // PostgREST layer: real accounts, real access tokens, real HTTP requests, no
@@ -214,9 +214,13 @@ async function seed() {
       (project_id, value_amount, value_currency, exchange_rate_to_pkr, booked_on)
     values ('${ID.projectAssigned}', 18000, 'USD', 280, current_date);
 
+    -- The assigned engineer is also the lead, and the lead-membership trigger
+    -- has already created that row.
     insert into public.app_project_members
       (project_id, profile_id, responsibility, added_by)
-    values ('${ID.projectAssigned}', '${ID.assigned}', 'Delivery engineer', '${ID.owner}');
+    values ('${ID.projectAssigned}', '${ID.assigned}', 'Delivery engineer', '${ID.owner}')
+    on conflict (project_id, profile_id) do update
+      set responsibility = excluded.responsibility, archived_at = null;
 
     insert into public.app_milestone_weeks (id, project_id, week_number, starts_on, due_on)
     values ('${ID.week}', '${ID.projectAssigned}', 1, current_date - 6, current_date + 1);
@@ -234,8 +238,10 @@ async function cleanup() {
     delete from public.app_milestone_items
       where id in ('${ID.itemDone}', '${ID.itemOpen}');
     delete from public.app_milestone_weeks where id = '${ID.week}';
-    delete from public.app_project_members where project_id = '${ID.projectAssigned}';
-    delete from public.app_project_financials where project_id = '${ID.projectAssigned}';
+    delete from public.app_project_members
+      where project_id in ('${ID.projectAssigned}', '${ID.projectOwnerOnly}', '${ID.projectArchived}');
+    delete from public.app_project_financials
+      where project_id in ('${ID.projectAssigned}', '${ID.projectOwnerOnly}', '${ID.projectArchived}');
     delete from public.app_projects
       where id in ('${ID.projectAssigned}', '${ID.projectOwnerOnly}', '${ID.projectArchived}');
     delete from public.app_clients where id in ('${ID.clientA}', '${ID.clientB}');
@@ -377,6 +383,65 @@ async function run() {
   check("finance receives no operational project workspace",
     financeRows.data?.length === 0, `got ${financeRows.data?.length}`);
 
+  // Lifecycle: only an owner changes a project ------------------------------
+  const memberCreates = await api("/rest/v1/app_projects", {
+    key: PUBLISHABLE,
+    token: memberToken,
+    method: "POST",
+    body: {
+      client_id: ID.clientA,
+      name: "Created by a member",
+      created_by: ID.assigned,
+    },
+  });
+  check("member cannot create a project over the API", !memberCreates.ok,
+    `status ${memberCreates.status}`);
+
+  await api(`/rest/v1/app_projects?id=eq.${ID.projectAssigned}`, {
+    key: PUBLISHABLE,
+    token: memberToken,
+    method: "PATCH",
+    body: { name: "Renamed by a member" },
+  });
+  const afterMemberPatch = await portfolio(memberToken);
+  check("member cannot rename a project they are assigned to",
+    afterMemberPatch.data?.[0]?.name === "API Assigned Platform",
+    afterMemberPatch.data?.[0]?.name);
+
+  const memberAudits = await api("/rest/v1/rpc/app_record_project_event", {
+    key: PUBLISHABLE,
+    token: memberToken,
+    method: "POST",
+    body: {
+      target_project_id: ID.projectAssigned,
+      action_name: "project.archived",
+      event_metadata: {},
+    },
+  });
+  check("member cannot write to the audit log", !memberAudits.ok,
+    `status ${memberAudits.status}`);
+
+  // Archiving revokes access on the next request, not on the next login.
+  await api(`/rest/v1/app_projects?id=eq.${ID.projectAssigned}`, {
+    key: PUBLISHABLE,
+    token: ownerToken,
+    method: "PATCH",
+    body: { archived_at: new Date().toISOString() },
+  });
+  const afterArchive = await portfolio(memberToken);
+  check("archiving removes member access immediately",
+    afterArchive.data?.length === 0, `got ${afterArchive.data?.length}`);
+
+  await api(`/rest/v1/app_projects?id=eq.${ID.projectAssigned}`, {
+    key: PUBLISHABLE,
+    token: ownerToken,
+    method: "PATCH",
+    body: { archived_at: null },
+  });
+  const afterRestore = await portfolio(memberToken);
+  check("restoring gives member access back",
+    afterRestore.data?.length === 1, `got ${afterRestore.data?.length}`);
+
   // Anonymous ---------------------------------------------------------------
   const anonRpc = await portfolio(undefined);
   check("anonymous callers cannot execute the portfolio function",
@@ -409,7 +474,7 @@ try {
   });
 }
 
-console.log("\nChunk 2 — direct API permission check\n");
+console.log("\nProject module — direct API permission check\n");
 console.log(results.join("\n"));
 console.log(
   `\n${results.length - failures}/${results.length} checks passed.\n`,

@@ -35,6 +35,7 @@ declare
   p_migration  constant uuid := 'd0900000-0000-4000-8000-000000000007';
   p_refresh    constant uuid := 'd0900000-0000-4000-8000-000000000008';
   p_legacy     constant uuid := 'd0900000-0000-4000-8000-000000000009';
+  p_bare       constant uuid := 'd0900000-0000-4000-8000-000000000010';
 
   w_ops_1 constant uuid := 'd0e00000-0000-4000-8000-000000000011';
   w_ops_2 constant uuid := 'd0e00000-0000-4000-8000-000000000012';
@@ -142,7 +143,13 @@ begin
 
     (p_legacy, client_brightline, 'Brightline Legacy Rebuild',
      'Superseded by the marketing site rebuild.',
-     'closed', owner_id, current_date - 400, current_date - 300, now(), owner_id);
+     'closed', owner_id, current_date - 400, current_date - 300, now(), owner_id),
+
+    -- Deliberately bare: no description, no dates, no lead, no team, no
+    -- milestones. This is what the Overview looks like before anyone fills it
+    -- in, and it exercises every "worth completing" prompt at once.
+    (p_bare, client_meridian, 'Meridian Loyalty Programme',
+     null, 'discovery', null, null, null, null, owner_id);
 
   -- Owner-only money. Members must never see any of this.
   insert into public.app_project_financials
@@ -153,9 +160,9 @@ begin
     (p_portal, 15000, 'USD', 278.90, current_date - 6),
     (p_marketing, 6200, 'USD', 280.20, current_date - 34),
     (p_ordering, 32000, 'USD', 276.50, current_date - 150),
-    (p_retainer, 180000, 'PKR', 1, current_date - 90),
+    (p_retainer, 180000, 'PKR', 279.10, current_date - 90),
     (p_migration, 4800, 'USD', 279.00, current_date - 60),
-    (p_refresh, 850000, 'PKR', 1, current_date - 200);
+    (p_refresh, 850000, 'PKR', 276.80, current_date - 200);
 
   if member_one is not null then
     insert into public.app_project_members (project_id, profile_id, responsibility, added_by)
@@ -163,7 +170,8 @@ begin
       (p_operations, member_one, 'Delivery engineer', owner_id),
       (p_launch, member_one, 'Frontend', owner_id),
       (p_migration, member_one, 'Data migration', owner_id)
-    on conflict (project_id, profile_id) do nothing;
+    on conflict (project_id, profile_id) do update
+      set responsibility = excluded.responsibility, archived_at = null;
   end if;
 
   if member_two is not null then
@@ -171,7 +179,8 @@ begin
     values
       (p_marketing, member_two, 'Project lead', owner_id),
       (p_operations, member_two, 'Backend', owner_id)
-    on conflict (project_id, profile_id) do nothing;
+    on conflict (project_id, profile_id) do update
+      set responsibility = excluded.responsibility, archived_at = null;
   end if;
 
   insert into public.app_project_members (project_id, profile_id, responsibility, added_by)
@@ -182,7 +191,8 @@ begin
     (p_ordering, owner_id, 'Project lead', owner_id),
     (p_retainer, owner_id, 'Project lead', owner_id),
     (p_refresh, owner_id, 'Project lead', owner_id)
-  on conflict (project_id, profile_id) do nothing;
+  on conflict (project_id, profile_id) do update
+      set responsibility = excluded.responsibility, archived_at = null;
 
   insert into public.app_project_technical_details
     (project_id, repository_url, hosting_url, live_domain, staging_domain, design_url,

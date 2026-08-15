@@ -1,0 +1,416 @@
+"use client";
+
+import { useActionState, useState } from "react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Crown,
+  Loader2,
+  RotateCcw,
+  UserPlus,
+  UserRound,
+  X,
+} from "lucide-react";
+import type {
+  FormerProjectMember,
+  ProjectMember,
+} from "@/data/project-detail";
+import { type SimpleFormState, IDLE_FORM } from "@/lib/projects/form-state";
+import { formatDate, initials } from "@/lib/projects/format";
+import { cn } from "@/lib/utils";
+
+type Person = { id: string; name: string };
+type FormAction = (
+  state: SimpleFormState,
+  formData: FormData,
+) => Promise<SimpleFormState>;
+type PlainAction = (formData: FormData) => Promise<void>;
+
+export function TeamPanel({
+  projectId,
+  members,
+  formerMembers,
+  people,
+  isOwner,
+  addMember,
+  updateResponsibility,
+  removeMember,
+  restoreMember,
+  setLead,
+}: {
+  projectId: string;
+  members: ProjectMember[];
+  formerMembers: FormerProjectMember[];
+  people: Person[];
+  isOwner: boolean;
+  addMember: FormAction;
+  updateResponsibility: FormAction;
+  removeMember: PlainAction;
+  restoreMember: PlainAction;
+  setLead: PlainAction;
+}) {
+  const assigned = new Set(members.map((member) => member.id));
+  const addable = people.filter((person) => !assigned.has(person.id));
+
+  return (
+    <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+      <section className="rounded-[20px] border border-black/[0.07] bg-[#f8f8f3] p-5">
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <span className="grid size-8 place-items-center rounded-lg bg-black/[0.045]">
+              <UserRound className="size-4 text-black/45" />
+            </span>
+            <h2 className="text-[15px] font-semibold tracking-[-0.025em]">
+              On this project
+            </h2>
+          </div>
+          <span className="font-mono text-[10px] text-black/35">
+            {members.length} active
+          </span>
+        </div>
+
+        {members.length ? (
+          <ul className="space-y-2.5">
+            {members.map((member) => (
+              <MemberRow
+                key={member.id}
+                projectId={projectId}
+                member={member}
+                isOwner={isOwner}
+                updateResponsibility={updateResponsibility}
+                removeMember={removeMember}
+                setLead={setLead}
+              />
+            ))}
+          </ul>
+        ) : (
+          <p className="rounded-xl border border-dashed border-black/10 px-4 py-6 text-center text-sm text-black/42">
+            Nobody is assigned yet. Assigning someone is what gives them access
+            to this project.
+          </p>
+        )}
+
+        {isOwner && formerMembers.length ? (
+          <FormerMembers
+            projectId={projectId}
+            formerMembers={formerMembers}
+            restoreMember={restoreMember}
+          />
+        ) : null}
+      </section>
+
+      {isOwner ? (
+        <AddMemberPanel
+          projectId={projectId}
+          addable={addable}
+          addMember={addMember}
+        />
+      ) : (
+        <section className="rounded-[20px] border border-black/[0.07] bg-[#f8f8f3] p-5">
+          <h2 className="text-[15px] font-semibold tracking-[-0.025em]">
+            Who can see this project
+          </h2>
+          <p className="mt-2.5 text-sm leading-6 text-black/45">
+            Only the people listed here, plus the owners. An owner adds and
+            removes people — ask one if somebody is missing.
+          </p>
+        </section>
+      )}
+    </div>
+  );
+}
+
+function MemberRow({
+  projectId,
+  member,
+  isOwner,
+  updateResponsibility,
+  removeMember,
+  setLead,
+}: {
+  projectId: string;
+  member: ProjectMember;
+  isOwner: boolean;
+  updateResponsibility: FormAction;
+  removeMember: PlainAction;
+  setLead: PlainAction;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [state, formAction, pending] = useActionState(
+    updateResponsibility,
+    IDLE_FORM,
+  );
+
+  return (
+    <li className="rounded-2xl border border-black/[0.065] bg-white/50 p-3.5">
+      <div className="flex items-start gap-3">
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#15181b] text-[10px] font-semibold text-[#2fe85c]">
+          {initials(member.name)}
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <p className="flex flex-wrap items-center gap-1.5 text-sm font-semibold">
+            {member.name}
+            {member.isLead ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#2fe85c]/15 px-1.5 py-0.5 text-[8px] font-semibold text-[#08743d] uppercase">
+                <Crown className="size-2.5" /> Lead
+              </span>
+            ) : null}
+          </p>
+
+          {editing ? (
+            <form action={formAction} className="mt-2 flex flex-wrap gap-2">
+              <input type="hidden" name="projectId" value={projectId} />
+              <input type="hidden" name="profileId" value={member.id} />
+              <input
+                name="responsibility"
+                defaultValue={member.responsibility}
+                maxLength={120}
+                autoFocus
+                aria-label={`Responsibility for ${member.name}`}
+                className="h-9 min-w-0 flex-1 rounded-lg border border-black/[0.09] bg-white px-2.5 text-xs outline-none focus:border-[#16a34a]"
+              />
+              <button
+                type="submit"
+                disabled={pending}
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#15181b] px-3 text-xs font-semibold text-white disabled:opacity-60"
+              >
+                {pending ? <Loader2 className="size-3 animate-spin" /> : null}
+                Save
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditing(false)}
+                className="inline-flex h-9 items-center rounded-lg px-2.5 text-xs text-black/45 hover:text-black"
+              >
+                Cancel
+              </button>
+            </form>
+          ) : (
+            <p className="mt-1 truncate text-[11px] text-black/45">
+              {member.responsibility}
+            </p>
+          )}
+
+          {state.status !== "idle" && state.message ? (
+            <p
+              className={cn(
+                "mt-1.5 flex items-center gap-1.5 text-[11px]",
+                state.status === "success" ? "text-[#08743d]" : "text-red-700",
+              )}
+            >
+              {state.status === "success" ? (
+                <CheckCircle2 className="size-3" />
+              ) : (
+                <AlertCircle className="size-3" />
+              )}
+              {state.message}
+            </p>
+          ) : null}
+        </div>
+
+        {isOwner && !editing ? (
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className="rounded-lg px-2 py-1 text-[11px] font-medium text-black/45 transition hover:bg-black/[0.04] hover:text-black"
+            >
+              Edit role
+            </button>
+            {member.isLead ? null : (
+              <form action={setLead}>
+                <input type="hidden" name="projectId" value={projectId} />
+                <input type="hidden" name="profileId" value={member.id} />
+                <button
+                  type="submit"
+                  className="rounded-lg px-2 py-1 text-[11px] font-medium text-black/45 transition hover:bg-black/[0.04] hover:text-black"
+                >
+                  Make lead
+                </button>
+              </form>
+            )}
+            {confirming ? (
+              <>
+                <form action={removeMember}>
+                  <input type="hidden" name="projectId" value={projectId} />
+                  <input type="hidden" name="profileId" value={member.id} />
+                  <button
+                    type="submit"
+                    className="rounded-lg bg-red-600 px-2 py-1 text-[11px] font-semibold text-white transition hover:bg-red-700"
+                  >
+                    Remove access
+                  </button>
+                </form>
+                <button
+                  type="button"
+                  onClick={() => setConfirming(false)}
+                  aria-label="Keep them on the project"
+                  className="rounded-lg p-1 text-black/40 hover:text-black"
+                >
+                  <X className="size-3.5" />
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setConfirming(true)}
+                className="rounded-lg px-2 py-1 text-[11px] font-medium text-black/45 transition hover:bg-red-50 hover:text-red-700"
+              >
+                Remove
+              </button>
+            )}
+          </div>
+        ) : null}
+      </div>
+
+      {confirming && member.isLead ? (
+        <p className="mt-2.5 rounded-lg bg-amber-50 px-3 py-2 text-[11px] text-amber-800">
+          They are the project lead. Removing them clears the lead as well, so
+          pick a new one afterwards.
+        </p>
+      ) : null}
+    </li>
+  );
+}
+
+function FormerMembers({
+  projectId,
+  formerMembers,
+  restoreMember,
+}: {
+  projectId: string;
+  formerMembers: FormerProjectMember[];
+  restoreMember: PlainAction;
+}) {
+  return (
+    <div className="mt-6 border-t border-black/[0.06] pt-5">
+      <h3 className="font-mono text-[9px] tracking-[0.14em] text-black/35 uppercase">
+        Previously on this project
+      </h3>
+      <p className="mt-1.5 text-[11px] text-black/40">
+        Assignments are archived, never deleted. Restoring reuses the original
+        record rather than creating a second one.
+      </p>
+      <ul className="mt-3 space-y-2">
+        {formerMembers.map((member) => (
+          <li
+            key={member.id}
+            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-black/[0.06] px-3 py-2"
+          >
+            <div className="min-w-0">
+              <p className="truncate text-[13px] font-medium text-black/60">
+                {member.name}
+              </p>
+              <p className="text-[10px] text-black/35">
+                Removed {formatDate(member.removedAt.slice(0, 10))}
+              </p>
+            </div>
+            <form action={restoreMember}>
+              <input type="hidden" name="projectId" value={projectId} />
+              <input type="hidden" name="profileId" value={member.id} />
+              <button
+                type="submit"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-black/[0.1] bg-white px-2.5 py-1.5 text-[11px] font-semibold text-black/60 transition hover:border-black/25 hover:text-black"
+              >
+                <RotateCcw className="size-3" />
+                Restore
+              </button>
+            </form>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function AddMemberPanel({
+  projectId,
+  addable,
+  addMember,
+}: {
+  projectId: string;
+  addable: Person[];
+  addMember: FormAction;
+}) {
+  const [state, formAction, pending] = useActionState(addMember, IDLE_FORM);
+
+  return (
+    <section className="rounded-[20px] border border-black/[0.07] bg-[#f8f8f3] p-5">
+      <div className="mb-4 flex items-center gap-2.5">
+        <span className="grid size-8 place-items-center rounded-lg bg-black/[0.045]">
+          <UserPlus className="size-4 text-black/45" />
+        </span>
+        <h2 className="text-[15px] font-semibold tracking-[-0.025em]">
+          Add someone
+        </h2>
+      </div>
+
+      <p className="mb-4 text-[13px] leading-5 text-black/45">
+        Adding a person here is what gives them access to this project. They
+        will see it in their portfolio immediately.
+      </p>
+
+      {addable.length ? (
+        <form action={formAction} className="space-y-3">
+          <input type="hidden" name="projectId" value={projectId} />
+          <label className="block space-y-1.5">
+            <span className="text-xs font-medium text-black/55">Person</span>
+            <select
+              name="profileId"
+              required
+              className="h-10 w-full rounded-xl border border-black/[0.09] bg-white px-3 text-sm outline-none focus:border-[#16a34a]"
+            >
+              <option value="">Choose a team member</option>
+              {addable.map((person) => (
+                <option key={person.id} value={person.id}>
+                  {person.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block space-y-1.5">
+            <span className="text-xs font-medium text-black/55">
+              What are they doing on it?
+            </span>
+            <input
+              name="responsibility"
+              maxLength={120}
+              placeholder="Frontend, QA, client contact…"
+              className="h-10 w-full rounded-xl border border-black/[0.09] bg-white px-3 text-sm outline-none focus:border-[#16a34a]"
+            />
+          </label>
+          <button
+            type="submit"
+            disabled={pending}
+            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#15181b] px-4 text-sm font-semibold text-white transition hover:bg-black disabled:opacity-60"
+          >
+            {pending ? <Loader2 className="size-4 animate-spin" /> : null}
+            Add to project
+          </button>
+        </form>
+      ) : (
+        <p className="rounded-xl border border-dashed border-black/10 px-4 py-5 text-center text-[13px] text-black/42">
+          Everyone active is already on this project.
+        </p>
+      )}
+
+      {state.status !== "idle" && state.message ? (
+        <p
+          className={cn(
+            "mt-3 flex items-center gap-1.5 text-[11px]",
+            state.status === "success" ? "text-[#08743d]" : "text-red-700",
+          )}
+        >
+          {state.status === "success" ? (
+            <CheckCircle2 className="size-3" />
+          ) : (
+            <AlertCircle className="size-3" />
+          )}
+          {state.message}
+        </p>
+      ) : null}
+    </section>
+  );
+}

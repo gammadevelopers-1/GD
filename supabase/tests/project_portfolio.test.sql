@@ -144,7 +144,10 @@ values
     '80000000-0000-4000-8000-000000000002',
     'Delivery engineer',
     '80000000-0000-4000-8000-000000000001'
-  );
+  )
+on conflict (project_id, profile_id) do update
+  set responsibility = excluded.responsibility,
+      archived_at = null;
 
 insert into public.app_milestone_weeks (id, project_id, week_number, starts_on, due_on)
 values

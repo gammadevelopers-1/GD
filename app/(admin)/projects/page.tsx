@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { ArrowUpRight, FolderKanban, Plus } from "lucide-react";
+import { ArrowUpRight, FolderKanban, Plus, X } from "lucide-react";
 import { PortfolioFilters } from "@/components/admin/projects/portfolio-filters";
 import { PortfolioResults } from "@/components/admin/projects/portfolio-results";
 import { PortfolioSkeleton } from "@/components/admin/projects/portfolio-skeleton";
@@ -23,11 +23,32 @@ export default async function ProjectsPage({
 }) {
   const viewer = await requireRole(["owner", "member"]);
   const isOwner = viewer.role === "owner";
-  const query = parsePortfolioQuery(await searchParams, isOwner);
+  const raw = await searchParams;
+  const query = parsePortfolioQuery(raw, isOwner);
   const options = await getPortfolioOptions(viewer);
+  const archived =
+    (Array.isArray(raw.notice) ? raw.notice[0] : raw.notice) === "archived";
 
   return (
     <div className="mx-auto max-w-[1480px] space-y-4">
+      {archived ? (
+        <div
+          role="status"
+          className="flex items-start justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+        >
+          <span>
+            Project archived. It is out of the portfolio and members can no
+            longer reach it — turn on the Archived filter to find or restore it.
+          </span>
+          <Link
+            href="/projects"
+            aria-label="Dismiss"
+            className="shrink-0 opacity-60 transition hover:opacity-100"
+          >
+            <X className="size-4" />
+          </Link>
+        </div>
+      ) : null}
       <section className="relative overflow-hidden rounded-[20px] bg-[#15181b] px-5 py-5 text-white sm:px-6">
         <div className="pointer-events-none absolute -top-32 right-0 size-72 rounded-full bg-[#2fe85c]/12 blur-3xl" />
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
