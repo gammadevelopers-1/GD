@@ -1,9 +1,3 @@
-// One command to get a local dashboard you can actually click around:
-// creates the demo accounts, then loads supabase/demo-projects.sql.
-// Local only, because it creates accounts and writes rows.
-//
-//   npx supabase start && npm run seed:demo
-
 import { execFileSync } from "node:child_process";
 
 const PASSWORD = "Demo-12345678";
