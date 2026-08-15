@@ -2,15 +2,9 @@ import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
 import type { Viewer } from "@/data/auth";
+import type { ProjectStatus } from "@/lib/projects/status";
 
-export type ProjectStatus =
-  | "discovery"
-  | "building"
-  | "review"
-  | "live"
-  | "retainer"
-  | "paused"
-  | "closed";
+export type { ProjectStatus };
 
 export type DashboardProject = {
   id: string;

@@ -16,28 +16,17 @@ import {
   type DashboardProject,
   type ProjectStatus,
 } from "@/data/dashboard";
+import {
+  PROJECT_STATUS_LABEL,
+  PROJECT_STATUS_TONE,
+} from "@/lib/projects/status";
 
 export const metadata = { title: "Overview · Internal platform" };
 
-const statusLabels: Record<ProjectStatus, string> = {
-  discovery: "Discovery",
-  building: "Building",
-  review: "In review",
-  live: "Live",
-  retainer: "Retainer",
-  paused: "Paused",
-  closed: "Closed",
-};
-
-const statusStyles: Record<ProjectStatus, string> = {
-  discovery: "bg-sky-500/10 text-sky-700",
-  building: "bg-[#2fe85c]/15 text-[#08743d]",
-  review: "bg-amber-400/15 text-amber-700",
-  live: "bg-violet-500/10 text-violet-700",
-  retainer: "bg-cyan-500/10 text-cyan-700",
-  paused: "bg-black/5 text-black/45",
-  closed: "bg-black/5 text-black/45",
-};
+// Status wording and colour come from the shared project status module so the
+// dashboard, the portfolio and the project workspace always agree.
+const statusLabels = PROJECT_STATUS_LABEL;
+const statusStyles = PROJECT_STATUS_TONE;
 
 export default async function DashboardPage() {
   const viewer = await requireViewer();
