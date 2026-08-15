@@ -63,11 +63,7 @@ export default async function ProjectsPage({
               <h1 className="font-display mt-1.5 text-[1.65rem] leading-none font-semibold tracking-[-0.05em] sm:text-[2rem]">
                 {isOwner ? "Every project, one view" : "Your projects"}
               </h1>
-              <p className="mt-2 max-w-2xl text-[13px] leading-5 text-white/45">
-                {isOwner
-                  ? "Status, lead, deadline and weekly progress — filterable, bookmarkable, and the same answer the whole team sees."
-                  : "The projects you are assigned to, with delivery stage, weekly progress and next deadline."}
-              </p>
+            
             </div>
           </div>
 
