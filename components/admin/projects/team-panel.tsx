@@ -175,7 +175,7 @@ function MemberRow({
           <p className="flex flex-wrap items-center gap-1.5 text-sm font-semibold">
             {member.name}
             {member.isLead ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#2fe85c]/15 px-1.5 py-0.5 text-[8px] font-semibold text-[#08743d] uppercase">
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#2fe85c]/15 px-1.5 py-0.5 text-[10px] font-semibold text-[#08743d]">
                 <Crown className="size-2.5" /> Lead
               </span>
             ) : null}
@@ -316,7 +316,7 @@ function FormerMembers({
 }) {
   return (
     <div className="mt-6 border-t border-black/[0.06] pt-5">
-      <h3 className="font-mono text-[9px] tracking-[0.14em] text-black/35 uppercase">
+      <h3 className="text-[13px] font-semibold tracking-[-0.02em]">
         Previously on this project
       </h3>
       <p className="mt-1.5 text-[11px] text-black/40">

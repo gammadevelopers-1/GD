@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { ComingSoon } from "@/components/admin/coming-soon";
+import { Spotlight } from "@/components/admin/spotlight";
 import { MilestonesPanel } from "@/components/admin/projects/milestones-panel";
 import { StatusControl } from "@/components/admin/projects/status-control";
 import { TeamPanel } from "@/components/admin/projects/team-panel";
@@ -204,9 +205,10 @@ function ProjectHeader({
   const deadline = deadlineSignal(project.dueOn, project.status);
 
   return (
-    <section className="overflow-hidden rounded-[20px] border border-black/[0.07] bg-[#15181b] text-white">
+    <section className="mesh-dark overflow-hidden rounded-[20px] border border-black/[0.07] text-white">
       <div className="relative px-4 pt-5 pb-5 sm:px-6">
-        <div className="pointer-events-none absolute -top-28 right-0 size-72 rounded-full bg-[#2fe85c]/10 blur-3xl" />
+        <div className="pointer-events-none absolute -top-32 right-8 size-80 rounded-full bg-[#2fe85c]/12 blur-3xl" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#2fe85c]/45 to-transparent" />
         <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
@@ -222,9 +224,11 @@ function ProjectHeader({
             <h1 className="font-display mt-2 text-2xl font-semibold tracking-[-0.045em] sm:text-[2rem]">
               {project.name}
             </h1>
-            <p className="mt-2 max-w-2xl text-[13px] leading-5 text-white/45">
-              {project.description ?? "No description has been added yet."}
-            </p>
+            {project.description ? (
+              <p className="mt-2 max-w-2xl text-[13px] leading-5 text-white/45">
+                {project.description}
+              </p>
+            ) : null}
           </div>
 
           <div className="flex shrink-0 flex-wrap items-center gap-2">
@@ -256,7 +260,7 @@ function ProjectHeader({
           </div>
         </div>
 
-        <div className="relative mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <Spotlight className="relative mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
           <HeaderMeta
             label="Project lead"
             value={project.leadName ?? "Unassigned"}
@@ -278,7 +282,7 @@ function ProjectHeader({
                 : "Not planned"
             }
           />
-        </div>
+        </Spotlight>
       </div>
 
       <nav
@@ -291,16 +295,21 @@ function ProjectHeader({
             href={tabHref(tab)}
             aria-current={activeTab === tab ? "page" : undefined}
             className={cn(
-              "relative shrink-0 px-3.5 py-3.5 text-xs font-medium capitalize transition duration-150 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none sm:px-4",
+              "relative shrink-0 px-3.5 py-3.5 text-[13px] font-medium capitalize transition duration-200 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none sm:px-4",
               activeTab === tab
                 ? "text-white"
-                : "text-white/35 hover:bg-white/[0.04] hover:text-white/80",
+                : "text-white/35 hover:text-white/85",
             )}
           >
             {tab}
-            {activeTab === tab ? (
-              <span className="absolute inset-x-3.5 bottom-0 h-0.5 rounded-full bg-[#2fe85c] sm:inset-x-4" />
-            ) : null}
+            <span
+              className={cn(
+                "absolute inset-x-3.5 bottom-0 h-0.5 rounded-full bg-[#2fe85c] transition-all duration-300 sm:inset-x-4",
+                activeTab === tab
+                  ? "opacity-100 shadow-[0_0_14px_rgba(47,232,92,0.65)]"
+                  : "scale-x-0 opacity-0",
+              )}
+            />
           </Link>
         ))}
       </nav>
@@ -318,11 +327,9 @@ function HeaderMeta({
   note?: string;
 }) {
   return (
-    <div className="min-w-0 rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5 transition-colors duration-200 hover:border-white/[0.14] hover:bg-white/[0.06]">
-      <p className="font-mono text-[8px] tracking-wider text-white/25 uppercase">
-        {label}
-      </p>
-      <p className="mt-1.5 truncate text-[11px] font-medium text-white/70">
+    <div className="spot min-w-0 rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5 transition duration-300 hover:-translate-y-0.5 hover:border-[#2fe85c]/30 hover:bg-white/[0.06]">
+      <p className="text-[10px] text-white/28">{label}</p>
+      <p className="mt-1.5 truncate text-[12px] font-medium text-white/75">
         {value}
       </p>
       {note ? (
@@ -348,7 +355,7 @@ function Overview({
   const gaps = missingInformation(project, isOwner, tabHref);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.35fr_1fr]">
+    <Spotlight className="grid gap-4 lg:grid-cols-[1.35fr_1fr]">
       <div className="space-y-4">
         <Panel title="Delivery signal" icon={Signal}>
           <div className="flex flex-wrap items-center gap-2">
@@ -511,7 +518,7 @@ function Overview({
           <ValuePanel financial={financial} projectId={project.id} />
         ) : null}
       </div>
-    </div>
+    </Spotlight>
   );
 }
 
@@ -523,10 +530,11 @@ function ValuePanel({
   projectId: string;
 }) {
   return (
-    <section className="rounded-[20px] border border-black/[0.07] bg-[#15181b] p-5 text-white">
-      <div className="flex items-center gap-2">
+    <section className="mesh-dark relative overflow-hidden rounded-[18px] border border-black/[0.07] p-5 text-white">
+      <div className="pointer-events-none absolute -top-20 -right-10 size-52 rounded-full bg-[#2fe85c]/10 blur-3xl" />
+      <div className="relative flex items-center gap-2">
         <LockKeyhole className="size-3.5 text-[#69ee88]" />
-        <p className="font-mono text-[9px] tracking-[0.14em] text-[#69ee88] uppercase">
+        <p className="text-[11px] font-medium text-[#69ee88]">
           Owner only · project value
         </p>
       </div>
@@ -573,9 +581,7 @@ function ValuePanel({
 function MoneyCell({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5 transition-colors duration-200 hover:border-white/[0.14] hover:bg-white/[0.06]">
-      <p className="font-mono text-[8px] tracking-wider text-white/25 uppercase">
-        {label}
-      </p>
+      <p className="text-[10px] text-white/28">{label}</p>
       <p className="mt-1.5 truncate text-[13px] font-semibold">{value}</p>
     </div>
   );
@@ -682,9 +688,7 @@ function Technical({ project }: { project: ProjectDetail }) {
         />
         {technical?.stackNotes ? (
           <div className="mt-5">
-            <p className="font-mono text-[8px] tracking-wider text-black/30 uppercase">
-              Stack notes
-            </p>
+            <p className="text-[11px] text-black/38">Stack notes</p>
             <p className="mt-2 text-sm leading-6 whitespace-pre-wrap text-black/55">
               {technical.stackNotes}
             </p>
@@ -705,12 +709,10 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-[20px] border border-black/[0.07] bg-[#f8f8f3] p-5 transition-colors duration-200 hover:border-black/[0.11]">
+    <section className="spot rounded-[18px] border border-black/[0.07] bg-white/60 p-5 backdrop-blur-sm transition duration-300 hover:border-black/[0.12] hover:bg-white/80">
       <div className="mb-5 flex items-center gap-2.5">
-        <span className="grid size-8 place-items-center rounded-lg bg-black/[0.045]">
-          <Icon className="size-4 text-black/45" />
-        </span>
-        <h2 className="text-[15px] font-semibold tracking-[-0.025em]">
+        <Icon className="size-4 text-black/35" />
+        <h2 className="text-[14px] font-semibold tracking-[-0.025em]">
           {title}
         </h2>
       </div>
@@ -730,9 +732,7 @@ function Detail({
 }) {
   return (
     <div className="min-w-0">
-      <p className="font-mono text-[8px] tracking-wider text-black/30 uppercase">
-        {label}
-      </p>
+      <p className="text-[11px] text-black/38">{label}</p>
       {chip ? (
         <span
           className={cn(
@@ -752,9 +752,7 @@ function Detail({
 function LinkDetail({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="min-w-0">
-      <p className="font-mono text-[8px] tracking-wider text-black/30 uppercase">
-        {label}
-      </p>
+      <p className="text-[11px] text-black/38">{label}</p>
       {value ? (
         <a
           href={value.startsWith("http") ? value : `https://${value}`}

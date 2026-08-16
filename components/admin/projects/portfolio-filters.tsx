@@ -95,13 +95,13 @@ export function PortfolioFilters({
       aria-label="Portfolio filters"
       aria-busy={pending}
       className={cn(
-        "rounded-[18px] border border-black/[0.07] bg-[#f8f8f3] p-2.5 transition-opacity sm:p-3",
+        "rounded-[18px] border border-black/[0.07] bg-white/55 p-2.5 backdrop-blur-sm transition-opacity",
         pending && "opacity-70",
       )}
     >
       <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
-        <div className="relative min-w-0 flex-1 lg:max-w-[340px]">
-          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-black/30" />
+        <div className="relative min-w-0 flex-1 lg:max-w-[320px]">
+          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-black/28" />
           <input
             type="search"
             value={search}
@@ -109,7 +109,7 @@ export function PortfolioFilters({
             onChange={(event) => onSearchChange(event.target.value)}
             placeholder="Search projects or clients"
             aria-label="Search projects"
-            className="h-10 w-full rounded-xl border border-black/[0.09] bg-white pr-3 pl-9 text-sm outline-none placeholder:text-black/30 focus:border-[#16a34a] focus-visible:ring-2 focus-visible:ring-[#16a34a]/25"
+            className="h-10 w-full rounded-xl border border-black/[0.08] bg-white/75 pr-3 pl-9 text-sm outline-none transition placeholder:text-black/28 hover:border-black/15 focus:border-[#16a34a] focus:bg-white focus-visible:ring-2 focus-visible:ring-[#16a34a]/25"
           />
         </div>
 
@@ -130,7 +130,7 @@ export function PortfolioFilters({
           />
         </div>
 
-        <div className="hidden shrink-0 items-center gap-0.5 rounded-xl border border-black/[0.09] bg-white p-1 lg:flex">
+        <div className="hidden shrink-0 items-center gap-0.5 rounded-xl border border-black/8 bg-white/75 p-1 lg:flex">
           <ViewButton
             active={query.view === "grid"}
             label="Card view"
@@ -147,9 +147,6 @@ export function PortfolioFilters({
       </div>
 
       <div className="mt-2.5 flex flex-wrap items-center gap-1.5 border-t border-black/[0.06] pt-2.5">
-        <span className="mr-0.5 hidden font-mono text-[9px] tracking-[0.12em] text-black/30 uppercase sm:inline">
-          Status
-        </span>
         {PROJECT_STATUSES.map((status) => {
           const active = query.statuses.includes(status);
           return (
@@ -159,10 +156,10 @@ export function PortfolioFilters({
               aria-pressed={active}
               onClick={() => toggleStatus(status)}
               className={cn(
-                "rounded-full border px-2.5 py-1 text-[11px] font-medium transition focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none",
+                "rounded-full border px-3 py-1 text-[11px] font-medium transition duration-200 focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none",
                 active
-                  ? "border-[#15181b] bg-[#15181b] text-white"
-                  : "border-black/[0.09] bg-white text-black/55 hover:border-black/20 hover:text-black",
+                  ? "border-[#15181b] bg-[#15181b] text-white shadow-[0_6px_16px_-6px_rgba(20,23,26,0.55)]"
+                  : "border-black/8 bg-white/70 text-black/50 hover:-translate-y-px hover:border-[#2fe85c]/45 hover:bg-white hover:text-black",
               )}
             >
               {PROJECT_STATUS_LABEL[status]}
@@ -218,7 +215,7 @@ function Select({
   onChange: (value: string | null) => void;
 }) {
   return (
-    <label className="flex h-10 min-w-0 items-center gap-2 rounded-xl border border-black/[0.09] bg-white pr-1 pl-3 focus-within:border-[#16a34a] lg:w-[168px]">
+    <label className="flex h-10 min-w-0 items-center gap-2 rounded-xl border border-black/8 bg-white/75 pr-1 pl-3 transition hover:border-black/15 focus-within:border-[#16a34a] lg:w-42">
       <span className="sr-only">{label}</span>
       <select
         value={value}

@@ -149,7 +149,7 @@ function WeekCard({
   return (
     <section
       className={cn(
-        "group/week relative overflow-hidden rounded-[20px] border bg-[#f8f8f3] transition duration-200",
+        "group/week spot relative overflow-hidden rounded-[18px] border bg-white/60 backdrop-blur-sm transition duration-300",
         week.isCurrent
           ? "border-[#2fe85c]/45 shadow-[0_10px_30px_rgba(47,232,92,0.08)]"
           : "border-black/[0.07] hover:border-black/[0.13]",
@@ -195,7 +195,7 @@ function WeekCard({
                   style={{ width: `${progress}%` }}
                 />
               </div>
-              <span className="font-mono text-[9px] text-black/35">
+              <span className="text-[11px] text-black/38">
                 {week.done}/{week.total}
               </span>
             </div>
@@ -628,7 +628,7 @@ function AddWeekForm({
   }
 
   return (
-    <div className="rounded-[20px] border border-black/[0.07] bg-[#f8f8f3] px-4 py-3.5 sm:px-5">
+    <div className="rounded-[18px] border border-black/[0.07] bg-white/60 px-4 py-3.5 backdrop-blur-sm sm:px-5">
       <h3 className="text-sm font-semibold">Plan a week</h3>
       <WeekForm
         projectId={projectId}

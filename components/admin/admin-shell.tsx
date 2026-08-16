@@ -119,24 +119,19 @@ export function AdminShell({
   }, [menuOpen]);
 
   return (
-    <div className="min-h-dvh overflow-x-clip bg-[#eef0e9] text-[#14171a]">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[248px] flex-col overflow-y-auto border-r border-white/[0.07] bg-[#15181b] px-3 py-4 text-white lg:flex">
-        <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2">
+    <div className="app-canvas min-h-dvh overflow-x-clip bg-[#eef0e9] text-[#14171a]">
+      <aside className="mesh-dark fixed inset-y-0 left-0 z-40 hidden w-60 flex-col overflow-y-auto border-r border-white/[0.07] px-3 py-4 text-white lg:flex">
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-3 rounded-xl px-3 py-2 transition hover:bg-white/[0.04]"
+        >
           <Mark className="size-8 rounded-[9px] border border-white/10" />
-          <div>
-            <p className="text-sm font-semibold tracking-[-0.02em]">
-              Gamma Developers
-            </p>
-            <p className="mt-0.5 font-mono text-[8px] tracking-[0.16em] text-white/30 uppercase">
-              Dashboard
-            </p>
-          </div>
+          <p className="text-sm font-semibold tracking-[-0.02em]">
+            Gamma Developers
+          </p>
         </Link>
 
-        <nav aria-label="Platform navigation" className="mt-9 space-y-1">
-          <p className="mb-3 px-3 font-mono text-[9px] tracking-[0.15em] text-white/25 uppercase">
-            Workspace
-          </p>
+        <nav aria-label="Platform navigation" className="mt-7 space-y-1">
           {items.map((item) => (
             <NavItem
               key={item.href}
@@ -149,15 +144,10 @@ export function AdminShell({
         </nav>
 
         {plannedItems.length ? (
-          <div className="mt-8">
-            <p className="mb-3 px-3 font-mono text-[9px] tracking-[0.15em] text-white/25 uppercase">
-              Next release
-            </p>
-            <div className="space-y-1">
-              {plannedItems.map((item) => (
-                <PlannedNavItem key={item.label} item={item} />
-              ))}
-            </div>
+          <div className="mt-6 space-y-1 border-t border-white/[0.06] pt-6">
+            {plannedItems.map((item) => (
+              <PlannedNavItem key={item.label} item={item} />
+            ))}
           </div>
         ) : null}
 
@@ -174,9 +164,9 @@ export function AdminShell({
         </div>
       </aside>
 
-      <div className="lg:pl-[248px]">
-        <header className="sticky top-0 z-30 border-b border-black/[0.07] bg-[#eef0e9]/88 backdrop-blur-xl">
-          <div className="flex h-[68px] items-center gap-3 px-4 sm:px-6 lg:px-8 xl:px-10">
+      <div className="lg:pl-60">
+        <header className="sticky top-0 z-30 border-b border-black/6 bg-[#eef0e9]/80 backdrop-blur-xl">
+          <div className="flex h-15.5 items-center gap-3 px-4 sm:px-6 lg:px-8 xl:px-10">
             <button
               type="button"
               aria-label="Open navigation"
@@ -188,46 +178,32 @@ export function AdminShell({
             >
               <Menu className="size-5" />
             </button>
-            <div className="min-w-0">
-              <p className="truncate text-[15px] font-semibold tracking-[-0.025em]">
-                {titles[root] ?? "Internal platform"}
-              </p>
-              <p className="hidden text-[11px] text-black/40 sm:block">
-                Private Gamma workspace
-              </p>
-            </div>
+            <p className="min-w-0 truncate text-[15px] font-semibold tracking-[-0.025em]">
+              {titles[root] ?? "Internal platform"}
+            </p>
 
-            <div className="ml-auto flex items-center gap-2 sm:gap-3">
+            <div className="ml-auto flex items-center gap-2">
               <button
                 type="button"
                 disabled
                 title="Search is coming soon"
-                className="hidden h-10 cursor-not-allowed items-center gap-2 rounded-xl border border-black/[0.07] bg-white/38 px-3 text-sm text-black/35 md:flex"
+                className="hidden h-9 cursor-not-allowed items-center gap-2 rounded-xl border border-black/[0.07] bg-white/40 px-3 text-[13px] text-black/30 md:flex"
               >
                 <Search className="size-4" />
                 <span>Search</span>
-                <span className="ml-3 rounded-full bg-[#15181b] px-2 py-1 font-mono text-[7px] tracking-wider text-[#2fe85c] uppercase">
-                  Soon
-                </span>
               </button>
-              <div
-                title="Profile controls are coming soon"
-                className="flex items-center gap-2 rounded-xl border border-black/[0.07] bg-white/55 p-1.5 pr-2.5"
-              >
+              <div className="flex items-center gap-2.5 rounded-xl border border-black/[0.07] bg-white/55 p-1.5 pr-3 transition hover:border-black/[0.14] hover:bg-white/80">
                 <span className="grid size-7 place-items-center rounded-lg bg-[#15181b] text-[10px] font-semibold text-[#2fe85c]">
                   {viewer.initials}
                 </span>
-                <div className="hidden sm:block">
-                  <p className="max-w-28 truncate text-[11px] leading-3.5 font-semibold">
+                <div className="hidden leading-none sm:block">
+                  <p className="max-w-28 truncate text-[11px] font-semibold">
                     {viewer.fullName}
                   </p>
-                  <p className="mt-0.5 text-[9px] text-black/40 capitalize">
+                  <p className="mt-1 text-[9px] text-black/40 capitalize">
                     {viewer.role}
                   </p>
                 </div>
-                <span className="hidden rounded-full bg-black/[0.045] px-1.5 py-1 font-mono text-[6px] tracking-wider text-black/35 uppercase sm:block">
-                  Soon
-                </span>
               </div>
             </div>
           </div>
@@ -284,15 +260,10 @@ export function AdminShell({
               ))}
             </nav>
             {plannedItems.length ? (
-              <div className="mt-8 border-t border-white/[0.07] pt-6">
-                <p className="mb-3 px-3 font-mono text-[9px] tracking-[0.15em] text-white/25 uppercase">
-                  Next release
-                </p>
-                <div className="space-y-1">
-                  {plannedItems.map((item) => (
-                    <PlannedNavItem key={item.label} item={item} />
-                  ))}
-                </div>
+              <div className="mt-6 space-y-1 border-t border-white/[0.07] pt-6">
+                {plannedItems.map((item) => (
+                  <PlannedNavItem key={item.label} item={item} />
+                ))}
               </div>
             ) : null}
             <form action={logout} className="mt-auto pt-8">
@@ -338,15 +309,12 @@ function NavItem({
       {item.label}
       {item.inProgress ? (
         <span
+          title="In progress"
           className={cn(
-            "ml-auto rounded-full px-2 py-1 font-mono text-[6px] tracking-wider uppercase",
-            active
-              ? "bg-[#101512]/10 text-[#101512]/55"
-              : "bg-[#2fe85c]/10 text-[#69ee88]/75",
+            "ml-auto size-1.5 rounded-full",
+            active ? "bg-[#101512]/25" : "bg-[#2fe85c]/45",
           )}
-        >
-          Soon
-        </span>
+        />
       ) : null}
     </Link>
   );
@@ -361,14 +329,11 @@ function PlannedNavItem({
   return (
     <div
       aria-disabled="true"
-      title={`${item.label} is coming soon`}
-      className="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/25"
+      title={`${item.label} — a later release`}
+      className="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/22"
     >
       <Icon className="size-[17px]" />
       <span>{item.label}</span>
-      <span className="ml-auto rounded-full border border-[#2fe85c]/10 bg-[#2fe85c]/[0.06] px-2 py-1 font-mono text-[6px] tracking-wider text-[#69ee88]/55 uppercase">
-        Coming soon
-      </span>
     </div>
   );
 }
