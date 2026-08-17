@@ -7,7 +7,7 @@ export default function ProjectsLoading() {
         <span className="block h-8 w-44 animate-pulse rounded-lg bg-black/[0.07]" />
         <span className="block h-10 w-32 animate-pulse rounded-xl bg-black/[0.07]" />
       </div>
-      <div className="h-26 animate-pulse rounded-[18px] border border-black/[0.07] bg-white/55 backdrop-blur-sm" />
+      <div className="card-surface h-26 animate-pulse rounded-2xl border border-black/[0.06]" />
       <PortfolioSkeleton />
     </div>
   );

@@ -1056,11 +1056,11 @@ p {
   z-index: -1;
   content: "";
   background-image: radial-gradient(
-    rgba(20, 23, 26, 0.07) 1px,
+    rgba(20, 23, 26, 0.055) 1px,
     transparent 1px
   );
-  background-position: -19px -19px;
-  background-size: 38px 38px;
+  background-position: -16px -16px;
+  background-size: 32px 32px;
   inset: 0;
   mask-image: radial-gradient(
     130% 68% at 50% 0%,
@@ -1159,4 +1159,27 @@ p {
   .edge-lit::after {
     transition-duration: 1ms;
   }
+}
+
+/* Card elevation. Two layers: a tight contact shadow so the edge reads crisp,
+   and a wide soft one so the card sits above the grid rather than on it. */
+.card-surface {
+  background: #fff;
+  box-shadow:
+    0 1px 2px rgba(16, 24, 40, 0.04),
+    0 10px 28px -14px rgba(16, 24, 40, 0.14);
+  transition:
+    box-shadow 320ms ease,
+    transform 320ms ease,
+    border-color 320ms ease;
+}
+
+.card-surface:hover {
+  box-shadow:
+    0 1px 2px rgba(16, 24, 40, 0.05),
+    0 22px 46px -20px rgba(16, 24, 40, 0.24);
+}
+
+.card-lift:hover {
+  transform: translateY(-3px);
 }

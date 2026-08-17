@@ -24,6 +24,7 @@ import {
   formatDate,
   formatDateShort,
   formatMoney,
+  initials,
 } from "@/lib/projects/format";
 import {
   PROJECT_STATUS_CHIP,
@@ -87,6 +88,7 @@ export function PortfolioResults({
     );
   }
 
+  const total = projects.length;
   const inDelivery = projects.filter(
     (project) => !isExitStatus(project.status) && !project.isArchived,
   ).length;
@@ -102,22 +104,34 @@ export function PortfolioResults({
   ).length;
 
   return (
-    <div className="space-y-5">
-      <Spotlight className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-        <Stat icon={CircleDot} label="In delivery" value={inDelivery} />
+    <div className="space-y-4">
+      <Spotlight className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Stat
+          icon={CircleDot}
+          label="In delivery"
+          value={inDelivery}
+          note={`of ${total} shown`}
+        />
         <Stat
           icon={AlertTriangle}
           label="Overdue work"
           value={overdue}
+          note={overdue ? "needs attention" : "nothing slipping"}
           tone={overdue ? "danger" : "muted"}
         />
         <Stat
           icon={CalendarDays}
           label="Due in 14 days"
           value={dueSoon}
+          note={dueSoon ? "closing soon" : "nothing imminent"}
           tone={dueSoon ? "warning" : "muted"}
         />
-        <Stat icon={PauseCircle} label="Paused or closed" value={parked} />
+        <Stat
+          icon={PauseCircle}
+          label="Paused or closed"
+          value={parked}
+          note="out of delivery"
+        />
       </Spotlight>
 
       <Spotlight
@@ -132,14 +146,14 @@ export function PortfolioResults({
       </Spotlight>
 
       {query.view === "table" ? (
-        <div className="hidden overflow-hidden rounded-[18px] border border-black/[0.07] bg-white/60 backdrop-blur-sm lg:block">
+        <div className="card-surface hidden overflow-hidden rounded-2xl border border-black/[0.06] lg:block">
           <div
             aria-hidden
             className={cn(
-              "grid gap-4 border-b border-black/[0.06] px-5 py-2.5 text-[10px] font-medium tracking-[0.04em] text-black/32 uppercase",
+              "grid gap-4 border-b border-black/[0.06] bg-black/[0.015] px-5 py-2.5 text-[11px] font-medium text-black/38",
               isOwner
-                ? "grid-cols-[minmax(0,2.2fr)_repeat(4,minmax(0,1fr))_minmax(0,0.9fr)]"
-                : "grid-cols-[minmax(0,2.2fr)_repeat(4,minmax(0,1fr))]",
+                ? "grid-cols-[minmax(0,2.4fr)_repeat(4,minmax(0,1fr))_minmax(0,0.9fr)]"
+                : "grid-cols-[minmax(0,2.4fr)_repeat(4,minmax(0,1fr))]",
             )}
           >
             <span>Project</span>
@@ -177,21 +191,23 @@ function ProjectCard({
   return (
     <Link
       href={`/projects/${project.id}`}
-      className="spot edge-lit group flex flex-col overflow-hidden rounded-[18px] border border-black/[0.07] bg-white/65 p-4 backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-[#2fe85c]/35 hover:bg-white/90 hover:shadow-[0_20px_46px_-18px_rgba(20,23,26,0.28)] focus-visible:ring-2 focus-visible:ring-[#16a34a] focus-visible:outline-none sm:p-5"
+      className="spot edge-lit card-surface card-lift group flex flex-col overflow-hidden rounded-2xl border border-black/[0.06] p-5 hover:border-[#2fe85c]/40 focus-visible:ring-2 focus-visible:ring-[#16a34a] focus-visible:outline-none"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-[11px] text-black/35">
+          <p className="truncate text-[11px] font-medium text-black/35">
             {project.clientName}
           </p>
           <h3 className="mt-1 truncate text-[17px] leading-tight font-semibold tracking-[-0.035em] transition-colors group-hover:text-[#08743d]">
             {project.name}
           </h3>
         </div>
-        <ArrowUpRight className="mt-0.5 size-4 shrink-0 text-black/20 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[#08743d]" />
+        <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-black/[0.035] text-black/25 transition-colors duration-300 group-hover:bg-[#2fe85c]/15 group-hover:text-[#08743d]">
+          <ArrowUpRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+        </span>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+      <div className="mt-3.5 flex flex-wrap items-center gap-1.5">
         <span
           className={cn(
             "inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-medium",
@@ -200,28 +216,33 @@ function ProjectCard({
         >
           {PROJECT_STATUS_LABEL[project.status]}
         </span>
+        <span
+          className={cn(
+            "inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-medium",
+            TONE_CHIP[delivery.tone],
+          )}
+        >
+          {delivery.label}
+        </span>
         {project.isArchived ? (
           <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-800">
             <Archive className="size-3" /> Archived
           </span>
         ) : null}
-        <span className={cn("ml-auto text-[11px]", TONE_TEXT[deadline.tone])}>
-          {project.dueOn ? formatDate(project.dueOn) : "No due date"}
-        </span>
       </div>
 
-      <div className="mt-4 border-t border-black/[0.06] pt-3.5">
+      <div className="mt-5">
         <div className="flex items-baseline justify-between gap-2">
-          <span className="truncate text-[12px] text-black/50">
+          <span className="truncate text-[12px] text-black/45">
             {project.currentWeek
-              ? `Week ${project.currentWeek.number} · ${project.currentWeek.done}/${project.currentWeek.total}`
+              ? `Week ${project.currentWeek.number} · ${project.currentWeek.done} of ${project.currentWeek.total}`
               : "No plan yet"}
           </span>
-          <span className="font-mono text-[11px] text-black/40">
+          <span className="font-mono text-[12px] font-medium text-black/55">
             {project.progress}%
           </span>
         </div>
-        <div className="mt-2 h-1 overflow-hidden rounded-full bg-black/[0.07]">
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-black/[0.06]">
           <div
             className={cn(
               "h-full rounded-full transition-all duration-500",
@@ -232,22 +253,25 @@ function ProjectCard({
         </div>
       </div>
 
-      <div className="mt-3.5 flex items-center justify-between gap-2">
+      <div className="mt-4 flex items-center justify-between gap-3 border-t border-black/[0.055] pt-3.5">
+        <div className="flex min-w-0 items-center gap-2">
+          <Avatar name={project.leadName} />
+          <span className="truncate text-[12px] text-black/55">
+            {project.leadName ?? "No lead"}
+          </span>
+        </div>
         <span
           className={cn(
-            "inline-flex rounded-full border px-2 py-0.5 text-[11px] font-medium",
-            TONE_CHIP[delivery.tone],
+            "shrink-0 text-[12px] font-medium",
+            TONE_TEXT[deadline.tone],
           )}
         >
-          {delivery.label}
-        </span>
-        <span className="truncate text-[11px] text-black/40">
-          {project.leadName ?? "No lead"}
+          {project.dueOn ? formatDate(project.dueOn) : "No date"}
         </span>
       </div>
 
       {isOwner && project.value ? (
-        <p className="mt-3 font-mono text-[12px] font-semibold text-black/55">
+        <p className="mt-3 font-mono text-[13px] font-semibold text-black/60">
           {formatMoney(project.value.amount, project.value.currency)}
         </p>
       ) : null}
@@ -269,15 +293,15 @@ function ProjectRow({
     <Link
       href={`/projects/${project.id}`}
       className={cn(
-        "group grid items-center gap-4 px-5 py-3 transition hover:bg-[#2fe85c]/[0.06] focus-visible:ring-2 focus-visible:ring-[#16a34a] focus-visible:outline-none",
+        "group grid items-center gap-4 px-5 py-3 transition-colors duration-200 hover:bg-[#2fe85c]/[0.05] focus-visible:ring-2 focus-visible:ring-[#16a34a] focus-visible:outline-none",
         isOwner
-          ? "grid-cols-[minmax(0,2.2fr)_repeat(4,minmax(0,1fr))_minmax(0,0.9fr)]"
-          : "grid-cols-[minmax(0,2.2fr)_repeat(4,minmax(0,1fr))]",
+          ? "grid-cols-[minmax(0,2.4fr)_repeat(4,minmax(0,1fr))_minmax(0,0.9fr)]"
+          : "grid-cols-[minmax(0,2.4fr)_repeat(4,minmax(0,1fr))]",
       )}
     >
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <p className="truncate text-sm font-semibold tracking-[-0.02em] transition-colors group-hover:text-[#08743d]">
+          <p className="truncate text-[13px] font-semibold tracking-[-0.02em] transition-colors group-hover:text-[#08743d]">
             {project.name}
           </p>
           {project.isArchived ? (
@@ -300,32 +324,35 @@ function ProjectRow({
         </span>
       </div>
 
-      <p className="truncate text-[12px] text-black/55">
-        {project.leadName ?? "Unassigned"}
-      </p>
+      <div className="flex min-w-0 items-center gap-2">
+        <Avatar name={project.leadName} />
+        <span className="truncate text-[12px] text-black/55">
+          {project.leadName ?? "Unassigned"}
+        </span>
+      </div>
 
       <div className="min-w-0">
-        <p className="text-[12px] text-black/55">
+        <p className="text-[12px] text-black/60">
           {formatDateShort(project.dueOn)}
         </p>
-        <p className={cn("mt-0.5 text-[10px]", TONE_TEXT[deadline.tone])}>
+        <p className={cn("mt-0.5 text-[11px]", TONE_TEXT[deadline.tone])}>
           {deadline.label}
         </p>
       </div>
 
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <div className="h-1 w-full max-w-24 overflow-hidden rounded-full bg-black/[0.07]">
+          <div className="h-1.5 w-full max-w-24 overflow-hidden rounded-full bg-black/[0.06]">
             <div
               className={cn("h-full rounded-full", TONE_BAR[delivery.tone])}
               style={{ width: `${project.progress}%` }}
             />
           </div>
-          <span className="font-mono text-[10px] text-black/35">
+          <span className="font-mono text-[11px] text-black/45">
             {project.progress}%
           </span>
         </div>
-        <p className={cn("mt-1 text-[10px]", TONE_TEXT[delivery.tone])}>
+        <p className={cn("mt-1 text-[11px]", TONE_TEXT[delivery.tone])}>
           {project.currentWeek
             ? `Week ${project.currentWeek.number} · ${delivery.label}`
             : delivery.label}
@@ -333,7 +360,7 @@ function ProjectRow({
       </div>
 
       {isOwner ? (
-        <p className="truncate text-right font-mono text-[11px] font-semibold text-black/55">
+        <p className="truncate text-right font-mono text-[12px] font-semibold text-black/60">
           {project.value
             ? formatMoney(project.value.amount, project.value.currency)
             : "—"}
@@ -343,37 +370,69 @@ function ProjectRow({
   );
 }
 
+function Avatar({ name }: { name: string | null }) {
+  if (!name) {
+    return (
+      <span className="grid size-6 shrink-0 place-items-center rounded-full border border-dashed border-black/15 text-[9px] text-black/25">
+        —
+      </span>
+    );
+  }
+
+  return (
+    <span className="grid size-6 shrink-0 place-items-center rounded-full bg-[#15181b] text-[9px] font-semibold text-[#2fe85c]">
+      {initials(name)}
+    </span>
+  );
+}
+
 function Stat({
   icon: Icon,
   label,
   value,
+  note,
   tone = "muted",
 }: {
   icon: typeof CircleDot;
   label: string;
   value: number;
+  note: string;
   tone?: "muted" | "warning" | "danger";
 }) {
   return (
-    <div className="spot flex items-center gap-3 rounded-[14px] border border-black/[0.07] bg-white/55 px-4 py-3 backdrop-blur-sm transition duration-300 hover:border-black/[0.13] hover:bg-white/85">
-      <span
-        className={cn(
-          "grid size-8 shrink-0 place-items-center rounded-[10px]",
-          tone === "danger"
-            ? "bg-red-500/10 text-red-700"
-            : tone === "warning"
-              ? "bg-amber-400/15 text-amber-700"
-              : "bg-black/[0.045] text-black/35",
-        )}
-      >
-        <Icon className="size-4" />
-      </span>
+    <div className="spot card-surface flex items-start justify-between gap-3 rounded-2xl border border-black/[0.06] p-4 hover:border-black/[0.12]">
       <div className="min-w-0">
-        <p className="text-lg leading-none font-semibold tracking-[-0.04em]">
+        <p className="truncate text-[12px] font-medium text-black/45">
+          {label}
+        </p>
+        <p className="mt-2 text-[26px] leading-none font-semibold tracking-[-0.05em]">
           {value}
         </p>
-        <p className="mt-1.5 truncate text-[11px] text-black/42">{label}</p>
+        <p
+          className={cn(
+            "mt-2 truncate text-[11px]",
+            tone === "danger"
+              ? "text-red-700"
+              : tone === "warning"
+                ? "text-amber-700"
+                : "text-black/35",
+          )}
+        >
+          {note}
+        </p>
       </div>
+      <span
+        className={cn(
+          "grid size-9 shrink-0 place-items-center rounded-xl",
+          tone === "danger"
+            ? "bg-red-500/10 text-red-600"
+            : tone === "warning"
+              ? "bg-amber-400/15 text-amber-600"
+              : "bg-[#2fe85c]/12 text-[#08743d]",
+        )}
+      >
+        <Icon className="size-[18px]" />
+      </span>
     </div>
   );
 }

@@ -149,7 +149,7 @@ function WeekCard({
   return (
     <section
       className={cn(
-        "group/week spot relative overflow-hidden rounded-[18px] border bg-white/60 backdrop-blur-sm transition duration-300",
+        "group/week spot card-surface relative overflow-hidden rounded-2xl border transition duration-300",
         week.isCurrent
           ? "border-[#2fe85c]/45 shadow-[0_10px_30px_rgba(47,232,92,0.08)]"
           : "border-black/[0.07] hover:border-black/[0.13]",
@@ -360,7 +360,7 @@ function ItemRow({
 
   if (editing) {
     return (
-      <div className="bg-white/60 px-4 py-3 sm:px-5">
+      <div className="bg-black/[0.015] px-4 py-3 sm:px-5">
         <ItemForm
           projectId={projectId}
           itemId={item.id}
@@ -628,7 +628,7 @@ function AddWeekForm({
   }
 
   return (
-    <div className="rounded-[18px] border border-black/[0.07] bg-white/60 px-4 py-3.5 backdrop-blur-sm sm:px-5">
+    <div className="card-surface rounded-2xl border border-black/[0.06] px-4 py-3.5 sm:px-5">
       <h3 className="text-sm font-semibold">Plan a week</h3>
       <WeekForm
         projectId={projectId}
@@ -671,7 +671,7 @@ function ArchivedWeeks({
           {weeks.map((week) => (
             <li
               key={week.id}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-black/[0.06] bg-white/60 px-3 py-2 transition duration-150 hover:border-black/[0.14] hover:bg-white"
+              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-black/[0.06] bg-black/[0.015] px-3 py-2 transition duration-150 hover:border-black/[0.14] hover:bg-white"
             >
               <div className="min-w-0">
                 <p className="text-[13px] font-medium text-black/55">

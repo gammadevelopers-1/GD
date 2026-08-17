@@ -234,6 +234,8 @@ async function cleanup() {
       where project_id in ('${ID.projectAssigned}', '${ID.projectOwnerOnly}', '${ID.projectArchived}');
     delete from public.app_project_financials
       where project_id in ('${ID.projectAssigned}', '${ID.projectOwnerOnly}', '${ID.projectArchived}');
+    delete from public.app_project_technical_details
+      where project_id in ('${ID.projectAssigned}', '${ID.projectOwnerOnly}', '${ID.projectArchived}');
     delete from public.app_projects
       where id in ('${ID.projectAssigned}', '${ID.projectOwnerOnly}', '${ID.projectArchived}');
     delete from public.app_clients where id in ('${ID.clientA}', '${ID.clientB}');
@@ -589,6 +591,104 @@ async function run() {
     "member cannot plan a milestone week",
     !memberPlansWeek.ok,
     `status ${memberPlansWeek.status}`,
+  );
+
+  // Chunk 7 — non-sensitive technical details
+  const saveTechnical = (token, overrides = {}) =>
+    api("/rest/v1/rpc/app_save_technical_details", {
+      key: PUBLISHABLE,
+      token,
+      method: "POST",
+      body: {
+        target_project_id: ID.projectAssigned,
+        new_repository_url: "https://github.com/gamma/api-check",
+        new_live_domain: "api-check.test",
+        new_stack_notes: "Next.js and Supabase.",
+        ...overrides,
+      },
+    });
+
+  const memberSavesTechnical = await saveTechnical(memberToken);
+  check(
+    "assigned member can save non-sensitive technical details",
+    memberSavesTechnical.ok,
+    `status ${memberSavesTechnical.status}`,
+  );
+
+  const memberReadsTechnical = await api(
+    `/rest/v1/app_project_technical_details?select=repository_url&project_id=eq.${ID.projectAssigned}`,
+    { key: PUBLISHABLE, token: memberToken },
+  );
+  check(
+    "assigned member can read the technical details back",
+    memberReadsTechnical.ok && memberReadsTechnical.data?.length === 1,
+    JSON.stringify(memberReadsTechnical.data),
+  );
+
+  const memberPatchesTechnical = await api(
+    `/rest/v1/app_project_technical_details?project_id=eq.${ID.projectAssigned}`,
+    {
+      key: PUBLISHABLE,
+      token: memberToken,
+      method: "PATCH",
+      body: { stack_notes: "written directly" },
+    },
+  );
+  check(
+    "nobody can PATCH technical details directly — the RPC is the write path",
+    !memberPatchesTechnical.ok,
+    `status ${memberPatchesTechnical.status}`,
+  );
+
+  const secretRejected = await saveTechnical(memberToken, {
+    new_repository_url: "postgresql://admin:hunter2@db.example.com:5432/app",
+  });
+  check(
+    "a database connection string is rejected from technical details",
+    !secretRejected.ok,
+    `status ${secretRejected.status}`,
+  );
+
+  const strangerReadsTechnical = await api(
+    "/rest/v1/app_project_technical_details?select=*",
+    { key: PUBLISHABLE, token: strangerToken },
+  );
+  check(
+    "unassigned member cannot read technical details",
+    strangerReadsTechnical.ok &&
+      Array.isArray(strangerReadsTechnical.data) &&
+      !strangerReadsTechnical.data.length,
+    JSON.stringify(strangerReadsTechnical.data),
+  );
+
+  const strangerSavesTechnical = await saveTechnical(strangerToken);
+  check(
+    "unassigned member cannot write technical details",
+    !strangerSavesTechnical.ok,
+    `status ${strangerSavesTechnical.status}`,
+  );
+
+  const financeReadsTechnical = await api(
+    "/rest/v1/app_project_technical_details?select=*",
+    { key: PUBLISHABLE, token: financeToken },
+  );
+  check(
+    "finance cannot read technical details",
+    financeReadsTechnical.ok &&
+      Array.isArray(financeReadsTechnical.data) &&
+      !financeReadsTechnical.data.length,
+    JSON.stringify(financeReadsTechnical.data),
+  );
+
+  const anonTechnical = await api(
+    "/rest/v1/app_project_technical_details?select=*",
+    { key: PUBLISHABLE },
+  );
+  check(
+    "anonymous callers cannot read technical details",
+    !anonTechnical.ok ||
+      (Array.isArray(anonTechnical.data) && !anonTechnical.data.length),
+    JSON.stringify(anonTechnical.data),
   );
 
   const anonRpc = await portfolio(undefined);

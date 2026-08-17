@@ -53,7 +53,7 @@ export default async function EditProjectPage({
         <ArrowLeft className="size-3.5" /> {project.name}
       </Link>
 
-      <div className="rounded-[18px] border border-black/[0.07] bg-white/60 p-5 backdrop-blur-sm sm:p-7">
+      <div className="card-surface rounded-2xl border border-black/[0.06] p-5 sm:p-7">
         <span className="grid size-11 place-items-center rounded-xl bg-[#15181b] text-[#2fe85c]">
           <SlidersHorizontal className="size-5" />
         </span>

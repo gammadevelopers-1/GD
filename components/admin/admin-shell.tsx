@@ -294,16 +294,19 @@ function NavItem({
     <Link
       href={item.href}
       className={cn(
-        "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition",
+        "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition duration-200",
         active
-          ? "bg-[#2fe85c] font-semibold text-[#101512]"
-          : "text-white/45 hover:bg-white/[0.055] hover:text-white",
+          ? "bg-[#2fe85c]/11 font-semibold text-[#2fe85c]"
+          : "text-white/45 hover:bg-white/5 hover:text-white",
       )}
     >
+      {active ? (
+        <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-[#2fe85c]" />
+      ) : null}
       <Icon
         className={cn(
-          "size-[17px]",
-          active ? "text-[#101512]" : "text-white/38 group-hover:text-white/80",
+          "size-[17px] transition-colors",
+          active ? "text-[#2fe85c]" : "text-white/38 group-hover:text-white/80",
         )}
       />
       {item.label}
@@ -312,7 +315,7 @@ function NavItem({
           title="In progress"
           className={cn(
             "ml-auto size-1.5 rounded-full",
-            active ? "bg-[#101512]/25" : "bg-[#2fe85c]/45",
+            active ? "bg-[#2fe85c]/60" : "bg-[#2fe85c]/35",
           )}
         />
       ) : null}

@@ -68,6 +68,8 @@ export type ProjectDetail = {
     technicalContact: string | null;
     stackNotes: string | null;
     onboardingNotes: string | null;
+    updatedBy: string | null;
+    updatedAt: string | null;
   } | null;
 };
 
@@ -141,7 +143,7 @@ export async function getProjectDetail(
       supabase
         .from("app_project_technical_details")
         .select(
-          "repository_url, hosting_url, live_domain, staging_domain, design_url, technical_contact, stack_notes, onboarding_notes",
+          "repository_url, hosting_url, live_domain, staging_domain, design_url, technical_contact, stack_notes, onboarding_notes, updated_by, updated_at",
         )
         .eq("project_id", projectId)
         .maybeSingle(),
@@ -151,6 +153,9 @@ export async function getProjectDetail(
     (membersResult.data ?? []).map((row) => String(row.profile_id)),
   );
   if (project.lead_id) profileIds.add(String(project.lead_id));
+  if (technicalResult.data?.updated_by) {
+    profileIds.add(String(technicalResult.data.updated_by));
+  }
 
   let names = new Map<string, string>();
   if (profileIds.size) {
@@ -307,6 +312,12 @@ export async function getProjectDetail(
           technicalContact: technicalResult.data.technical_contact,
           stackNotes: technicalResult.data.stack_notes,
           onboardingNotes: technicalResult.data.onboarding_notes,
+          updatedBy: technicalResult.data.updated_by
+            ? (names.get(String(technicalResult.data.updated_by)) ?? null)
+            : null,
+          updatedAt: technicalResult.data.updated_at
+            ? String(technicalResult.data.updated_at)
+            : null,
         }
       : null,
   };

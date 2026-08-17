@@ -6,19 +6,20 @@ import {
   CalendarDays,
   CalendarRange,
   Check,
-  Code2,
-  ExternalLink,
   Info,
   LockKeyhole,
   Pencil,
   Signal,
   X,
 } from "lucide-react";
-import { ComingSoon } from "@/components/admin/coming-soon";
 import { Spotlight } from "@/components/admin/spotlight";
 import { MilestonesPanel } from "@/components/admin/projects/milestones-panel";
 import { StatusControl } from "@/components/admin/projects/status-control";
 import { TeamPanel } from "@/components/admin/projects/team-panel";
+import {
+  type TechnicalDetails,
+  TechnicalPanel,
+} from "@/components/admin/projects/technical-panel";
 import { requireRole } from "@/data/auth";
 import type { Viewer } from "@/data/auth";
 import {
@@ -58,6 +59,7 @@ import {
   setProjectLead,
   updateMemberResponsibility,
 } from "../team-actions";
+import { saveTechnicalDetails } from "../technical-actions";
 
 const tabs = ["overview", "team", "milestones", "technical"] as const;
 type Tab = (typeof tabs)[number];
@@ -184,7 +186,15 @@ export default async function ProjectPage({
             }}
           />
         ) : null}
-        {activeTab === "technical" ? <Technical project={project} /> : null}
+        {activeTab === "technical" ? (
+          <TechnicalPanel
+            projectId={project.id}
+            details={technicalDetails(project)}
+            canEdit={isOwner || project.members.some((m) => m.id === viewer.id)}
+            isArchived={project.isArchived}
+            save={saveTechnicalDetails}
+          />
+        ) : null}
       </div>
     </div>
   );
@@ -390,7 +400,7 @@ function Overview({
           </div>
 
           {project.currentWeek ? (
-            <div className="mt-5 rounded-2xl border border-black/[0.07] bg-white/60 p-4">
+            <div className="mt-5 rounded-xl border border-black/[0.06] bg-black/[0.015] p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <CalendarRange className="size-4 text-black/35" />
@@ -653,50 +663,23 @@ function missingInformation(
   return gaps;
 }
 
-function Technical({ project }: { project: ProjectDetail }) {
+// The panel wants plain strings it can drop straight into form fields.
+function technicalDetails(project: ProjectDetail): TechnicalDetails | null {
   const technical = project.technical;
-  return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_0.72fr]">
-      <Panel title="Technical details" icon={Code2}>
-        {technical ? (
-          <div className="grid gap-5 sm:grid-cols-2">
-            <LinkDetail label="Repository" value={technical.repositoryUrl} />
-            <LinkDetail label="Hosting" value={technical.hostingUrl} />
-            <LinkDetail label="Live domain" value={technical.liveDomain} />
-            <LinkDetail
-              label="Staging domain"
-              value={technical.stagingDomain}
-            />
-            <LinkDetail label="Design file" value={technical.designUrl} />
-            <Detail
-              label="Technical contact"
-              value={technical.technicalContact ?? "Not added"}
-            />
-          </div>
-        ) : (
-          <p className="text-sm text-black/42">
-            No technical details have been added.
-          </p>
-        )}
-      </Panel>
-      <Panel title="Credentials" icon={LockKeyhole}>
-        <ComingSoon
-          compact
-          title="Secure credentials vault"
-          description="Secrets are built last, after encryption, individual access grants, instant revocation and audit logging receive a separate security review."
-          items={["Encrypted vault", "Per-person access", "Audit log"]}
-        />
-        {technical?.stackNotes ? (
-          <div className="mt-5">
-            <p className="text-[11px] text-black/38">Stack notes</p>
-            <p className="mt-2 text-sm leading-6 whitespace-pre-wrap text-black/55">
-              {technical.stackNotes}
-            </p>
-          </div>
-        ) : null}
-      </Panel>
-    </div>
-  );
+  if (!technical) return null;
+
+  return {
+    repositoryUrl: technical.repositoryUrl ?? "",
+    hostingUrl: technical.hostingUrl ?? "",
+    liveDomain: technical.liveDomain ?? "",
+    stagingDomain: technical.stagingDomain ?? "",
+    designUrl: technical.designUrl ?? "",
+    technicalContact: technical.technicalContact ?? "",
+    stackNotes: technical.stackNotes ?? "",
+    onboardingNotes: technical.onboardingNotes ?? "",
+    updatedBy: technical.updatedBy,
+    updatedAt: technical.updatedAt,
+  };
 }
 
 function Panel({
@@ -709,7 +692,7 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="spot rounded-[18px] border border-black/[0.07] bg-white/60 p-5 backdrop-blur-sm transition duration-300 hover:border-black/[0.12] hover:bg-white/80">
+    <section className="spot card-surface rounded-2xl border border-black/[0.06] p-5 hover:border-black/[0.12]">
       <div className="mb-5 flex items-center gap-2.5">
         <Icon className="size-4 text-black/35" />
         <h2 className="text-[14px] font-semibold tracking-[-0.025em]">
@@ -744,27 +727,6 @@ function Detail({
         </span>
       ) : (
         <p className="mt-2 text-sm font-medium text-black/65">{value}</p>
-      )}
-    </div>
-  );
-}
-
-function LinkDetail({ label, value }: { label: string; value: string | null }) {
-  return (
-    <div className="min-w-0">
-      <p className="text-[11px] text-black/38">{label}</p>
-      {value ? (
-        <a
-          href={value.startsWith("http") ? value : `https://${value}`}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-2 flex items-center gap-1.5 truncate text-sm font-medium text-[#08743d] hover:underline"
-        >
-          {value}
-          <ExternalLink className="size-3 shrink-0" />
-        </a>
-      ) : (
-        <p className="mt-2 text-sm text-black/35">Not added</p>
       )}
     </div>
   );

@@ -95,7 +95,7 @@ export function PortfolioFilters({
       aria-label="Portfolio filters"
       aria-busy={pending}
       className={cn(
-        "rounded-[18px] border border-black/[0.07] bg-white/55 p-2.5 backdrop-blur-sm transition-opacity",
+        "card-surface rounded-2xl border border-black/[0.06] p-3 transition-opacity",
         pending && "opacity-70",
       )}
     >
@@ -109,7 +109,7 @@ export function PortfolioFilters({
             onChange={(event) => onSearchChange(event.target.value)}
             placeholder="Search projects or clients"
             aria-label="Search projects"
-            className="h-10 w-full rounded-xl border border-black/[0.08] bg-white/75 pr-3 pl-9 text-sm outline-none transition placeholder:text-black/28 hover:border-black/15 focus:border-[#16a34a] focus:bg-white focus-visible:ring-2 focus-visible:ring-[#16a34a]/25"
+            className="h-10 w-full rounded-xl border border-black/8 bg-black/[0.02] pr-3 pl-9 text-sm outline-none transition placeholder:text-black/28 hover:border-black/15 focus:border-[#16a34a] focus:bg-white focus-visible:ring-2 focus-visible:ring-[#16a34a]/25"
           />
         </div>
 
@@ -130,7 +130,7 @@ export function PortfolioFilters({
           />
         </div>
 
-        <div className="hidden shrink-0 items-center gap-0.5 rounded-xl border border-black/8 bg-white/75 p-1 lg:flex">
+        <div className="hidden shrink-0 items-center gap-0.5 rounded-xl border border-black/8 bg-black/[0.02] p-1 lg:flex">
           <ViewButton
             active={query.view === "grid"}
             label="Card view"
@@ -159,7 +159,7 @@ export function PortfolioFilters({
                 "rounded-full border px-3 py-1 text-[11px] font-medium transition duration-200 focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none",
                 active
                   ? "border-[#15181b] bg-[#15181b] text-white shadow-[0_6px_16px_-6px_rgba(20,23,26,0.55)]"
-                  : "border-black/8 bg-white/70 text-black/50 hover:-translate-y-px hover:border-[#2fe85c]/45 hover:bg-white hover:text-black",
+                  : "border-black/8 bg-white text-black/50 hover:-translate-y-px hover:border-[#2fe85c]/45 hover:bg-white hover:text-black",
               )}
             >
               {PROJECT_STATUS_LABEL[status]}
@@ -215,7 +215,7 @@ function Select({
   onChange: (value: string | null) => void;
 }) {
   return (
-    <label className="flex h-10 min-w-0 items-center gap-2 rounded-xl border border-black/8 bg-white/75 pr-1 pl-3 transition hover:border-black/15 focus-within:border-[#16a34a] lg:w-42">
+    <label className="flex h-10 min-w-0 items-center gap-2 rounded-xl border border-black/8 bg-black/[0.02] pr-1 pl-3 transition hover:border-black/15 focus-within:border-[#16a34a] lg:w-42">
       <span className="sr-only">{label}</span>
       <select
         value={value}
