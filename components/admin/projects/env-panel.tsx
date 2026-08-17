@@ -21,11 +21,6 @@ import type { ProjectCredential } from "@/data/credentials";
 import type { CopyResult } from "@/app/(admin)/projects/credential-actions";
 import type { EnvFile, EnvGroup } from "@/data/env";
 import { type SimpleFormState, IDLE_FORM } from "@/lib/projects/form-state";
-import { maskValue, parseEnvBlob } from "@/lib/projects/env";
-import {
-  CREDENTIAL_ENVIRONMENTS,
-  ENVIRONMENT_LABEL,
-} from "@/lib/credentials/validation";
 import { formatDate } from "@/lib/projects/format";
 import {
   BUTTON_GHOST,
@@ -36,6 +31,7 @@ import {
   ICON_BUTTON,
   INPUT_SMALL,
 } from "@/lib/admin-ui";
+import { EnvComposer } from "@/components/admin/projects/env-composer";
 import { cn } from "@/lib/utils";
 
 type FormAction = (
@@ -47,8 +43,7 @@ export type EnvActions = {
   createGroup: FormAction;
   renameGroup: FormAction;
   setGroupArchived: (formData: FormData) => Promise<void>;
-  addVariable: FormAction;
-  importBlob: FormAction;
+  saveVariables: FormAction;
   grantGroup: FormAction;
   uploadFile: FormAction;
   archiveFile: (formData: FormData) => Promise<void>;
@@ -168,7 +163,7 @@ function GroupCard({
   actions: EnvActions;
 }) {
   const [open, setOpen] = useState(true);
-  const [panel, setPanel] = useState<"none" | "add" | "import" | "share">("none");
+  const [panel, setPanel] = useState<"none" | "add" | "share">("none");
 
   const readable = variables.filter((variable) => variable.myAccess).length;
 
@@ -207,16 +202,7 @@ function GroupCard({
               className={cn(BUTTON_GHOST, "h-7 disabled:opacity-40")}
             >
               <Plus className="size-3" />
-              Key
-            </button>
-            <button
-              type="button"
-              onClick={() => setPanel(panel === "import" ? "none" : "import")}
-              disabled={!vaultReady}
-              className={cn(BUTTON_GHOST, "h-7 disabled:opacity-40")}
-            >
-              <Upload className="size-3" />
-              Import
+              Add variables
             </button>
             <button
               type="button"
@@ -249,19 +235,10 @@ function GroupCard({
       ) : null}
 
       {panel === "add" ? (
-        <AddVariableForm
+        <EnvComposer
           projectId={projectId}
           groupId={group.id}
-          action={actions.addVariable}
-          onDone={() => setPanel("none")}
-        />
-      ) : null}
-
-      {panel === "import" ? (
-        <ImportForm
-          projectId={projectId}
-          groupId={group.id}
-          action={actions.importBlob}
+          action={actions.saveVariables}
           onDone={() => setPanel("none")}
         />
       ) : null}
@@ -363,155 +340,6 @@ function VariableRow({
         <p className="w-full text-[11px] font-medium text-red-700">{message}</p>
       ) : null}
     </li>
-  );
-}
-
-function AddVariableForm({
-  projectId,
-  groupId,
-  action,
-  onDone,
-}: {
-  projectId: string;
-  groupId: string;
-  action: FormAction;
-  onDone: () => void;
-}) {
-  const [state, formAction, pending] = useActionState(action, IDLE_FORM);
-
-  return (
-    <form
-      action={formAction}
-      className="space-y-2 border-b border-black/[0.06] bg-black/[0.012] px-3.5 py-3"
-    >
-      <input type="hidden" name="projectId" value={projectId} />
-      <input type="hidden" name="groupId" value={groupId} />
-      <div className="grid gap-2 sm:grid-cols-[1fr_1.4fr_auto]">
-        <input
-          name="key"
-          required
-          placeholder="NEXT_PUBLIC_API_URL"
-          className={cn(INPUT_SMALL, "h-9 font-mono")}
-        />
-        <input
-          name="value"
-          type="password"
-          required
-          autoComplete="off"
-          placeholder="Value"
-          className={cn(INPUT_SMALL, "h-9")}
-        />
-        <select name="environment" className={cn(INPUT_SMALL, "h-9")}>
-          {CREDENTIAL_ENVIRONMENTS.map((environment) => (
-            <option key={environment} value={environment}>
-              {ENVIRONMENT_LABEL[environment]}
-            </option>
-          ))}
-        </select>
-      </div>
-      <FormFeedback state={state} />
-      <div className="flex justify-end gap-2">
-        <button type="button" onClick={onDone} className={cn(BUTTON_GHOST, "h-8")}>
-          Close
-        </button>
-        <button
-          type="submit"
-          disabled={pending}
-          className={cn(BUTTON_PRIMARY, "h-8 text-xs")}
-        >
-          {pending ? <Loader2 className="size-3.5 animate-spin" /> : null}
-          Store key
-        </button>
-      </div>
-    </form>
-  );
-}
-
-function ImportForm({
-  projectId,
-  groupId,
-  action,
-  onDone,
-}: {
-  projectId: string;
-  groupId: string;
-  action: FormAction;
-  onDone: () => void;
-}) {
-  const [state, formAction, pending] = useActionState(action, IDLE_FORM);
-  const [blob, setBlob] = useState("");
-  // Parsed in the browser purely to preview; the server parses again and is
-  // the one that counts.
-  const preview = blob.trim() ? parseEnvBlob(blob) : null;
-
-  return (
-    <form
-      action={formAction}
-      className="space-y-2 border-b border-black/[0.06] bg-black/[0.012] px-3.5 py-3"
-    >
-      <input type="hidden" name="projectId" value={projectId} />
-      <input type="hidden" name="groupId" value={groupId} />
-      <label className="text-[11px] font-medium text-black/50">
-        Paste an ENV file
-        <textarea
-          name="blob"
-          rows={6}
-          required
-          value={blob}
-          onChange={(event) => setBlob(event.target.value)}
-          placeholder={"DATABASE_URL=postgres://…\nSTRIPE_KEY=sk_live_…"}
-          className={cn(INPUT_SMALL, "mt-1 w-full resize-none py-2 font-mono")}
-        />
-      </label>
-
-      <select name="environment" className={cn(INPUT_SMALL, "h-8")}>
-        {CREDENTIAL_ENVIRONMENTS.map((environment) => (
-          <option key={environment} value={environment}>
-            {ENVIRONMENT_LABEL[environment]}
-          </option>
-        ))}
-      </select>
-
-      {preview ? (
-        <div className="rounded-lg border border-black/[0.08] bg-white p-2.5">
-          <p className="text-[10px] font-semibold text-black/45">
-            {preview.pairs.length} key{preview.pairs.length === 1 ? "" : "s"}{" "}
-            found
-            {preview.skipped.length
-              ? ` · ${preview.skipped.length} line${preview.skipped.length === 1 ? "" : "s"} ignored`
-              : ""}
-          </p>
-          <ul className="mt-1.5 max-h-32 space-y-0.5 overflow-y-auto">
-            {preview.pairs.slice(0, 12).map((pair) => (
-              <li
-                key={pair.key}
-                className="flex items-center gap-2 font-mono text-[10px]"
-              >
-                <span className="truncate text-black/70">{pair.key}</span>
-                <span className="ml-auto shrink-0 text-black/30">
-                  {maskValue(pair.value)}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-
-      <FormFeedback state={state} />
-      <div className="flex justify-end gap-2">
-        <button type="button" onClick={onDone} className={cn(BUTTON_GHOST, "h-8")}>
-          Close
-        </button>
-        <button
-          type="submit"
-          disabled={pending || !preview?.pairs.length}
-          className={cn(BUTTON_PRIMARY, "h-8 text-xs")}
-        >
-          {pending ? <Loader2 className="size-3.5 animate-spin" /> : null}
-          Import {preview?.pairs.length ? `${preview.pairs.length} keys` : ""}
-        </button>
-      </div>
-    </form>
   );
 }
 

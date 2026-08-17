@@ -6,7 +6,7 @@ export function PageHeading({
 }: {
   eyebrow: string;
   title: string;
-  description: string;
+  description?: string;
   action?: React.ReactNode;
 }) {
   return (
@@ -18,9 +18,11 @@ export function PageHeading({
         <h1 className="font-display mt-2 text-[2rem] leading-none font-semibold tracking-[-0.05em] text-[#14171a] sm:text-[2.5rem]">
           {title}
         </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-[#4b5148]">
-          {description}
-        </p>
+        {description ? (
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-[#4b5148]">
+            {description}
+          </p>
+        ) : null}
       </div>
       {action ? (
         <div className="flex w-full sm:w-auto sm:shrink-0 [&>*]:w-full sm:[&>*]:w-auto">

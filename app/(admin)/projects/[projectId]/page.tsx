@@ -13,13 +13,13 @@ import {
   Signal,
   X,
 } from "lucide-react";
-import { Spotlight } from "@/components/admin/spotlight";
 import { PanelSkeleton } from "@/components/admin/skeletons";
+import { ProjectTabs } from "@/components/admin/projects/project-tabs";
 import {
-  PROJECT_TABS,
-  ProjectTabs,
   type ProjectTab as Tab,
-} from "@/components/admin/projects/project-tabs";
+  isProjectTab,
+  projectTabHref,
+} from "@/lib/projects/tabs";
 import {
   type BoardActions,
   BoardsPanel,
@@ -83,13 +83,12 @@ import {
 } from "../team-actions";
 import { saveTechnicalDetails } from "../technical-actions";
 import {
-  addEnvVariable,
   archiveEnvFile,
   createEnvGroup,
   downloadEnvFile,
   grantEnvGroupAccess,
-  importEnvBlob,
   renameEnvGroup,
+  saveEnvVariables,
   setEnvGroupArchived,
   uploadEnvFile,
 } from "../env-actions";
@@ -126,9 +125,7 @@ export default async function ProjectPage({
   const viewer = await requireRole(["owner", "member"]);
   const { projectId } = await params;
   const query = await searchParams;
-  const activeTab: Tab = PROJECT_TABS.includes(query.tab as Tab)
-    ? (query.tab as Tab)
-    : "overview";
+  const activeTab: Tab = isProjectTab(query.tab) ? query.tab : "overview";
 
   const project = await getProjectDetail(projectId, viewer);
   if (!project) notFound();
@@ -147,8 +144,9 @@ export default async function ProjectPage({
       : Promise.resolve({ clients: [], people: [] }),
   ]);
   const notice = query.notice ? NOTICES[query.notice] : undefined;
-  const tabHref = (tab: Tab) =>
-    `/projects/${project.id}${tab === "overview" ? "" : `?tab=${tab}`}`;
+  // Server-side links only. The tab bar is a Client Component and builds its
+  // own hrefs from the project id.
+  const tabHref = (tab: Tab) => projectTabHref(project.id, tab);
 
   return (
     <div className="mx-auto max-w-[1480px]">
@@ -184,7 +182,6 @@ export default async function ProjectPage({
         project={project}
         viewer={viewer}
         activeTab={activeTab}
-        tabHref={tabHref}
       />
 
       <div className="mt-4">
@@ -327,8 +324,7 @@ async function TechnicalSections({
     createGroup: createEnvGroup,
     renameGroup: renameEnvGroup,
     setGroupArchived: setEnvGroupArchived,
-    addVariable: addEnvVariable,
-    importBlob: importEnvBlob,
+    saveVariables: saveEnvVariables,
     grantGroup: grantEnvGroupAccess,
     uploadFile: uploadEnvFile,
     archiveFile: archiveEnvFile,
@@ -387,12 +383,10 @@ function ProjectHeader({
   project,
   viewer,
   activeTab,
-  tabHref,
 }: {
   project: ProjectDetail;
   viewer: Viewer;
   activeTab: Tab;
-  tabHref: (tab: Tab) => string;
 }) {
   const isOwner = viewer.role === "owner";
   const deadline = deadlineSignal(project.dueOn, project.status);
@@ -453,7 +447,7 @@ function ProjectHeader({
           </div>
         </div>
 
-        <Spotlight className="relative mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="relative mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
           <HeaderMeta
             label="Project lead"
             value={project.leadName ?? "Unassigned"}
@@ -475,10 +469,10 @@ function ProjectHeader({
                 : "Not planned"
             }
           />
-        </Spotlight>
+        </div>
       </div>
 
-      <ProjectTabs activeTab={activeTab} tabHref={tabHref} />
+      <ProjectTabs projectId={project.id} activeTab={activeTab} />
     </section>
   );
 }
@@ -493,7 +487,7 @@ function HeaderMeta({
   note?: string;
 }) {
   return (
-    <div className="spot min-w-0 rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5 transition duration-300 hover:-translate-y-0.5 hover:border-[#2fe85c]/30 hover:bg-white/[0.06]">
+    <div className="min-w-0 rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5 transition duration-300 hover:-translate-y-0.5 hover:border-[#2fe85c]/30 hover:bg-white/[0.06]">
       <p className="text-[10px] text-white/28">{label}</p>
       <p className="mt-1.5 truncate text-[12px] font-medium text-white/75">
         {value}
@@ -521,7 +515,7 @@ function Overview({
   const gaps = missingInformation(project, isOwner, tabHref);
 
   return (
-    <Spotlight className="grid gap-4 lg:grid-cols-[1.35fr_1fr]">
+    <div className="grid gap-4 lg:grid-cols-[1.35fr_1fr]">
       <div className="space-y-4">
         <Panel title="Delivery signal" icon={Signal}>
           <div className="flex flex-wrap items-center gap-2">
@@ -696,7 +690,7 @@ function Overview({
           <ValuePanel financial={financial} projectId={project.id} />
         ) : null}
       </div>
-    </Spotlight>
+    </div>
   );
 }
 
@@ -867,7 +861,7 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="spot card-surface rounded-2xl border border-black/[0.06] p-5 hover:border-black/[0.12]">
+    <section className="card-surface rounded-2xl border border-black/[0.06] p-5 hover:border-black/[0.12]">
       <div className="mb-5 flex items-center gap-2.5">
         <Icon className="size-4 text-black/35" />
         <h2 className="text-[14px] font-semibold tracking-[-0.025em]">

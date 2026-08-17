@@ -51,11 +51,6 @@ function DashboardView({
           day: "numeric",
         }).format(new Date())}
         title={`Good morning, ${firstName}.`}
-        description={
-          viewer.role === "member"
-            ? "Here is the latest view of the projects assigned to you."
-            : "Here is what needs attention across Gamma right now."
-        }
         action={
           viewer.role === "owner" ? (
             <Link

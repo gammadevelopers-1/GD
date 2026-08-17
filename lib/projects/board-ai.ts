@@ -132,3 +132,138 @@ export async function suggestIdeaOrder(
     return { ok: false, reason: "The suggestion could not be generated." };
   }
 }
+
+// ---------------------------------------------------------------------------
+// Drafting a card's content
+// ---------------------------------------------------------------------------
+
+// A deliberately narrow vocabulary. The model may write prose and structure,
+// never an image, a file or a credential reference — those are things a person
+// attaches, not something a language model should be inventing.
+const DRAFT_SCHEMA = {
+  type: "object",
+  properties: {
+    blocks: {
+      type: "array",
+      description: "Between two and eight blocks, in reading order.",
+      items: {
+        type: "object",
+        properties: {
+          kind: { type: "string", enum: ["heading", "text", "bullet", "callout"] },
+          text: {
+            type: "string",
+            description: "Content for heading, text and callout. Empty for bullet.",
+          },
+          items: {
+            type: "array",
+            description: "List entries for bullet. Empty for everything else.",
+            items: { type: "string" },
+          },
+          tone: {
+            type: "string",
+            enum: ["note", "warn", "key"],
+            description: "Only meaningful for callout.",
+          },
+        },
+        required: ["kind", "text", "items", "tone"],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ["blocks"],
+  additionalProperties: false,
+} as const;
+
+const DRAFT_SYSTEM = `You help a small software studio think through one piece
+of delivery work before starting it.
+
+Given a card title and whatever rough notes exist, return a short, concrete
+plan for that card. Structure it as blocks:
+
+- a short "text" block saying what this actually involves, in one or two lines
+- a "bullet" block of the concrete steps, 3 to 6 of them
+- optionally one "callout" for the single biggest risk or decision, tone "warn"
+  for a risk and "key" for something nobody must miss
+
+Rules:
+- Be specific to the title. No filler, no restating the title back.
+- British English. Plain language. No marketing tone.
+- Never invent client names, dates, credentials, URLs or people.
+- At most eight blocks.`;
+
+export type DraftedBlock =
+  | { type: "heading"; level: 2 | 3; text: string }
+  | { type: "text"; text: string }
+  | { type: "bullet"; items: string[] }
+  | { type: "callout"; tone: "note" | "warn" | "key"; text: string };
+
+export type DraftResult =
+  | { ok: true; blocks: DraftedBlock[] }
+  | { ok: false; reason: string };
+
+export async function draftIdeaBlocks(
+  title: string,
+  existing: Block[],
+): Promise<DraftResult> {
+  if (!boardAiConfigured()) {
+    return { ok: false, reason: "AI is not configured on this environment." };
+  }
+  if (!title.trim()) {
+    return { ok: false, reason: "Give the card a title first." };
+  }
+
+  const notes = blocksToText(existing).slice(0, 1500);
+  const input = `title: ${title}${notes ? `\n\nexisting notes:\n${notes}` : ""}`;
+
+  try {
+    const response = await openai().responses.create({
+      model: process.env.OPENAI_MODEL ?? DEFAULT_MODEL,
+      instructions: DRAFT_SYSTEM,
+      input,
+      max_output_tokens: MAX_OUTPUT_TOKENS,
+      store: false,
+      text: {
+        format: {
+          type: "json_schema",
+          name: "gamma_card_draft",
+          strict: true,
+          schema: DRAFT_SCHEMA,
+        },
+      },
+    });
+
+    if (response.error) return { ok: false, reason: "The draft failed." };
+
+    const parsed = JSON.parse(response.output_text) as {
+      blocks?: Array<Record<string, unknown>>;
+    };
+
+    const blocks: DraftedBlock[] = [];
+    for (const raw of parsed.blocks ?? []) {
+      const text = typeof raw.text === "string" ? raw.text.trim() : "";
+      const items = Array.isArray(raw.items)
+        ? raw.items.map(String).map((item) => item.trim()).filter(Boolean)
+        : [];
+
+      if (raw.kind === "heading" && text) {
+        blocks.push({ type: "heading", level: 2, text });
+      } else if (raw.kind === "text" && text) {
+        blocks.push({ type: "text", text });
+      } else if (raw.kind === "bullet" && items.length) {
+        blocks.push({ type: "bullet", items });
+      } else if (raw.kind === "callout" && text) {
+        const tone =
+          raw.tone === "warn" || raw.tone === "key" ? raw.tone : "note";
+        blocks.push({ type: "callout", tone, text });
+      }
+    }
+
+    if (!blocks.length) {
+      return { ok: false, reason: "Nothing usable came back, so nothing changed." };
+    }
+
+    return { ok: true, blocks: blocks.slice(0, 8) };
+  } catch {
+    return { ok: false, reason: "The draft could not be generated." };
+  }
+}

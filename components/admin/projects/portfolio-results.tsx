@@ -12,7 +12,6 @@ import {
   X,
 } from "lucide-react";
 import { EmptyState } from "@/components/admin/empty-state";
-import { Spotlight } from "@/components/admin/spotlight";
 import type { PortfolioProject } from "@/data/portfolio";
 import type { AppRole } from "@/data/auth";
 import {
@@ -105,7 +104,7 @@ export function PortfolioResults({
 
   return (
     <div className="space-y-4">
-      <Spotlight className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat
           icon={CircleDot}
           label="In delivery"
@@ -132,9 +131,9 @@ export function PortfolioResults({
           value={parked}
           note="out of delivery"
         />
-      </Spotlight>
+      </div>
 
-      <Spotlight
+      <div
         className={cn(
           "grid gap-3 sm:grid-cols-2",
           query.view === "grid" ? "xl:grid-cols-3" : "lg:hidden",
@@ -143,7 +142,7 @@ export function PortfolioResults({
         {projects.map((project) => (
           <ProjectCard key={project.id} project={project} isOwner={isOwner} />
         ))}
-      </Spotlight>
+      </div>
 
       {query.view === "table" ? (
         <div className="card-surface hidden overflow-hidden rounded-2xl border border-black/[0.06] lg:block">
@@ -191,7 +190,7 @@ function ProjectCard({
   return (
     <Link
       href={`/projects/${project.id}`}
-      className="spot edge-lit card-surface card-lift group flex flex-col overflow-hidden rounded-2xl border border-black/[0.06] p-5 hover:border-[#2fe85c]/40 focus-visible:ring-2 focus-visible:ring-[#16a34a] focus-visible:outline-none"
+      className="edge-lit card-surface card-lift group flex flex-col overflow-hidden rounded-2xl border border-black/[0.06] p-5 hover:border-[#2fe85c]/40 focus-visible:ring-2 focus-visible:ring-[#16a34a] focus-visible:outline-none"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -216,14 +215,18 @@ function ProjectCard({
         >
           {PROJECT_STATUS_LABEL[project.status]}
         </span>
-        <span
-          className={cn(
-            "inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-medium",
-            TONE_CHIP[delivery.tone],
-          )}
-        >
-          {delivery.label}
-        </span>
+        {/* For paused and closed the delivery signal just repeats the
+            status, so it is left off rather than shown twice. */}
+        {isExitStatus(project.status) ? null : (
+          <span
+            className={cn(
+              "inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-medium",
+              TONE_CHIP[delivery.tone],
+            )}
+          >
+            {delivery.label}
+          </span>
+        )}
         {project.isArchived ? (
           <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-800">
             <Archive className="size-3" /> Archived
@@ -371,9 +374,11 @@ function ProjectRow({
           </span>
         </div>
         <p className={cn("mt-1 text-[11px]", TONE_TEXT[delivery.tone])}>
-          {project.currentWeek
-            ? `Week ${project.currentWeek.number} · ${delivery.label}`
-            : delivery.label}
+          {isExitStatus(project.status)
+            ? "Out of delivery"
+            : project.currentWeek
+              ? `Week ${project.currentWeek.number} · ${delivery.label}`
+              : delivery.label}
         </p>
       </div>
 
@@ -418,7 +423,7 @@ function Stat({
   tone?: "muted" | "warning" | "danger";
 }) {
   return (
-    <div className="spot card-surface flex items-start justify-between gap-3 rounded-2xl border border-black/[0.06] p-4 hover:border-black/[0.12]">
+    <div className="card-surface flex items-start justify-between gap-3 rounded-2xl border border-black/[0.06] p-4 hover:border-black/[0.12]">
       <div className="min-w-0">
         <p className="truncate text-[12px] font-medium text-black/45">
           {label}

@@ -1,16 +1,12 @@
 "use client";
 
 import Link, { useLinkStatus } from "next/link";
+import {
+  PROJECT_TABS,
+  type ProjectTab,
+  projectTabHref,
+} from "@/lib/projects/tabs";
 import { cn } from "@/lib/utils";
-
-export const PROJECT_TABS = [
-  "overview",
-  "team",
-  "milestones",
-  "technical",
-] as const;
-
-export type ProjectTab = (typeof PROJECT_TABS)[number];
 
 // Switching tab only changes ?tab=, so the route segment never changes and
 // loading.tsx cannot fire. Without this the click has no visible effect until
@@ -37,11 +33,11 @@ function TabIndicator({ active }: { active: boolean }) {
 }
 
 export function ProjectTabs({
+  projectId,
   activeTab,
-  tabHref,
 }: {
+  projectId: string;
   activeTab: ProjectTab;
-  tabHref: (tab: ProjectTab) => string;
 }) {
   return (
     <nav
@@ -51,7 +47,7 @@ export function ProjectTabs({
       {PROJECT_TABS.map((tab) => (
         <Link
           key={tab}
-          href={tabHref(tab)}
+          href={projectTabHref(projectId, tab)}
           aria-current={activeTab === tab ? "page" : undefined}
           className={cn(
             "relative shrink-0 px-3.5 py-3.5 text-[13px] font-medium capitalize transition duration-200 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none sm:px-4",

@@ -15,7 +15,6 @@ import {
   ENV_MAX_PAIRS,
   isEnvKey,
   looksLikeEnvFile,
-  parseEnvBlob,
 } from "@/lib/projects/env";
 import {
   CredentialKeyError,
@@ -140,13 +139,13 @@ export async function setEnvGroupArchived(formData: FormData) {
   refresh(projectId);
 }
 
-// One key at a time, or many at once from a pasted file. Both land in the
-// vault the same way.
+// Every variable, however it arrived — typed, pasted or read from a file —
+// lands in the vault the same way.
 async function storePairs(
   projectId: string,
   groupId: string | null,
   environment: string,
-  pairs: Array<{ key: string; value: string }>,
+  pairs: Array<{ key: string; value: string; note?: string | null }>,
 ) {
   const supabase = await createClient();
   const failures: string[] = [];
@@ -170,7 +169,7 @@ async function storePairs(
       new_name: pair.key,
       new_service: null,
       new_environment: environment,
-      new_description: null,
+      new_description: pair.note ?? null,
       new_ciphertext: sealed.ciphertext,
       new_nonce: sealed.nonce,
       new_auth_tag: sealed.authTag,
@@ -188,44 +187,9 @@ async function storePairs(
   return { stored, failures };
 }
 
-export async function addEnvVariable(
-  _state: SimpleFormState,
-  formData: FormData,
-): Promise<SimpleFormState> {
-  await requireRole(["owner"]);
-  const projectId = String(formData.get("projectId") ?? "");
-  const groupId = String(formData.get("groupId") ?? "");
-  const key = String(formData.get("key") ?? "").trim();
-  const value = String(formData.get("value") ?? "");
-  const environment = String(formData.get("environment") ?? "other");
-
-  if (!isUuid(projectId) || !isUuid(groupId)) {
-    return formError("That container could not be found.");
-  }
-  if (!credentialsConfigured()) return vaultClosed();
-  if (!isEnvKey(key)) {
-    return formError("Use letters, digits and underscores, not starting with a digit.");
-  }
-  if (!value) return formError("Give the variable a value.");
-
-  const { stored, failures } = await storePairs(projectId, groupId, environment, [
-    { key, value },
-  ]);
-
-  if (!stored) {
-    return formError(
-      failures[0]?.includes("already here")
-        ? "That key is already in this container."
-        : "The variable could not be saved.",
-    );
-  }
-
-  refresh(projectId);
-  return formSuccess(`${key} stored.`);
-}
-
-// Vercel-style import: paste a file, get one encrypted credential per key.
-export async function importEnvBlob(
+// The composer edits rows in the browser — typed, pasted or read out of a
+// file — and posts the finished set. One save for the whole batch.
+export async function saveEnvVariables(
   _state: SimpleFormState,
   formData: FormData,
 ): Promise<SimpleFormState> {
@@ -233,24 +197,57 @@ export async function importEnvBlob(
   const projectId = String(formData.get("projectId") ?? "");
   const groupId = String(formData.get("groupId") ?? "");
   const environment = String(formData.get("environment") ?? "other");
-  const blob = String(formData.get("blob") ?? "");
 
   if (!isUuid(projectId) || !isUuid(groupId)) {
     return formError("That container could not be found.");
   }
   if (!credentialsConfigured()) return vaultClosed();
-  if (!blob.trim()) return formError("Paste the contents of an ENV file.");
 
-  const { pairs, skipped } = parseEnvBlob(blob);
-  if (!pairs.length) {
+  let rows: Array<{ key?: unknown; value?: unknown; note?: unknown }>;
+  try {
+    rows = JSON.parse(String(formData.get("rows") ?? "[]"));
+  } catch {
+    return formError("Those variables could not be read.");
+  }
+  if (!Array.isArray(rows)) return formError("Those variables could not be read.");
+
+  const pairs: Array<{ key: string; value: string; note: string | null }> = [];
+  const invalid: string[] = [];
+
+  for (const row of rows) {
+    const key = String(row.key ?? "").trim();
+    const value = String(row.value ?? "");
+    const note = String(row.note ?? "").trim();
+
+    // A row with neither a key nor a value is just an empty line in the form.
+    if (!key && !value) continue;
+    if (!isEnvKey(key)) {
+      invalid.push(key || "(no key)");
+      continue;
+    }
+    if (!value) {
+      invalid.push(`${key} (no value)`);
+      continue;
+    }
+    pairs.push({ key, value, note: note ? note.slice(0, 500) : null });
+  }
+
+  if (invalid.length) {
     return formError(
-      skipped.length
-        ? `Nothing could be read. First problem: line ${skipped[0].line}, ${skipped[0].reason}.`
-        : "No KEY=value pairs were found.",
+      `Fix these first: ${invalid.slice(0, 4).join(", ")}${invalid.length > 4 ? "…" : ""}.`,
     );
   }
+  if (!pairs.length) return formError("Add at least one key and value.");
   if (pairs.length > ENV_MAX_PAIRS) {
     return formError(`That is more than ${ENV_MAX_PAIRS} variables in one go.`);
+  }
+
+  const seen = new Set<string>();
+  for (const pair of pairs) {
+    if (seen.has(pair.key)) {
+      return formError(`${pair.key} appears twice. Keys are unique per container.`);
+    }
+    seen.add(pair.key);
   }
 
   const { stored, failures } = await storePairs(
@@ -262,12 +259,19 @@ export async function importEnvBlob(
 
   refresh(projectId);
 
-  if (!stored) return formError("Nothing could be stored.");
+  if (!stored) {
+    return formError(
+      failures.some((entry) => entry.includes("already here"))
+        ? "Every key is already in this container."
+        : "Nothing could be stored.",
+    );
+  }
 
-  const notes: string[] = [`${stored} variable${stored === 1 ? "" : "s"} stored`];
-  if (failures.length) notes.push(`${failures.length} skipped (${failures.slice(0, 3).join(", ")})`);
-  if (skipped.length) notes.push(`${skipped.length} line${skipped.length === 1 ? "" : "s"} ignored`);
-  return formSuccess(`${notes.join(" · ")}.`);
+  return formSuccess(
+    failures.length
+      ? `${stored} stored · ${failures.length} skipped (${failures.slice(0, 3).join(", ")}).`
+      : `${stored} variable${stored === 1 ? "" : "s"} stored.`,
+  );
 }
 
 // Grants the whole container to one person, one existing per-credential grant

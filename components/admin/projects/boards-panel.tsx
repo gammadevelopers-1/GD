@@ -155,14 +155,19 @@ function WeekBoards({
     actions.organiseWeek,
     IDLE_FORM,
   );
+  const blockedCount = week.workCards.filter(
+    (card) => card.status === "blocked",
+  ).length;
 
   return (
     <section
       className={cn(
         "card-surface overflow-hidden rounded-2xl border transition-colors",
-        week.isCurrent
-          ? "border-[#2fe85c]/45 shadow-[0_0_0_3px_rgba(47,232,92,0.07)]"
-          : "border-black/[0.06]",
+        blockedCount
+          ? "border-red-300 shadow-[0_0_0_3px_rgba(220,38,38,0.06)]"
+          : week.isCurrent
+            ? "border-[#2fe85c]/45 shadow-[0_0_0_3px_rgba(47,232,92,0.07)]"
+            : "border-black/[0.06]",
       )}
     >
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-black/[0.06] bg-black/[0.012] px-4 py-3 sm:px-5">
@@ -178,6 +183,14 @@ function WeekBoards({
           {week.isOverdue ? (
             <span className="rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700">
               Overdue
+            </span>
+          ) : null}
+          {/* Something being stuck is the most actionable fact about a week,
+              so it is readable without opening anything. */}
+          {blockedCount ? (
+            <span className="inline-flex items-center gap-1 rounded-full border border-red-300 bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-800">
+              <Ban className="size-2.5" />
+              {blockedCount} blocked
             </span>
           ) : null}
           <span className="font-mono text-[10px] text-black/40">
@@ -369,9 +382,9 @@ function CardRow({
       className={cn(
         "rounded-xl border transition duration-150",
         card.status === "blocked"
-          ? "border-red-200/80 bg-red-50/30"
+          ? "border-red-300 border-l-4 border-l-red-500 bg-red-50/50 shadow-[0_1px_10px_-4px_rgba(220,38,38,0.35)]"
           : card.status === "incomplete"
-            ? "border-amber-200/80 bg-amber-50/30"
+            ? "border-amber-200/80 border-l-4 border-l-amber-400 bg-amber-50/40"
             : "border-black/[0.07] bg-white hover:border-black/[0.14]",
       )}
     >
@@ -437,16 +450,26 @@ function CardRow({
           {/* The blocker stays visible without opening the card — that is the
               whole point of marking something blocked. */}
           {card.status === "blocked" && card.blockerReason ? (
-            <p className="mt-2 flex items-start gap-1.5 rounded-lg bg-red-50 px-2.5 py-1.5 text-[11px] leading-5 text-red-800">
-              <Ban className="mt-0.5 size-3 shrink-0" />
-              <span className="min-w-0">{card.blockerReason}</span>
-            </p>
+            <div className="mt-2 rounded-lg border border-red-200 bg-red-100/70 px-2.5 py-2">
+              <p className="flex items-center gap-1.5 text-[9px] font-bold tracking-[0.1em] text-red-700 uppercase">
+                <Ban className="size-2.5" />
+                Blocked by
+              </p>
+              <p className="mt-1 text-[11px] leading-5 font-medium text-red-900">
+                {card.blockerReason}
+              </p>
+            </div>
           ) : null}
 
           {card.status === "incomplete" && card.carryReason ? (
-            <p className="mt-2 rounded-lg bg-amber-50 px-2.5 py-1.5 text-[11px] leading-5 text-amber-900">
-              {card.carryReason}
-            </p>
+            <div className="mt-2 rounded-lg border border-amber-200 bg-amber-100/60 px-2.5 py-2">
+              <p className="text-[9px] font-bold tracking-[0.1em] text-amber-800 uppercase">
+                Not finished because
+              </p>
+              <p className="mt-1 text-[11px] leading-5 font-medium text-amber-900">
+                {card.carryReason}
+              </p>
+            </div>
           ) : null}
         </div>
 

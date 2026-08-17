@@ -1,9 +1,5 @@
 import "server-only";
 
-// Resend over its REST API, so there is no extra dependency to keep current.
-// Volume is deliberately low: an internal tool that emails constantly gets
-// filtered within a fortnight, and then the important ones get missed too.
-
 const ENDPOINT = "https://api.resend.com/emails";
 
 export type EmailResult =

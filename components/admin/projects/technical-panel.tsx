@@ -21,7 +21,6 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import { Spotlight } from "@/components/admin/spotlight";
 import {
   type TechnicalField,
   type TechnicalValues,
@@ -96,7 +95,7 @@ export function TechnicalPanel({
   const filled = countFilled(values);
 
   return (
-    <Spotlight className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+    <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
       <div className="space-y-4">
         <section className={cn(PANEL, "p-5")}>
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
@@ -237,7 +236,7 @@ export function TechnicalPanel({
           </p>
         </section>
       </div>
-    </Spotlight>
+    </div>
   );
 }
 
