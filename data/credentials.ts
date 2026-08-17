@@ -24,6 +24,8 @@ export type ProjectCredential = {
   isArchived: boolean;
   createdBy: string | null;
   updatedAt: string;
+  // Set when the credential is an ENV variable inside a container.
+  envGroupId: string | null;
   // 'owner' and 'edit' can replace the value, 'view' can only copy it, and
   // null means the person knows it exists and nothing more.
   myAccess: "owner" | CredentialAccess | null;
@@ -50,7 +52,7 @@ export async function getProjectCredentials(
   const { data: rows, error } = await supabase
     .from("app_project_credentials")
     .select(
-      "id, name, service, environment, description, archived_at, created_by, updated_at",
+      "id, name, service, environment, description, archived_at, created_by, updated_at, env_group_id",
     )
     .eq("project_id", projectId)
     .order("environment", { ascending: true })
@@ -119,6 +121,7 @@ export async function getProjectCredentials(
         ? (names.get(String(row.created_by)) ?? null)
         : null,
       updatedAt: String(row.updated_at),
+      envGroupId: row.env_group_id ? String(row.env_group_id) : null,
       myAccess: isOwner ? "owner" : (myAccessById.get(id) ?? null),
       grants: (grantsByCredential.get(id) ?? []).sort((a, b) =>
         a.name.localeCompare(b.name),

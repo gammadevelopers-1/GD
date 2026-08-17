@@ -32,6 +32,11 @@ import {
   TechnicalPanel,
 } from "@/components/admin/projects/technical-panel";
 import { CredentialsPanel } from "@/components/admin/projects/credentials-panel";
+import {
+  type EnvActions,
+  EnvPanel,
+} from "@/components/admin/projects/env-panel";
+import { getEnvFiles, getEnvGroups } from "@/data/env";
 import { getCredentialAudit, getProjectCredentials } from "@/data/credentials";
 import { credentialsConfigured } from "@/lib/credentials/crypto";
 import { requireRole } from "@/data/auth";
@@ -77,6 +82,17 @@ import {
   updateMemberResponsibility,
 } from "../team-actions";
 import { saveTechnicalDetails } from "../technical-actions";
+import {
+  addEnvVariable,
+  archiveEnvFile,
+  createEnvGroup,
+  downloadEnvFile,
+  grantEnvGroupAccess,
+  importEnvBlob,
+  renameEnvGroup,
+  setEnvGroupArchived,
+  uploadEnvFile,
+} from "../env-actions";
 import {
   copyCredentialSecret,
   createCredential,
@@ -205,27 +221,20 @@ export default async function ProjectPage({
           </Suspense>
         ) : null}
         {activeTab === "technical" ? (
-          <div className="space-y-4">
-            <TechnicalPanel
+          <Suspense fallback={<PanelSkeleton lines={6} />}>
+            <TechnicalSections
               projectId={project.id}
+              viewer={viewer}
               details={technicalDetails(project)}
-              canEdit={onThisProject}
-              isArchived={project.isArchived}
-              save={saveTechnicalDetails}
+              members={project.members.map((member) => ({
+                id: member.id,
+                name: member.name,
+              }))}
+              isOwner={isOwner}
+              canEditDetails={onThisProject}
+              projectArchived={project.isArchived}
             />
-            <Suspense fallback={<PanelSkeleton lines={5} />}>
-              <CredentialsSection
-                projectId={project.id}
-                viewer={viewer}
-                members={project.members.map((member) => ({
-                  id: member.id,
-                  name: member.name,
-                }))}
-                isOwner={isOwner}
-                projectArchived={project.isArchived}
-              />
-            </Suspense>
-          </div>
+          </Suspense>
         ) : null}
       </div>
     </div>
@@ -282,42 +291,95 @@ function currentWeekCards(week: ProjectDetail["weeks"][number]) {
   return [...week.workCards, ...week.ideaCards];
 }
 
-// Fetches its own data so the rest of the technical tab can render first.
-async function CredentialsSection({
+// The technical tab is two sections that share one credential read: the ENV
+// containers and the technical resources. Splitting the read would have meant
+// two trips for the same rows.
+async function TechnicalSections({
   projectId,
   viewer,
+  details,
   members,
   isOwner,
+  canEditDetails,
   projectArchived,
 }: {
   projectId: string;
   viewer: Viewer;
+  details: TechnicalDetails | null;
   members: Array<{ id: string; name: string }>;
   isOwner: boolean;
+  canEditDetails: boolean;
   projectArchived: boolean;
 }) {
-  const credentials = await getProjectCredentials(projectId, viewer);
+  const [credentials, envGroups, envFiles] = await Promise.all([
+    getProjectCredentials(projectId, viewer),
+    getEnvGroups(projectId, viewer),
+    getEnvFiles(projectId, viewer),
+  ]);
   const audit = await getCredentialAudit(credentials, viewer);
 
+  // A credential is an ENV variable when it sits in a container. Everything
+  // else is an ordinary project credential.
+  const envVariables = credentials.filter((entry) => entry.envGroupId);
+  const looseCredentials = credentials.filter((entry) => !entry.envGroupId);
+
+  const envActions: EnvActions = {
+    createGroup: createEnvGroup,
+    renameGroup: renameEnvGroup,
+    setGroupArchived: setEnvGroupArchived,
+    addVariable: addEnvVariable,
+    importBlob: importEnvBlob,
+    grantGroup: grantEnvGroupAccess,
+    uploadFile: uploadEnvFile,
+    archiveFile: archiveEnvFile,
+    downloadFile: downloadEnvFile,
+    copy: copyCredentialSecret,
+  };
+
   return (
-    <CredentialsPanel
-      projectId={projectId}
-      credentials={credentials}
-      members={members}
-      audit={audit}
-      isOwner={isOwner}
-      vaultReady={credentialsConfigured()}
-      projectArchived={projectArchived}
-      actions={{
-        create: createCredential,
-        updateMetadata: updateCredentialMetadata,
-        replaceSecret: replaceCredentialSecret,
-        grant: grantCredentialAccess,
-        setArchived: setCredentialArchived,
-        revoke: revokeCredentialAccess,
-        copy: copyCredentialSecret,
-      }}
-    />
+    <div className="space-y-4">
+      <EnvPanel
+        projectId={projectId}
+        groups={envGroups}
+        variables={envVariables}
+        files={envFiles}
+        members={members}
+        isOwner={isOwner}
+        vaultReady={credentialsConfigured()}
+        actions={envActions}
+      />
+
+      <div className="space-y-4">
+        <h2 className="px-1 text-[11px] font-semibold tracking-[0.1em] text-black/35 uppercase">
+          Technical resources
+        </h2>
+        <TechnicalPanel
+          projectId={projectId}
+          details={details}
+          canEdit={canEditDetails}
+          isArchived={projectArchived}
+          save={saveTechnicalDetails}
+        />
+        <CredentialsPanel
+          projectId={projectId}
+          credentials={looseCredentials}
+          members={members}
+          audit={audit}
+          isOwner={isOwner}
+          vaultReady={credentialsConfigured()}
+          projectArchived={projectArchived}
+          actions={{
+            create: createCredential,
+            updateMetadata: updateCredentialMetadata,
+            replaceSecret: replaceCredentialSecret,
+            grant: grantCredentialAccess,
+            setArchived: setCredentialArchived,
+            revoke: revokeCredentialAccess,
+            copy: copyCredentialSecret,
+          }}
+        />
+      </div>
+    </div>
   );
 }
 

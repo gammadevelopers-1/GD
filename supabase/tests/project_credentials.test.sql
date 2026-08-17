@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(32);
+select plan(43);
 
 insert into auth.users (
   id, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at
@@ -388,6 +388,138 @@ select ok(
     'anon', 'public.app_read_credential_secret(uuid)', 'EXECUTE'
   ),
   'anonymous visitors cannot execute the credential read function'
+);
+
+
+-- ---------------------------------------------------------------------------
+-- ENV containers. Variables are credentials, so they inherit this whole vault:
+-- the same encryption, the same grants, the same audit trail.
+-- ---------------------------------------------------------------------------
+
+-- The anonymous checks above left the session as anon.
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000001', true);
+
+-- ...0002 was deactivated and ...0005 archived by the revocation tests above,
+-- so put one active member back before granting anything.
+update public.app_project_members
+set archived_at = null, archived_by = null
+where project_id = 'a2000000-0000-4000-8000-000000000001'
+  and profile_id = 'a0000000-0000-4000-8000-000000000005';
+
+select lives_ok(
+  $$insert into public.app_env_groups (id, project_id, name, created_by)
+    values (
+      'a5000000-0000-4000-8000-000000000001',
+      'a2000000-0000-4000-8000-000000000001',
+      'Frontend ENV',
+      'a0000000-0000-4000-8000-000000000001'
+    )$$,
+  'an owner can create an ENV container'
+);
+
+select lives_ok(
+  $$insert into public.app_env_groups (id, project_id, name, created_by)
+    values (
+      'a5000000-0000-4000-8000-000000000002',
+      'a2000000-0000-4000-8000-000000000001',
+      'Backend ENV',
+      'a0000000-0000-4000-8000-000000000001'
+    )$$,
+  'a project can hold more than one container'
+);
+
+select lives_ok(
+  $$select public.app_create_credential(
+      'a6000000-0000-4000-8000-000000000001', 'a2000000-0000-4000-8000-000000000001',
+      'DATABASE_URL', null, 'production', null,
+      'ct-a', 'nonce-a', 'tag-a', 1,
+      'a5000000-0000-4000-8000-000000000001'
+    )$$,
+  'a variable can be stored in a container'
+);
+
+select lives_ok(
+  $$select public.app_create_credential(
+      'a6000000-0000-4000-8000-000000000002', 'a2000000-0000-4000-8000-000000000001',
+      'DATABASE_URL', null, 'production', null,
+      'ct-b', 'nonce-b', 'tag-b', 1,
+      'a5000000-0000-4000-8000-000000000002'
+    )$$,
+  'the same key name can exist in a different container'
+);
+
+select throws_ok(
+  $$select public.app_create_credential(
+      'a6000000-0000-4000-8000-000000000003', 'a2000000-0000-4000-8000-000000000001',
+      'DATABASE_URL', null, 'production', null,
+      'ct-c', 'nonce-c', 'tag-c', 1,
+      'a5000000-0000-4000-8000-000000000001'
+    )$$,
+  '23505',
+  null,
+  'the same key name twice in one container is refused'
+);
+
+select lives_ok(
+  $$select public.app_create_credential(
+      'a6000000-0000-4000-8000-000000000004', 'a2000000-0000-4000-8000-000000000001',
+      'Demo login', null, 'demo', 'client walkthrough',
+      'ct-d', 'nonce-d', 'tag-d', 1, null
+    )$$,
+  'demo credentials are a supported environment'
+);
+
+-- Granting a container is the per-credential grant applied across it.
+select is(
+  (
+    select public.app_grant_env_group_access(
+      'a5000000-0000-4000-8000-000000000001',
+      'a0000000-0000-4000-8000-000000000005',
+      'view'
+    )
+  ),
+  1,
+  'granting a container grants each variable in it'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from public.app_credential_grants
+    where credential_id = 'a6000000-0000-4000-8000-000000000001'
+      and profile_id = 'a0000000-0000-4000-8000-000000000005'
+      and revoked_at is null
+  ),
+  1,
+  'the grant is an ordinary per-credential row, still revocable on its own'
+);
+
+select set_config('request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000005', true);
+
+select is(
+  (select count(*)::integer from public.app_env_groups),
+  2,
+  'a project member can see the containers'
+);
+
+select throws_ok(
+  $$insert into public.app_env_groups (project_id, name, created_by)
+    values (
+      'a2000000-0000-4000-8000-000000000001',
+      'Member container',
+      'a0000000-0000-4000-8000-000000000005'
+    )$$,
+  '42501',
+  null,
+  'a member cannot create a container'
+);
+
+-- A whole .env file cannot be scoped to one variable, so it stays owner-only.
+select is(
+  (select count(*)::integer from public.app_env_files),
+  0,
+  'a member sees no uploaded ENV files'
 );
 
 reset role;
