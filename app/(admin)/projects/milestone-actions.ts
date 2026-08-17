@@ -10,7 +10,6 @@ import {
 } from "@/lib/projects/form-state";
 import { isIsoDate, isUuid } from "@/lib/projects/validation";
 
-const LABEL_MAX = 240;
 const WEEK_MAX = 999;
 
 function refresh(projectId: string) {
@@ -133,100 +132,5 @@ export async function setMilestoneWeekArchived(formData: FormData) {
   refresh(projectId);
 }
 
-export async function addMilestoneItem(
-  _state: SimpleFormState,
-  formData: FormData,
-): Promise<SimpleFormState> {
-  await requireRole(["owner"]);
-  const projectId = String(formData.get("projectId") ?? "");
-  const weekId = String(formData.get("weekId") ?? "");
-  const label = String(formData.get("label") ?? "").trim();
-  const rawAssignee = String(formData.get("assignedTo") ?? "").trim();
-
-  if (!isUuid(projectId) || !isUuid(weekId)) {
-    return formError("That week could not be found.");
-  }
-  if (!label) return formError("Describe what should be done.");
-  if (label.length > LABEL_MAX) {
-    return formError(`Keep it under ${LABEL_MAX} characters.`);
-  }
-  if (rawAssignee && !isUuid(rawAssignee)) {
-    return formError("That person is not valid.");
-  }
-
-  const supabase = await createClient();
-  const { error } = await supabase.from("app_milestone_items").insert({
-    milestone_week_id: weekId,
-    label,
-    assigned_to: rawAssignee || null,
-  });
-
-  if (error) {
-    return formError(
-      error.code === "23514"
-        ? "Items can only be assigned to someone on the project team."
-        : "The item could not be added.",
-    );
-  }
-
-  refresh(projectId);
-  return formSuccess("Item added.");
-}
-
-// Goes through the RPC because nobody can update this table directly.
-export async function saveMilestoneItem(
-  _state: SimpleFormState,
-  formData: FormData,
-): Promise<SimpleFormState> {
-  await requireRole(["owner"]);
-  const projectId = String(formData.get("projectId") ?? "");
-  const itemId = String(formData.get("itemId") ?? "");
-  const label = String(formData.get("label") ?? "").trim();
-  const rawAssignee = String(formData.get("assignedTo") ?? "").trim();
-
-  if (!isUuid(projectId) || !isUuid(itemId)) {
-    return formError("That item could not be found.");
-  }
-  if (!label) return formError("Describe what should be done.");
-  if (label.length > LABEL_MAX) {
-    return formError(`Keep it under ${LABEL_MAX} characters.`);
-  }
-  if (rawAssignee && !isUuid(rawAssignee)) {
-    return formError("That person is not valid.");
-  }
-
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("app_save_milestone_item", {
-    target_item_id: itemId,
-    new_label: label,
-    new_assigned_to: rawAssignee || null,
-  });
-
-  if (error) {
-    return formError(
-      error.code === "23514"
-        ? "Items can only be assigned to someone on the project team."
-        : "The item could not be saved.",
-    );
-  }
-
-  refresh(projectId);
-  return formSuccess("Item saved.");
-}
-
-export async function setMilestoneItemArchived(formData: FormData) {
-  await requireRole(["owner"]);
-  const projectId = String(formData.get("projectId") ?? "");
-  const itemId = String(formData.get("itemId") ?? "");
-  const archived = String(formData.get("archived") ?? "") === "1";
-  if (!isUuid(projectId) || !isUuid(itemId)) return;
-
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("app_set_milestone_item_archived", {
-    target_item_id: itemId,
-    archived,
-  });
-
-  if (error) return;
-  refresh(projectId);
-}
+// Item authoring moved to board-actions.ts when milestones became boards.
+// app_milestone_items keeps its history but no longer accepts writes.

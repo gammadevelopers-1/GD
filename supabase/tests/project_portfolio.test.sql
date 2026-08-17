@@ -159,54 +159,61 @@ values
     current_date + 1
   );
 
-insert into public.app_milestone_items (
+-- Progress is counted from board cards now, not one-line items.
+insert into public.app_milestone_cards (
   id,
   milestone_week_id,
-  label,
-  is_done,
+  board,
+  status,
+  title,
   completed_at,
-  completed_by
+  created_by
 )
 values
   (
     '84000000-0000-4000-8000-000000000001',
     '83000000-0000-4000-8000-000000000001',
+    'work',
+    'completed',
     'Past week finished item',
-    true,
     now(),
     '80000000-0000-4000-8000-000000000001'
   ),
   (
     '84000000-0000-4000-8000-000000000002',
     '83000000-0000-4000-8000-000000000001',
+    'idea',
+    'idea',
     'Past week unfinished item',
-    false,
     null,
-    null
+    '80000000-0000-4000-8000-000000000001'
   ),
   (
     '84000000-0000-4000-8000-000000000003',
     '83000000-0000-4000-8000-000000000002',
+    'work',
+    'completed',
     'Current week finished item',
-    true,
     now(),
     '80000000-0000-4000-8000-000000000001'
   ),
   (
     '84000000-0000-4000-8000-000000000004',
     '83000000-0000-4000-8000-000000000002',
+    'idea',
+    'idea',
     'Current week open item',
-    false,
     null,
-    null
+    '80000000-0000-4000-8000-000000000001'
   ),
   (
     '84000000-0000-4000-8000-000000000005',
     '83000000-0000-4000-8000-000000000002',
+    'idea',
+    'idea',
     'Current week second open item',
-    false,
     null,
-    null
+    '80000000-0000-4000-8000-000000000001'
   );
 
 set local role authenticated;

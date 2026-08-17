@@ -3,18 +3,25 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { Viewer } from "@/data/auth";
 import type { ProjectStatus } from "@/lib/projects/status";
+import { type Board, type CardStatus, workRank } from "@/lib/projects/board";
+import { type Block, parseBlocks } from "@/lib/projects/blocks";
 
-export type MilestoneItem = {
+// A card on one of the week's two boards. No assignee by design: the board
+// records what was done, not who did it.
+export type MilestoneCard = {
   id: string;
-  label: string;
-  assigneeId: string | null;
-  assignee: string | null;
-  done: boolean;
-  isArchived: boolean;
-  // Who ticked it and when. Cleared by the toggle when an item is reopened,
-  // so these are always null for an item that is not done.
+  title: string;
+  board: Board;
+  status: CardStatus;
+  blocks: Block[];
+  position: number;
+  // Kept even after a card is unblocked or finished, so the history of what
+  // got in the way survives.
+  blockerReason: string | null;
+  carryReason: string | null;
+  carriedFromWeek: number | null;
   completedAt: string | null;
-  completedBy: string | null;
+  isArchived: boolean;
 };
 
 export type MilestoneWeek = {
@@ -22,8 +29,9 @@ export type MilestoneWeek = {
   number: number;
   startsOn: string | null;
   dueOn: string;
-  items: MilestoneItem[];
-  archivedItems: MilestoneItem[];
+  ideaCards: MilestoneCard[];
+  workCards: MilestoneCard[];
+  archivedCards: MilestoneCard[];
   done: number;
   total: number;
   isCurrent: boolean;
@@ -91,6 +99,16 @@ export type ProjectFinancial = {
 
 function today() {
   return new Date().toISOString().slice(0, 10);
+}
+
+// Content is validated before it is written. On the way out a row that somehow
+// fails to parse should cost that card its blocks, not take the page down.
+function safeBlocks(raw: unknown): Block[] {
+  try {
+    return parseBlocks(raw);
+  } catch {
+    return [];
+  }
 }
 
 // The week we are in now. If planning has not reached today, the next one.
@@ -186,69 +204,79 @@ export async function getProjectDetail(
   }
 
   const weekIds = (weeksResult.data ?? []).map((week) => String(week.id));
-  let itemRows: Array<{
+  const weekNumbers = new Map(
+    (weeksResult.data ?? []).map((week) => [
+      String(week.id),
+      Number(week.week_number),
+    ]),
+  );
+
+  let cardRows: Array<{
     id: string;
     milestone_week_id: string;
-    label: string;
-    assigned_to: string | null;
-    is_done: boolean;
-    archived_at: string | null;
+    board: string;
+    status: string;
+    title: string;
+    blocks: unknown;
+    position: number;
+    blocker_reason: string | null;
+    carry_reason: string | null;
+    carried_from_week_id: string | null;
     completed_at: string | null;
-    completed_by: string | null;
+    archived_at: string | null;
   }> = [];
 
   if (weekIds.length) {
-    const itemsQuery = supabase
-      .from("app_milestone_items")
+    const cardsQuery = supabase
+      .from("app_milestone_cards")
       .select(
-        "id, milestone_week_id, label, assigned_to, is_done, archived_at, completed_at, completed_by",
+        "id, milestone_week_id, board, status, title, blocks, position, blocker_reason, carry_reason, carried_from_week_id, completed_at, archived_at",
       )
       .in("milestone_week_id", weekIds)
-      .order("created_at");
+      .order("position");
     const { data } = await (isOwner
-      ? itemsQuery
-      : itemsQuery.is("archived_at", null));
-    itemRows = (data ?? []) as typeof itemRows;
-  }
-
-  // An item's assignee and whoever ticked it are both unknown until the items
-  // come back, so they share this second lookup.
-  const itemProfileIds = itemRows
-    .flatMap((item) => [item.assigned_to, item.completed_by])
-    .filter((id): id is string => Boolean(id) && !names.has(String(id)));
-
-  if (itemProfileIds.length) {
-    const { data } = await supabase
-      .from("app_profiles")
-      .select("id, full_name")
-      .in("id", [...new Set(itemProfileIds)]);
-    for (const row of data ?? []) {
-      names.set(String(row.id), String(row.full_name));
-    }
+      ? cardsQuery
+      : cardsQuery.is("archived_at", null));
+    cardRows = (data ?? []) as typeof cardRows;
   }
 
   const now = today();
-  const toItem = (item: (typeof itemRows)[number]): MilestoneItem => ({
-    id: String(item.id),
-    label: String(item.label),
-    assigneeId: item.assigned_to ? String(item.assigned_to) : null,
-    assignee: item.assigned_to
-      ? (names.get(String(item.assigned_to)) ?? "Team member")
+  const toCard = (card: (typeof cardRows)[number]): MilestoneCard => ({
+    id: String(card.id),
+    title: String(card.title),
+    board: card.board as Board,
+    status: card.status as CardStatus,
+    // Content is validated on the way in; a bad row should not take the page
+    // down, so a card that cannot be read renders with no blocks.
+    blocks: safeBlocks(card.blocks),
+    position: Number(card.position ?? 0),
+    blockerReason: card.blocker_reason ? String(card.blocker_reason) : null,
+    carryReason: card.carry_reason ? String(card.carry_reason) : null,
+    carriedFromWeek: card.carried_from_week_id
+      ? (weekNumbers.get(String(card.carried_from_week_id)) ?? null)
       : null,
-    done: Boolean(item.is_done),
-    isArchived: Boolean(item.archived_at),
-    completedAt: item.completed_at ? String(item.completed_at) : null,
-    completedBy: item.completed_by
-      ? (names.get(String(item.completed_by)) ?? "Team member")
-      : null,
+    completedAt: card.completed_at ? String(card.completed_at) : null,
+    isArchived: Boolean(card.archived_at),
   });
 
   const allWeeks: MilestoneWeek[] = (weeksResult.data ?? []).map((week) => {
-    const rows = itemRows.filter(
-      (item) => String(item.milestone_week_id) === String(week.id),
+    const rows = cardRows.filter(
+      (card) => String(card.milestone_week_id) === String(week.id),
     );
-    const items = rows.filter((item) => !item.archived_at).map(toItem);
-    const done = items.filter((item) => item.done).length;
+    const live = rows.filter((card) => !card.archived_at).map(toCard);
+    const ideaCards = live
+      .filter((card) => card.board === "idea")
+      .sort((a, b) => a.position - b.position);
+    // Reads as the story of the week: moving, stuck, landed, and — last —
+    // what did not get done.
+    const workCards = live
+      .filter((card) => card.board === "work")
+      .sort(
+        (a, b) =>
+          workRank(a.status) - workRank(b.status) || a.position - b.position,
+      );
+    const done = workCards.filter((card) => card.status === "completed").length;
+    const total = live.length;
     const dueOn = String(week.due_on);
 
     return {
@@ -256,12 +284,13 @@ export async function getProjectDetail(
       number: Number(week.week_number),
       startsOn: week.starts_on ? String(week.starts_on) : null,
       dueOn,
-      items,
-      archivedItems: rows.filter((item) => item.archived_at).map(toItem),
+      ideaCards,
+      workCards,
+      archivedCards: rows.filter((card) => card.archived_at).map(toCard),
       done,
-      total: items.length,
+      total,
       isCurrent: false,
-      isOverdue: dueOn < now && done < items.length,
+      isOverdue: dueOn < now && done < total,
       isArchived: Boolean(week.archived_at),
     };
   });

@@ -20,7 +20,11 @@ import {
   ProjectTabs,
   type ProjectTab as Tab,
 } from "@/components/admin/projects/project-tabs";
-import { MilestonesPanel } from "@/components/admin/projects/milestones-panel";
+import {
+  type BoardActions,
+  BoardsPanel,
+} from "@/components/admin/projects/boards-panel";
+import { getBoardContext } from "@/data/board-context";
 import { StatusControl } from "@/components/admin/projects/status-control";
 import { TeamPanel } from "@/components/admin/projects/team-panel";
 import {
@@ -52,16 +56,19 @@ import {
   PROJECT_STATUS_CHIP,
   PROJECT_STATUS_LABEL,
 } from "@/lib/projects/status";
+import { CARD_STATUS_CHIP, CARD_STATUS_LABEL } from "@/lib/projects/board";
 import { cn } from "@/lib/utils";
-import { setProjectStatus, toggleMilestoneItem } from "../actions";
+import { setProjectStatus } from "../actions";
+import { addMilestoneWeek, setMilestoneWeekArchived } from "../milestone-actions";
 import {
-  addMilestoneItem,
-  addMilestoneWeek,
-  saveMilestoneItem,
-  setMilestoneItemArchived,
-  setMilestoneWeekArchived,
-  updateMilestoneWeek,
-} from "../milestone-actions";
+  carryCard,
+  createCard,
+  moveCard,
+  organiseWeek,
+  saveCard,
+  setCardArchived,
+  uploadAttachment,
+} from "../board-actions";
 import {
   addProjectMember,
   removeProjectMember,
@@ -188,25 +195,14 @@ export default async function ProjectPage({
           />
         ) : null}
         {activeTab === "milestones" ? (
-          <MilestonesPanel
-            projectId={project.id}
-            weeks={project.weeks}
-            archivedWeeks={project.archivedWeeks}
-            members={project.members.map((member) => ({
-              id: member.id,
-              name: member.name,
-            }))}
-            isOwner={isOwner}
-            actions={{
-              toggleItem: toggleMilestoneItem,
-              addWeek: addMilestoneWeek,
-              updateWeek: updateMilestoneWeek,
-              setWeekArchived: setMilestoneWeekArchived,
-              addItem: addMilestoneItem,
-              saveItem: saveMilestoneItem,
-              setItemArchived: setMilestoneItemArchived,
-            }}
-          />
+          <Suspense fallback={<PanelSkeleton lines={6} />}>
+            <BoardsSection
+              projectId={project.id}
+              viewer={viewer}
+              weeks={project.weeks}
+              isOwner={isOwner}
+            />
+          </Suspense>
         ) : null}
         {activeTab === "technical" ? (
           <div className="space-y-4">
@@ -234,6 +230,55 @@ export default async function ProjectPage({
       </div>
     </div>
   );
+}
+
+// The boards need signed attachment URLs and the credential name list, so they
+// fetch their own context and stream behind the header.
+async function BoardsSection({
+  projectId,
+  viewer,
+  weeks,
+  isOwner,
+}: {
+  projectId: string;
+  viewer: Viewer;
+  weeks: ProjectDetail["weeks"];
+  isOwner: boolean;
+}) {
+  const context = await getBoardContext(projectId, viewer, weeks);
+
+  const actions: BoardActions = {
+    createCard,
+    saveCard,
+    moveCard,
+    carryCard,
+    setCardArchived,
+    uploadFile: uploadAttachment.bind(null, {
+      status: "idle",
+      message: null,
+    }),
+    organiseWeek,
+    addWeek: addMilestoneWeek,
+    setWeekArchived: setMilestoneWeekArchived,
+  };
+
+  return (
+    <BoardsPanel
+      projectId={projectId}
+      weeks={weeks}
+      canManage={context.canManage}
+      isOwner={isOwner}
+      credentials={context.credentials}
+      signedUrls={context.signedUrls}
+      actions={actions}
+    />
+  );
+}
+
+// The Overview shows a compact read of the current week: what is being worked
+// on, then what is still only an idea.
+function currentWeekCards(week: ProjectDetail["weeks"][number]) {
+  return [...week.workCards, ...week.ideaCards];
 }
 
 // Fetches its own data so the rest of the technical tab can render first.
@@ -471,40 +516,49 @@ function Overview({
                 </span>
               </div>
 
-              {project.currentWeek.items.length ? (
+              {currentWeekCards(project.currentWeek).length ? (
                 <ul className="mt-3 space-y-1.5">
-                  {project.currentWeek.items.slice(0, 4).map((item) => (
-                    <li
-                      key={item.id}
-                      className="flex items-center gap-2.5 rounded-lg px-1.5 py-1 text-[13px] transition-colors duration-150 hover:bg-black/[0.03]"
-                    >
-                      <span
-                        className={cn(
-                          "grid size-4 shrink-0 place-items-center rounded border",
-                          item.done
-                            ? "border-[#16a34a] bg-[#16a34a] text-white"
-                            : "border-black/15 bg-white text-transparent",
-                        )}
+                  {currentWeekCards(project.currentWeek)
+                    .slice(0, 4)
+                    .map((card) => (
+                      <li
+                        key={card.id}
+                        className="flex items-center gap-2.5 rounded-lg px-1.5 py-1 text-[13px] transition-colors duration-150 hover:bg-black/[0.03]"
                       >
-                        <Check className="size-2.5" />
-                      </span>
-                      <span
-                        className={cn(
-                          "min-w-0 truncate",
-                          item.done
-                            ? "text-black/35 line-through"
-                            : "text-black/70",
-                        )}
-                      >
-                        {item.label}
-                      </span>
-                      {item.assignee ? (
-                        <span className="ml-auto shrink-0 text-[10px] text-black/35">
-                          {item.assignee}
+                        <span
+                          className={cn(
+                            "grid size-4 shrink-0 place-items-center rounded border",
+                            card.status === "completed"
+                              ? "border-[#16a34a] bg-[#16a34a] text-white"
+                              : "border-black/15 bg-white text-transparent",
+                          )}
+                        >
+                          <Check className="size-2.5" />
                         </span>
-                      ) : null}
-                    </li>
-                  ))}
+                        <span
+                          className={cn(
+                            "min-w-0 truncate",
+                            card.status === "completed"
+                              ? "text-black/35 line-through"
+                              : "text-black/70",
+                          )}
+                        >
+                          {card.title}
+                        </span>
+                        {/* State, not a person — the board reports what was
+                            done rather than who did it. */}
+                        {card.status !== "completed" ? (
+                          <span
+                            className={cn(
+                              "ml-auto shrink-0 rounded-full border px-1.5 py-0.5 text-[9px] font-semibold",
+                              CARD_STATUS_CHIP[card.status],
+                            )}
+                          >
+                            {CARD_STATUS_LABEL[card.status]}
+                          </span>
+                        ) : null}
+                      </li>
+                    ))}
                 </ul>
               ) : (
                 <p className="mt-3 text-[13px] text-black/40">

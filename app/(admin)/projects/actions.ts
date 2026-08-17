@@ -23,21 +23,6 @@ function failure(state: Omit<ProjectFormState, "status">): ProjectFormState {
   return { ...state, status: "error" };
 }
 
-export async function toggleMilestoneItem(formData: FormData) {
-  await requireRole(["owner", "member"]);
-  const itemId = String(formData.get("itemId") ?? "");
-  const projectId = String(formData.get("projectId") ?? "");
-  if (!isUuid(itemId) || !isUuid(projectId)) return;
-
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("app_toggle_milestone_item", {
-    target_item_id: itemId,
-  });
-  if (error) return;
-
-  refresh(projectId);
-}
-
 export async function createProject(
   _state: ProjectFormState,
   formData: FormData,

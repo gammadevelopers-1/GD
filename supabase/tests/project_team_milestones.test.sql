@@ -258,52 +258,34 @@ select lives_ok(
   'archiving a week frees its number for a replacement'
 );
 
-select throws_ok(
-  $$insert into public.app_milestone_items (milestone_week_id, label, assigned_to)
-    values (
-      '53000000-0000-4000-8000-000000000001',
-      'Assigned to an outsider',
-      '50000000-0000-4000-8000-000000000003'
-    )$$,
-  '23514',
-  'A milestone item can only be assigned to someone on the project team.',
-  'an item cannot be assigned to someone who is not on the project team'
+-- ---------------------------------------------------------------------------
+-- Milestone boards. Cards replace one-line items: no assignee, and the project
+-- lead may author alongside the owner.
+-- ---------------------------------------------------------------------------
+
+insert into public.app_milestone_weeks (id, project_id, week_number, due_on)
+values (
+  '53000000-0000-4000-8000-000000000009',
+  '52000000-0000-4000-8000-000000000001',
+  20,
+  current_date + 30
 );
 
+-- Make the existing member the project lead.
+update public.app_projects
+set lead_id = '50000000-0000-4000-8000-000000000002'
+where id = '52000000-0000-4000-8000-000000000001';
+
 select lives_ok(
-  $$insert into public.app_milestone_items
-      (id, milestone_week_id, label, assigned_to)
+  $$insert into public.app_milestone_cards
+      (id, milestone_week_id, board, status, title, created_by)
     values (
       '54000000-0000-4000-8000-000000000001',
       '53000000-0000-4000-8000-000000000001',
-      'Original label',
-      '50000000-0000-4000-8000-000000000002'
+      'idea', 'idea', 'Owner idea',
+      '50000000-0000-4000-8000-000000000001'
     )$$,
-  'an item can be assigned to someone on the project team'
-);
-
-select lives_ok(
-  $$select public.app_save_milestone_item(
-      '54000000-0000-4000-8000-000000000001', 'Edited label', null
-    )$$,
-  'an owner can edit a milestone item'
-);
-select is(
-  (
-    select label
-    from public.app_milestone_items
-    where id = '54000000-0000-4000-8000-000000000001'
-  ),
-  'Edited label',
-  'the edit is applied'
-);
-select throws_ok(
-  $$select public.app_save_milestone_item(
-      '54000000-0000-4000-8000-000000000001', '   ', null
-    )$$,
-  '22023',
-  'A milestone item needs a description.',
-  'an item cannot be saved without a description'
+  'an owner can add a card to the Idea Board'
 );
 
 select set_config(
@@ -311,99 +293,141 @@ select set_config(
 );
 
 select lives_ok(
-  $$select public.app_toggle_milestone_item(
-      '54000000-0000-4000-8000-000000000001'
+  $$insert into public.app_milestone_cards
+      (id, milestone_week_id, board, status, title, created_by)
+    values (
+      '54000000-0000-4000-8000-000000000002',
+      '53000000-0000-4000-8000-000000000001',
+      'idea', 'idea', 'Lead idea',
+      '50000000-0000-4000-8000-000000000002'
     )$$,
-  'an assigned member can still tick an item off'
+  'the project lead can add a card too'
 );
+
 select throws_ok(
-  $$select public.app_save_milestone_item(
-      '54000000-0000-4000-8000-000000000001', 'Rewritten by a member', null
+  $$select public.app_set_milestone_card_status(
+      '54000000-0000-4000-8000-000000000002', 'blocked', null
+    )$$,
+  '23514',
+  'A blocked card needs a blocker.',
+  'a card cannot be blocked without saying what is blocking it'
+);
+
+select lives_ok(
+  $$select public.app_set_milestone_card_status(
+      '54000000-0000-4000-8000-000000000002', 'blocked', 'Waiting on client DNS'
+    )$$,
+  'the lead can block a card with a reason'
+);
+
+select is(
+  (
+    select board || '/' || status
+    from public.app_milestone_cards
+    where id = '54000000-0000-4000-8000-000000000002'
+  ),
+  'work/blocked',
+  'blocking moves the card onto the Work Board'
+);
+
+select lives_ok(
+  $$select public.app_set_milestone_card_status(
+      '54000000-0000-4000-8000-000000000002', 'completed', null
+    )$$,
+  'a blocked card can go on to be completed'
+);
+
+select is(
+  (
+    select blocker_reason
+    from public.app_milestone_cards
+    where id = '54000000-0000-4000-8000-000000000002'
+  ),
+  'Waiting on client DNS',
+  'the blocker is preserved after the card is unblocked'
+);
+
+select lives_ok(
+  $$select public.app_set_milestone_card_status(
+      '54000000-0000-4000-8000-000000000002', 'incomplete', 'Ran out of week'
+    )$$,
+  'a card can be marked not completed with a reason'
+);
+
+select lives_ok(
+  $$select public.app_carry_milestone_card(
+      '54000000-0000-4000-8000-000000000002',
+      '53000000-0000-4000-8000-000000000009',
+      null
+    )$$,
+  'an unfinished card can be carried into another week'
+);
+
+select is(
+  (
+    select milestone_week_id || '|' || board || '|' || carry_reason
+    from public.app_milestone_cards
+    where id = '54000000-0000-4000-8000-000000000002'
+  ),
+  '53000000-0000-4000-8000-000000000009|idea|Ran out of week',
+  'the carried card lands on the next Idea Board with its reason intact'
+);
+
+select isnt(
+  (
+    select carried_from_week_id
+    from public.app_milestone_cards
+    where id = '54000000-0000-4000-8000-000000000002'
+  ),
+  null,
+  'the carried card remembers where it came from'
+);
+
+-- Take the lead away: an ordinary member has no authorship.
+select set_config(
+  'request.jwt.claim.sub', '50000000-0000-4000-8000-000000000001', true
+);
+update public.app_projects
+set lead_id = null
+where id = '52000000-0000-4000-8000-000000000001';
+
+select set_config(
+  'request.jwt.claim.sub', '50000000-0000-4000-8000-000000000002', true
+);
+
+select ok(
+  (select count(*) from public.app_milestone_cards) >= 2,
+  'a member can still read the whole board'
+);
+
+select throws_ok(
+  $$insert into public.app_milestone_cards
+      (milestone_week_id, board, status, title, created_by)
+    values (
+      '53000000-0000-4000-8000-000000000001',
+      'idea', 'idea', 'Added by a plain member',
+      '50000000-0000-4000-8000-000000000002'
     )$$,
   '42501',
-  'Only an owner can plan milestone work.',
-  'a member cannot rewrite a milestone item'
+  null,
+  'a member who is not the lead cannot add a card'
 );
+
 select throws_ok(
-  $$select public.app_set_milestone_item_archived(
-      '54000000-0000-4000-8000-000000000001', true
+  $$select public.app_set_milestone_card_status(
+      '54000000-0000-4000-8000-000000000001', 'completed', null
     )$$,
   '42501',
-  'Only an owner can plan milestone work.',
-  'a member cannot remove a milestone item'
+  'That milestone card is unavailable.',
+  'a member who is not the lead cannot move a card'
 );
+
 select throws_ok(
   $$insert into public.app_milestone_weeks (project_id, week_number, due_on)
     values ('52000000-0000-4000-8000-000000000001', 9, current_date + 20)$$,
   '42501',
   null,
   'a member cannot plan a week'
-);
-select throws_ok(
-  $$insert into public.app_milestone_items (milestone_week_id, label)
-    values ('53000000-0000-4000-8000-000000000001', 'Added by a member')$$,
-  '42501',
-  null,
-  'a member cannot add a milestone item'
-);
-
-update public.app_milestone_weeks
-set due_on = current_date + 90
-where id = '53000000-0000-4000-8000-000000000001';
-
-select set_config(
-  'request.jwt.claim.sub', '50000000-0000-4000-8000-000000000001', true
-);
-select is(
-  (
-    select due_on
-    from public.app_milestone_weeks
-    where id = '53000000-0000-4000-8000-000000000001'
-  ),
-  current_date + 4,
-  'a member cannot move a week''s dates'
-);
-
-select lives_ok(
-  $$select public.app_set_milestone_item_archived(
-      '54000000-0000-4000-8000-000000000001', true
-    )$$,
-  'an owner can remove a milestone item'
-);
-
-select set_config(
-  'request.jwt.claim.sub', '50000000-0000-4000-8000-000000000002', true
-);
-select is(
-  (
-    select count(*)
-    from public.app_milestone_items
-    where id = '54000000-0000-4000-8000-000000000001'
-  ),
-  0::bigint,
-  'a removed item disappears from the member plan'
-);
-
-select set_config(
-  'request.jwt.claim.sub', '50000000-0000-4000-8000-000000000001', true
-);
-select lives_ok(
-  $$select public.app_set_milestone_item_archived(
-      '54000000-0000-4000-8000-000000000001', false
-    )$$,
-  'an owner can restore a removed milestone item'
-);
-
-update public.app_project_members
-set archived_at = now(), archived_by = '50000000-0000-4000-8000-000000000001'
-where project_id = '52000000-0000-4000-8000-000000000001'
-  and profile_id = '50000000-0000-4000-8000-000000000002';
-
-select lives_ok(
-  $$select public.app_toggle_milestone_item(
-      '54000000-0000-4000-8000-000000000001'
-    )$$,
-  'an item assigned to someone who has left the project can still be completed'
 );
 
 reset role;

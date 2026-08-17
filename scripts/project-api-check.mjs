@@ -218,18 +218,20 @@ async function seed() {
     insert into public.app_milestone_weeks (id, project_id, week_number, starts_on, due_on)
     values ('${ID.week}', '${ID.projectAssigned}', 1, current_date - 6, current_date + 1);
 
-    insert into public.app_milestone_items
-      (id, milestone_week_id, label, is_done, completed_at, completed_by)
+    insert into public.app_milestone_cards
+      (id, milestone_week_id, board, status, title, completed_at, created_by)
     values
-      ('${ID.itemDone}', '${ID.week}', 'API finished item', true, now(), '${ID.owner}'),
-      ('${ID.itemOpen}', '${ID.week}', 'API open item', false, null, null);
+      ('${ID.itemDone}', '${ID.week}', 'work', 'completed',
+       'API finished item', now(), '${ID.owner}'),
+      ('${ID.itemOpen}', '${ID.week}', 'idea', 'idea',
+       'API open item', null, '${ID.owner}');
   `);
 }
 
 async function cleanup() {
   sql(`
-    delete from public.app_milestone_items
-      where id in ('${ID.itemDone}', '${ID.itemOpen}');
+    delete from public.app_milestone_cards
+      where milestone_week_id = '${ID.week}';
     delete from public.app_milestone_weeks where id = '${ID.week}';
     delete from public.app_project_members
       where project_id in ('${ID.projectAssigned}', '${ID.projectOwnerOnly}', '${ID.projectArchived}');
@@ -540,47 +542,93 @@ async function run() {
     `got ${strangerAfterRemoval.data?.length}`,
   );
 
-  const memberToggles = await api("/rest/v1/rpc/app_toggle_milestone_item", {
-    key: PUBLISHABLE,
-    token: memberToken,
-    method: "POST",
-    body: { target_item_id: ID.itemOpen },
-  });
-  check(
-    "assigned member can complete a milestone item",
-    memberToggles.ok,
-    `status ${memberToggles.status}`,
-  );
-
-  const memberEdits = await api("/rest/v1/rpc/app_save_milestone_item", {
+  // Boards changed the contract: authorship belongs to the owner and the
+  // project lead. In this fixture the assigned member IS the lead, so both
+  // halves of the rule are worth proving.
+  const leadMovesCard = await api("/rest/v1/rpc/app_set_milestone_card_status", {
     key: PUBLISHABLE,
     token: memberToken,
     method: "POST",
     body: {
-      target_item_id: ID.itemOpen,
-      new_label: "Rewritten by a member",
-      new_assigned_to: null,
+      target_card_id: ID.itemOpen,
+      next_status: "completed",
+      reason: null,
     },
   });
   check(
-    "member cannot rewrite a milestone item",
-    !memberEdits.ok,
-    `status ${memberEdits.status}`,
+    "the project lead can move a card",
+    leadMovesCard.ok,
+    `status ${leadMovesCard.status}`,
   );
 
-  const memberPatchesItem = await api(
-    `/rest/v1/app_milestone_items?id=eq.${ID.itemOpen}`,
+  const memberReadsBoard = await api(
+    `/rest/v1/app_milestone_cards?select=id,title&milestone_week_id=eq.${ID.week}`,
+    { key: PUBLISHABLE, token: memberToken },
+  );
+  check(
+    "an assigned member can read the board",
+    memberReadsBoard.ok && (memberReadsBoard.data?.length ?? 0) > 0,
+    `status ${memberReadsBoard.status}`,
+  );
+
+  // Take the lead away and the same person keeps read access and loses the rest.
+  sql(
+    `update public.app_projects set lead_id = null where id = '${ID.projectAssigned}';`,
+  );
+
+  const exLeadAddsCard = await api("/rest/v1/app_milestone_cards", {
+    key: PUBLISHABLE,
+    token: memberToken,
+    method: "POST",
+    body: {
+      milestone_week_id: ID.week,
+      board: "idea",
+      status: "idea",
+      title: "Added by a plain member",
+      created_by: ID.assigned,
+    },
+  });
+  check(
+    "a member who is not the lead cannot add a card",
+    !exLeadAddsCard.ok,
+    `status ${exLeadAddsCard.status}`,
+  );
+
+  const exLeadMovesCard = await api(
+    "/rest/v1/rpc/app_set_milestone_card_status",
     {
       key: PUBLISHABLE,
       token: memberToken,
-      method: "PATCH",
-      body: { label: "Patched by a member" },
+      method: "POST",
+      body: {
+        target_card_id: ID.itemDone,
+        next_status: "in_progress",
+        reason: null,
+      },
     },
   );
   check(
-    "member cannot patch a milestone item directly",
-    !memberPatchesItem.ok,
-    `status ${memberPatchesItem.status}`,
+    "a member who is not the lead cannot move a card",
+    !exLeadMovesCard.ok,
+    `status ${exLeadMovesCard.status}`,
+  );
+
+  // A PATCH filtered away by RLS still answers 204, so the status alone proves
+  // nothing. Read the row back and check it did not move.
+  await api(`/rest/v1/app_milestone_cards?id=eq.${ID.itemOpen}`, {
+    key: PUBLISHABLE,
+    token: memberToken,
+    method: "PATCH",
+    body: { title: "Patched by a member" },
+  });
+  const afterPatch = await api(
+    `/rest/v1/app_milestone_cards?select=title&id=eq.${ID.itemOpen}`,
+    { key: PUBLISHABLE, token: memberToken },
+  );
+  check(
+    "member cannot patch a card directly",
+    afterPatch.data?.[0]?.title === "API open item",
+    `title is ${afterPatch.data?.[0]?.title}`,
   );
 
   const memberPlansWeek = await api("/rest/v1/app_milestone_weeks", {
