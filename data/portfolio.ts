@@ -9,8 +9,8 @@ export type PortfolioProject = {
   id: string;
   name: string;
   status: ProjectStatus;
-  clientId: string;
-  clientName: string;
+  clientId: string | null;
+  clientName: string | null;
   leadId: string | null;
   leadName: string | null;
   startsOn: string | null;
@@ -39,8 +39,8 @@ type PortfolioRow = {
   id: string;
   name: string;
   status: ProjectStatus;
-  client_id: string;
-  client_name: string;
+  client_id: string | null;
+  client_name: string | null;
   lead_id: string | null;
   lead_name: string | null;
   starts_on: string | null;
@@ -90,8 +90,8 @@ export async function getPortfolio(
       id: String(row.id),
       name: String(row.name),
       status: row.status,
-      clientId: String(row.client_id),
-      clientName: String(row.client_name),
+      clientId: row.client_id ? String(row.client_id) : null,
+      clientName: row.client_name ? String(row.client_name) : null,
       leadId: row.lead_id ? String(row.lead_id) : null,
       leadName: row.lead_name ? String(row.lead_name) : null,
       startsOn: row.starts_on,

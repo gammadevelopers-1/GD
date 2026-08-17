@@ -37,13 +37,14 @@ with counts as (
 readiness as (
   select
     project.name as project,
-    client.name as client,
+    coalesce(client.name, '—') as client,
     project.status,
     coalesce(lead.full_name, '—') as lead,
     counts.team_size,
     counts.weeks as milestone_weeks,
     counts.overdue_items,
     array_remove(array[
+      case when project.client_id is null then 'client' end,
       case when project.description is null or btrim(project.description) = ''
         then 'description' end,
       case when project.lead_id is null then 'lead' end,
@@ -62,7 +63,7 @@ readiness as (
       case when technical.onboarding_notes is null then 'onboarding notes' end
     ], null) as missing
   from public.app_projects project
-  join public.app_clients client on client.id = project.client_id
+  left join public.app_clients client on client.id = project.client_id
   left join public.app_profiles lead on lead.id = project.lead_id
   left join counts on counts.project_id = project.id
   left join public.app_project_technical_details technical

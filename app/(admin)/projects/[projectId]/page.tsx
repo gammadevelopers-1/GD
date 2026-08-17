@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -13,6 +14,12 @@ import {
   X,
 } from "lucide-react";
 import { Spotlight } from "@/components/admin/spotlight";
+import { PanelSkeleton } from "@/components/admin/skeletons";
+import {
+  PROJECT_TABS,
+  ProjectTabs,
+  type ProjectTab as Tab,
+} from "@/components/admin/projects/project-tabs";
 import { MilestonesPanel } from "@/components/admin/projects/milestones-panel";
 import { StatusControl } from "@/components/admin/projects/status-control";
 import { TeamPanel } from "@/components/admin/projects/team-panel";
@@ -73,9 +80,6 @@ import {
   updateCredentialMetadata,
 } from "../credential-actions";
 
-const tabs = ["overview", "team", "milestones", "technical"] as const;
-type Tab = (typeof tabs)[number];
-
 const NOTICES: Record<string, { tone: "ok" | "warning"; message: string }> = {
   created: { tone: "ok", message: "Project created." },
   restored: {
@@ -99,7 +103,7 @@ export default async function ProjectPage({
   const viewer = await requireRole(["owner", "member"]);
   const { projectId } = await params;
   const query = await searchParams;
-  const activeTab: Tab = tabs.includes(query.tab as Tab)
+  const activeTab: Tab = PROJECT_TABS.includes(query.tab as Tab)
     ? (query.tab as Tab)
     : "overview";
 
@@ -110,16 +114,15 @@ export default async function ProjectPage({
   const onThisProject =
     isOwner || project.members.some((member) => member.id === viewer.id);
 
-  const [financial, options, credentials] = await Promise.all([
+  // Credentials and their audit history are two more serial round trips and
+  // are only ever shown on one tab, so they stream inside their own boundary
+  // instead of holding up the header and the technical details above them.
+  const [financial, options] = await Promise.all([
     getProjectFinancial(projectId, viewer),
     isOwner
       ? getProjectFormOptions()
       : Promise.resolve({ clients: [], people: [] }),
-    activeTab === "technical"
-      ? getProjectCredentials(projectId, viewer)
-      : Promise.resolve([]),
   ]);
-  const credentialAudit = await getCredentialAudit(credentials, viewer);
   const notice = query.notice ? NOTICES[query.notice] : undefined;
   const tabHref = (tab: Tab) =>
     `/projects/${project.id}${tab === "overview" ? "" : `?tab=${tab}`}`;
@@ -214,31 +217,61 @@ export default async function ProjectPage({
               isArchived={project.isArchived}
               save={saveTechnicalDetails}
             />
-            <CredentialsPanel
-              projectId={project.id}
-              credentials={credentials}
-              members={project.members.map((member) => ({
-                id: member.id,
-                name: member.name,
-              }))}
-              audit={credentialAudit}
-              isOwner={isOwner}
-              vaultReady={credentialsConfigured()}
-              projectArchived={project.isArchived}
-              actions={{
-                create: createCredential,
-                updateMetadata: updateCredentialMetadata,
-                replaceSecret: replaceCredentialSecret,
-                grant: grantCredentialAccess,
-                setArchived: setCredentialArchived,
-                revoke: revokeCredentialAccess,
-                copy: copyCredentialSecret,
-              }}
-            />
+            <Suspense fallback={<PanelSkeleton lines={5} />}>
+              <CredentialsSection
+                projectId={project.id}
+                viewer={viewer}
+                members={project.members.map((member) => ({
+                  id: member.id,
+                  name: member.name,
+                }))}
+                isOwner={isOwner}
+                projectArchived={project.isArchived}
+              />
+            </Suspense>
           </div>
         ) : null}
       </div>
     </div>
+  );
+}
+
+// Fetches its own data so the rest of the technical tab can render first.
+async function CredentialsSection({
+  projectId,
+  viewer,
+  members,
+  isOwner,
+  projectArchived,
+}: {
+  projectId: string;
+  viewer: Viewer;
+  members: Array<{ id: string; name: string }>;
+  isOwner: boolean;
+  projectArchived: boolean;
+}) {
+  const credentials = await getProjectCredentials(projectId, viewer);
+  const audit = await getCredentialAudit(credentials, viewer);
+
+  return (
+    <CredentialsPanel
+      projectId={projectId}
+      credentials={credentials}
+      members={members}
+      audit={audit}
+      isOwner={isOwner}
+      vaultReady={credentialsConfigured()}
+      projectArchived={projectArchived}
+      actions={{
+        create: createCredential,
+        updateMetadata: updateCredentialMetadata,
+        replaceSecret: replaceCredentialSecret,
+        grant: grantCredentialAccess,
+        setArchived: setCredentialArchived,
+        revoke: revokeCredentialAccess,
+        copy: copyCredentialSecret,
+      }}
+    />
   );
 }
 
@@ -265,7 +298,7 @@ function ProjectHeader({
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-[11px] text-white/40">
-                {project.clientName}
+                {project.clientName ?? "No client yet"}
               </span>
               {project.isArchived ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] font-semibold text-amber-300">
@@ -337,34 +370,7 @@ function ProjectHeader({
         </Spotlight>
       </div>
 
-      <nav
-        aria-label="Project sections"
-        className="flex overflow-x-auto border-t border-white/[0.07] px-2 sm:px-4"
-      >
-        {tabs.map((tab) => (
-          <Link
-            key={tab}
-            href={tabHref(tab)}
-            aria-current={activeTab === tab ? "page" : undefined}
-            className={cn(
-              "relative shrink-0 px-3.5 py-3.5 text-[13px] font-medium capitalize transition duration-200 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none sm:px-4",
-              activeTab === tab
-                ? "text-white"
-                : "text-white/35 hover:text-white/85",
-            )}
-          >
-            {tab}
-            <span
-              className={cn(
-                "absolute inset-x-3.5 bottom-0 h-0.5 rounded-full bg-[#2fe85c] transition-all duration-300 sm:inset-x-4",
-                activeTab === tab
-                  ? "opacity-100 shadow-[0_0_14px_rgba(47,232,92,0.65)]"
-                  : "scale-x-0 opacity-0",
-              )}
-            />
-          </Link>
-        ))}
-      </nav>
+      <ProjectTabs activeTab={activeTab} tabHref={tabHref} />
     </section>
   );
 }
@@ -547,7 +553,10 @@ function Overview({
       <div className="space-y-4">
         <Panel title="Project information" icon={CalendarDays}>
           <div className="grid gap-5 sm:grid-cols-2">
-            <Detail label="Client" value={project.clientName} />
+            <Detail
+              label="Client"
+              value={project.clientName ?? "Not set"}
+            />
             <Detail
               label="Status"
               value={PROJECT_STATUS_LABEL[project.status]}
@@ -670,6 +679,13 @@ function missingInformation(
     gaps.push({
       label: "No description — a new joiner cannot tell what this project is.",
       action: isOwner ? "Add one" : "Ask an owner",
+      href: isOwner ? editHref : undefined,
+    });
+  }
+  if (!project.clientId) {
+    gaps.push({
+      label: "No client attached — invoices and reporting will need one.",
+      action: isOwner ? "Attach a client" : "Ask an owner",
       href: isOwner ? editHref : undefined,
     });
   }

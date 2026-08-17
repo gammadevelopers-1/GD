@@ -32,7 +32,7 @@ export default async function EditProjectPage({
 
   const defaults: ProjectFormValues = {
     name: project.name,
-    clientId: project.clientId,
+    clientId: project.clientId ?? "",
     description: project.description ?? "",
     leadId: project.leadId ?? "",
     startsOn: project.startsOn ?? "",

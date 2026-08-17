@@ -11,6 +11,10 @@ export type MilestoneItem = {
   assignee: string | null;
   done: boolean;
   isArchived: boolean;
+  // Who ticked it and when. Cleared by the toggle when an item is reopened,
+  // so these are always null for an item that is not done.
+  completedAt: string | null;
+  completedBy: string | null;
 };
 
 export type MilestoneWeek = {
@@ -32,10 +36,13 @@ export type ProjectMember = {
   name: string;
   responsibility: string;
   isLead: boolean;
+  // Assignment is what grants access, so who granted it is worth showing.
+  addedBy: string | null;
 };
 
 export type FormerProjectMember = ProjectMember & {
   removedAt: string;
+  removedBy: string | null;
 };
 
 export type ProjectDetail = {
@@ -46,8 +53,8 @@ export type ProjectDetail = {
   startsOn: string | null;
   dueOn: string | null;
   isArchived: boolean;
-  clientId: string;
-  clientName: string;
+  clientId: string | null;
+  clientName: string | null;
   leadId: string | null;
   leadName: string | null;
   members: ProjectMember[];
@@ -123,7 +130,7 @@ export async function getProjectDetail(
 
   const membersQuery = supabase
     .from("app_project_members")
-    .select("profile_id, responsibility, archived_at")
+    .select("profile_id, responsibility, archived_at, added_by, archived_by")
     .eq("project_id", projectId);
   const weeksQuery = supabase
     .from("app_milestone_weeks")
@@ -133,11 +140,15 @@ export async function getProjectDetail(
 
   const [clientResult, membersResult, weeksResult, technicalResult] =
     await Promise.all([
-      supabase
-        .from("app_clients")
-        .select("id, name")
-        .eq("id", project.client_id)
-        .maybeSingle(),
+      // A project may not have a client yet, and there is nothing to look up
+      // when it does not.
+      project.client_id
+        ? supabase
+            .from("app_clients")
+            .select("id, name")
+            .eq("id", project.client_id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
       isOwner ? membersQuery : membersQuery.is("archived_at", null),
       isOwner ? weeksQuery : weeksQuery.is("archived_at", null),
       supabase
@@ -152,6 +163,12 @@ export async function getProjectDetail(
   const profileIds = new Set(
     (membersResult.data ?? []).map((row) => String(row.profile_id)),
   );
+  // Whoever added or removed each member needs a name too, and both are known
+  // already, so they ride along in the same lookup instead of a second trip.
+  for (const row of membersResult.data ?? []) {
+    if (row.added_by) profileIds.add(String(row.added_by));
+    if (row.archived_by) profileIds.add(String(row.archived_by));
+  }
   if (project.lead_id) profileIds.add(String(project.lead_id));
   if (technicalResult.data?.updated_by) {
     profileIds.add(String(technicalResult.data.updated_by));
@@ -176,12 +193,16 @@ export async function getProjectDetail(
     assigned_to: string | null;
     is_done: boolean;
     archived_at: string | null;
+    completed_at: string | null;
+    completed_by: string | null;
   }> = [];
 
   if (weekIds.length) {
     const itemsQuery = supabase
       .from("app_milestone_items")
-      .select("id, milestone_week_id, label, assigned_to, is_done, archived_at")
+      .select(
+        "id, milestone_week_id, label, assigned_to, is_done, archived_at, completed_at, completed_by",
+      )
       .in("milestone_week_id", weekIds)
       .order("created_at");
     const { data } = await (isOwner
@@ -190,15 +211,17 @@ export async function getProjectDetail(
     itemRows = (data ?? []) as typeof itemRows;
   }
 
-  const assigneeIds = itemRows
-    .map((item) => item.assigned_to)
+  // An item's assignee and whoever ticked it are both unknown until the items
+  // come back, so they share this second lookup.
+  const itemProfileIds = itemRows
+    .flatMap((item) => [item.assigned_to, item.completed_by])
     .filter((id): id is string => Boolean(id) && !names.has(String(id)));
 
-  if (assigneeIds.length) {
+  if (itemProfileIds.length) {
     const { data } = await supabase
       .from("app_profiles")
       .select("id, full_name")
-      .in("id", [...new Set(assigneeIds)]);
+      .in("id", [...new Set(itemProfileIds)]);
     for (const row of data ?? []) {
       names.set(String(row.id), String(row.full_name));
     }
@@ -214,6 +237,10 @@ export async function getProjectDetail(
       : null,
     done: Boolean(item.is_done),
     isArchived: Boolean(item.archived_at),
+    completedAt: item.completed_at ? String(item.completed_at) : null,
+    completedBy: item.completed_by
+      ? (names.get(String(item.completed_by)) ?? "Team member")
+      : null,
   });
 
   const allWeeks: MilestoneWeek[] = (weeksResult.data ?? []).map((week) => {
@@ -262,6 +289,9 @@ export async function getProjectDetail(
         ? String(member.responsibility)
         : "Contributor",
       isLead: String(member.profile_id) === String(project.lead_id),
+      addedBy: member.added_by
+        ? (names.get(String(member.added_by)) ?? "An owner")
+        : null,
     }));
   members.sort((a, b) => Number(b.isLead) - Number(a.isLead));
 
@@ -274,7 +304,13 @@ export async function getProjectDetail(
         ? String(member.responsibility)
         : "Contributor",
       isLead: false,
+      addedBy: member.added_by
+        ? (names.get(String(member.added_by)) ?? "An owner")
+        : null,
       removedAt: String(member.archived_at),
+      removedBy: member.archived_by
+        ? (names.get(String(member.archived_by)) ?? "An owner")
+        : null,
     }));
 
   return {
@@ -285,10 +321,10 @@ export async function getProjectDetail(
     startsOn: project.starts_on ? String(project.starts_on) : null,
     dueOn: project.due_on ? String(project.due_on) : null,
     isArchived: Boolean(project.archived_at),
-    clientId: String(project.client_id),
+    clientId: project.client_id ? String(project.client_id) : null,
     clientName: clientResult.data?.name
       ? String(clientResult.data.name)
-      : "Client",
+      : null,
     leadId: project.lead_id ? String(project.lead_id) : null,
     leadName: project.lead_id
       ? (names.get(String(project.lead_id)) ?? "Unassigned")

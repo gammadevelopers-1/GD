@@ -69,11 +69,17 @@ export function ProjectForm({
         </div>
       ) : null}
 
+      <p className="text-[11px] text-black/40">
+        Only the project name is required. Everything else can be added later,
+        from Edit project.
+      </p>
+
       <fieldset disabled={pending} className="grid gap-5 sm:grid-cols-2">
         <Field
           name="name"
           label="Project name"
           error={errors.name}
+          required
           className="sm:col-span-2"
         >
           <input
@@ -88,16 +94,24 @@ export function ProjectForm({
           />
         </Field>
 
-        <Field name="clientId" label="Client" error={errors.clientId}>
+        <Field
+          name="clientId"
+          label="Client"
+          error={errors.clientId}
+          hint={
+            clients.length
+              ? "Can be attached later."
+              : "No clients recorded yet — you can add one later."
+          }
+        >
           <select
             id="clientId"
             name="clientId"
             defaultValue={values.clientId}
-            required
             aria-invalid={Boolean(errors.clientId)}
             className={inputClass(Boolean(errors.clientId))}
           >
-            <option value="">Select a client</option>
+            <option value="">No client yet</option>
             {clients.map((client) => (
               <option key={client.id} value={client.id}>
                 {client.name}
@@ -311,6 +325,7 @@ function Field({
   error,
   hint,
   className,
+  required,
   children,
 }: {
   name: ProjectField;
@@ -318,12 +333,25 @@ function Field({
   error?: string;
   hint?: string;
   className?: string;
+  required?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div className={cn("min-w-0 space-y-2", className)}>
-      <label htmlFor={name} className="text-xs font-medium text-black/55">
+      <label
+        htmlFor={name}
+        className="flex items-center gap-1 text-xs font-medium text-black/55"
+      >
         {label}
+        {/* Marked before Save rather than discovered by it. */}
+        {required ? (
+          <>
+            <span aria-hidden className="text-red-600">
+              *
+            </span>
+            <span className="sr-only">(required)</span>
+          </>
+        ) : null}
       </label>
       {children}
       {error ? (

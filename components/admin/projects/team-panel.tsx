@@ -210,9 +210,18 @@ function MemberRow({
               </button>
             </form>
           ) : (
-            <p className="mt-1 truncate text-[11px] text-black/45">
-              {member.responsibility}
-            </p>
+            <>
+              <p className="mt-1 truncate text-[11px] text-black/45">
+                {member.responsibility}
+              </p>
+              {/* Assignment is what grants access, so the owner who granted it
+                  belongs on the row rather than only in the audit table. */}
+              {isOwner && member.addedBy ? (
+                <p className="mt-0.5 truncate text-[10px] text-black/32">
+                  Added by {member.addedBy}
+                </p>
+              ) : null}
+            </>
           )}
 
           {state.status !== "idle" && state.message ? (
@@ -335,6 +344,7 @@ function FormerMembers({
               </p>
               <p className="text-[10px] text-black/35">
                 Removed {formatDate(member.removedAt.slice(0, 10))}
+                {member.removedBy ? ` by ${member.removedBy}` : ""}
               </p>
             </div>
             <form action={restoreMember}>

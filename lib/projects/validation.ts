@@ -46,7 +46,7 @@ export type ProjectFinancialInput = {
 
 export type ParsedProject = {
   name: string;
-  clientId: string;
+  clientId: string | null;
   description: string | null;
   leadId: string | null;
   startsOn: string | null;
@@ -106,9 +106,9 @@ export function validateProject(
     errors.name = `Keep the name under ${NAME_MAX} characters.`;
   }
 
-  if (!values.clientId) {
-    errors.clientId = "Choose the client this project belongs to.";
-  } else if (!isUuid(values.clientId)) {
+  // Name is the only required field. A client can be attached later, so an
+  // empty value is fine here — only a malformed one is an error.
+  if (values.clientId && !isUuid(values.clientId)) {
     errors.clientId = "That client is not valid.";
   }
 
@@ -196,7 +196,7 @@ export function validateProject(
     errors,
     parsed: {
       name,
-      clientId: values.clientId,
+      clientId: values.clientId || null,
       description: values.description || null,
       leadId: values.leadId || null,
       startsOn: values.startsOn || null,

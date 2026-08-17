@@ -421,14 +421,26 @@ function ItemRow({
         </button>
       </form>
 
-      <p
-        className={cn(
-          "min-w-0 flex-1 text-sm transition-colors duration-150",
-          item.done ? "text-black/35 line-through" : "text-black/75",
-        )}
-      >
-        {item.label}
-      </p>
+      <div className="min-w-0 flex-1">
+        <p
+          className={cn(
+            "text-sm transition-colors duration-150",
+            item.done ? "text-black/35 line-through" : "text-black/75",
+          )}
+        >
+          {item.label}
+        </p>
+        {/* Ticking a box is the one thing members do here, so who did it is
+            worth showing rather than only recording. */}
+        {item.done && item.completedBy ? (
+          <p className="mt-0.5 truncate text-[10px] text-black/35">
+            Done by {item.completedBy}
+            {item.completedAt
+              ? ` · ${formatDate(item.completedAt.slice(0, 10))}`
+              : ""}
+          </p>
+        ) : null}
+      </div>
 
       {item.assignee ? (
         <span className="shrink-0 rounded-full bg-black/[0.035] px-2 py-0.5 text-[10px] text-black/45">

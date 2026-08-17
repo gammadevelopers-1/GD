@@ -159,7 +159,7 @@ export function PortfolioResults({
             <span>Project</span>
             <span>Status</span>
             <span>Lead</span>
-            <span>Due</span>
+            <span>Dates</span>
             <span>Delivery</span>
             {isOwner ? <span className="text-right">Value</span> : null}
           </div>
@@ -196,7 +196,7 @@ function ProjectCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-[11px] font-medium text-black/35">
-            {project.clientName}
+            {project.clientName ?? "No client"}
           </p>
           <h3 className="mt-1 truncate text-[17px] leading-tight font-semibold tracking-[-0.035em] transition-colors group-hover:text-[#08743d]">
             {project.name}
@@ -266,7 +266,20 @@ function ProjectCard({
             TONE_TEXT[deadline.tone],
           )}
         >
-          {project.dueOn ? formatDate(project.dueOn) : "No date"}
+          {project.dueOn ? (
+            <>
+              {/* The plan asks for both dates; the start is context for the
+                  due date, so it stays quieter than the deadline itself. */}
+              {project.startsOn ? (
+                <span className="font-normal text-black/35">
+                  {formatDateShort(project.startsOn)} →{" "}
+                </span>
+              ) : null}
+              {formatDate(project.dueOn)}
+            </>
+          ) : (
+            "No date"
+          )}
         </span>
       </div>
 
@@ -309,7 +322,7 @@ function ProjectRow({
           ) : null}
         </div>
         <p className="mt-0.5 truncate text-[11px] text-black/38">
-          {project.clientName}
+          {project.clientName ?? "No client"}
         </p>
       </div>
 
@@ -332,7 +345,12 @@ function ProjectRow({
       </div>
 
       <div className="min-w-0">
-        <p className="text-[12px] text-black/60">
+        <p className="truncate text-[12px] text-black/60">
+          {project.startsOn ? (
+            <span className="text-black/35">
+              {formatDateShort(project.startsOn)} →{" "}
+            </span>
+          ) : null}
           {formatDateShort(project.dueOn)}
         </p>
         <p className={cn("mt-0.5 text-[11px]", TONE_TEXT[deadline.tone])}>

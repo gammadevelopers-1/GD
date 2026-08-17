@@ -49,21 +49,14 @@ export default async function NewProjectPage() {
         </p>
 
         <div className="mt-7">
-          {options.clients.length ? (
-            <ProjectForm
-              mode="create"
-              action={createProject}
-              clients={options.clients}
-              people={options.people}
-              defaults={defaults}
-              cancelHref="/projects"
-            />
-          ) : (
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-              Add a client before creating a project. A project always belongs
-              to one.
-            </div>
-          )}
+          <ProjectForm
+            mode="create"
+            action={createProject}
+            clients={options.clients}
+            people={options.people}
+            defaults={defaults}
+            cancelHref="/projects"
+          />
         </div>
       </div>
     </div>
