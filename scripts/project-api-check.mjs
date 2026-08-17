@@ -594,7 +594,8 @@ async function run() {
     `status ${exLeadAddsCard.status}`,
   );
 
-  const exLeadMovesCard = await api(
+  // Progress is the one thing an assigned member may change.
+  const memberMovesCard = await api(
     "/rest/v1/rpc/app_set_milestone_card_status",
     {
       key: PUBLISHABLE,
@@ -608,9 +609,28 @@ async function run() {
     },
   );
   check(
-    "a member who is not the lead cannot move a card",
-    !exLeadMovesCard.ok,
-    `status ${exLeadMovesCard.status}`,
+    "an assigned member can change a task's status",
+    memberMovesCard.ok,
+    `status ${memberMovesCard.status}`,
+  );
+
+  const memberReorders = await api(
+    "/rest/v1/rpc/app_reorder_milestone_cards",
+    {
+      key: PUBLISHABLE,
+      token: memberToken,
+      method: "POST",
+      body: {
+        target_week_id: ID.week,
+        target_board: "idea",
+        ordered_ids: [ID.itemOpen],
+      },
+    },
+  );
+  check(
+    "a member who is not the lead cannot reorder the board",
+    !memberReorders.ok,
+    `status ${memberReorders.status}`,
   );
 
   // A PATCH filtered away by RLS still answers 204, so the status alone proves

@@ -7,9 +7,12 @@ import type { MilestoneWeek } from "@/data/project-detail";
 const SIGNED_URL_TTL_SECONDS = 60 * 60;
 
 export type BoardContext = {
-  // Owner anywhere, or the lead of this project. Mirrors the database rule so
-  // the UI offers exactly what the policies will allow.
+  // Owner anywhere, or the lead of this project. Authors board content.
   canManage: boolean;
+  // Owner, lead, or an assigned member. Moves work along without being able
+  // to rewrite the plan. Mirrors the database rules exactly, so the UI never
+  // offers a control the policies will refuse.
+  canUpdateStatus: boolean;
   credentials: Array<{ id: string; name: string }>;
   signedUrls: Record<string, string>;
 };
@@ -33,22 +36,28 @@ export async function getBoardContext(
     ),
   ];
 
-  const [manageResult, credentialResult, signedResult] = await Promise.all([
-    supabase.rpc("app_can_manage_project", { target_project_id: projectId }),
-    // Names only. A credential block points at the vault; it never carries a
-    // value, and the vault still checks the grant when someone copies.
-    supabase
-      .from("app_project_credentials")
-      .select("id, name")
-      .eq("project_id", projectId)
-      .is("archived_at", null)
-      .order("name"),
-    paths.length
-      ? supabase.storage
-          .from("app-project-attachments")
-          .createSignedUrls(paths, SIGNED_URL_TTL_SECONDS)
-      : Promise.resolve({ data: [] as Array<{ path?: string | null; signedUrl: string }> }),
-  ]);
+  const [manageResult, statusResult, credentialResult, signedResult] =
+    await Promise.all([
+      supabase.rpc("app_can_manage_project", { target_project_id: projectId }),
+      supabase.rpc("app_can_update_card_status", {
+        target_project_id: projectId,
+      }),
+      // Names only. A credential block points at the vault; it never carries a
+      // value, and the vault still checks the grant when someone copies.
+      supabase
+        .from("app_project_credentials")
+        .select("id, name")
+        .eq("project_id", projectId)
+        .is("archived_at", null)
+        .order("name"),
+      paths.length
+        ? supabase.storage
+            .from("app-project-attachments")
+            .createSignedUrls(paths, SIGNED_URL_TTL_SECONDS)
+        : Promise.resolve({
+            data: [] as Array<{ path?: string | null; signedUrl: string }>,
+          }),
+    ]);
 
   const signedUrls: Record<string, string> = {};
   for (const entry of signedResult.data ?? []) {
@@ -57,6 +66,7 @@ export async function getBoardContext(
 
   return {
     canManage: manageResult.data === true,
+    canUpdateStatus: statusResult.data === true,
     credentials: (credentialResult.data ?? []).map((row) => ({
       id: String(row.id),
       name: String(row.name),

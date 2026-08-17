@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(34);
+select plan(38);
 
 insert into auth.users (
   id, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at
@@ -413,13 +413,51 @@ select throws_ok(
   'a member who is not the lead cannot add a card'
 );
 
-select throws_ok(
+-- Progress is the one thing an assigned member may change.
+select lives_ok(
   $$select public.app_set_milestone_card_status(
       '54000000-0000-4000-8000-000000000001', 'completed', null
     )$$,
+  'an assigned member can tick a task off'
+);
+
+select lives_ok(
+  $$select public.app_set_milestone_card_status(
+      '54000000-0000-4000-8000-000000000001', 'in_progress', null
+    )$$,
+  'an assigned member can untick it again'
+);
+
+select is(
+  (
+    select title
+    from public.app_milestone_cards
+    where id = '54000000-0000-4000-8000-000000000001'
+  ),
+  'Owner idea',
+  'a member changing status does not touch the card content'
+);
+
+select throws_ok(
+  $$select public.app_reorder_milestone_cards(
+      '53000000-0000-4000-8000-000000000001',
+      'idea',
+      array['54000000-0000-4000-8000-000000000001']::uuid[]
+    )$$,
+  '42501',
+  'That milestone week is unavailable.',
+  'a member cannot reorder the board'
+);
+
+select throws_ok(
+  $$select public.app_carry_milestone_card(
+      '54000000-0000-4000-8000-000000000001',
+      '53000000-0000-4000-8000-000000000009',
+      null
+    )$$,
   '42501',
   'That milestone card is unavailable.',
-  'a member who is not the lead cannot move a card'
+  'a member cannot carry a card into another week'
 );
 
 select throws_ok(

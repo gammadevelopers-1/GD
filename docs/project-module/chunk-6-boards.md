@@ -16,7 +16,7 @@ opposite.
 | --- | --- |
 | Milestone items are a one-line label, done or not done | Cards carry headings, text, bullets, callouts, images, attachments and credential links |
 | An item can be assigned to a project member | No assignee. The board records **what** was done, not **who** did it |
-| "Plan milestone weeks and items — Owner: Yes, Member: No"; members could only toggle done | Owners **and the project lead of that project** author the boards. Everyone else with project access reads |
+| "Plan milestone weeks and items — Owner: Yes, Member: No" | Owners **and the project lead of that project** author the boards |
 | Chunk 6 excluded Kanban columns and states | Cards move between two boards and four work states |
 
 Week planning itself did **not** change: creating, editing and archiving weeks
@@ -53,12 +53,32 @@ Check constraints carry the rules that matter:
 
 ## Permissions
 
-`private.can_manage_project(project)` — owner anywhere, or the active lead of
-that project. Reading still follows `can_work_on_project`.
+Two separate questions, because authoring the plan and reporting progress are
+different jobs.
+
+| | Project owner | Project lead | Assigned member | Anyone else |
+| --- | --- | --- | --- | --- |
+| Read the boards | ✓ | ✓ | ✓ | — |
+| Check / uncheck, start, block, complete, mark not completed | ✓ | ✓ | **✓** | — |
+| Create, edit, delete Idea Board content | ✓ | ✓ | — | — |
+| Rich text, attachments, descriptions, structure | ✓ | ✓ | — | — |
+| Reorder a board · carry a card into another week | ✓ | ✓ | — | — |
+| Plan, edit or archive a week | ✓ | — | — | — |
+
+- `private.can_manage_project` — owner, or the active lead of that project.
+  Authorship.
+- `private.can_update_card_status` — the above, plus any active member of the
+  project. Progress only.
+- Reading still follows `can_work_on_project`.
+
+An assigned member changing status cannot touch the card's title or blocks: the
+RLS update policy is authorship-only, and the status function is
+security-definer and writes nothing but state. A test asserts the content is
+unchanged after a member ticks a task off.
 
 Movement runs through security-definer functions so a move is one atomic step:
-`app_set_milestone_card_status`, `app_reorder_milestone_cards`,
-`app_carry_milestone_card`.
+`app_set_milestone_card_status` (progress), `app_reorder_milestone_cards` and
+`app_carry_milestone_card` (both authorship).
 
 ## Attachments
 
@@ -97,13 +117,14 @@ have quietly frozen against a table that no longer receives writes.
 ## Verified
 
 - `npm run check`, `npm run build`
-- `npm run test:db` — 170 assertions
-- `npm run test:api` — 56 checks, including that a member who is **not** the
-  lead can read the board but cannot add, move or patch a card
+- `npm run test:db` — 174 assertions
+- `npm run test:api` — 57 checks, including that an assigned member can change
+  a task's status but cannot add, patch, reorder or carry a card
 
 ## Still needs a person
 
 - [ ] Owners confirm the three reversed decisions above
 - [ ] Keyboard and screen-reader pass over the block editor
 - [ ] Phone pass on the two-column board layout
-- [ ] Decide whether members should regain any authorship
+- [ ] Confirm "assigned member" means a member of the project, not a named
+      assignee per card — per-task assignment stays out unless asked for

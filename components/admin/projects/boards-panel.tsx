@@ -70,6 +70,7 @@ export function BoardsPanel({
   projectId,
   weeks,
   canManage,
+  canUpdateStatus,
   isOwner,
   credentials,
   signedUrls,
@@ -77,8 +78,11 @@ export function BoardsPanel({
 }: {
   projectId: string;
   weeks: MilestoneWeek[];
+  // Authors board content: owner and project lead.
   canManage: boolean;
-  // Week planning stayed owner-only; only board content opened up to the lead.
+  // Moves work along: owner, lead and assigned members.
+  canUpdateStatus: boolean;
+  // Week planning stayed owner-only.
   isOwner: boolean;
   credentials: CredentialOption[];
   signedUrls: Record<string, string>;
@@ -111,6 +115,7 @@ export function BoardsPanel({
           week={week}
           nextWeek={weeks[index + 1] ?? null}
           canManage={canManage}
+          canUpdateStatus={canUpdateStatus}
           isOwner={isOwner}
           credentials={credentials}
           signedUrls={signedUrls}
@@ -130,6 +135,7 @@ function WeekBoards({
   week,
   nextWeek,
   canManage,
+  canUpdateStatus,
   isOwner,
   credentials,
   signedUrls,
@@ -139,6 +145,7 @@ function WeekBoards({
   week: MilestoneWeek;
   nextWeek: MilestoneWeek | null;
   canManage: boolean;
+  canUpdateStatus: boolean;
   isOwner: boolean;
   credentials: CredentialOption[];
   signedUrls: Record<string, string>;
@@ -247,6 +254,7 @@ function WeekBoards({
               card={card}
               nextWeek={nextWeek}
               canManage={canManage}
+              canUpdateStatus={canUpdateStatus}
               credentials={credentials}
               signedUrls={signedUrls}
               actions={actions}
@@ -280,6 +288,7 @@ function WeekBoards({
                 card={card}
                 nextWeek={nextWeek}
                 canManage={canManage}
+                canUpdateStatus={canUpdateStatus}
                 credentials={credentials}
                 signedUrls={signedUrls}
                 actions={actions}
@@ -337,6 +346,7 @@ function CardRow({
   card,
   nextWeek,
   canManage,
+  canUpdateStatus,
   credentials,
   signedUrls,
   actions,
@@ -345,6 +355,7 @@ function CardRow({
   card: MilestoneCard;
   nextWeek: MilestoneWeek | null;
   canManage: boolean;
+  canUpdateStatus: boolean;
   credentials: CredentialOption[];
   signedUrls: Record<string, string>;
   actions: BoardActions;
@@ -475,11 +486,12 @@ function CardRow({
                 </p>
               )}
 
-              {canManage ? (
+              {canUpdateStatus ? (
                 <MoveControls
                   projectId={projectId}
                   card={card}
                   nextWeek={nextWeek}
+                  canManage={canManage}
                   actions={actions}
                 />
               ) : null}
@@ -584,11 +596,13 @@ function MoveControls({
   projectId,
   card,
   nextWeek,
+  canManage,
   actions,
 }: {
   projectId: string;
   card: MilestoneCard;
   nextWeek: MilestoneWeek | null;
+  canManage: boolean;
   actions: BoardActions;
 }) {
   const [state, formAction, pending] = useActionState(
@@ -669,8 +683,9 @@ function MoveControls({
         </form>
       ) : null}
 
-      {/* Only what did not get finished can be carried, and only forward. */}
-      {card.status === "incomplete" && nextWeek ? (
+      {/* Carrying a card rewrites the plan, so it stays with the authors.
+          Only what did not get finished can be carried, and only forward. */}
+      {canManage && card.status === "incomplete" && nextWeek ? (
         <form action={carryAction} className="flex flex-wrap items-end gap-2">
           <input type="hidden" name="projectId" value={projectId} />
           <input type="hidden" name="cardId" value={card.id} />

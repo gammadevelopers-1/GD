@@ -267,6 +267,7 @@ async function BoardsSection({
       projectId={projectId}
       weeks={weeks}
       canManage={context.canManage}
+      canUpdateStatus={context.canUpdateStatus}
       isOwner={isOwner}
       credentials={context.credentials}
       signedUrls={context.signedUrls}
