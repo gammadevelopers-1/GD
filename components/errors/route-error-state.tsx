@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type RouteErrorKind = "not-found" | "forbidden";
+type RouteErrorKind = "not-found" | "forbidden" | "error";
 
 const content = {
   "not-found": {
@@ -27,14 +27,31 @@ const content = {
     secondaryHref: "/dashboard",
     secondaryLabel: "Go to dashboard",
   },
+  error: {
+    code: "500",
+    title: "Something broke on our side.",
+    description:
+      "Nothing you did caused this, and nothing was lost. Try again — if it keeps happening, send the reference below to whoever looks after the platform.",
+    primaryHref: "/dashboard",
+    primaryLabel: "Go to dashboard",
+    secondaryHref: null,
+    secondaryLabel: null,
+  },
 } as const;
 
 export function RouteErrorState({
   kind,
   embedded = false,
+  reset,
+  reference,
 }: {
   kind: RouteErrorKind;
   embedded?: boolean;
+  // Supplied by an error boundary. Retrying is usually all it takes.
+  reset?: () => void;
+  // Next's error digest. A hash, never the message — that could carry
+  // internals, and internals are what we are careful about here.
+  reference?: string;
 }) {
   const state = content[kind];
 
@@ -75,6 +92,15 @@ export function RouteErrorState({
               </p>
 
               <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                {reset ? (
+                  <button
+                    type="button"
+                    onClick={reset}
+                    className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#2fe85c] px-6 text-sm font-semibold text-[#0d1510] shadow-[0_12px_34px_rgba(47,232,92,0.18)] transition duration-300 outline-none hover:shadow-[0_18px_42px_rgba(47,232,92,0.3)] focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b0e10] sm:w-auto"
+                  >
+                    Try again
+                  </button>
+                ) : null}
                 <Link
                   href={state.primaryHref}
                   data-button-fill
@@ -99,6 +125,12 @@ export function RouteErrorState({
                   </Link>
                 ) : null}
               </div>
+
+              {reference ? (
+                <p className="mt-6 font-mono text-[11px] text-white/30">
+                  Reference {reference}
+                </p>
+              ) : null}
             </div>
           </div>
         </div>

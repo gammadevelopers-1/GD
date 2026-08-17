@@ -1,0 +1,149 @@
+// Shared between the credential form and the server action. The database
+// repeats the important checks; it is the one that counts.
+
+export const CREDENTIAL_ENVIRONMENTS = [
+  "production",
+  "staging",
+  "development",
+  "other",
+] as const;
+
+export type CredentialEnvironment = (typeof CREDENTIAL_ENVIRONMENTS)[number];
+
+export const ENVIRONMENT_LABEL: Record<CredentialEnvironment, string> = {
+  production: "Production",
+  staging: "Staging",
+  development: "Development",
+  other: "Other",
+};
+
+// Production keys are the client's systems, not just ours.
+export const ENVIRONMENT_CHIP: Record<CredentialEnvironment, string> = {
+  production: "border-red-200 bg-red-50 text-red-700",
+  staging: "border-amber-200 bg-amber-50 text-amber-700",
+  development: "border-black/[0.08] bg-black/[0.04] text-black/55",
+  other: "border-black/[0.08] bg-black/[0.04] text-black/55",
+};
+
+export function isCredentialEnvironment(
+  value: string,
+): value is CredentialEnvironment {
+  return (CREDENTIAL_ENVIRONMENTS as readonly string[]).includes(value);
+}
+
+export const CREDENTIAL_ACCESS = ["view", "edit"] as const;
+export type CredentialAccess = (typeof CREDENTIAL_ACCESS)[number];
+
+export function isCredentialAccess(value: string): value is CredentialAccess {
+  return value === "view" || value === "edit";
+}
+
+export const NAME_MAX = 120;
+export const SERVICE_MAX = 120;
+export const DESCRIPTION_MAX = 500;
+export const SECRET_MAX = 8000;
+
+export type CredentialField =
+  | "name"
+  | "service"
+  | "environment"
+  | "description"
+  | "secret";
+
+export type CredentialErrors = Partial<Record<CredentialField, string>>;
+
+export type CredentialFormState = {
+  status: "idle" | "error" | "success";
+  message: string | null;
+  fieldErrors: CredentialErrors;
+};
+
+export const IDLE_CREDENTIAL_FORM: CredentialFormState = {
+  status: "idle",
+  message: null,
+  fieldErrors: {},
+};
+
+export type ParsedCredential = {
+  name: string;
+  service: string | null;
+  environment: CredentialEnvironment;
+  description: string | null;
+  secret: string;
+};
+
+export function validateCredential(
+  values: {
+    name: string;
+    service: string;
+    environment: string;
+    description: string;
+    secret: string;
+  },
+  options: { requireSecret: boolean },
+): { errors: CredentialErrors; parsed: ParsedCredential | null } {
+  const errors: CredentialErrors = {};
+
+  const name = values.name.trim();
+  if (!name) {
+    errors.name = "Give the credential a name.";
+  } else if (name.length > NAME_MAX) {
+    errors.name = `Keep the name under ${NAME_MAX} characters.`;
+  }
+
+  if (values.service.trim().length > SERVICE_MAX) {
+    errors.service = `Keep it under ${SERVICE_MAX} characters.`;
+  }
+
+  const environment = values.environment.trim() || "other";
+  if (!isCredentialEnvironment(environment)) {
+    errors.environment = "Choose production, staging, development or other.";
+  }
+
+  if (values.description.trim().length > DESCRIPTION_MAX) {
+    errors.description = `Keep the description under ${DESCRIPTION_MAX} characters.`;
+  }
+
+  // Not trimmed: leading or trailing whitespace can be part of a real secret.
+  const secret = values.secret;
+  if (options.requireSecret && !secret) {
+    errors.secret = "Paste the value this credential holds.";
+  } else if (secret && secret.length > SECRET_MAX) {
+    errors.secret = `That value is longer than ${SECRET_MAX} characters.`;
+  }
+
+  if (Object.keys(errors).length) return { errors, parsed: null };
+
+  return {
+    errors,
+    parsed: {
+      name,
+      service: values.service.trim() || null,
+      environment: environment as CredentialEnvironment,
+      description: values.description.trim() || null,
+      secret,
+    },
+  };
+}
+
+export function credentialErrorSummary(errors: CredentialErrors) {
+  const count = Object.keys(errors).length;
+  if (!count) return null;
+  return count === 1
+    ? "One field needs attention."
+    : `${count} fields need attention.`;
+}
+
+// Audit actions, in the order the plan lists them.
+export const AUDIT_LABEL: Record<string, string> = {
+  "credential.created": "Created",
+  "credential.value_replaced": "Value replaced",
+  "credential.metadata_updated": "Details updated",
+  "credential.archived": "Archived",
+  "credential.restored": "Restored",
+  "credential.access_granted": "Access granted",
+  "credential.access_level_changed": "Access level changed",
+  "credential.access_revoked": "Access revoked",
+  "credential.secret_copied": "Value copied",
+  "credential.access_denied": "Access denied",
+};

@@ -15,6 +15,7 @@ const ID = {
   week: "73000000-0000-4000-8000-000000000001",
   itemDone: "74000000-0000-4000-8000-000000000001",
   itemOpen: "74000000-0000-4000-8000-000000000002",
+  credential: "75000000-0000-4000-8000-000000000001",
 };
 
 const PASSWORD = `Chunk2-${randomUUID()}`;
@@ -236,6 +237,11 @@ async function cleanup() {
       where project_id in ('${ID.projectAssigned}', '${ID.projectOwnerOnly}', '${ID.projectArchived}');
     delete from public.app_project_technical_details
       where project_id in ('${ID.projectAssigned}', '${ID.projectOwnerOnly}', '${ID.projectArchived}');
+    delete from public.app_audit_logs
+      where resource_type = 'credential' and resource_id = '${ID.credential}';
+    delete from public.app_credential_grants where credential_id = '${ID.credential}';
+    delete from public.app_credential_secrets where credential_id = '${ID.credential}';
+    delete from public.app_project_credentials where id = '${ID.credential}';
     delete from public.app_projects
       where id in ('${ID.projectAssigned}', '${ID.projectOwnerOnly}', '${ID.projectArchived}');
     delete from public.app_clients where id in ('${ID.clientA}', '${ID.clientB}');
@@ -689,6 +695,188 @@ async function run() {
     !anonTechnical.ok ||
       (Array.isArray(anonTechnical.data) && !anonTechnical.data.length),
     JSON.stringify(anonTechnical.data),
+  );
+
+  // Chunk 9 — secure credentials
+  const credentialId = ID.credential;
+  const readSecret = (token) =>
+    api("/rest/v1/rpc/app_read_credential_secret", {
+      key: PUBLISHABLE,
+      token,
+      method: "POST",
+      body: { target_credential_id: credentialId },
+    });
+  const firstRow = (result) =>
+    Array.isArray(result.data) ? result.data[0] : result.data;
+
+  const ownerCreates = await api("/rest/v1/rpc/app_create_credential", {
+    key: PUBLISHABLE,
+    token: ownerToken,
+    method: "POST",
+    body: {
+      new_id: credentialId,
+      target_project_id: ID.projectAssigned,
+      new_name: "API check key",
+      new_service: "Supabase",
+      new_environment: "production",
+      new_description: null,
+      new_ciphertext: "Y2lwaGVydGV4dA==",
+      new_nonce: "bm9uY2U=",
+      new_auth_tag: "dGFn",
+      new_key_version: 1,
+    },
+  });
+  check(
+    "owner can store a credential",
+    ownerCreates.ok,
+    `status ${ownerCreates.status}`,
+  );
+
+  const memberSeesName = await api(
+    `/rest/v1/app_project_credentials?select=name&id=eq.${credentialId}`,
+    { key: PUBLISHABLE, token: memberToken },
+  );
+  check(
+    "assigned member sees the credential name",
+    memberSeesName.ok && memberSeesName.data?.length === 1,
+    JSON.stringify(memberSeesName.data),
+  );
+
+  const memberReadsTable = await api(
+    "/rest/v1/app_credential_secrets?select=*",
+    { key: PUBLISHABLE, token: memberToken },
+  );
+  check(
+    "no signed-in role can read the encrypted values table",
+    !memberReadsTable.ok,
+    `status ${memberReadsTable.status}`,
+  );
+
+  const memberWithoutGrant = await readSecret(memberToken);
+  check(
+    "being on the project does not grant the secret",
+    memberWithoutGrant.ok && firstRow(memberWithoutGrant)?.allowed === false,
+    JSON.stringify(memberWithoutGrant.data),
+  );
+
+  const memberGrantsItself = await api(
+    "/rest/v1/rpc/app_grant_credential_access",
+    {
+      key: PUBLISHABLE,
+      token: memberToken,
+      method: "POST",
+      body: {
+        target_credential_id: credentialId,
+        target_profile_id: ID.assigned,
+        access_level: "edit",
+      },
+    },
+  );
+  check(
+    "a member cannot grant themselves a credential",
+    !memberGrantsItself.ok,
+    `status ${memberGrantsItself.status}`,
+  );
+
+  const ownerGrants = await api("/rest/v1/rpc/app_grant_credential_access", {
+    key: PUBLISHABLE,
+    token: ownerToken,
+    method: "POST",
+    body: {
+      target_credential_id: credentialId,
+      target_profile_id: ID.assigned,
+      access_level: "view",
+    },
+  });
+  check("owner can grant view access", ownerGrants.ok, `status ${ownerGrants.status}`);
+
+  const grantedRead = await readSecret(memberToken);
+  const grantedRow = firstRow(grantedRead);
+  check(
+    "a granted member receives ciphertext, never plaintext",
+    grantedRow?.allowed === true && grantedRow?.ciphertext === "Y2lwaGVydGV4dA==",
+    JSON.stringify(grantedRead.data),
+  );
+
+  const viewCannotReplace = await api(
+    "/rest/v1/rpc/app_replace_credential_secret",
+    {
+      key: PUBLISHABLE,
+      token: memberToken,
+      method: "POST",
+      body: {
+        target_credential_id: credentialId,
+        new_ciphertext: "bmV3",
+        new_nonce: "bm9uY2U=",
+        new_auth_tag: "dGFn",
+        new_key_version: 1,
+      },
+    },
+  );
+  check(
+    "view access cannot replace a credential value",
+    viewCannotReplace.ok && viewCannotReplace.data === false,
+    JSON.stringify(viewCannotReplace.data),
+  );
+
+  const ownerRevokes = await api("/rest/v1/rpc/app_revoke_credential_access", {
+    key: PUBLISHABLE,
+    token: ownerToken,
+    method: "POST",
+    body: {
+      target_credential_id: credentialId,
+      target_profile_id: ID.assigned,
+    },
+  });
+  check("owner can revoke access", ownerRevokes.ok, `status ${ownerRevokes.status}`);
+
+  const afterRevoke = await readSecret(memberToken);
+  check(
+    "revocation takes effect on the next request",
+    firstRow(afterRevoke)?.allowed === false,
+    JSON.stringify(afterRevoke.data),
+  );
+
+  const strangerSeesCredential = await api(
+    "/rest/v1/app_project_credentials?select=*",
+    { key: PUBLISHABLE, token: strangerToken },
+  );
+  check(
+    "an unassigned member cannot see that a credential exists",
+    strangerSeesCredential.ok &&
+      Array.isArray(strangerSeesCredential.data) &&
+      !strangerSeesCredential.data.length,
+    JSON.stringify(strangerSeesCredential.data),
+  );
+
+  const financeSeesCredential = await api(
+    "/rest/v1/app_project_credentials?select=*",
+    { key: PUBLISHABLE, token: financeToken },
+  );
+  check(
+    "finance never sees project credentials",
+    financeSeesCredential.ok &&
+      Array.isArray(financeSeesCredential.data) &&
+      !financeSeesCredential.data.length,
+    JSON.stringify(financeSeesCredential.data),
+  );
+
+  const anonReadsSecret = await readSecret(undefined);
+  check(
+    "anonymous callers cannot execute the credential read function",
+    !anonReadsSecret.ok,
+    `status ${anonReadsSecret.status}`,
+  );
+
+  const anonCredentials = await api(
+    "/rest/v1/app_project_credentials?select=*",
+    { key: PUBLISHABLE },
+  );
+  check(
+    "anonymous callers cannot read credential metadata",
+    !anonCredentials.ok ||
+      (Array.isArray(anonCredentials.data) && !anonCredentials.data.length),
+    JSON.stringify(anonCredentials.data),
   );
 
   const anonRpc = await portfolio(undefined);

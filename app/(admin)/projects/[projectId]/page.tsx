@@ -20,6 +20,9 @@ import {
   type TechnicalDetails,
   TechnicalPanel,
 } from "@/components/admin/projects/technical-panel";
+import { CredentialsPanel } from "@/components/admin/projects/credentials-panel";
+import { getCredentialAudit, getProjectCredentials } from "@/data/credentials";
+import { credentialsConfigured } from "@/lib/credentials/crypto";
 import { requireRole } from "@/data/auth";
 import type { Viewer } from "@/data/auth";
 import {
@@ -60,6 +63,15 @@ import {
   updateMemberResponsibility,
 } from "../team-actions";
 import { saveTechnicalDetails } from "../technical-actions";
+import {
+  copyCredentialSecret,
+  createCredential,
+  grantCredentialAccess,
+  replaceCredentialSecret,
+  revokeCredentialAccess,
+  setCredentialArchived,
+  updateCredentialMetadata,
+} from "../credential-actions";
 
 const tabs = ["overview", "team", "milestones", "technical"] as const;
 type Tab = (typeof tabs)[number];
@@ -95,12 +107,19 @@ export default async function ProjectPage({
   if (!project) notFound();
 
   const isOwner = viewer.role === "owner";
-  const [financial, options] = await Promise.all([
+  const onThisProject =
+    isOwner || project.members.some((member) => member.id === viewer.id);
+
+  const [financial, options, credentials] = await Promise.all([
     getProjectFinancial(projectId, viewer),
     isOwner
       ? getProjectFormOptions()
       : Promise.resolve({ clients: [], people: [] }),
+    activeTab === "technical"
+      ? getProjectCredentials(projectId, viewer)
+      : Promise.resolve([]),
   ]);
+  const credentialAudit = await getCredentialAudit(credentials, viewer);
   const notice = query.notice ? NOTICES[query.notice] : undefined;
   const tabHref = (tab: Tab) =>
     `/projects/${project.id}${tab === "overview" ? "" : `?tab=${tab}`}`;
@@ -187,13 +206,36 @@ export default async function ProjectPage({
           />
         ) : null}
         {activeTab === "technical" ? (
-          <TechnicalPanel
-            projectId={project.id}
-            details={technicalDetails(project)}
-            canEdit={isOwner || project.members.some((m) => m.id === viewer.id)}
-            isArchived={project.isArchived}
-            save={saveTechnicalDetails}
-          />
+          <div className="space-y-4">
+            <TechnicalPanel
+              projectId={project.id}
+              details={technicalDetails(project)}
+              canEdit={onThisProject}
+              isArchived={project.isArchived}
+              save={saveTechnicalDetails}
+            />
+            <CredentialsPanel
+              projectId={project.id}
+              credentials={credentials}
+              members={project.members.map((member) => ({
+                id: member.id,
+                name: member.name,
+              }))}
+              audit={credentialAudit}
+              isOwner={isOwner}
+              vaultReady={credentialsConfigured()}
+              projectArchived={project.isArchived}
+              actions={{
+                create: createCredential,
+                updateMetadata: updateCredentialMetadata,
+                replaceSecret: replaceCredentialSecret,
+                grant: grantCredentialAccess,
+                setArchived: setCredentialArchived,
+                revoke: revokeCredentialAccess,
+                copy: copyCredentialSecret,
+              }}
+            />
+          </div>
         ) : null}
       </div>
     </div>

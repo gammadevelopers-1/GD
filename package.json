@@ -11,7 +11,9 @@
     "check": "npm run lint && npm run typecheck",
     "test:db": "supabase test db",
     "test:api": "node scripts/project-api-check.mjs",
-    "seed:demo": "node scripts/seed-demo.mjs"
+    "seed:demo": "node scripts/seed-demo.mjs",
+    "release:check": "node scripts/release-check.mjs",
+    "credential:key": "node scripts/credential-key.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

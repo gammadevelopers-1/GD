@@ -21,7 +21,6 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import { ComingSoon } from "@/components/admin/coming-soon";
 import { Spotlight } from "@/components/admin/spotlight";
 import {
   type TechnicalField,
@@ -224,24 +223,17 @@ export function TechnicalPanel({
         </section>
 
         <section className={cn(PANEL, "p-5")}>
-          <div className="mb-4 flex items-center gap-2.5">
-            <span className="grid size-8 place-items-center rounded-lg bg-black/[0.045]">
-              <LockKeyhole className="size-4 text-black/45" />
-            </span>
+          <div className="mb-3 flex items-center gap-2.5">
+            <LockKeyhole className="size-4 text-black/35" />
             <h2 className="text-[15px] font-semibold tracking-[-0.025em]">
-              Credentials
+              Secrets go below
             </h2>
           </div>
-          <ComingSoon
-            compact
-            title="Secure credentials vault"
-            description="API keys, database URLs and service credentials are built last, once encryption, per-person access grants, instant revocation and an audit trail have had a separate security review."
-            items={["Encrypted vault", "Per-person access", "Audit log"]}
-          />
-          <p className="mt-4 flex items-start gap-2 text-[11px] leading-4 text-black/45">
-            <ShieldAlert className="mt-px size-3.5 shrink-0 text-amber-600" />
-            Nothing on this tab is encrypted, so secrets are rejected here. Keep
-            them out of the notes until the vault ships.
+          <p className="flex items-start gap-2 text-[12px] leading-5 text-black/50">
+            <ShieldAlert className="mt-0.5 size-3.5 shrink-0 text-amber-600" />
+            Nothing on this card is encrypted and everyone on the project can
+            read it, so API keys, tokens, passwords and database URLs are
+            rejected here. They belong in the encrypted vault underneath.
           </p>
         </section>
       </div>
