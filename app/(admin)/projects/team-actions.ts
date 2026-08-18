@@ -37,7 +37,6 @@ async function recordTeamEvent(
   });
 }
 
-// Adding someone here is what gives them access to the project.
 export async function addProjectMember(
   _state: SimpleFormState,
   formData: FormData,
@@ -102,7 +101,6 @@ export async function updateMemberResponsibility(
   return formSuccess("Responsibility updated.");
 }
 
-// Archives the assignment instead of deleting it, so it can be restored.
 export async function removeProjectMember(formData: FormData) {
   const viewer = await requireRole(["owner"]);
   const projectId = String(formData.get("projectId") ?? "");
@@ -166,7 +164,6 @@ export async function restoreProjectMember(formData: FormData) {
   refresh();
 }
 
-// Lead is a job on the project, not an extra role. It grants nothing more.
 export async function setProjectLead(formData: FormData) {
   await requireRole(["owner"]);
   const projectId = String(formData.get("projectId") ?? "");

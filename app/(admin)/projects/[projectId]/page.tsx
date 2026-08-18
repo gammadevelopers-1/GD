@@ -25,6 +25,7 @@ import {
   BoardsPanel,
 } from "@/components/admin/projects/boards-panel";
 import { getBoardContext } from "@/data/board-context";
+import { BannerControl } from "@/components/admin/projects/banner-control";
 import { StatusControl } from "@/components/admin/projects/status-control";
 import { TeamPanel } from "@/components/admin/projects/team-panel";
 import {
@@ -63,8 +64,17 @@ import {
 } from "@/lib/projects/status";
 import { CARD_STATUS_CHIP, CARD_STATUS_LABEL } from "@/lib/projects/board";
 import { cn } from "@/lib/utils";
+import {
+  removeProjectBanner,
+  setProjectBanner,
+  setProjectBannerFit,
+} from "../banner-actions";
+import { bannerFitClass } from "@/lib/projects/banner";
 import { setProjectStatus } from "../actions";
-import { addMilestoneWeek, setMilestoneWeekArchived } from "../milestone-actions";
+import {
+  addMilestoneWeek,
+  setMilestoneWeekArchived,
+} from "../milestone-actions";
 import {
   carryCard,
   createCard,
@@ -124,8 +134,6 @@ export default async function ProjectPage({
   searchParams: Promise<{ tab?: string; notice?: string }>;
 }) {
   const viewer = await requireRole(["owner", "member"]);
-  // The URL carries the public id; everything below the lookup works on the
-  // internal uuid, which forms and actions expect.
   const { projectId: publicId } = await params;
   const query = await searchParams;
   const activeTab: Tab = isProjectTab(query.tab) ? query.tab : "overview";
@@ -170,11 +178,7 @@ export default async function ProjectPage({
         </div>
       ) : null}
 
-      <ProjectHeader
-        project={project}
-        viewer={viewer}
-        activeTab={activeTab}
-      />
+      <ProjectHeader project={project} viewer={viewer} activeTab={activeTab} />
 
       <div className="mt-4">
         {activeTab === "overview" ? (
@@ -235,9 +239,6 @@ export default async function ProjectPage({
   );
 }
 
-// Only owners get the extra fetches on these tabs — the value panel and the
-// add-member picker. Streaming them behind the tab keeps the header and the
-// rest of the content off that wait; members render with no fetch at all.
 async function OverviewSection({
   project,
   viewer,
@@ -469,13 +470,31 @@ function ProjectHeader({
   activeTab: Tab;
 }) {
   const isOwner = viewer.role === "owner";
+  const canManageBanner =
+    isOwner || (!project.isArchived && viewer.id === project.leadId);
   const deadline = deadlineSignal(project.dueOn, project.status);
 
   return (
     <section className="panel-dark overflow-hidden rounded-[20px] border border-black/[0.07] text-white">
+      {project.bannerUrl ? (
+        <div className="relative h-36 sm:h-44">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={project.bannerUrl}
+            alt=""
+            className={cn(
+              "absolute inset-0 size-full",
+              bannerFitClass(project.bannerFit),
+            )}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-[#15181b]" />
+        </div>
+      ) : null}
       <div className="relative px-4 pt-5 pb-5 sm:px-6">
         <div className="pointer-events-none absolute -top-32 right-8 size-80 rounded-full bg-[#2fe85c]/12 blur-3xl" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#2fe85c]/45 to-transparent" />
+        {project.bannerUrl ? null : (
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#2fe85c]/45 to-transparent" />
+        )}
         <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
@@ -499,6 +518,16 @@ function ProjectHeader({
           </div>
 
           <div className="flex shrink-0 flex-wrap items-center gap-2">
+            {canManageBanner ? (
+              <BannerControl
+                projectId={project.id}
+                hasBanner={Boolean(project.bannerUrl)}
+                fit={project.bannerFit}
+                save={setProjectBanner}
+                setFit={setProjectBannerFit}
+                remove={removeProjectBanner}
+              />
+            ) : null}
             {isOwner ? (
               <>
                 <StatusControl
@@ -742,10 +771,7 @@ function Overview({
       <div className="space-y-4">
         <Panel title="Project information" icon={CalendarDays}>
           <div className="grid gap-5 sm:grid-cols-2">
-            <Detail
-              label="Client"
-              value={project.clientName ?? "Not set"}
-            />
+            <Detail label="Client" value={project.clientName ?? "Not set"} />
             <Detail
               label="Status"
               value={PROJECT_STATUS_LABEL[project.status]}

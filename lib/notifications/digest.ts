@@ -1,9 +1,5 @@
 import "server-only";
 
-// Turns app_notification_digest() into the four emails Chunk 10 asks for.
-// Deliberately plain text: an internal tool that sends marketing-shaped mail
-// gets filtered, and then the important ones get missed too.
-
 export type DigestItem = {
   project: string;
   label: string;
@@ -47,7 +43,6 @@ function day(value: string | null) {
   }).format(new Date(`${value}T00:00:00`));
 }
 
-// One person, one email, covering both what has slipped and what is close.
 export function buildReminderEmail(reminder: DigestReminder) {
   const overdue = reminder.items.filter((item) => item.state === "overdue");
   const due = reminder.items.filter((item) => item.state === "due");
@@ -61,17 +56,19 @@ export function buildReminderEmail(reminder: DigestReminder) {
         : `${overdue.length} things assigned to you are past their week:`,
     );
     for (const item of overdue) {
-      lines.push(`  · ${item.label} — ${item.project}, week ${item.week_number}, was due ${day(item.due_on)}`);
+      lines.push(
+        `  · ${item.label} — ${item.project}, week ${item.week_number}, was due ${day(item.due_on)}`,
+      );
     }
     lines.push("");
   }
 
   if (due.length) {
-    lines.push(
-      due.length === 1 ? "Coming up:" : "Coming up:",
-    );
+    lines.push(due.length === 1 ? "Coming up:" : "Coming up:");
     for (const item of due) {
-      lines.push(`  · ${item.label} — ${item.project}, week ${item.week_number}, due ${day(item.due_on)}`);
+      lines.push(
+        `  · ${item.label} — ${item.project}, week ${item.week_number}, due ${day(item.due_on)}`,
+      );
     }
     lines.push("");
   }
@@ -85,10 +82,11 @@ export function buildReminderEmail(reminder: DigestReminder) {
   return { subject, body: lines.join("\n") };
 }
 
-// The weekly owner summary: where projects stand, what has slipped.
 export function buildOwnerSummaryEmail(digest: Digest) {
   const behind = digest.projects.filter((project) => project.overdue_items > 0);
-  const onTrack = digest.projects.filter((project) => project.overdue_items === 0);
+  const onTrack = digest.projects.filter(
+    (project) => project.overdue_items === 0,
+  );
 
   const lines = [
     `Where delivery stands, ${day(digest.generated_on)}.`,
@@ -121,7 +119,9 @@ export function buildOwnerSummaryEmail(digest: Digest) {
   }
 
   if (!digest.projects.length) {
-    lines.push("Nothing active. If that is wrong, the platform is out of date.");
+    lines.push(
+      "Nothing active. If that is wrong, the platform is out of date.",
+    );
     lines.push("");
   }
 

@@ -5,16 +5,10 @@ import {
   buildOwnerSummaryEmail,
   buildReminderEmail,
 } from "@/lib/notifications/digest";
-import { notificationsConfigured, sendEmailQuietly } from "@/lib/notifications/send";
-
-// Chunk 10's scheduled sender. Called by a cron with a shared secret — there
-// is no user session behind it, and the digest function is the only thing the
-// service key is allowed to call.
-//
-//   curl -X POST https://…/api/notifications?kind=milestones \
-//     -H "x-notification-secret: $NOTIFICATIONS_CRON_SECRET"
-//
-// Suggested schedule: milestones each weekday morning, summary on Mondays.
+import {
+  notificationsConfigured,
+  sendEmailQuietly,
+} from "@/lib/notifications/send";
 
 export const dynamic = "force-dynamic";
 
@@ -66,12 +60,17 @@ export async function POST(request: Request) {
 
   if (!notificationsConfigured()) {
     return NextResponse.json(
-      { error: "Email is not configured. Set RESEND_API_KEY and NOTIFICATIONS_FROM." },
+      {
+        error:
+          "Email is not configured. Set RESEND_API_KEY and NOTIFICATIONS_FROM.",
+      },
       { status: 503 },
     );
   }
 
-  const digest = await loadDigest(Number.isFinite(horizonDays) ? horizonDays : 3);
+  const digest = await loadDigest(
+    Number.isFinite(horizonDays) ? horizonDays : 3,
+  );
   if (!digest) {
     return NextResponse.json(
       { error: "Could not read the digest." },
@@ -110,7 +109,6 @@ export async function POST(request: Request) {
     }
   }
 
-  // Counts only. Never the addresses, never what was in the mail.
   return NextResponse.json({
     generated_on: digest.generated_on,
     projects: digest.projects.length,

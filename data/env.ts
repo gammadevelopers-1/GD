@@ -3,10 +3,6 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { Viewer } from "@/data/auth";
 
-// ENV containers and uploaded files. The variables themselves are credentials
-// and come back from getProjectCredentials, so nothing here reads a value —
-// this is the container metadata only.
-
 export type EnvGroup = {
   id: string;
   name: string;
@@ -49,8 +45,6 @@ export async function getEnvGroups(
   }));
 }
 
-// Owner-only by policy. Anyone else gets an empty list rather than an error,
-// because the section simply is not theirs to see.
 export async function getEnvFiles(
   projectId: string,
   viewer: Viewer,

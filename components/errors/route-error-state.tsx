@@ -47,10 +47,7 @@ export function RouteErrorState({
 }: {
   kind: RouteErrorKind;
   embedded?: boolean;
-  // Supplied by an error boundary. Retrying is usually all it takes.
   reset?: () => void;
-  // Next's error digest. A hash, never the message — that could carry
-  // internals, and internals are what we are careful about here.
   reference?: string;
 }) {
   const state = content[kind];

@@ -11,8 +11,6 @@ import {
   validateTechnical,
 } from "@/lib/projects/technical";
 
-// Owners and assigned members both edit these. Membership is what decides,
-// and the RPC checks it again in the database.
 export async function saveTechnicalDetails(
   _state: TechnicalFormState,
   formData: FormData,
@@ -55,9 +53,10 @@ export async function saveTechnicalDetails(
   });
 
   if (error) {
-    // The database writes these messages for people, so pass them through.
     const readable =
-      error.code === "23514" || error.code === "22023" || error.code === "42501";
+      error.code === "23514" ||
+      error.code === "22023" ||
+      error.code === "42501";
     return {
       status: "error",
       message: readable

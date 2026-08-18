@@ -33,6 +33,7 @@ import {
 } from "@/lib/projects/status";
 import type { PortfolioQuery } from "@/lib/projects/portfolio-query";
 import { isPortfolioFiltered } from "@/lib/projects/portfolio-query";
+import { bannerFitClass } from "@/lib/projects/banner";
 import { cn } from "@/lib/utils";
 
 export function PortfolioResults({
@@ -190,108 +191,137 @@ function ProjectCard({
   return (
     <Link
       href={`/projects/${project.publicId}`}
-      className="edge-lit card-surface card-lift group flex flex-col overflow-hidden rounded-2xl border border-black/[0.06] p-5 hover:border-[#2fe85c]/40 focus-visible:ring-2 focus-visible:ring-[#16a34a] focus-visible:outline-none"
+      className="edge-lit card-surface card-lift group flex flex-col overflow-hidden rounded-2xl border border-black/[0.06] hover:border-[#2fe85c]/40 focus-visible:ring-2 focus-visible:ring-[#16a34a] focus-visible:outline-none"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-[11px] font-medium text-black/35">
-            {project.clientName ?? "No client"}
-          </p>
-          <h3 className="mt-1 truncate text-[17px] leading-tight font-semibold tracking-[-0.035em] transition-colors group-hover:text-[#08743d]">
-            {project.name}
-          </h3>
-        </div>
-        <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-black/[0.035] text-black/25 transition-colors duration-300 group-hover:bg-[#2fe85c]/15 group-hover:text-[#08743d]">
-          <ArrowUpRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-        </span>
-      </div>
+      <CardBanner project={project} />
 
-      <div className="mt-3.5 flex flex-wrap items-center gap-1.5">
-        <span
-          className={cn(
-            "inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-medium",
-            PROJECT_STATUS_CHIP[project.status],
-          )}
-        >
-          {PROJECT_STATUS_LABEL[project.status]}
-        </span>
-        {/* For paused and closed the delivery signal just repeats the
-            status, so it is left off rather than shown twice. */}
-        {isExitStatus(project.status) ? null : (
+      <div className="flex flex-1 flex-col p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="truncate text-[11px] font-medium text-black/35">
+              {project.clientName ?? "No client"}
+            </p>
+            {project.bannerUrl ? (
+              <h3 className="mt-1 truncate text-[17px] leading-tight font-semibold tracking-[-0.035em] transition-colors group-hover:text-[#08743d]">
+                {project.name}
+              </h3>
+            ) : null}
+          </div>
+          <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-black/[0.035] text-black/25 transition-colors duration-300 group-hover:bg-[#2fe85c]/15 group-hover:text-[#08743d]">
+            <ArrowUpRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </span>
+        </div>
+
+        <div className="mt-3.5 flex flex-wrap items-center gap-1.5">
           <span
             className={cn(
               "inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-medium",
-              TONE_CHIP[delivery.tone],
+              PROJECT_STATUS_CHIP[project.status],
             )}
           >
-            {delivery.label}
+            {PROJECT_STATUS_LABEL[project.status]}
           </span>
-        )}
-        {project.isArchived ? (
-          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-800">
-            <Archive className="size-3" /> Archived
+          {isExitStatus(project.status) ? null : (
+            <span
+              className={cn(
+                "inline-flex rounded-full border px-2.5 py-0.5 text-[11px] font-medium",
+                TONE_CHIP[delivery.tone],
+              )}
+            >
+              {delivery.label}
+            </span>
+          )}
+          {project.isArchived ? (
+            <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-800">
+              <Archive className="size-3" /> Archived
+            </span>
+          ) : null}
+        </div>
+
+        <div className="mt-5">
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="truncate text-[12px] text-black/45">
+              {project.currentWeek
+                ? `Week ${project.currentWeek.number} · ${project.currentWeek.done} of ${project.currentWeek.total}`
+                : "No plan yet"}
+            </span>
+            <span className="font-mono text-[12px] font-medium text-black/55">
+              {project.progress}%
+            </span>
+          </div>
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-black/[0.06]">
+            <div
+              className={cn(
+                "h-full rounded-full transition-all duration-500",
+                TONE_BAR[delivery.tone],
+              )}
+              style={{ width: `${project.progress}%` }}
+            />
+          </div>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between gap-3 border-t border-black/[0.055] pt-3.5">
+          <div className="flex min-w-0 items-center gap-2">
+            <Avatar name={project.leadName} />
+            <span className="truncate text-[12px] text-black/55">
+              {project.leadName ?? "No lead"}
+            </span>
+          </div>
+          <span
+            className={cn(
+              "shrink-0 text-[12px] font-medium",
+              TONE_TEXT[deadline.tone],
+            )}
+          >
+            {project.dueOn ? (
+              <>
+                {project.startsOn ? (
+                  <span className="font-normal text-black/35">
+                    {formatDateShort(project.startsOn)} →{" "}
+                  </span>
+                ) : null}
+                {formatDate(project.dueOn)}
+              </>
+            ) : (
+              "No date"
+            )}
           </span>
+        </div>
+
+        {isOwner && project.value ? (
+          <p className="mt-3 font-mono text-[13px] font-semibold text-black/60">
+            {formatMoney(project.value.amount, project.value.currency)}
+          </p>
         ) : null}
       </div>
-
-      <div className="mt-5">
-        <div className="flex items-baseline justify-between gap-2">
-          <span className="truncate text-[12px] text-black/45">
-            {project.currentWeek
-              ? `Week ${project.currentWeek.number} · ${project.currentWeek.done} of ${project.currentWeek.total}`
-              : "No plan yet"}
-          </span>
-          <span className="font-mono text-[12px] font-medium text-black/55">
-            {project.progress}%
-          </span>
-        </div>
-        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-black/[0.06]">
-          <div
-            className={cn(
-              "h-full rounded-full transition-all duration-500",
-              TONE_BAR[delivery.tone],
-            )}
-            style={{ width: `${project.progress}%` }}
-          />
-        </div>
-      </div>
-
-      <div className="mt-4 flex items-center justify-between gap-3 border-t border-black/[0.055] pt-3.5">
-        <div className="flex min-w-0 items-center gap-2">
-          <Avatar name={project.leadName} />
-          <span className="truncate text-[12px] text-black/55">
-            {project.leadName ?? "No lead"}
-          </span>
-        </div>
-        <span
-          className={cn(
-            "shrink-0 text-[12px] font-medium",
-            TONE_TEXT[deadline.tone],
-          )}
-        >
-          {project.dueOn ? (
-            <>
-              {/* The plan asks for both dates; the start is context for the
-                  due date, so it stays quieter than the deadline itself. */}
-              {project.startsOn ? (
-                <span className="font-normal text-black/35">
-                  {formatDateShort(project.startsOn)} →{" "}
-                </span>
-              ) : null}
-              {formatDate(project.dueOn)}
-            </>
-          ) : (
-            "No date"
-          )}
-        </span>
-      </div>
-
-      {isOwner && project.value ? (
-        <p className="mt-3 font-mono text-[13px] font-semibold text-black/60">
-          {formatMoney(project.value.amount, project.value.currency)}
-        </p>
-      ) : null}
     </Link>
+  );
+}
+
+function CardBanner({ project }: { project: PortfolioProject }) {
+  if (project.bannerUrl) {
+    return (
+      <div className="panel-dark relative h-24 shrink-0 overflow-hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={project.bannerUrl}
+          alt=""
+          className={cn(
+            "absolute inset-0 size-full transition-transform duration-500 group-hover:scale-[1.03]",
+            bannerFitClass(project.bannerFit),
+          )}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="panel-dark relative flex h-24 shrink-0 items-center justify-center overflow-hidden px-5">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#2fe85c]/40 to-transparent" />
+      <h3 className="font-display line-clamp-2 text-center text-[17px] leading-snug font-semibold tracking-[-0.035em] text-white">
+        {project.name}
+      </h3>
+    </div>
   );
 }
 

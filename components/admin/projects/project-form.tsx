@@ -343,7 +343,6 @@ function Field({
         className="flex items-center gap-1 text-xs font-medium text-black/55"
       >
         {label}
-        {/* Marked before Save rather than discovered by it. */}
         {required ? (
           <>
             <span aria-hidden className="text-red-600">

@@ -4,7 +4,6 @@ import {
   isProjectStatus,
 } from "@/lib/projects/status";
 
-// Filters live in the URL so a view can be bookmarked, shared and refreshed.
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -41,7 +40,6 @@ function uuidOrNull(value: string | string[] | undefined) {
   return raw && UUID.test(raw) ? raw : null;
 }
 
-// Anything unknown is dropped here rather than passed to the database.
 export function parsePortfolioQuery(
   params: RawSearchParams,
   canSeeArchived = false,

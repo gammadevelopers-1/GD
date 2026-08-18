@@ -60,7 +60,11 @@ const LINK_FIELDS: Array<{
   { field: "repositoryUrl", icon: GitBranch, hint: "Where the code lives" },
   { field: "hostingUrl", icon: Server, hint: "Vercel or hosting dashboard" },
   { field: "liveDomain", icon: Globe, hint: "What the client sees" },
-  { field: "stagingDomain", icon: FlaskConical, hint: "Where work is reviewed" },
+  {
+    field: "stagingDomain",
+    icon: FlaskConical,
+    hint: "Where work is reviewed",
+  },
   { field: "designUrl", icon: Palette, hint: "Figma or design file" },
 ];
 
@@ -175,7 +179,9 @@ export function TechnicalPanel({
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-black/[0.07]">
             <div
               className="h-full rounded-full bg-[#2fe85c] transition-[width] duration-500"
-              style={{ width: `${Math.round((filled.done / filled.total) * 100)}%` }}
+              style={{
+                width: `${Math.round((filled.done / filled.total) * 100)}%`,
+              }}
             />
           </div>
           <ul className="mt-4 space-y-1.5">
@@ -617,7 +623,11 @@ function Field({
         autoFocus={autoFocus}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${name}-error` : undefined}
-        className={cn(INPUT, "h-10", error && "border-red-300 focus:border-red-400")}
+        className={cn(
+          INPUT,
+          "h-10",
+          error && "border-red-300 focus:border-red-400",
+        )}
       />
       {error ? (
         <span
@@ -696,7 +706,10 @@ function countFilled(values: TechnicalValues) {
     { label: "Hosting", done: Boolean(values.hostingUrl) },
     { label: "Live domain", done: Boolean(values.liveDomain) },
     { label: "Design file", done: Boolean(values.designUrl) },
-    { label: "Client technical contact", done: Boolean(values.technicalContact) },
+    {
+      label: "Client technical contact",
+      done: Boolean(values.technicalContact),
+    },
     { label: "Stack notes", done: Boolean(values.stackNotes) },
     { label: "Onboarding notes", done: Boolean(values.onboardingNotes) },
   ];

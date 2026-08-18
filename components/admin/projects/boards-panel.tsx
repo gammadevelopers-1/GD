@@ -385,7 +385,9 @@ function BoardColumn({
         >
           <Icon className="size-3.5" />
         </span>
-        <h4 className="text-[12px] font-semibold tracking-[-0.01em]">{title}</h4>
+        <h4 className="text-[12px] font-semibold tracking-[-0.01em]">
+          {title}
+        </h4>
         <span className="font-mono text-[10px] text-black/30">{count}</span>
         <span className="ml-auto hidden text-[10px] text-black/30 sm:block">
           {hint}
@@ -404,13 +406,14 @@ function EmptyNote({ children }: { children: React.ReactNode }) {
   );
 }
 
-const QUICK_ACTION: Record<CardStatus, { label: string; target: CardStatus }> = {
-  idea: { label: "Start", target: "in_progress" },
-  in_progress: { label: "Complete", target: "completed" },
-  blocked: { label: "Resume", target: "in_progress" },
-  completed: { label: "Reopen", target: "in_progress" },
-  incomplete: { label: "Reopen", target: "in_progress" },
-};
+const QUICK_ACTION: Record<CardStatus, { label: string; target: CardStatus }> =
+  {
+    idea: { label: "Start", target: "in_progress" },
+    in_progress: { label: "Complete", target: "completed" },
+    blocked: { label: "Resume", target: "in_progress" },
+    completed: { label: "Reopen", target: "in_progress" },
+    incomplete: { label: "Reopen", target: "in_progress" },
+  };
 
 function CardRow({
   projectId,
@@ -461,11 +464,11 @@ function CardRow({
       className={cn(
         "rounded-xl border transition duration-150",
         status === "blocked"
-          ? "border-red-300 border-l-4 border-l-red-500 bg-red-50/50 shadow-[0_1px_10px_-4px_rgba(220,38,38,0.35)]"
+          ? "border-l-4 border-red-300 border-l-red-500 bg-red-50/50 shadow-[0_1px_10px_-4px_rgba(220,38,38,0.35)]"
           : status === "incomplete"
-            ? "border-amber-200/80 border-l-4 border-l-amber-400 bg-amber-50/40"
+            ? "border-l-4 border-amber-200/80 border-l-amber-400 bg-amber-50/40"
             : status === "completed"
-              ? "border-[#16a34a]/20 border-l-4 border-l-[#16a34a]/60 bg-[#f2fbf4]"
+              ? "border-l-4 border-[#16a34a]/20 border-l-[#16a34a]/60 bg-[#f2fbf4]"
               : "border-black/[0.07] bg-white hover:border-black/[0.14] hover:shadow-[0_6px_16px_rgba(20,23,26,0.05)]",
       )}
     >

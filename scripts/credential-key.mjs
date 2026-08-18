@@ -1,17 +1,3 @@
-#!/usr/bin/env node
-// Credential encryption key tooling for Chunk 9.
-//
-//   node scripts/credential-key.mjs generate      print a new key
-//   node scripts/credential-key.mjs check         prove the configured ring works
-//   node scripts/credential-key.mjs rotate        re-encrypt every stored value
-//
-// Uses lib/credentials/aes.mjs — the same code the application runs, so a
-// rotation can never drift from the format the app expects.
-//
-// Reading and writing app_credential_secrets needs a direct postgres
-// connection: no Supabase role, service key included, has any privilege on
-// that table. Set DATABASE_URL, or leave it unset to use the local stack.
-
 import { execFileSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { openWithKey, parseKey, sealWithKey } from "../lib/credentials/aes.mjs";
@@ -21,7 +7,6 @@ const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function loadEnvFile() {
-  // Mirrors what Next.js reads, so the script sees the same keys the app does.
   try {
     const raw = execFileSync("cat", [".env.local"], { encoding: "utf8" });
     for (const line of raw.split("\n")) {
@@ -32,9 +17,7 @@ function loadEnvFile() {
         process.env[name] = value.replace(/^["']|["']$/g, "");
       }
     }
-  } catch {
-    // No .env.local is fine — the environment may already carry the keys.
-  }
+  } catch {}
 }
 
 function keyRing() {
@@ -153,10 +136,13 @@ function check() {
   }
   console.log(`  ok   round trip with key version ${version}`);
 
-  // A row moved onto another credential must fail, not decrypt.
   let rejected = false;
   try {
-    openWithKey(sealed, ring.get(version), "00000000-0000-4000-8000-000000000002");
+    openWithKey(
+      sealed,
+      ring.get(version),
+      "00000000-0000-4000-8000-000000000002",
+    );
   } catch {
     rejected = true;
   }
@@ -186,11 +172,15 @@ function rotate() {
 
   const rows = JSON.parse(raw || "[]");
   if (!rows.length) {
-    console.log(`\nNothing to rotate. Every value is already on key version ${target}.\n`);
+    console.log(
+      `\nNothing to rotate. Every value is already on key version ${target}.\n`,
+    );
     return;
   }
 
-  console.log(`\nRe-encrypting ${rows.length} value(s) onto key version ${target}.\n`);
+  console.log(
+    `\nRe-encrypting ${rows.length} value(s) onto key version ${target}.\n`,
+  );
   const statements = [];
   let failures = 0;
 
@@ -241,7 +231,9 @@ function rotate() {
       !BASE64.test(sealed.nonce) ||
       !BASE64.test(sealed.authTag)
     ) {
-      console.error(`  FAIL ${id} — unexpected characters in the new ciphertext`);
+      console.error(
+        `  FAIL ${id} — unexpected characters in the new ciphertext`,
+      );
       failures += 1;
       continue;
     }
@@ -259,7 +251,6 @@ function rotate() {
     process.exit(1);
   }
 
-  // One transaction: either every value moves to the new key or none does.
   sql(`begin;\n${statements.join("\n")}\ncommit;`);
   console.log(
     `\nDone. ${statements.length} value(s) now use key version ${target}.` +

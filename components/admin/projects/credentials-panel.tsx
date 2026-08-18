@@ -111,8 +111,8 @@ export function CredentialsPanel({
           {!vaultReady ? (
             <p className="mb-4 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-[11px] leading-4 text-amber-800">
               <ShieldAlert className="mt-px size-3.5 shrink-0" />
-              No encryption key is configured on this deployment, so the vault is
-              closed. Nothing can be stored or read until{" "}
+              No encryption key is configured on this deployment, so the vault
+              is closed. Nothing can be stored or read until{" "}
               <code className="font-mono">CREDENTIAL_ENCRYPTION_KEYS</code> is
               set.
             </p>
@@ -189,7 +189,10 @@ export function CredentialsPanel({
                       <input type="hidden" name="archived" value="false" />
                       <button
                         type="submit"
-                        className={cn(BUTTON_SECONDARY, "h-8 px-2.5 text-[11px]")}
+                        className={cn(
+                          BUTTON_SECONDARY,
+                          "h-8 px-2.5 text-[11px]",
+                        )}
                       >
                         <RotateCcw className="size-3" />
                         Restore
@@ -227,7 +230,9 @@ export function CredentialsPanel({
             <li>
               Every copy, grant and refusal is recorded against your name.
             </li>
-            <li>Revoking takes effect on the next request. There are no links.</li>
+            <li>
+              Revoking takes effect on the next request. There are no links.
+            </li>
           </ul>
         </section>
 
@@ -370,14 +375,20 @@ function CredentialRow({
               </button>
               <button
                 type="button"
-                onClick={() => setPanel(panel === "details" ? "none" : "details")}
+                onClick={() =>
+                  setPanel(panel === "details" ? "none" : "details")
+                }
                 className={cn(BUTTON_GHOST, "h-8")}
               >
                 Edit
               </button>
               <form action={actions.setArchived}>
                 <input type="hidden" name="projectId" value={projectId} />
-                <input type="hidden" name="credentialId" value={credential.id} />
+                <input
+                  type="hidden"
+                  name="credentialId"
+                  value={credential.id}
+                />
                 <input type="hidden" name="archived" value="true" />
                 <button
                   type="submit"
@@ -408,7 +419,11 @@ function CredentialRow({
               </span>
               <form action={actions.revoke}>
                 <input type="hidden" name="projectId" value={projectId} />
-                <input type="hidden" name="credentialId" value={credential.id} />
+                <input
+                  type="hidden"
+                  name="credentialId"
+                  value={credential.id}
+                />
                 <input type="hidden" name="profileId" value={grant.profileId} />
                 <button
                   type="submit"
@@ -507,7 +522,10 @@ function CopyValueButton({
         {phase === "copied" ? "Copied" : "Copy value"}
       </button>
       {phase === "error" && message ? (
-        <p role="alert" className="max-w-[240px] text-right text-[10px] text-red-700">
+        <p
+          role="alert"
+          className="max-w-[240px] text-right text-[10px] text-red-700"
+        >
           {message}
         </p>
       ) : null}
@@ -649,7 +667,9 @@ function ShareForm({
       {shareable.length ? (
         <div className="flex flex-wrap items-end gap-2">
           <label className="min-w-[160px] flex-1 space-y-1.5">
-            <span className="text-[11px] font-medium text-black/55">Person</span>
+            <span className="text-[11px] font-medium text-black/55">
+              Person
+            </span>
             <select
               name="profileId"
               required
@@ -664,7 +684,9 @@ function ShareForm({
             </select>
           </label>
           <label className="space-y-1.5">
-            <span className="text-[11px] font-medium text-black/55">Access</span>
+            <span className="text-[11px] font-medium text-black/55">
+              Access
+            </span>
             <select
               name="access"
               defaultValue="view"
@@ -739,7 +761,10 @@ function ReplaceForm({
         autoComplete="off"
         data-1p-ignore
         placeholder="Paste the new value"
-        className={cn(INPUT, "mt-2.5 resize-y py-2.5 font-mono text-xs leading-5")}
+        className={cn(
+          INPUT,
+          "mt-2.5 resize-y py-2.5 font-mono text-xs leading-5",
+        )}
       />
       {state.fieldErrors.secret ? (
         <span className="mt-1.5 flex items-center gap-1.5 text-[11px] text-red-700">
@@ -757,7 +782,11 @@ function ReplaceForm({
           {pending ? <Loader2 className="size-3 animate-spin" /> : null}
           Encrypt and replace
         </button>
-        <button type="button" onClick={onDone} className={cn(BUTTON_GHOST, "h-9")}>
+        <button
+          type="button"
+          onClick={onDone}
+          className={cn(BUTTON_GHOST, "h-9")}
+        >
           Cancel
         </button>
       </div>
@@ -838,7 +867,11 @@ function DetailsForm({
           {pending ? <Loader2 className="size-3 animate-spin" /> : null}
           Save details
         </button>
-        <button type="button" onClick={onDone} className={cn(BUTTON_GHOST, "h-9")}>
+        <button
+          type="button"
+          onClick={onDone}
+          className={cn(BUTTON_GHOST, "h-9")}
+        >
           Cancel
         </button>
       </div>

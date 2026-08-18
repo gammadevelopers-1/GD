@@ -1,6 +1,3 @@
-// Shared between the credential form and the server action. The database
-// repeats the important checks; it is the one that counts.
-
 export const CREDENTIAL_ENVIRONMENTS = [
   "production",
   "staging",
@@ -17,7 +14,6 @@ export const ENVIRONMENT_LABEL: Record<CredentialEnvironment, string> = {
   other: "Other",
 };
 
-// Production keys are the client's systems, not just ours.
 export const ENVIRONMENT_CHIP: Record<CredentialEnvironment, string> = {
   production: "border-red-200 bg-red-50 text-red-700",
   staging: "border-amber-200 bg-amber-50 text-amber-700",
@@ -44,11 +40,7 @@ export const DESCRIPTION_MAX = 500;
 export const SECRET_MAX = 8000;
 
 export type CredentialField =
-  | "name"
-  | "service"
-  | "environment"
-  | "description"
-  | "secret";
+  "name" | "service" | "environment" | "description" | "secret";
 
 export type CredentialErrors = Partial<Record<CredentialField, string>>;
 
@@ -104,7 +96,6 @@ export function validateCredential(
     errors.description = `Keep the description under ${DESCRIPTION_MAX} characters.`;
   }
 
-  // Not trimmed: leading or trailing whitespace can be part of a real secret.
   const secret = values.secret;
   if (options.requireSecret && !secret) {
     errors.secret = "Paste the value this credential holds.";
@@ -134,7 +125,6 @@ export function credentialErrorSummary(errors: CredentialErrors) {
     : `${count} fields need attention.`;
 }
 
-// Audit actions, in the order the plan lists them.
 export const AUDIT_LABEL: Record<string, string> = {
   "credential.created": "Created",
   "credential.value_replaced": "Value replaced",

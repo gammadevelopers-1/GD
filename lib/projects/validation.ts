@@ -4,7 +4,6 @@ import {
   isProjectStatus,
 } from "@/lib/projects/status";
 
-// The form and the server share these rules. The server is the one that counts.
 export const PROJECT_FIELDS = [
   "name",
   "clientId",
@@ -106,8 +105,6 @@ export function validateProject(
     errors.name = `Keep the name under ${NAME_MAX} characters.`;
   }
 
-  // Name is the only required field. A client can be attached later, so an
-  // empty value is fine here — only a malformed one is an error.
   if (values.clientId && !isUuid(values.clientId)) {
     errors.clientId = "That client is not valid.";
   }

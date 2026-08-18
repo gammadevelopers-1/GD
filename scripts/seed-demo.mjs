@@ -56,8 +56,20 @@ function dbContainer() {
 function psql(args, input) {
   return execFileSync(
     "docker",
-    ["exec", "-i", DB, "psql", "-v", "ON_ERROR_STOP=1", "-q", "-U", "postgres",
-     "-d", "postgres", ...args],
+    [
+      "exec",
+      "-i",
+      DB,
+      "psql",
+      "-v",
+      "ON_ERROR_STOP=1",
+      "-q",
+      "-U",
+      "postgres",
+      "-d",
+      "postgres",
+      ...args,
+    ],
     { encoding: "utf8", input, stdio: ["pipe", "pipe", "pipe"] },
   );
 }
@@ -94,14 +106,14 @@ for (const account of ACCOUNTS) {
     }),
   });
 
-  // Already there from a previous run is fine.
   if (!response.ok && response.status !== 422) {
-    console.error(`Could not create ${account.email}: ${await response.text()}`);
+    console.error(
+      `Could not create ${account.email}: ${await response.text()}`,
+    );
     process.exit(1);
   }
 }
 
-// The signup trigger makes everyone a member, so promote the owner afterwards.
 psql([
   "-c",
   `update public.app_profiles set role = 'owner' where id = '${ACCOUNTS[0].id}';`,
@@ -119,6 +131,12 @@ for (const account of ACCOUNTS) {
 }
 console.log("\nThings to try:");
 console.log("  Cedar Analytics Launch  → Team tab, restore Abubakar");
-console.log("  Northstar Operations    → Milestones, restore Week 5 and 2 items");
-console.log("  Meridian Loyalty        → Overview, all the missing-info prompts");
-console.log("  Brightline Legacy       → turn on the Archived filter to find it\n");
+console.log(
+  "  Northstar Operations    → Milestones, restore Week 5 and 2 items",
+);
+console.log(
+  "  Meridian Loyalty        → Overview, all the missing-info prompts",
+);
+console.log(
+  "  Brightline Legacy       → turn on the Archived filter to find it\n",
+);

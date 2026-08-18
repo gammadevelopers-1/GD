@@ -44,9 +44,6 @@ type UploadResult = {
   size?: number;
 };
 
-// Renders **bold**, *italic* and `code` without pulling in a markdown parser.
-// The board is prose written by colleagues, not untrusted input, but it is
-// still only ever rendered as text nodes — never as HTML.
 export function InlineText({ value }: { value: string }) {
   const parts = value.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
   return (
@@ -156,8 +153,6 @@ export function BlockEditor({
   const [adding, setAdding] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  // One input per kind, so the accept list is fixed at render time and there
-  // is no window where the picker opens with the wrong filter.
   const imageInput = useRef<HTMLInputElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -207,7 +202,6 @@ export function BlockEditor({
                 ? { type: "divider" }
                 : { type: "text", text: "" };
 
-    // A credential block with nothing to point at would be a dead end.
     if (created.type === "credential" && !credentials.length) {
       setUploadError(
         "No credentials on this project yet. Add one on the Technical tab first.",
@@ -282,7 +276,7 @@ export function BlockEditor({
               />
             </div>
 
-            <div className="flex shrink-0 items-center gap-0.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover/block:opacity-100 sm:group-focus-within/block:opacity-100">
+            <div className="flex shrink-0 items-center gap-0.5 opacity-100 transition-opacity sm:opacity-0 sm:group-focus-within/block:opacity-100 sm:group-hover/block:opacity-100">
               <button
                 type="button"
                 onClick={() => move(index, -1)}
@@ -522,7 +516,9 @@ function BlockFields({
           )}
           <input
             value={block.alt}
-            onChange={(event) => onChange({ ...block, alt: event.target.value })}
+            onChange={(event) =>
+              onChange({ ...block, alt: event.target.value })
+            }
             placeholder="Describe the image (for screen readers)"
             className={cn(INPUT_SMALL, "h-7 w-full")}
           />
@@ -587,7 +583,8 @@ function BlockFields({
 
 function calloutClass(tone: CalloutTone) {
   if (tone === "warn") return "border-amber-200 bg-amber-50 text-amber-900";
-  if (tone === "key") return "border-[#2fe85c]/35 bg-[#2fe85c]/[0.08] text-[#08743d]";
+  if (tone === "key")
+    return "border-[#2fe85c]/35 bg-[#2fe85c]/[0.08] text-[#08743d]";
   return "border-black/[0.08] bg-black/[0.025] text-black/70";
 }
 

@@ -116,7 +116,10 @@ export function AdminShell({
 
   return (
     <TooltipProvider>
-      <SidebarProvider defaultOpen={defaultSidebarOpen} className="bg-background">
+      <SidebarProvider
+        defaultOpen={defaultSidebarOpen}
+        className="bg-background"
+      >
         <Sidebar collapsible="icon">
           <SidebarHeader>
             <SidebarMenu>
@@ -175,7 +178,7 @@ export function AdminShell({
                         <SidebarMenuButton
                           type="button"
                           tooltip={`${item.label} — planned`}
-                          className="cursor-default text-sidebar-foreground/35 hover:bg-transparent hover:text-sidebar-foreground/35 active:bg-transparent active:text-sidebar-foreground/35"
+                          className="text-sidebar-foreground/35 hover:text-sidebar-foreground/35 active:text-sidebar-foreground/35 cursor-default hover:bg-transparent active:bg-transparent"
                         >
                           <item.icon />
                           <span>{item.label}</span>
@@ -204,7 +207,7 @@ export function AdminShell({
           <SidebarRail />
         </Sidebar>
 
-        <SidebarInset className="min-w-0 overflow-x-clip text-foreground">
+        <SidebarInset className="text-foreground min-w-0 overflow-x-clip">
           <header className="sticky top-0 z-30 border-b border-black/6 bg-[#eef0e9]/80 backdrop-blur-xl">
             <div className="flex h-15.5 items-center gap-3 px-4 sm:px-6 lg:px-8 xl:px-10">
               <SidebarTrigger className="-ml-1 text-black/60 hover:text-black" />

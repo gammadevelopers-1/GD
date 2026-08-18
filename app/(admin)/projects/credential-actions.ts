@@ -19,9 +19,6 @@ import {
 } from "@/lib/credentials/crypto";
 import { sendEmailQuietly } from "@/lib/notifications/send";
 
-// Nothing in this file logs, returns or renders a secret value except
-// copyCredentialSecret, which hands it straight to the clipboard.
-
 function readCredentialForm(formData: FormData) {
   return {
     name: String(formData.get("name") ?? ""),
@@ -51,7 +48,9 @@ export async function createCredential(
   }
 
   const values = readCredentialForm(formData);
-  const { errors, parsed } = validateCredential(values, { requireSecret: true });
+  const { errors, parsed } = validateCredential(values, {
+    requireSecret: true,
+  });
   if (!parsed) {
     return {
       status: "error",
@@ -60,7 +59,6 @@ export async function createCredential(
     };
   }
 
-  // Generated here so the id can authenticate the ciphertext.
   const credentialId = randomUUID();
 
   let sealed;
@@ -90,7 +88,9 @@ export async function createCredential(
 
   if (error) {
     if (error.code === "23505") {
-      return fail("A credential with that name already exists on this project.");
+      return fail(
+        "A credential with that name already exists on this project.",
+      );
     }
     return fail(
       error.code === "42501" || error.code === "22023" || error.code === "23503"
@@ -116,7 +116,9 @@ export async function updateCredentialMetadata(
   }
 
   const values = readCredentialForm(formData);
-  const { errors, parsed } = validateCredential(values, { requireSecret: false });
+  const { errors, parsed } = validateCredential(values, {
+    requireSecret: false,
+  });
   if (!parsed) {
     return {
       status: "error",
@@ -228,7 +230,8 @@ export async function grantCredentialAccess(
     return fail("That credential could not be found.");
   }
   if (!isUuid(profileId)) return fail("Choose who to share it with.");
-  if (!isCredentialAccess(access)) return fail("Access is either view or edit.");
+  if (!isCredentialAccess(access))
+    return fail("Access is either view or edit.");
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("app_grant_credential_access", {
@@ -245,7 +248,12 @@ export async function grantCredentialAccess(
     );
   }
 
-  await notifyGrant({ credentialId, profileId, access, grantedBy: viewer.fullName });
+  await notifyGrant({
+    credentialId,
+    profileId,
+    access,
+    grantedBy: viewer.fullName,
+  });
 
   revalidatePath("/projects/[projectId]", "page");
   return { status: "success", message: "Access granted.", fieldErrors: {} };
@@ -269,11 +277,8 @@ export async function revokeCredentialAccess(formData: FormData) {
 }
 
 export type CopyResult =
-  | { ok: true; value: string }
-  | { ok: false; message: string };
+  { ok: true; value: string } | { ok: false; message: string };
 
-// The one place a plaintext secret exists outside the vault. It is returned to
-// the caller for the clipboard and is never rendered, cached or logged.
 export async function copyCredentialSecret(
   credentialId: string,
 ): Promise<CopyResult> {
@@ -288,13 +293,15 @@ export async function copyCredentialSecret(
     target_credential_id: credentialId,
   });
 
-  if (error) return { ok: false, message: "That credential could not be read." };
+  if (error)
+    return { ok: false, message: "That credential could not be read." };
 
   const row = Array.isArray(data) ? data[0] : data;
   if (!row?.allowed) {
     return {
       ok: false,
-      message: "You do not have access to this credential. The attempt was logged.",
+      message:
+        "You do not have access to this credential. The attempt was logged.",
     };
   }
   if (!row.ciphertext) {
@@ -359,8 +366,6 @@ async function notifyGrant({
   const email = await recipientEmail(profileId);
   if (!email) return;
 
-  // A security signal, not a convenience. The name of the credential is not a
-  // secret; its value is, and never appears here.
   await sendEmailQuietly({
     to: email,
     subject: `You now have ${access} access to ${credential.name}`,
@@ -377,8 +382,6 @@ async function notifyGrant({
 }
 
 async function recipientEmail(profileId: string) {
-  // auth.users is not reachable with the publishable key, so this needs the
-  // admin API. Without it configured, the grant still succeeds silently.
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
   const secretKey = process.env.SUPABASE_SECRET_KEY?.trim();
   if (!url || !secretKey) return null;

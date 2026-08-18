@@ -24,10 +24,7 @@ export type ProjectCredential = {
   isArchived: boolean;
   createdBy: string | null;
   updatedAt: string;
-  // Set when the credential is an ENV variable inside a container.
   envGroupId: string | null;
-  // 'owner' and 'edit' can replace the value, 'view' can only copy it, and
-  // null means the person knows it exists and nothing more.
   myAccess: "owner" | CredentialAccess | null;
   grants: CredentialGrant[];
 };
@@ -62,8 +59,6 @@ export async function getProjectCredentials(
 
   const ids = rows.map((row) => String(row.id));
 
-  // Row-level security decides what comes back here: every grant for an owner,
-  // only their own for anybody else.
   const { data: grantRows } = await supabase
     .from("app_credential_grants")
     .select("credential_id, profile_id, access, granted_at, granted_by")
@@ -130,8 +125,6 @@ export async function getProjectCredentials(
   });
 }
 
-// Owner-only by policy on app_audit_logs — this returns nothing for anyone
-// else, which is the intended answer rather than an error.
 export async function getCredentialAudit(
   credentials: ProjectCredential[],
   viewer: Viewer,
@@ -158,7 +151,8 @@ export async function getCredentialAudit(
   const subjectIds = new Set<string>();
   for (const row of data) {
     if (row.actor_id) actorIds.add(String(row.actor_id));
-    const profileId = (row.metadata as Record<string, unknown> | null)?.profile_id;
+    const profileId = (row.metadata as Record<string, unknown> | null)
+      ?.profile_id;
     if (typeof profileId === "string") subjectIds.add(profileId);
   }
 

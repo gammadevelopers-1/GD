@@ -8,7 +8,8 @@ export type EmailResult =
 
 export function notificationsConfigured() {
   return Boolean(
-    process.env.RESEND_API_KEY?.trim() && process.env.NOTIFICATIONS_FROM?.trim(),
+    process.env.RESEND_API_KEY?.trim() &&
+    process.env.NOTIFICATIONS_FROM?.trim(),
   );
 }
 
@@ -26,7 +27,8 @@ export async function sendEmail({
   const recipients = (Array.isArray(to) ? to : [to]).filter(Boolean);
 
   if (!apiKey || !from) return { sent: false, reason: "not-configured" };
-  if (!recipients.length) return { sent: false, reason: "failed", detail: "no recipients" };
+  if (!recipients.length)
+    return { sent: false, reason: "failed", detail: "no recipients" };
 
   try {
     const response = await fetch(ENDPOINT, {
@@ -44,8 +46,11 @@ export async function sendEmail({
     });
 
     if (!response.ok) {
-      // The response body can echo the request, so keep it to the status.
-      return { sent: false, reason: "failed", detail: `status ${response.status}` };
+      return {
+        sent: false,
+        reason: "failed",
+        detail: `status ${response.status}`,
+      };
     }
     return { sent: true };
   } catch (error) {
@@ -57,8 +62,6 @@ export async function sendEmail({
   }
 }
 
-// Notifications must never be the reason a real action fails. A credential
-// grant that worked is still a grant that worked if the email bounced.
 export async function sendEmailQuietly(input: {
   to: string | string[];
   subject: string;

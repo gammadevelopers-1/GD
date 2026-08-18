@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Archive, RotateCcw, X } from "lucide-react";
 
-// Asks once first, because members lose access the moment it is archived
 export function ArchiveControl({
   projectId,
   isArchived,

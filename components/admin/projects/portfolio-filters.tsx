@@ -38,7 +38,6 @@ export function PortfolioFilters({
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   const filterCount = activeFilterCount(query);
 
-  // Keep the box in step with the URL without wiping what someone is typing.
   if (query.search !== urlSearch) {
     setUrlSearch(query.search);
     if (query.search !== submitted) {
@@ -109,7 +108,7 @@ export function PortfolioFilters({
             onChange={(event) => onSearchChange(event.target.value)}
             placeholder="Search projects or clients"
             aria-label="Search projects"
-            className="h-10 w-full rounded-xl border border-black/8 bg-black/[0.02] pr-3 pl-9 text-sm outline-none transition placeholder:text-black/28 hover:border-black/15 focus:border-[#16a34a] focus:bg-white focus-visible:ring-2 focus-visible:ring-[#16a34a]/25"
+            className="h-10 w-full rounded-xl border border-black/8 bg-black/[0.02] pr-3 pl-9 text-sm transition outline-none placeholder:text-black/28 hover:border-black/15 focus:border-[#16a34a] focus:bg-white focus-visible:ring-2 focus-visible:ring-[#16a34a]/25"
           />
         </div>
 
@@ -215,7 +214,7 @@ function Select({
   onChange: (value: string | null) => void;
 }) {
   return (
-    <label className="flex h-10 min-w-0 items-center gap-2 rounded-xl border border-black/8 bg-black/[0.02] pr-1 pl-3 transition hover:border-black/15 focus-within:border-[#16a34a] lg:w-42">
+    <label className="flex h-10 min-w-0 items-center gap-2 rounded-xl border border-black/8 bg-black/[0.02] pr-1 pl-3 transition focus-within:border-[#16a34a] hover:border-black/15 lg:w-42">
       <span className="sr-only">{label}</span>
       <select
         value={value}

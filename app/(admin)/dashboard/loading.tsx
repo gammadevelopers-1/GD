@@ -3,9 +3,6 @@ import {
   PageHeadingSkeleton,
   Shimmer,
 } from "@/components/admin/skeletons";
-
-// The dashboard summarises every other module, so it is the slowest read in
-// the platform. It is also the landing screen after sign-in.
 export default function DashboardLoading() {
   return (
     <div className="mx-auto max-w-[1480px]" aria-busy role="status">

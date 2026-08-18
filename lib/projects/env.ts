@@ -1,14 +1,8 @@
-// Parsing a pasted .env blob into individual keys, the way Vercel's import
-// works. Every pair becomes its own credential, so each one is encrypted,
-// granted and audited separately — a blob is only ever the input format.
-
 export const ENV_KEY_MAX = 120;
 export const ENV_VALUE_MAX = 8000;
 export const ENV_MAX_PAIRS = 200;
 export const ENV_GROUP_NAME_MAX = 80;
 
-// Same shape a shell would accept: letters, digits and underscores, not
-// starting with a digit.
 const ENV_KEY = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
 export type EnvPair = { key: string; value: string };
@@ -25,13 +19,11 @@ function stripQuotes(raw: string) {
     const last = value[value.length - 1];
     if ((first === '"' && last === '"') || (first === "'" && last === "'")) {
       const inner = value.slice(1, -1);
-      // Only double quotes carry escapes, matching dotenv.
       return first === '"'
         ? inner.replace(/\\n/g, "\n").replace(/\\"/g, '"')
         : inner;
     }
   }
-  // An unquoted value ends at the first ` #` comment.
   const commentAt = value.search(/\s+#/);
   return (commentAt === -1 ? value : value.slice(0, commentAt)).trim();
 }
@@ -49,7 +41,6 @@ export function parseEnvBlob(input: string): EnvParseResult {
 
     if (!line || line.startsWith("#")) return;
 
-    // `export FOO=bar` is common in shell-style files.
     const withoutExport = line.startsWith("export ")
       ? line.slice("export ".length).trim()
       : line;
@@ -64,11 +55,17 @@ export function parseEnvBlob(input: string): EnvParseResult {
     const value = stripQuotes(withoutExport.slice(equals + 1));
 
     if (!ENV_KEY.test(key)) {
-      skipped.push({ line: number, reason: `"${key.slice(0, 40)}" is not a valid key` });
+      skipped.push({
+        line: number,
+        reason: `"${key.slice(0, 40)}" is not a valid key`,
+      });
       return;
     }
     if (key.length > ENV_KEY_MAX) {
-      skipped.push({ line: number, reason: `${key.slice(0, 20)}… is too long` });
+      skipped.push({
+        line: number,
+        reason: `${key.slice(0, 20)}… is too long`,
+      });
       return;
     }
     if (value.length > ENV_VALUE_MAX) {
@@ -76,10 +73,12 @@ export function parseEnvBlob(input: string): EnvParseResult {
       return;
     }
     if (seen.has(key)) {
-      // Later wins, as a shell would do, but say so rather than silently.
       const previous = pairs.findIndex((pair) => pair.key === key);
       if (previous !== -1) pairs[previous] = { key, value };
-      skipped.push({ line: number, reason: `${key} appeared twice — kept the last` });
+      skipped.push({
+        line: number,
+        reason: `${key} appeared twice — kept the last`,
+      });
       return;
     }
 
@@ -94,8 +93,6 @@ export function isEnvKey(value: string) {
   return ENV_KEY.test(value) && value.length <= ENV_KEY_MAX;
 }
 
-// A .env file is every secret at once, so the name is checked but the contents
-// are never parsed for display.
 export function looksLikeEnvFile(name: string) {
   const lower = name.toLowerCase();
   return (
@@ -108,8 +105,6 @@ export function looksLikeEnvFile(name: string) {
   );
 }
 
-// Masking for the one place a value is ever echoed back: the import preview,
-// before anything is saved.
 export function maskValue(value: string) {
   if (!value) return "—";
   if (value.length <= 4) return "•".repeat(value.length);

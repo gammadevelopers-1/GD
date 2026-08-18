@@ -1,7 +1,5 @@
 import { cn } from "@/lib/utils";
 
-// One shimmer definition, so every loading screen pulses at the same rate and
-// a half-loaded platform never looks like two different products.
 export function Shimmer({ className }: { className?: string }) {
   return (
     <span
@@ -10,7 +8,6 @@ export function Shimmer({ className }: { className?: string }) {
   );
 }
 
-// Matches PageHeading: eyebrow, title, description, optional action.
 export function PageHeadingSkeleton({ action = false }: { action?: boolean }) {
   return (
     <div className="mb-7 flex flex-col gap-5 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
@@ -24,7 +21,6 @@ export function PageHeadingSkeleton({ action = false }: { action?: boolean }) {
   );
 }
 
-// A light card placeholder used wherever a list of records will land.
 export function CardGridSkeleton({
   count = 6,
   height = "h-32",
@@ -52,7 +48,6 @@ export function CardGridSkeleton({
   );
 }
 
-// Stand-in for a titled panel on the project workspace.
 export function PanelSkeleton({
   lines = 4,
   className,

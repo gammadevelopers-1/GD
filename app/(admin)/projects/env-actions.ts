@@ -23,10 +23,6 @@ import {
 } from "@/lib/credentials/crypto";
 import { isCredentialAccess } from "@/lib/credentials/validation";
 
-// ENV variables are credentials, so every value here goes through the same
-// sealSecret path and the same app_create_credential function. Nothing in this
-// file returns or logs a value.
-
 const ENV_FILE_MAX_BYTES = 1024 * 1024;
 
 function refresh() {
@@ -53,7 +49,8 @@ export async function createEnvGroup(
     .slice(0, 300);
 
   if (!isUuid(projectId)) return formError("That project could not be found.");
-  if (!name) return formError("Give the container a name, like “Frontend ENV”.");
+  if (!name)
+    return formError("Give the container a name, like “Frontend ENV”.");
 
   const supabase = await createClient();
   const { data: last } = await supabase
@@ -121,8 +118,6 @@ export async function renameEnvGroup(
   return formSuccess("Container updated.");
 }
 
-// Archiving a container leaves its variables where they are: they keep their
-// grants and their audit history, and stay reachable as loose credentials.
 export async function setEnvGroupArchived(formData: FormData) {
   await requireRole(["owner"]);
   const projectId = String(formData.get("projectId") ?? "");
@@ -139,8 +134,6 @@ export async function setEnvGroupArchived(formData: FormData) {
   refresh();
 }
 
-// Every variable, however it arrived — typed, pasted or read from a file —
-// lands in the vault the same way.
 async function storePairs(
   projectId: string,
   groupId: string | null,
@@ -178,7 +171,9 @@ async function storePairs(
     });
 
     if (error) {
-      failures.push(error.code === "23505" ? `${pair.key} (already here)` : pair.key);
+      failures.push(
+        error.code === "23505" ? `${pair.key} (already here)` : pair.key,
+      );
       continue;
     }
     stored += 1;
@@ -187,8 +182,6 @@ async function storePairs(
   return { stored, failures };
 }
 
-// The composer edits rows in the browser — typed, pasted or read out of a
-// file — and posts the finished set. One save for the whole batch.
 export async function saveEnvVariables(
   _state: SimpleFormState,
   formData: FormData,
@@ -209,7 +202,8 @@ export async function saveEnvVariables(
   } catch {
     return formError("Those variables could not be read.");
   }
-  if (!Array.isArray(rows)) return formError("Those variables could not be read.");
+  if (!Array.isArray(rows))
+    return formError("Those variables could not be read.");
 
   const pairs: Array<{ key: string; value: string; note: string | null }> = [];
   const invalid: string[] = [];
@@ -219,7 +213,6 @@ export async function saveEnvVariables(
     const value = String(row.value ?? "");
     const note = String(row.note ?? "").trim();
 
-    // A row with neither a key nor a value is just an empty line in the form.
     if (!key && !value) continue;
     if (!isEnvKey(key)) {
       invalid.push(key || "(no key)");
@@ -245,7 +238,9 @@ export async function saveEnvVariables(
   const seen = new Set<string>();
   for (const pair of pairs) {
     if (seen.has(pair.key)) {
-      return formError(`${pair.key} appears twice. Keys are unique per container.`);
+      return formError(
+        `${pair.key} appears twice. Keys are unique per container.`,
+      );
     }
     seen.add(pair.key);
   }
@@ -274,8 +269,6 @@ export async function saveEnvVariables(
   );
 }
 
-// Grants the whole container to one person, one existing per-credential grant
-// at a time, so each stays individually revocable.
 export async function grantEnvGroupAccess(
   _state: SimpleFormState,
   formData: FormData,
@@ -351,7 +344,6 @@ export async function uploadEnvFile(
   });
 
   if (error) {
-    // Do not leave an orphan object behind if the row could not be written.
     await supabase.storage.from("app-env-files").remove([path]);
     return formError("The file could not be recorded.");
   }
@@ -375,8 +367,6 @@ export async function archiveEnvFile(formData: FormData) {
   refresh();
 }
 
-// Hands back a short-lived signed URL rather than the contents, so the file
-// never passes through the page.
 export async function downloadEnvFile(
   _state: SimpleFormState,
   formData: FormData,

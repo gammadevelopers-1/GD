@@ -1,4 +1,3 @@
-
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 
@@ -31,8 +30,6 @@ function check(name, condition, detail = "") {
   }
 }
 
-// Seeds through postgres, not the service role. The service role has no rights
-// on these tables and we want to keep it that way.
 function dbContainer() {
   const name = execFileSync(
     "docker",
@@ -271,8 +268,6 @@ function hasMoneyKey(rows) {
   );
 }
 
-// An owner sees every project, including your real ones, so owner checks only
-// count the rows this script created.
 const HARNESS_PROJECTS = new Set([
   ID.projectAssigned,
   ID.projectOwnerOnly,
@@ -542,19 +537,19 @@ async function run() {
     `got ${strangerAfterRemoval.data?.length}`,
   );
 
-  // Boards changed the contract: authorship belongs to the owner and the
-  // project lead. In this fixture the assigned member IS the lead, so both
-  // halves of the rule are worth proving.
-  const leadMovesCard = await api("/rest/v1/rpc/app_set_milestone_card_status", {
-    key: PUBLISHABLE,
-    token: memberToken,
-    method: "POST",
-    body: {
-      target_card_id: ID.itemOpen,
-      next_status: "completed",
-      reason: null,
+  const leadMovesCard = await api(
+    "/rest/v1/rpc/app_set_milestone_card_status",
+    {
+      key: PUBLISHABLE,
+      token: memberToken,
+      method: "POST",
+      body: {
+        target_card_id: ID.itemOpen,
+        next_status: "completed",
+        reason: null,
+      },
     },
-  });
+  );
   check(
     "the project lead can move a card",
     leadMovesCard.ok,
@@ -571,7 +566,6 @@ async function run() {
     `status ${memberReadsBoard.status}`,
   );
 
-  // Take the lead away and the same person keeps read access and loses the rest.
   sql(
     `update public.app_projects set lead_id = null where id = '${ID.projectAssigned}';`,
   );
@@ -594,7 +588,6 @@ async function run() {
     `status ${exLeadAddsCard.status}`,
   );
 
-  // Progress is the one thing an assigned member may change.
   const memberMovesCard = await api(
     "/rest/v1/rpc/app_set_milestone_card_status",
     {
@@ -614,27 +607,22 @@ async function run() {
     `status ${memberMovesCard.status}`,
   );
 
-  const memberReorders = await api(
-    "/rest/v1/rpc/app_reorder_milestone_cards",
-    {
-      key: PUBLISHABLE,
-      token: memberToken,
-      method: "POST",
-      body: {
-        target_week_id: ID.week,
-        target_board: "idea",
-        ordered_ids: [ID.itemOpen],
-      },
+  const memberReorders = await api("/rest/v1/rpc/app_reorder_milestone_cards", {
+    key: PUBLISHABLE,
+    token: memberToken,
+    method: "POST",
+    body: {
+      target_week_id: ID.week,
+      target_board: "idea",
+      ordered_ids: [ID.itemOpen],
     },
-  );
+  });
   check(
     "a member who is not the lead cannot reorder the board",
     !memberReorders.ok,
     `status ${memberReorders.status}`,
   );
 
-  // A PATCH filtered away by RLS still answers 204, so the status alone proves
-  // nothing. Read the row back and check it did not move.
   await api(`/rest/v1/app_milestone_cards?id=eq.${ID.itemOpen}`, {
     key: PUBLISHABLE,
     token: memberToken,
@@ -667,7 +655,6 @@ async function run() {
     `status ${memberPlansWeek.status}`,
   );
 
-  // Chunk 7 — non-sensitive technical details
   const saveTechnical = (token, overrides = {}) =>
     api("/rest/v1/rpc/app_save_technical_details", {
       key: PUBLISHABLE,
@@ -765,7 +752,6 @@ async function run() {
     JSON.stringify(anonTechnical.data),
   );
 
-  // Chunk 9 — secure credentials
   const credentialId = ID.credential;
   const readSecret = (token) =>
     api("/rest/v1/rpc/app_read_credential_secret", {
@@ -856,13 +842,18 @@ async function run() {
       access_level: "view",
     },
   });
-  check("owner can grant view access", ownerGrants.ok, `status ${ownerGrants.status}`);
+  check(
+    "owner can grant view access",
+    ownerGrants.ok,
+    `status ${ownerGrants.status}`,
+  );
 
   const grantedRead = await readSecret(memberToken);
   const grantedRow = firstRow(grantedRead);
   check(
     "a granted member receives ciphertext, never plaintext",
-    grantedRow?.allowed === true && grantedRow?.ciphertext === "Y2lwaGVydGV4dA==",
+    grantedRow?.allowed === true &&
+      grantedRow?.ciphertext === "Y2lwaGVydGV4dA==",
     JSON.stringify(grantedRead.data),
   );
 
@@ -896,7 +887,11 @@ async function run() {
       target_profile_id: ID.assigned,
     },
   });
-  check("owner can revoke access", ownerRevokes.ok, `status ${ownerRevokes.status}`);
+  check(
+    "owner can revoke access",
+    ownerRevokes.ok,
+    `status ${ownerRevokes.status}`,
+  );
 
   const afterRevoke = await readSecret(memberToken);
   check(

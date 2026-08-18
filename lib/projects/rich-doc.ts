@@ -32,7 +32,9 @@ function inlineNodes(text: string): JSONContent[] {
       if (index > 0) nodes.push({ type: "hardBreak" });
       if (line) {
         nodes.push(
-          marks ? { type: "text", text: line, marks } : { type: "text", text: line },
+          marks
+            ? { type: "text", text: line, marks }
+            : { type: "text", text: line },
         );
       }
     });
@@ -61,7 +63,9 @@ function blockToNode(block: Block): JSONContent | null {
           const content = inlineNodes(item);
           return {
             type: "listItem",
-            content: [{ type: "paragraph", ...(content.length ? { content } : {}) }],
+            content: [
+              { type: "paragraph", ...(content.length ? { content } : {}) },
+            ],
           };
         }),
       };
@@ -80,7 +84,10 @@ export function nodesForBlocks(blocks: Block[]): JSONContent[] {
 
 export function blocksToDoc(blocks: Block[]): JSONContent {
   const content = nodesForBlocks(blocks);
-  return { type: "doc", content: content.length ? content : [{ type: "paragraph" }] };
+  return {
+    type: "doc",
+    content: content.length ? content : [{ type: "paragraph" }],
+  };
 }
 
 function serializeInline(content: JSONContent[] | undefined): string {

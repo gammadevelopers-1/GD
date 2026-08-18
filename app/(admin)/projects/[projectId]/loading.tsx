@@ -1,10 +1,5 @@
 import { PanelSkeleton, Shimmer } from "@/components/admin/skeletons";
 
-// The workspace reads a project, its team, its weeks and its items before it
-// can render anything. Without this file that whole wait happens on the
-// portfolio screen, with nothing to show the click registered.
-//
-// It mirrors the real header so the swap to live content is not a jump.
 export default function ProjectWorkspaceLoading() {
   return (
     <div className="mx-auto max-w-[1480px]" aria-busy role="status">

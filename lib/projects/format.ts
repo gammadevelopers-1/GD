@@ -59,7 +59,6 @@ export function deadlineSignal(dueOn: string | null, status: ProjectStatus) {
   return { label: `Due in ${days}d`, tone: "ok" as const };
 }
 
-// Worked out from real milestone data. Nobody picks this by hand.
 export function deliverySignal(project: {
   status: ProjectStatus;
   dueOn: string | null;

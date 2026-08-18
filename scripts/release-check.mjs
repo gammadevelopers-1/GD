@@ -1,11 +1,4 @@
 #!/usr/bin/env node
-// Chunk 10 release checks, in one command.
-//
-//   npm run release:check
-//
-// Runs every gate that a machine can settle, then prints the ones that need a
-// person. It exits non-zero if any automated gate fails, so it can stand in
-// front of a deploy.
 
 import { spawnSync } from "node:child_process";
 
@@ -14,7 +7,10 @@ let failures = 0;
 
 function run(label, command, args, { optional = false } = {}) {
   process.stdout.write(`\n▶ ${label}\n`);
-  const result = spawnSync(command, args, { stdio: "inherit", encoding: "utf8" });
+  const result = spawnSync(command, args, {
+    stdio: "inherit",
+    encoding: "utf8",
+  });
 
   if (result.status === 0) {
     results.push(`  ok    ${label}`);
@@ -29,7 +25,6 @@ function run(label, command, args, { optional = false } = {}) {
   return false;
 }
 
-// Gates a machine can settle.
 run("Lint and types", "npm", ["run", "check"]);
 run("Production build", "npm", ["run", "build"]);
 run("Database policy tests, every role", "npm", ["run", "test:db"]);
@@ -37,11 +32,16 @@ run("Direct API tests, every role", "npm", ["run", "test:api"]);
 
 const hasKeys = Boolean(
   process.env.CREDENTIAL_ENCRYPTION_KEYS?.trim() ||
-    process.env.CREDENTIAL_ENCRYPTION_KEY?.trim(),
+  process.env.CREDENTIAL_ENCRYPTION_KEY?.trim(),
 );
-run("Credential encryption round trip", "node", ["scripts/credential-key.mjs", "check"], {
-  optional: !hasKeys,
-});
+run(
+  "Credential encryption round trip",
+  "node",
+  ["scripts/credential-key.mjs", "check"],
+  {
+    optional: !hasKeys,
+  },
+);
 
 console.log("\n\n─── Automated release checks ───\n");
 console.log(results.join("\n"));
@@ -69,7 +69,9 @@ console.log(`
 `);
 
 if (failures) {
-  console.error(`${failures} automated check(s) failed. Not ready to release.\n`);
+  console.error(
+    `${failures} automated check(s) failed. Not ready to release.\n`,
+  );
   process.exit(1);
 }
 console.log("Automated checks all passed.\n");

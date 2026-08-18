@@ -23,7 +23,6 @@ import {
 
 export const metadata = { title: "Overview · Internal platform" };
 
-// Same wording and colours as the portfolio.
 const statusLabels = PROJECT_STATUS_LABEL;
 const statusStyles = PROJECT_STATUS_TONE;
 

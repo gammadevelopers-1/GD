@@ -1,7 +1,5 @@
 import { Shimmer } from "@/components/admin/skeletons";
 
-// Both project form routes read the client and people lists before they can
-// render a single field, so they need a boundary of their own.
 export function ProjectFormSkeleton() {
   return (
     <div className="mx-auto max-w-3xl" aria-busy role="status">

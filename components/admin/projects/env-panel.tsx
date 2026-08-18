@@ -186,7 +186,9 @@ function GroupCard({
               open && "rotate-90",
             )}
           />
-          <span className="truncate text-[13px] font-semibold">{group.name}</span>
+          <span className="truncate text-[13px] font-semibold">
+            {group.name}
+          </span>
           <span className="font-mono text-[10px] text-black/35">
             {variables.length} key{variables.length === 1 ? "" : "s"}
           </span>
@@ -399,7 +401,11 @@ function ShareGroupForm({
       </div>
       <FormFeedback state={state} />
       <div className="flex justify-end">
-        <button type="button" onClick={onDone} className={cn(BUTTON_GHOST, "h-8")}>
+        <button
+          type="button"
+          onClick={onDone}
+          className={cn(BUTTON_GHOST, "h-8")}
+        >
           Close
         </button>
       </div>

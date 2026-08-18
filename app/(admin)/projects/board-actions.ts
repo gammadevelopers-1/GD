@@ -13,8 +13,6 @@ import { BlockError, parseBlocks } from "@/lib/projects/blocks";
 import { isCardStatus } from "@/lib/projects/board";
 import { draftIdeaBlocks, suggestIdeaOrder } from "@/lib/projects/board-ai";
 
-// Stored content is already validated; a row that will not parse should cost
-// the model some context, not fail the request.
 function safeParseBlocks(raw: unknown) {
   try {
     return parseBlocks(raw);
@@ -27,7 +25,6 @@ const TITLE_MAX = 240;
 const REASON_MAX = 2000;
 const ATTACHMENT_MAX_BYTES = 10 * 1024 * 1024;
 
-// Only images and documents. An executable on an internal board is a way in.
 const ALLOWED_TYPES = new Set([
   "image/png",
   "image/jpeg",
@@ -49,8 +46,6 @@ function refresh() {
   revalidatePath("/dashboard");
 }
 
-// The database is the authority. This mirrors it so the action can fail with a
-// sentence rather than a policy violation.
 async function assertCanManage(
   supabase: Awaited<ReturnType<typeof createClient>>,
   projectId: string,
@@ -93,7 +88,6 @@ export async function createCard(
     return formError("Only an owner or the project lead can edit this board.");
   }
 
-  // New ideas land at the end of the Idea Board.
   const { data: last } = await supabase
     .from("app_milestone_cards")
     .select("position")
@@ -161,7 +155,6 @@ export async function saveCard(
   return formSuccess("Saved.");
 }
 
-// Moving between boards and states, with the reason the move needs.
 export async function moveCard(
   _state: SimpleFormState,
   formData: FormData,
@@ -200,7 +193,6 @@ export async function moveCard(
   return formSuccess("Moved.");
 }
 
-// Carries an unfinished card into another week, keeping why it slipped.
 export async function carryCard(
   _state: SimpleFormState,
   formData: FormData,
@@ -274,9 +266,6 @@ export async function setCardArchived(formData: FormData) {
   refresh();
 }
 
-// Optional: drafts structure for one card and hands it back for review. It
-// deliberately does not save — the blocks land in the open editor so a person
-// edits and accepts them, rather than the model writing to the board.
 export async function draftCard(
   _state: SimpleFormState,
   formData: FormData,
@@ -302,8 +291,6 @@ export async function draftCard(
   };
 }
 
-// Optional: asks the model to sequence this week's ideas, then applies the
-// order. Everything on the board works without it.
 export async function organiseWeek(
   _state: SimpleFormState,
   formData: FormData,
@@ -350,8 +337,6 @@ export async function organiseWeek(
   return formSuccess(suggestion.rationale);
 }
 
-// Uploads one image or document and returns the stored path, which the editor
-// turns into an image or file block.
 export async function uploadAttachment(
   _state: SimpleFormState,
   formData: FormData,
@@ -379,8 +364,6 @@ export async function uploadAttachment(
     return formError("Only an owner or the project lead can attach files.");
   }
 
-  // The storage policy reads the project id from the first path segment, so
-  // the shape of this path is load-bearing.
   const safeName = file.name.replace(/[^\w.\-]+/g, "_").slice(-120);
   const path = `${projectId}/${cardId}/${crypto.randomUUID()}-${safeName}`;
 

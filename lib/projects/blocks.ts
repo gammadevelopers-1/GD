@@ -1,12 +1,5 @@
 import { looksLikeSecret } from "@/lib/projects/technical";
 
-// The Idea Board stores an ordered list of blocks as JSONB. The database only
-// checks that it is an array; this file owns the shape, and it runs on the
-// server before anything is written.
-//
-// Deliberately a small vocabulary. A block type nobody uses is a block type
-// that still has to be rendered, sanitised and migrated forever.
-
 export const BLOCK_TYPES = [
   "heading",
   "text",
@@ -36,8 +29,6 @@ export type Block =
   | { type: "callout"; tone: CalloutTone; text: string }
   | { type: "image"; path: string; alt: string }
   | { type: "file"; path: string; name: string; size: number }
-  // References a credential by id. The value never lives here — the whole
-  // point of the vault is that a secret exists in exactly one place.
   | { type: "credential"; credentialId: string; name: string }
   | { type: "divider" };
 
@@ -58,8 +49,6 @@ function text(value: unknown, max: number): string {
   if (trimmed.length > max) {
     throw new BlockError(`Keep that under ${max} characters.`);
   }
-  // Same rule the technical tab enforces: a pasted key belongs in the vault,
-  // not in prose that every project member can read.
   if (looksLikeSecret(trimmed)) {
     throw new BlockError(
       "That looks like a key or password. Store it in Credentials and link to it instead.",
@@ -72,7 +61,6 @@ function storagePath(value: unknown): string {
   if (typeof value !== "string" || !value) {
     throw new BlockError("Missing file path.");
   }
-  // Paths are written by the upload action as <project>/<card>/<file>.
   if (value.includes("..") || value.startsWith("/") || value.length > 400) {
     throw new BlockError("That file path is not valid.");
   }
@@ -148,7 +136,6 @@ function parseBlock(raw: unknown): Block | null {
   }
 }
 
-// Throws BlockError with a message worth showing; returns clean blocks.
 export function parseBlocks(raw: unknown): Block[] {
   let input = raw;
   if (typeof input === "string") {
@@ -162,10 +149,11 @@ export function parseBlocks(raw: unknown): Block[] {
   if (input.length > MAX_BLOCKS) {
     throw new BlockError(`A card holds at most ${MAX_BLOCKS} blocks.`);
   }
-  return input.map(parseBlock).filter((block): block is Block => block !== null);
+  return input
+    .map(parseBlock)
+    .filter((block): block is Block => block !== null);
 }
 
-// Plain text for AI prompts, search and previews.
 export function blocksToText(blocks: Block[]): string {
   return blocks
     .map((block) => {

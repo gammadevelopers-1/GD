@@ -3,13 +3,6 @@ import "server-only";
 import OpenAI from "openai";
 import { type Block, blocksToText } from "@/lib/projects/blocks";
 
-// Reuses the shape already proven by the public audit in lib/audit/openai.ts:
-// the Responses API, a strict JSON schema, and store:false so nothing about a
-// client project is retained upstream.
-//
-// AI is a convenience here and never a dependency. Every board workflow works
-// with the key absent — this module simply reports that it is unavailable.
-
 const DEFAULT_MODEL = "gpt-5.6-terra";
 const MAX_OUTPUT_TOKENS = 900;
 
@@ -28,13 +21,15 @@ function openai(): OpenAI {
   return client;
 }
 
-// A failed suggestion should say which kind of failure it was. "It did not
-// work" sends someone reading logs; "no credits" sends them to billing.
 function describeFailure(error: unknown, fallback: string): string {
   const status = (error as { status?: number } | null)?.status;
   const code = (error as { code?: string } | null)?.code;
 
-  if (status === 429 || code === "insufficient_quota" || code === "credit_balance_exhausted") {
+  if (
+    status === 429 ||
+    code === "insufficient_quota" ||
+    code === "credit_balance_exhausted"
+  ) {
     return "The AI account has no credits left, so nothing was suggested.";
   }
   if (status === 401 || status === 403) {
@@ -133,9 +128,11 @@ export async function suggestIdeaOrder(
           .filter((id, index, all) => all.indexOf(id) === index)
       : [];
 
-    // A model that dropped or invented cards does not get to reorder the week.
     if (ordered.length !== ideas.length) {
-      return { ok: false, reason: "The suggestion was incomplete, so nothing moved." };
+      return {
+        ok: false,
+        reason: "The suggestion was incomplete, so nothing moved.",
+      };
     }
 
     return {
@@ -154,13 +151,6 @@ export async function suggestIdeaOrder(
   }
 }
 
-// ---------------------------------------------------------------------------
-// Drafting a card's content
-// ---------------------------------------------------------------------------
-
-// A deliberately narrow vocabulary. The model may write prose and structure,
-// never an image, a file or a credential reference — those are things a person
-// attaches, not something a language model should be inventing.
 const DRAFT_SCHEMA = {
   type: "object",
   properties: {
@@ -170,10 +160,14 @@ const DRAFT_SCHEMA = {
       items: {
         type: "object",
         properties: {
-          kind: { type: "string", enum: ["heading", "text", "bullet", "callout"] },
+          kind: {
+            type: "string",
+            enum: ["heading", "text", "bullet", "callout"],
+          },
           text: {
             type: "string",
-            description: "Content for heading, text and callout. Empty for bullet.",
+            description:
+              "Content for heading, text and callout. Empty for bullet.",
           },
           items: {
             type: "array",
@@ -219,8 +213,7 @@ export type DraftedBlock =
   | { type: "callout"; tone: "note" | "warn" | "key"; text: string };
 
 export type DraftResult =
-  | { ok: true; blocks: DraftedBlock[] }
-  | { ok: false; reason: string };
+  { ok: true; blocks: DraftedBlock[] } | { ok: false; reason: string };
 
 export async function draftIdeaBlocks(
   title: string,
@@ -263,7 +256,10 @@ export async function draftIdeaBlocks(
     for (const raw of parsed.blocks ?? []) {
       const text = typeof raw.text === "string" ? raw.text.trim() : "";
       const items = Array.isArray(raw.items)
-        ? raw.items.map(String).map((item) => item.trim()).filter(Boolean)
+        ? raw.items
+            .map(String)
+            .map((item) => item.trim())
+            .filter(Boolean)
         : [];
 
       if (raw.kind === "heading" && text) {
@@ -280,7 +276,10 @@ export async function draftIdeaBlocks(
     }
 
     if (!blocks.length) {
-      return { ok: false, reason: "Nothing usable came back, so nothing changed." };
+      return {
+        ok: false,
+        reason: "Nothing usable came back, so nothing changed.",
+      };
     }
 
     return { ok: true, blocks: blocks.slice(0, 8) };

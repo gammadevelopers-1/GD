@@ -131,6 +131,3 @@ export async function setMilestoneWeekArchived(formData: FormData) {
   if (error) return;
   refresh();
 }
-
-// Item authoring moved to board-actions.ts when milestones became boards.
-// app_milestone_items keeps its history but no longer accepts writes.

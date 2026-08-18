@@ -8,12 +8,6 @@ import {
   sealWithKey,
 } from "@/lib/credentials/aes.mjs";
 
-// AES-256-GCM, with the key held in the environment and never in Supabase.
-// A full dump of the database yields ciphertext and nothing else.
-//
-// The format itself lives in aes.mjs so the rotation script runs exactly the
-// same code. This module is the key ring around it.
-
 export type SealedSecret = {
   ciphertext: string;
   nonce: string;
@@ -35,8 +29,6 @@ function readKey(raw: string, label: string): Buffer {
   }
 }
 
-// { version: key }. More than one entry means a rotation is in progress: new
-// writes use the active version, older rows still open with their own.
 function keyRing(): Map<number, Buffer> {
   const ring = new Map<number, Buffer>();
 
@@ -140,7 +132,6 @@ export function openSecret(sealed: SealedSecret, credentialId: string): string {
   try {
     return openWithKey(sealed, key, credentialId) as string;
   } catch {
-    // A tampered or relocated row lands here. Never echo any of it back.
     throw new CredentialKeyError(
       "That credential could not be decrypted. The stored value may have been altered.",
     );

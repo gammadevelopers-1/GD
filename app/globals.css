@@ -29,8 +29,6 @@
   --color-brand: var(--color-gd-primary);
   --animate-scroll-hint: scroll-hint 2.2s ease-in-out infinite;
 
-  /* shadcn/ui tokens, mapped to the GD palette. The base set follows the
-     light admin surface; the sidebar set is the dark platform shell. */
   --color-background: #eef0e9;
   --color-foreground: #14171a;
   --color-muted: rgba(20, 23, 26, 0.06);
@@ -1066,13 +1064,6 @@ p {
   transform: translateX(5px);
 }
 
-/* ---------------------------------------------------------------------------
-   Internal platform surfaces
-   Flat backgrounds; hover treatments kept in CSS so the server components
-   stay server components.
-   --------------------------------------------------------------------------- */
-
-/* A hairline that lights up along the top edge on hover. */
 .edge-lit::after {
   position: absolute;
   top: 0;
@@ -1107,8 +1098,6 @@ p {
   }
 }
 
-/* Card elevation. Two layers: a tight contact shadow so the edge reads crisp,
-   and a wide soft one so the card lifts off the page background. */
 .card-surface {
   background: #fff;
   box-shadow:
@@ -1130,7 +1119,6 @@ p {
   transform: translateY(-3px);
 }
 
-/* Board rich-text editor (Tiptap) */
 .board-editor .ProseMirror {
   min-height: 96px;
   outline: none;

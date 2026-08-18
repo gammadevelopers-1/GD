@@ -1,9 +1,10 @@
 import { FileText, Info, KeyRound } from "lucide-react";
-import { type Block, type CalloutTone, CALLOUT_LABEL } from "@/lib/projects/blocks";
+import {
+  type Block,
+  type CalloutTone,
+  CALLOUT_LABEL,
+} from "@/lib/projects/blocks";
 import { cn } from "@/lib/utils";
-
-// Read-only rendering of a card's blocks. Everyone with project access sees
-// this; only an owner or the project lead gets the editor.
 
 function Inline({ value }: { value: string }) {
   const parts = value.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
@@ -162,8 +163,6 @@ export function BlockView({
             );
 
           case "credential":
-            // The name, never the value. Copying still happens in the vault,
-            // where the grant is checked and the copy is audited.
             return (
               <div
                 key={index}

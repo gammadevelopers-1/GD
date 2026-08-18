@@ -4,10 +4,13 @@ import { createClient } from "@/lib/supabase/server";
 import type { Viewer } from "@/data/auth";
 import type { ProjectStatus } from "@/lib/projects/status";
 import type { PortfolioQuery } from "@/lib/projects/portfolio-query";
+import type { BannerFit } from "@/lib/projects/banner";
 
 export type PortfolioProject = {
   id: string;
   publicId: string;
+  bannerUrl: string | null;
+  bannerFit: BannerFit;
   name: string;
   status: ProjectStatus;
   clientId: string | null;
@@ -39,6 +42,8 @@ export type PortfolioOptions = {
 type PortfolioRow = {
   id: string;
   public_id: string;
+  banner_path: string | null;
+  banner_fit: BannerFit | null;
   name: string;
   status: ProjectStatus;
   client_id: string | null;
@@ -80,10 +85,16 @@ export async function getPortfolio(
   if (error) throw new Error(`Portfolio read failed: ${error.message}`);
 
   const rows = (data ?? []) as PortfolioRow[];
-  const values = await getProjectValues(
-    viewer,
-    rows.map((row) => row.id),
-  );
+  const [values, bannerUrls] = await Promise.all([
+    getProjectValues(
+      viewer,
+      rows.map((row) => row.id),
+    ),
+    signBannerUrls(
+      supabase,
+      rows.map((row) => row.banner_path),
+    ),
+  ]);
 
   return rows.map((row) => {
     const total = Number(row.total_items ?? 0);
@@ -91,6 +102,10 @@ export async function getPortfolio(
     return {
       id: String(row.id),
       publicId: String(row.public_id),
+      bannerUrl: row.banner_path
+        ? (bannerUrls.get(row.banner_path) ?? null)
+        : null,
+      bannerFit: row.banner_fit ?? "cover",
       name: String(row.name),
       status: row.status,
       clientId: row.client_id ? String(row.client_id) : null,
@@ -119,7 +134,26 @@ export async function getPortfolio(
   });
 }
 
-// owner only
+const BANNER_URL_TTL_SECONDS = 60 * 60;
+
+async function signBannerUrls(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  paths: Array<string | null>,
+) {
+  const urls = new Map<string, string>();
+  const wanted = [...new Set(paths.filter((path): path is string => !!path))];
+  if (!wanted.length) return urls;
+
+  const { data } = await supabase.storage
+    .from("app-project-attachments")
+    .createSignedUrls(wanted, BANNER_URL_TTL_SECONDS);
+
+  for (const entry of data ?? []) {
+    if (entry?.path && entry.signedUrl) urls.set(entry.path, entry.signedUrl);
+  }
+  return urls;
+}
+
 async function getProjectValues(viewer: Viewer, projectIds: string[]) {
   const values = new Map<string, { amount: number; currency: "PKR" | "USD" }>();
   if (viewer.role !== "owner" || !projectIds.length) return values;

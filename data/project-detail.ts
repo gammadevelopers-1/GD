@@ -5,9 +5,8 @@ import type { Viewer } from "@/data/auth";
 import type { ProjectStatus } from "@/lib/projects/status";
 import { type Board, type CardStatus, workRank } from "@/lib/projects/board";
 import { type Block, parseBlocks } from "@/lib/projects/blocks";
+import type { BannerFit } from "@/lib/projects/banner";
 
-// A card on one of the week's two boards. No assignee by design: the board
-// records what was done, not who did it.
 export type MilestoneCard = {
   id: string;
   title: string;
@@ -15,8 +14,6 @@ export type MilestoneCard = {
   status: CardStatus;
   blocks: Block[];
   position: number;
-  // Kept even after a card is unblocked or finished, so the history of what
-  // got in the way survives.
   blockerReason: string | null;
   carryReason: string | null;
   carriedFromWeek: number | null;
@@ -44,7 +41,6 @@ export type ProjectMember = {
   name: string;
   responsibility: string;
   isLead: boolean;
-  // Assignment is what grants access, so who granted it is worth showing.
   addedBy: string | null;
 };
 
@@ -55,8 +51,9 @@ export type FormerProjectMember = ProjectMember & {
 
 export type ProjectDetail = {
   id: string;
-  // Short random identifier that stands in for the uuid in URLs.
   publicId: string;
+  bannerUrl: string | null;
+  bannerFit: BannerFit;
   name: string;
   description: string | null;
   status: ProjectStatus;
@@ -103,8 +100,6 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-// Content is validated before it is written. On the way out a row that somehow
-// fails to parse should cost that card its blocks, not take the page down.
 function safeBlocks(raw: unknown): Block[] {
   try {
     return parseBlocks(raw);
@@ -113,8 +108,6 @@ function safeBlocks(raw: unknown): Block[] {
   }
 }
 
-// The week we are in now. If planning has not reached today, the next one.
-// If every week has passed, the last one, so there is always an answer.
 function pickCurrentWeek(weeks: MilestoneWeek[]) {
   const now = today();
   const containing = weeks.find(
@@ -148,6 +141,8 @@ type CardRow = {
 type ProjectRow = {
   id: string;
   public_id: string;
+  banner_path: string | null;
+  banner_fit: BannerFit | null;
   name: string;
   description: string | null;
   status: string;
@@ -200,15 +195,10 @@ export async function getProjectDetail(
   const supabase = await createClient();
   const isOwner = viewer.role === "owner";
 
-  // The whole related graph rides along as embedded resources so the
-  // workspace costs one round trip instead of four — the database is remote,
-  // and each extra trip is user-visible latency on every open and tab
-  // switch. Relations with two foreign keys into the same table (profiles,
-  // weeks) name the constraint to disambiguate.
   let query = supabase
     .from("app_projects")
     .select(
-      `id, public_id, name, description, status, starts_on, due_on, archived_at, client_id, lead_id,
+      `id, public_id, banner_path, banner_fit, name, description, status, starts_on, due_on, archived_at, client_id, lead_id,
        client:app_clients(name),
        lead:app_profiles!app_projects_lead_id_fkey(full_name),
        members:app_project_members(
@@ -232,7 +222,6 @@ export async function getProjectDetail(
     )
     .eq("public_id", publicId);
 
-  // Members see the workspace without its archive.
   if (!isOwner) {
     query = query
       .is("members.archived_at", null)
@@ -246,13 +235,17 @@ export async function getProjectDetail(
 
   if (!data) return null;
 
-  // Without generated database types the client guesses each to-one embed as
-  // an array; PostgREST actually returns objects for these FK relations.
   const project = data as unknown as ProjectRow;
   const projectId = String(project.id);
 
-  // Every profile name arrived embedded next to its uuid; one map serves the
-  // member, lead and technical mappings below.
+  let bannerUrl: string | null = null;
+  if (project.banner_path) {
+    const { data: signed } = await supabase.storage
+      .from("app-project-attachments")
+      .createSignedUrl(String(project.banner_path), 60 * 60);
+    bannerUrl = signed?.signedUrl ?? null;
+  }
+
   const names = new Map<string, string>();
   const remember = (id: string | null, ref: NameRef) => {
     if (id && ref?.full_name) names.set(String(id), String(ref.full_name));
@@ -263,7 +256,10 @@ export async function getProjectDetail(
     remember(member.archived_by, member.archivedBy);
   }
   remember(project.lead_id, project.lead);
-  remember(project.technical?.updated_by ?? null, project.technical?.updatedBy ?? null);
+  remember(
+    project.technical?.updated_by ?? null,
+    project.technical?.updatedBy ?? null,
+  );
 
   const weekNumbers = new Map(
     project.weeks.map((week) => [String(week.id), Number(week.week_number)]),
@@ -275,8 +271,6 @@ export async function getProjectDetail(
     title: String(card.title),
     board: card.board as Board,
     status: card.status as CardStatus,
-    // Content is validated on the way in; a bad row should not take the page
-    // down, so a card that cannot be read renders with no blocks.
     blocks: safeBlocks(card.blocks),
     position: Number(card.position ?? 0),
     blockerReason: card.blocker_reason ? String(card.blocker_reason) : null,
@@ -296,8 +290,6 @@ export async function getProjectDetail(
     const ideaCards = live
       .filter((card) => card.board === "idea")
       .sort((a, b) => a.position - b.position);
-    // Reads as the story of the week: moving, stuck, landed, and — last —
-    // what did not get done.
     const workCards = live
       .filter((card) => card.board === "work")
       .sort(
@@ -374,6 +366,8 @@ export async function getProjectDetail(
   return {
     id: projectId,
     publicId: String(project.public_id),
+    bannerUrl,
+    bannerFit: project.banner_fit ?? "cover",
     name: String(project.name),
     description: project.description ? String(project.description) : null,
     status: project.status as ProjectStatus,
@@ -416,7 +410,6 @@ export async function getProjectDetail(
   };
 }
 
-// Owner only
 export async function getProjectFinancial(
   projectId: string,
   viewer: Viewer,

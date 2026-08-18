@@ -68,7 +68,9 @@ export function EnvComposer({
 
   function removeRow(index: number) {
     setRows((current) =>
-      current.length === 1 ? [{ ...EMPTY_ROW }] : current.filter((_, i) => i !== index),
+      current.length === 1
+        ? [{ ...EMPTY_ROW }]
+        : current.filter((_, i) => i !== index),
     );
   }
 
@@ -92,7 +94,9 @@ export function EnvComposer({
 
     setNote(
       `${pairs.length} key${pairs.length === 1 ? "" : "s"} read from ${source}` +
-        (skipped.length ? ` · ${skipped.length} line${skipped.length === 1 ? "" : "s"} ignored` : ""),
+        (skipped.length
+          ? ` · ${skipped.length} line${skipped.length === 1 ? "" : "s"} ignored`
+          : ""),
     );
   }
 
@@ -184,7 +188,9 @@ export function EnvComposer({
               <div className="relative">
                 <input
                   value={row.value}
-                  onChange={(event) => update(index, { value: event.target.value })}
+                  onChange={(event) =>
+                    update(index, { value: event.target.value })
+                  }
                   type={reveal === index ? "text" : "password"}
                   autoComplete="off"
                   spellCheck={false}
@@ -210,7 +216,9 @@ export function EnvComposer({
               </div>
               <input
                 value={row.note}
-                onChange={(event) => update(index, { note: event.target.value })}
+                onChange={(event) =>
+                  update(index, { note: event.target.value })
+                }
                 placeholder="Where to rotate it"
                 aria-label={`Note ${index + 1}`}
                 className={cn(INPUT_SMALL, "h-9")}
@@ -229,7 +237,11 @@ export function EnvComposer({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <button type="button" onClick={addRow} className={cn(BUTTON_GHOST, "h-8")}>
+        <button
+          type="button"
+          onClick={addRow}
+          className={cn(BUTTON_GHOST, "h-8")}
+        >
           <Plus className="size-3.5" />
           Add another
         </button>
@@ -280,7 +292,11 @@ export function EnvComposer({
             </option>
           ))}
         </select>
-        <button type="button" onClick={onDone} className={cn(BUTTON_GHOST, "h-8")}>
+        <button
+          type="button"
+          onClick={onDone}
+          className={cn(BUTTON_GHOST, "h-8")}
+        >
           Cancel
         </button>
         <button
@@ -289,7 +305,10 @@ export function EnvComposer({
           className={cn(BUTTON_PRIMARY, "h-8 text-xs")}
         >
           {pending ? <Loader2 className="size-3.5 animate-spin" /> : null}
-          Save {filled.length ? `${filled.length} variable${filled.length === 1 ? "" : "s"}` : ""}
+          Save{" "}
+          {filled.length
+            ? `${filled.length} variable${filled.length === 1 ? "" : "s"}`
+            : ""}
         </button>
       </div>
     </form>

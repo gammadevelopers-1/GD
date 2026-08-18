@@ -1,6 +1,3 @@
-// The form and the server share these rules, and the database repeats the
-// important ones in a trigger. The database is the one that counts.
-
 export const TECHNICAL_FIELDS = [
   "repositoryUrl",
   "hostingUrl",
@@ -48,10 +45,9 @@ const HOST_MAX = 253;
 
 const WEB_URL =
   /^https?:\/\/[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+(:\d{1,5})?(\/\S*)?$/i;
-const WEB_HOST = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i;
+const WEB_HOST =
+  /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i;
 
-// Mirrors private.looks_like_secret in the Chunk 7 migration. Deliberately
-// eager: a false positive costs one retype, a false negative leaks a key.
 const SECRET_PATTERNS: RegExp[] = [
   /-----BEGIN [A-Z ]*PRIVATE KEY-----/i,
   /\b(postgres|postgresql|mysql|mariadb|mongodb|mongodb\+srv|redis|rediss|amqp|amqps):\/\//i,
@@ -111,7 +107,8 @@ export function validateTechnical(values: TechnicalValues): {
     if (value.length > HOST_MAX) {
       errors[field] = "That address is too long to store.";
     } else if (!WEB_HOST.test(value) && !WEB_URL.test(value)) {
-      errors[field] = "Use a domain like gammadevelopers.ai, or a full https address.";
+      errors[field] =
+        "Use a domain like gammadevelopers.ai, or a full https address.";
     }
   };
 
@@ -121,7 +118,10 @@ export function validateTechnical(values: TechnicalValues): {
   host("liveDomain");
   host("stagingDomain");
 
-  if (!errors.technicalContact && values.technicalContact.length > CONTACT_MAX) {
+  if (
+    !errors.technicalContact &&
+    values.technicalContact.length > CONTACT_MAX
+  ) {
     errors.technicalContact = `Keep it under ${CONTACT_MAX} characters.`;
   }
   for (const field of ["stackNotes", "onboardingNotes"] as const) {
@@ -147,14 +147,11 @@ export function technicalErrorSummary(errors: TechnicalErrors) {
     : `${count} fields need attention.`;
 }
 
-// Only ever produces an http(s) link, so a stored value can never become a
-// javascript: or data: href.
 export function toHref(value: string) {
   const candidate = WEB_URL.test(value) ? value : `https://${value}`;
   return WEB_URL.test(candidate) ? candidate : null;
 }
 
-// github.com/gamma/site rather than https://github.com/gamma/site?tab=x
 export function linkLabel(value: string) {
   const href = toHref(value);
   if (!href) return value;

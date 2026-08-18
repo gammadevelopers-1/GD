@@ -16,10 +16,6 @@ export function ProjectTabs({
   publicId: string;
   activeTab: ProjectTab;
 }) {
-  // The clicked tab highlights at once instead of waiting for the server;
-  // the URL catches up when the navigation commits. Clearing the override on
-  // an activeTab change during render keeps the highlight tied to the real
-  // page without an effect.
   const [clickedTab, setClickedTab] = useState<ProjectTab | null>(null);
   const [lastActiveTab, setLastActiveTab] = useState(activeTab);
   if (lastActiveTab !== activeTab) {
@@ -37,9 +33,6 @@ export function ProjectTabs({
         <Link
           key={tab}
           href={projectTabHref(publicId, tab)}
-          // Dynamic routes only prefetch up to their loading boundary by
-          // default; the full prefetch is what makes a tab switch land
-          // instantly instead of round-tripping on click.
           prefetch={true}
           onClick={() => setClickedTab(tab)}
           aria-current={activeTab === tab ? "page" : undefined}

@@ -239,7 +239,6 @@ export async function setProjectStatus(formData: FormData) {
   refresh();
 }
 
-// Archiving hides the project and cuts member access. Nothing is deleted.
 export async function archiveProject(formData: FormData) {
   await requireRole(["owner"]);
   const projectId = String(formData.get("projectId") ?? "");

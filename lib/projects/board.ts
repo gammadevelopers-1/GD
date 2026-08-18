@@ -1,6 +1,3 @@
-// The two boards a milestone week is made of, and the states a card can be in.
-// Mirrors the check constraints on app_milestone_cards.
-
 export const BOARDS = ["idea", "work"] as const;
 export type Board = (typeof BOARDS)[number];
 
@@ -34,8 +31,6 @@ export const CARD_STATUS_CHIP: Record<CardStatus, string> = {
   incomplete: "border-amber-200 bg-amber-50 text-amber-800",
 };
 
-// The Work Board reads top to bottom as a story of the week: what is moving,
-// what is stuck, what landed, and — last — what did not.
 export const WORK_ORDER: CardStatus[] = [
   "in_progress",
   "blocked",
@@ -48,7 +43,6 @@ export function workRank(status: CardStatus) {
   return index === -1 ? WORK_ORDER.length : index;
 }
 
-// Which moves a card can make from where it is now.
 export const NEXT_STATUSES: Record<CardStatus, CardStatus[]> = {
   idea: ["in_progress", "completed", "blocked"],
   in_progress: ["completed", "blocked", "incomplete", "idea"],
@@ -57,7 +51,6 @@ export const NEXT_STATUSES: Record<CardStatus, CardStatus[]> = {
   incomplete: ["in_progress", "completed", "idea"],
 };
 
-// Statuses that require the person to say why before the move is allowed.
 export function reasonFor(status: CardStatus): {
   required: boolean;
   label: string;
