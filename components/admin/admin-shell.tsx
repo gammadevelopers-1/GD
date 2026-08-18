@@ -221,7 +221,7 @@ export function AdminShell({
             </div>
           </header>
 
-          <div className="min-w-0 px-4 py-6 pb-8 sm:px-6 sm:pb-10 lg:px-8 lg:py-8 xl:px-10">
+          <div className="min-w-0 px-4 pt-2 pb-8 sm:px-6 sm:pb-10 lg:px-8 lg:pt-3 xl:px-10">
             {children}
           </div>
         </SidebarInset>

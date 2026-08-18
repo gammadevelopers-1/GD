@@ -10,6 +10,16 @@ export const IDLE_BANNER: BannerFormState = {
   warning: null,
 };
 
+export const BANNER_MAX_BYTES = 8 * 1024 * 1024;
+
+export const BANNER_TOO_LARGE = "Can't upload more than 8 MB pic";
+
+export const BANNER_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+export const BANNER_ASPECT = 4;
+
+export const BANNER_OUTPUT_WIDTH = 1600;
+
 export const BANNER_FITS = {
   cover: "Crop",
   contain: "Fit",

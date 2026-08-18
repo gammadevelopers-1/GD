@@ -7,12 +7,13 @@ import { isUuid } from "@/lib/projects/validation";
 import { readImageSize } from "@/lib/projects/image-size";
 import {
   BANNER_FITS,
+  BANNER_MAX_BYTES,
+  BANNER_TOO_LARGE,
   type BannerFit,
   type BannerFormState,
   isBannerFit,
 } from "@/lib/projects/banner";
 
-const BANNER_MAX_BYTES = 5 * 1024 * 1024;
 const BANNER_MIN_WIDTH = 640;
 const BANNER_MIN_HEIGHT = 160;
 
@@ -64,7 +65,7 @@ export async function setProjectBanner(
     if (!isUuid(projectId)) return fail("That project could not be found.");
     if (!(file instanceof File) || !file.size) return fail("Choose an image.");
     if (file.size > BANNER_MAX_BYTES) {
-      return fail("That image is over 5MB. Use a smaller file.");
+      return fail(BANNER_TOO_LARGE);
     }
 
     const extension = BANNER_EXTENSIONS.get(file.type);

@@ -10,7 +10,7 @@ export function PageHeading({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="mb-7 flex flex-col gap-5 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mb-5 flex flex-col gap-4 sm:mb-6 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <p className="font-mono text-[9px] tracking-[0.16em] text-[#057a43] uppercase">
           {eyebrow}

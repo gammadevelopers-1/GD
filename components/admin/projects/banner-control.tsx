@@ -1,15 +1,21 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { ImagePlus, Loader2, Trash2 } from "lucide-react";
+import { BannerCropper } from "@/components/admin/projects/banner-cropper";
 import {
   BANNER_FITS,
   BANNER_FIT_ORDER,
+  BANNER_MAX_BYTES,
+  BANNER_TOO_LARGE,
+  BANNER_TYPES,
   type BannerFit,
   type BannerFormState,
   IDLE_BANNER,
 } from "@/lib/projects/banner";
 import { cn } from "@/lib/utils";
+
+const NOTICE_MS = 6000;
 
 type BannerAction = (
   state: BannerFormState,
@@ -40,10 +46,12 @@ export function BannerControl({
     remove,
     IDLE_BANNER,
   );
-  const formRef = useRef<HTMLFormElement>(null);
+  const [pending, setPending] = useState<File | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
+  const [dismissed, setDismissed] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const error =
+  const serverError =
     saveState.status === "error"
       ? saveState.message
       : fitState.status === "error"
@@ -52,6 +60,48 @@ export function BannerControl({
           ? removeState.message
           : null;
   const warning = saveState.status === "success" ? saveState.warning : null;
+
+  const notice = localError ?? serverError ?? warning ?? null;
+  const tone = localError || serverError ? "error" : "warning";
+  const shown = notice && notice !== dismissed ? notice : null;
+
+  useEffect(() => {
+    if (!shown) return;
+    const timer = setTimeout(() => setDismissed(shown), NOTICE_MS);
+    return () => clearTimeout(timer);
+  }, [shown]);
+
+  function pick(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    if (!BANNER_TYPES.includes(file.type)) {
+      setLocalError("Use a JPEG, PNG or WebP image.");
+      return;
+    }
+    if (file.size > BANNER_MAX_BYTES) {
+      setLocalError(BANNER_TOO_LARGE);
+      return;
+    }
+
+    setLocalError(null);
+    setDismissed(notice);
+    setPending(file);
+  }
+
+  function upload(cropped: File) {
+    setPending(null);
+    if (cropped.size > BANNER_MAX_BYTES) {
+      setLocalError(BANNER_TOO_LARGE);
+      return;
+    }
+    const data = new FormData();
+    data.set("projectId", projectId);
+    data.set("fit", fit);
+    data.set("file", cropped);
+    saveAction(data);
+  }
 
   return (
     <div className="flex flex-col items-start gap-1.5 lg:items-end">
@@ -82,33 +132,26 @@ export function BannerControl({
           </form>
         ) : null}
 
-        <form ref={formRef} action={saveAction}>
-          <input type="hidden" name="projectId" value={projectId} />
-          <input type="hidden" name="fit" value={fit} />
-          <input
-            ref={inputRef}
-            type="file"
-            name="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="sr-only"
-            onChange={(event) => {
-              if (event.target.files?.length) formRef.current?.requestSubmit();
-            }}
-          />
-          <button
-            type="button"
-            disabled={saving}
-            onClick={() => inputRef.current?.click()}
-            className={PILL}
-          >
-            {saving ? (
-              <Loader2 className="size-3.5 animate-spin" />
-            ) : (
-              <ImagePlus className="size-3.5" />
-            )}
-            {hasBanner ? "Replace" : "Add banner"}
-          </button>
-        </form>
+        <input
+          ref={inputRef}
+          type="file"
+          accept={BANNER_TYPES.join(",")}
+          className="sr-only"
+          onChange={pick}
+        />
+        <button
+          type="button"
+          disabled={saving}
+          onClick={() => inputRef.current?.click()}
+          className={PILL}
+        >
+          {saving ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : (
+            <ImagePlus className="size-3.5" />
+          )}
+          {hasBanner ? "Replace" : "Add banner"}
+        </button>
 
         {hasBanner ? (
           <form action={removeAction}>
@@ -125,21 +168,26 @@ export function BannerControl({
         ) : null}
       </div>
 
-      {error ? (
+      {shown ? (
         <p
-          role="alert"
-          className="max-w-xs text-[11px] text-red-300 lg:text-right"
+          role={tone === "error" ? "alert" : "status"}
+          className={cn(
+            "max-w-xs text-[11px] lg:text-right",
+            tone === "error" ? "text-red-300" : "text-amber-300",
+          )}
         >
-          {error}
+          {shown}
         </p>
       ) : null}
-      {!error && warning ? (
-        <p
-          role="status"
-          className="max-w-xs text-[11px] text-amber-300 lg:text-right"
-        >
-          {warning}
-        </p>
+
+      {pending ? (
+        <BannerCropper
+          key={`${pending.name}-${pending.size}-${pending.lastModified}`}
+          file={pending}
+          saving={saving}
+          onCancel={() => setPending(null)}
+          onSave={upload}
+        />
       ) : null}
     </div>
   );

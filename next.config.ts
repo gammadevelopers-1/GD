@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   experimental: {
     authInterrupts: true,
     useTypeScriptCli: false,
+    serverActions: { bodySizeLimit: "12mb" },
   },
 };
 
