@@ -1,6 +1,12 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import {
+  startTransition,
+  useActionState,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { ImagePlus, Loader2, Trash2 } from "lucide-react";
 import { BannerCropper } from "@/components/admin/projects/banner-cropper";
 import {
@@ -100,7 +106,7 @@ export function BannerControl({
     data.set("projectId", projectId);
     data.set("fit", fit);
     data.set("file", cropped);
-    saveAction(data);
+    startTransition(() => saveAction(data));
   }
 
   return (

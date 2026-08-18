@@ -1165,3 +1165,168 @@ p {
   border-top: 1px solid rgb(0 0 0 / 0.09);
   margin: 0.75rem 0;
 }
+
+/* Idea Board document surface. Long-form writing, so the type is larger and
+   the rhythm looser than the rest of the platform. */
+.idea-prose {
+  max-width: 78ch;
+  margin-inline: auto;
+  font-size: 15px;
+  line-height: 1.75;
+  color: rgb(0 0 0 / 0.78);
+  outline: none;
+}
+
+.idea-prose > * + * {
+  margin-top: 0.85rem;
+}
+
+.idea-prose h2 {
+  margin-top: 1.9rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: rgb(0 0 0 / 0.88);
+}
+
+.idea-prose h3 {
+  margin-top: 1.5rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: rgb(0 0 0 / 0.85);
+}
+
+.idea-prose h4 {
+  margin-top: 1.25rem;
+  font-size: 1.02rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.idea-prose ul,
+.idea-prose ol {
+  padding-left: 1.35rem;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.idea-prose ul {
+  list-style: disc;
+}
+
+.idea-prose ol {
+  list-style: decimal;
+}
+
+.idea-prose blockquote {
+  border-left: 3px solid rgb(47 232 92 / 0.5);
+  padding-left: 0.95rem;
+  color: rgb(0 0 0 / 0.6);
+}
+
+.idea-prose pre {
+  background: rgb(20 23 26 / 0.95);
+  color: #ecece4;
+  border-radius: 0.75rem;
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  font-family: var(--font-jetbrains, ui-monospace, monospace);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.idea-prose code {
+  background: rgb(0 0 0 / 0.06);
+  border-radius: 0.25rem;
+  padding: 0.1em 0.34em;
+  font-family: var(--font-jetbrains, ui-monospace, monospace);
+  font-size: 0.9em;
+}
+
+.idea-prose pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+.idea-prose a {
+  color: #08743d;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.idea-prose hr {
+  border: 0;
+  border-top: 1px solid rgb(0 0 0 / 0.09);
+  margin: 1.6rem 0;
+}
+
+.idea-prose .idea-attachment {
+  max-width: 100%;
+}
+
+.idea-prose img,
+.idea-prose video {
+  border-radius: 0.6rem;
+}
+
+.idea-prose .ProseMirror-selectednode {
+  outline: 2px solid rgb(47 232 92 / 0.7);
+  outline-offset: 2px;
+  border-radius: 0.75rem;
+}
+
+.idea-prose ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0.2rem;
+}
+
+.idea-prose ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+}
+
+.idea-prose ul[data-type="taskList"] li > label {
+  margin-top: 0.36rem;
+  flex-shrink: 0;
+}
+
+.idea-prose ul[data-type="taskList"] li > div {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.idea-prose ul[data-type="taskList"] input[type="checkbox"] {
+  accent-color: #16a34a;
+  width: 0.95rem;
+  height: 0.95rem;
+  cursor: pointer;
+}
+
+.idea-prose ul[data-type="taskList"] li[data-checked="true"] > div {
+  color: rgb(0 0 0 / 0.4);
+  text-decoration: line-through;
+}
+
+.idea-prose mark {
+  border-radius: 0.2rem;
+  padding: 0.05em 0.15em;
+  background-color: #fef08a;
+}
+
+.idea-prose sub,
+.idea-prose sup {
+  font-size: 0.75em;
+  line-height: 0;
+}
+
+.idea-prose p.is-editor-empty:first-child::before,
+.idea-prose p.is-empty::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: rgb(0 0 0 / 0.25);
+}

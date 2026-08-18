@@ -20,11 +20,9 @@ import {
   isProjectTab,
   projectTabHref,
 } from "@/lib/projects/tabs";
-import {
-  type BoardActions,
-  BoardsPanel,
-} from "@/components/admin/projects/boards-panel";
-import { getBoardContext } from "@/data/board-context";
+import { IdeaBoard } from "@/components/admin/projects/idea-board";
+import { getIdeaBoard } from "@/data/idea-board";
+import { unfinishedByWeek } from "@/lib/projects/suggestions";
 import { BannerControl } from "@/components/admin/projects/banner-control";
 import { StatusControl } from "@/components/admin/projects/status-control";
 import { TeamPanel } from "@/components/admin/projects/team-panel";
@@ -71,20 +69,7 @@ import {
 } from "../banner-actions";
 import { bannerFitClass } from "@/lib/projects/banner";
 import { setProjectStatus } from "../actions";
-import {
-  addMilestoneWeek,
-  setMilestoneWeekArchived,
-} from "../milestone-actions";
-import {
-  carryCard,
-  createCard,
-  draftCard,
-  moveCard,
-  organiseWeek,
-  saveCard,
-  setCardArchived,
-  uploadAttachment,
-} from "../board-actions";
+import { saveIdeaBoard, uploadIdeaAttachment } from "../idea-actions";
 import {
   addProjectMember,
   removeProjectMember,
@@ -145,11 +130,15 @@ export default async function ProjectPage({
   const onThisProject =
     isOwner || project.members.some((member) => member.id === viewer.id);
 
+  const canWriteBoard =
+    (onThisProject || viewer.id === project.leadId) && !project.isArchived;
   const notice = query.notice ? NOTICES[query.notice] : undefined;
   const tabHref = (tab: Tab) => projectTabHref(project.publicId, tab);
 
+  const wide = activeTab === "ideas";
+
   return (
-    <div className="mx-auto max-w-[1480px]">
+    <div className={wide ? "w-full" : "mx-auto max-w-[1480px]"}>
       <Link
         href="/projects"
         className="mb-4 inline-flex items-center gap-2 text-xs font-medium text-black/42 transition hover:text-black"
@@ -208,13 +197,13 @@ export default async function ProjectPage({
             <TeamSection project={project} isOwner={false} />
           )
         ) : null}
-        {activeTab === "milestones" ? (
-          <Suspense fallback={<BoardsSkeleton />}>
-            <BoardsSection
+        {activeTab === "ideas" ? (
+          <Suspense fallback={<IdeaSkeleton />}>
+            <IdeaSection
               projectId={project.id}
               viewer={viewer}
               weeks={project.weeks}
-              isOwner={isOwner}
+              canEdit={canWriteBoard}
             />
           </Suspense>
         ) : null}
@@ -304,11 +293,11 @@ function TeamSkeleton() {
   );
 }
 
-function BoardsSkeleton() {
+function IdeaSkeleton() {
   return (
-    <div className="space-y-4">
-      <PanelSkeleton lines={6} />
-      <PanelSkeleton lines={4} />
+    <div className="flex min-h-[calc(100dvh-15rem)] gap-4">
+      <div className="flex-1 animate-pulse rounded-2xl border border-black/[0.07] bg-white" />
+      <div className="hidden w-72 shrink-0 animate-pulse rounded-2xl border border-black/[0.07] bg-[#f8f8f3] xl:block" />
     </div>
   );
 }
@@ -322,45 +311,29 @@ function TechnicalSkeleton() {
   );
 }
 
-async function BoardsSection({
+async function IdeaSection({
   projectId,
   viewer,
   weeks,
-  isOwner,
+  canEdit,
 }: {
   projectId: string;
   viewer: Viewer;
   weeks: ProjectDetail["weeks"];
-  isOwner: boolean;
+  canEdit: boolean;
 }) {
-  const context = await getBoardContext(projectId, viewer, weeks);
-
-  const actions: BoardActions = {
-    createCard,
-    saveCard,
-    moveCard,
-    carryCard,
-    setCardArchived,
-    uploadFile: uploadAttachment.bind(null, {
-      status: "idle",
-      message: null,
-    }),
-    organiseWeek,
-    draftCard,
-    addWeek: addMilestoneWeek,
-    setWeekArchived: setMilestoneWeekArchived,
-  };
+  const board = await getIdeaBoard(projectId, viewer);
 
   return (
-    <BoardsPanel
+    <IdeaBoard
       projectId={projectId}
-      weeks={weeks}
-      canManage={context.canManage}
-      canUpdateStatus={context.canUpdateStatus}
-      isOwner={isOwner}
-      credentials={context.credentials}
-      signedUrls={context.signedUrls}
-      actions={actions}
+      initialDoc={board.doc}
+      canEdit={canEdit}
+      updatedAt={board.updatedAt}
+      updatedBy={board.updatedBy}
+      suggestions={unfinishedByWeek(weeks)}
+      save={saveIdeaBoard}
+      upload={uploadIdeaAttachment}
     />
   );
 }
@@ -731,10 +704,10 @@ function Overview({
               )}
 
               <Link
-                href={tabHref("milestones")}
+                href={tabHref("ideas")}
                 className="mt-3 inline-flex rounded text-[11px] font-semibold text-[#08743d] transition hover:underline focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
               >
-                Open all milestone weeks →
+                Open Milestone →
               </Link>
             </div>
           ) : null}
@@ -927,8 +900,8 @@ function missingInformation(
   if (!project.weeks.length) {
     gaps.push({
       label: "No milestone weeks planned, so there is no progress to report.",
-      action: "Open Milestones",
-      href: tabHref("milestones"),
+      action: "Open Milestone",
+      href: tabHref("ideas"),
     });
   }
 

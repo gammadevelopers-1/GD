@@ -58,7 +58,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${generalSans.variable} ${jetbrainsMono.variable} ${syne.variable}`}
-    >
+     data-scroll-behavior="smooth">
       <body className="bg-background text-foreground font-body antialiased">
         <ButtonFillEffects />
         {children}

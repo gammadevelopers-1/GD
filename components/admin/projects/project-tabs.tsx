@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import {
   PROJECT_TABS,
+  PROJECT_TAB_LABEL,
   type ProjectTab,
   projectTabHref,
 } from "@/lib/projects/tabs";
@@ -37,13 +38,13 @@ export function ProjectTabs({
           onClick={() => setClickedTab(tab)}
           aria-current={activeTab === tab ? "page" : undefined}
           className={cn(
-            "group relative shrink-0 px-3.5 py-3.5 text-[13px] font-medium capitalize transition duration-200 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none sm:px-4",
+            "group relative shrink-0 px-3.5 py-3.5 text-[13px] font-medium transition duration-200 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none sm:px-4",
             shownTab === tab
               ? "bg-white/[0.03] text-white"
               : "text-white/35 hover:bg-white/[0.05] hover:text-white",
           )}
         >
-          {tab}
+          {PROJECT_TAB_LABEL[tab]}
           <span
             aria-hidden
             className={cn(

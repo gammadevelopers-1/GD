@@ -19,6 +19,7 @@ export type MilestoneCard = {
   carriedFromWeek: number | null;
   completedAt: string | null;
   isArchived: boolean;
+  createdBy: string | null;
 };
 
 export type MilestoneWeek = {
@@ -136,6 +137,8 @@ type CardRow = {
   carried_from_week_id: string | null;
   completed_at: string | null;
   archived_at: string | null;
+  created_by: string | null;
+  createdBy: NameRef;
 };
 
 type ProjectRow = {
@@ -211,7 +214,8 @@ export async function getProjectDetail(
          id, week_number, starts_on, due_on, archived_at,
          cards:app_milestone_cards!app_milestone_cards_milestone_week_id_fkey(
            id, milestone_week_id, board, status, title, blocks, position,
-           blocker_reason, carry_reason, carried_from_week_id, completed_at, archived_at
+           blocker_reason, carry_reason, carried_from_week_id, completed_at, archived_at,
+           createdBy:app_profiles!app_milestone_cards_created_by_fkey(full_name)
          )
        ),
        technical:app_project_technical_details(
@@ -280,6 +284,9 @@ export async function getProjectDetail(
       : null,
     completedAt: card.completed_at ? String(card.completed_at) : null,
     isArchived: Boolean(card.archived_at),
+    createdBy: card.createdBy?.full_name
+      ? String(card.createdBy.full_name)
+      : null,
   });
 
   const allWeeks: MilestoneWeek[] = project.weeks.map((week) => {

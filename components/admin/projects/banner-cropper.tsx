@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2, Move, ZoomIn } from "lucide-react";
+import { Loader2, ZoomIn } from "lucide-react";
 import { BANNER_ASPECT, BANNER_OUTPUT_WIDTH } from "@/lib/projects/banner";
 import { BUTTON_PRIMARY, BUTTON_SECONDARY, FOCUS_RING } from "@/lib/admin-ui";
 
