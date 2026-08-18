@@ -1254,6 +1254,12 @@ p {
   color: #08743d;
   text-decoration: underline;
   text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.idea-prose a:hover {
+  color: #0a9350;
+  text-decoration-thickness: 2px;
 }
 
 .idea-prose hr {

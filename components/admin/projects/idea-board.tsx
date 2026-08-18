@@ -49,7 +49,7 @@ export function IdeaBoard({
   updatedAt: string | null;
   updatedBy: string | null;
   suggestions: SuggestionGroup[];
-  save: (projectId: string, doc: unknown) => Promise<SimpleFormState>;
+  save: (projectId: string, doc: string) => Promise<SimpleFormState>;
   upload: (state: UploadResult, formData: FormData) => Promise<UploadResult>;
 }) {
   const editorRef = useRef<IdeaEditorHandle>(null);
@@ -64,7 +64,7 @@ export function IdeaBoard({
     if (snapshot === savedSnapshot.current) {
       return { status: "success" as const, message: null };
     }
-    const result = await save(projectId, latest.current);
+    const result = await save(projectId, snapshot);
     if (result.status !== "error") savedSnapshot.current = snapshot;
     return result;
   }, [projectId, save]);

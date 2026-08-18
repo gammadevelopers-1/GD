@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { requireRole } from "@/data/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -22,16 +21,21 @@ export type UploadResult = SimpleFormState & {
   size?: number;
 };
 
+function isFrameworkSignal(error: unknown) {
+  const digest = (error as { digest?: unknown })?.digest;
+  return typeof digest === "string" && digest.startsWith("NEXT_");
+}
+
 export async function saveIdeaBoard(
   projectId: string,
-  raw: unknown,
+  serialisedDoc: string,
 ): Promise<SimpleFormState> {
   try {
     await requireRole(["owner", "member"]);
     if (!isUuid(projectId))
       return formError("That project could not be found.");
 
-    const doc = parseIdeaDoc(raw);
+    const doc = parseIdeaDoc(serialisedDoc);
     const supabase = await createClient();
     const { error } = await supabase.rpc("app_save_idea_board", {
       target_project_id: projectId,
@@ -44,11 +48,12 @@ export async function saveIdeaBoard(
       );
     }
 
-    revalidatePath("/projects/[projectId]", "page");
     return formSuccess("Saved.");
   } catch (error) {
+    if (isFrameworkSignal(error)) throw error;
     if (error instanceof IdeaDocError) return formError(error.message);
-    return formError("Could not save. Check your connection.");
+    console.error("saveIdeaBoard failed", error);
+    return formError("The board could not be saved. Try again.");
   }
 }
 
@@ -92,7 +97,9 @@ export async function uploadIdeaAttachment(
       mime: file.type,
       size: file.size,
     };
-  } catch {
+  } catch (error) {
+    if (isFrameworkSignal(error)) throw error;
+    console.error("uploadIdeaAttachment failed", error);
     return formError("The file could not be uploaded. Please try again.");
   }
 }

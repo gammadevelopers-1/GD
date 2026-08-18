@@ -18,6 +18,7 @@ import Subscript from "@tiptap/extension-subscript";
 import Superscript from "@tiptap/extension-superscript";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
+import { CodeBlockWithCopy } from "@/components/admin/projects/code-block-node";
 import {
   AlignCenter,
   AlignJustify,
@@ -36,6 +37,7 @@ import {
   Minus,
   Quote,
   Redo2,
+  SquareCode,
   RemoveFormatting,
   Strikethrough,
   Subscript as SubIcon,
@@ -406,7 +408,7 @@ function Toolbar({ editor }: { editor: Editor }) {
         active={editor.isActive("codeBlock")}
         onClick={() => editor.chain().focus().toggleCodeBlock().run()}
       >
-        <Code className="size-4" />
+        <SquareCode className="size-4" />
       </Tool>
       <Tool
         label="Divider line"
@@ -445,6 +447,7 @@ export function IdeaEditor({
     editable,
     extensions: [
       StarterKit.configure({
+        codeBlock: false,
         heading: { levels: [2, 3, 4] },
         link: {
           openOnClick: false,
@@ -452,6 +455,7 @@ export function IdeaEditor({
           HTMLAttributes: { rel: "noreferrer", target: "_blank" },
         },
       }),
+      CodeBlockWithCopy,
       TextStyle,
       Color,
       Highlight.configure({ multicolor: true }),
@@ -468,7 +472,19 @@ export function IdeaEditor({
     ],
     content: initialDoc.content.length ? initialDoc : undefined,
     immediatelyRender: false,
-    editorProps: { attributes: { class: "idea-prose", spellcheck: "true" } },
+    editorProps: {
+      attributes: { class: "idea-prose", spellcheck: "true" },
+      handleClick(view, _pos, event) {
+        const anchor = (event.target as HTMLElement)?.closest("a");
+        const href = anchor?.getAttribute("href");
+        if (!href) return false;
+        if (!view.editable || event.metaKey || event.ctrlKey) {
+          window.open(href, "_blank", "noreferrer");
+          return true;
+        }
+        return false;
+      },
+    },
     onUpdate: ({ editor }) => onChange(editor.getJSON()),
     onTransaction: () => setTick((tick) => tick + 1),
   });
