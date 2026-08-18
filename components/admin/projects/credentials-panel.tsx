@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import {
   AlertCircle,
   Archive,
@@ -41,6 +41,7 @@ import {
   INPUT,
   PANEL,
 } from "@/lib/admin-ui";
+import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
 import { cn } from "@/lib/utils";
 
 type FormAction = (
@@ -454,8 +455,6 @@ function CredentialRow({
   );
 }
 
-// The value is handed to the clipboard and dropped. It is never put into
-// state, never rendered, and never kept after this function returns.
 function CopyValueButton({
   credentialId,
   copy,
@@ -632,6 +631,8 @@ function ShareForm({
   );
   const held = new Set(credential.grants.map((entry) => entry.profileId));
   const shareable = members.filter((member) => !held.has(member.id));
+
+  useCloseOnSuccess(state, onDone);
 
   return (
     <form
@@ -938,14 +939,6 @@ function StatusLine({ state }: { state: CredentialFormState }) {
       {state.message}
     </p>
   );
-}
-
-// A save that worked closes its form. The list behind it already has the new
-// state from revalidatePath.
-function useCloseOnSuccess(state: CredentialFormState, onDone: () => void) {
-  useEffect(() => {
-    if (state.status === "success") onDone();
-  }, [state, onDone]);
 }
 
 function formatMoment(value: string) {

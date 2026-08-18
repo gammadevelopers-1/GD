@@ -12,8 +12,8 @@ import { isUuid } from "@/lib/projects/validation";
 
 const RESPONSIBILITY_MAX = 120;
 
-function refresh(projectId: string) {
-  revalidatePath(`/projects/${projectId}`);
+function refresh() {
+  revalidatePath("/projects/[projectId]", "page");
   revalidatePath("/projects");
   revalidatePath("/dashboard");
 }
@@ -72,7 +72,7 @@ export async function addProjectMember(
   }
 
   await recordTeamEvent(supabase, projectId, "project.member_added", profileId);
-  refresh(projectId);
+  refresh();
   return formSuccess("Added to the project. They can see it now.");
 }
 
@@ -98,7 +98,7 @@ export async function updateMemberResponsibility(
 
   if (error) return formError("The change could not be saved.");
 
-  refresh(projectId);
+  refresh();
   return formSuccess("Responsibility updated.");
 }
 
@@ -139,7 +139,7 @@ export async function removeProjectMember(formData: FormData) {
     "project.member_removed",
     profileId,
   );
-  refresh(projectId);
+  refresh();
 }
 
 export async function restoreProjectMember(formData: FormData) {
@@ -163,7 +163,7 @@ export async function restoreProjectMember(formData: FormData) {
     "project.member_restored",
     profileId,
   );
-  refresh(projectId);
+  refresh();
 }
 
 // Lead is a job on the project, not an extra role. It grants nothing more.
@@ -189,5 +189,5 @@ export async function setProjectLead(formData: FormData) {
     action_name: "project.lead_changed",
     event_metadata: { profile_id: leadId },
   });
-  refresh(projectId);
+  refresh();
 }

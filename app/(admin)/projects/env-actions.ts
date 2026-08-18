@@ -29,8 +29,8 @@ import { isCredentialAccess } from "@/lib/credentials/validation";
 
 const ENV_FILE_MAX_BYTES = 1024 * 1024;
 
-function refresh(projectId: string) {
-  revalidatePath(`/projects/${projectId}`);
+function refresh() {
+  revalidatePath("/projects/[projectId]", "page");
 }
 
 function vaultClosed() {
@@ -80,7 +80,7 @@ export async function createEnvGroup(
     );
   }
 
-  refresh(projectId);
+  refresh();
   return formSuccess(`${name} added.`);
 }
 
@@ -117,7 +117,7 @@ export async function renameEnvGroup(
     );
   }
 
-  refresh(projectId);
+  refresh();
   return formSuccess("Container updated.");
 }
 
@@ -136,7 +136,7 @@ export async function setEnvGroupArchived(formData: FormData) {
     .update({ archived_at: archived ? new Date().toISOString() : null })
     .eq("id", groupId);
 
-  refresh(projectId);
+  refresh();
 }
 
 // Every variable, however it arrived — typed, pasted or read from a file —
@@ -257,7 +257,7 @@ export async function saveEnvVariables(
     pairs,
   );
 
-  refresh(projectId);
+  refresh();
 
   if (!stored) {
     return formError(
@@ -301,7 +301,7 @@ export async function grantEnvGroupAccess(
 
   if (error) return formError("Access could not be granted.");
 
-  refresh(projectId);
+  refresh();
   const count = Number(data ?? 0);
   return formSuccess(
     count
@@ -356,7 +356,7 @@ export async function uploadEnvFile(
     return formError("The file could not be recorded.");
   }
 
-  refresh(projectId);
+  refresh();
   return formSuccess(`${file.name} uploaded.`);
 }
 
@@ -372,7 +372,7 @@ export async function archiveEnvFile(formData: FormData) {
     .update({ archived_at: new Date().toISOString() })
     .eq("id", fileId);
 
-  refresh(projectId);
+  refresh();
 }
 
 // Hands back a short-lived signed URL rather than the contents, so the file

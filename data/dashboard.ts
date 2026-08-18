@@ -8,6 +8,7 @@ export type { ProjectStatus };
 
 export type DashboardProject = {
   id: string;
+  publicId: string;
   name: string;
   client: string;
   status: ProjectStatus;
@@ -32,6 +33,7 @@ export type DashboardData = {
 
 type RawProject = {
   id: string;
+  public_id: string;
   name: string;
   status: ProjectStatus;
   due_on: string | null;
@@ -62,7 +64,7 @@ export async function getDashboardData(viewer: Viewer): Promise<DashboardData> {
     await Promise.all([
       supabase
         .from("app_projects")
-        .select("id, name, status, due_on, client_id, lead_id")
+        .select("id, public_id, name, status, due_on, client_id, lead_id")
         .is("archived_at", null)
         .not("status", "in", '("paused","closed")')
         .order("due_on", { ascending: true, nullsFirst: false }),
@@ -149,6 +151,7 @@ export async function getDashboardData(viewer: Viewer): Promise<DashboardData> {
     const open = openByProject.get(project.id) ?? 0;
     return {
       id: project.id,
+      publicId: project.public_id,
       name: project.name,
       client: clientNames.get(project.client_id) ?? "Client",
       status: project.status,

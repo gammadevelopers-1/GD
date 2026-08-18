@@ -99,7 +99,7 @@ export async function createCredential(
     );
   }
 
-  revalidatePath(`/projects/${projectId}`);
+  revalidatePath("/projects/[projectId]", "page");
   return { status: "success", message: "Credential stored.", fieldErrors: {} };
 }
 
@@ -142,7 +142,7 @@ export async function updateCredentialMetadata(
     );
   }
 
-  revalidatePath(`/projects/${projectId}`);
+  revalidatePath("/projects/[projectId]", "page");
   return { status: "success", message: "Details updated.", fieldErrors: {} };
 }
 
@@ -192,7 +192,7 @@ export async function replaceCredentialSecret(
     return fail("You do not have edit access to this credential.");
   }
 
-  revalidatePath(`/projects/${projectId}`);
+  revalidatePath("/projects/[projectId]", "page");
   return { status: "success", message: "Value replaced.", fieldErrors: {} };
 }
 
@@ -210,7 +210,7 @@ export async function setCredentialArchived(formData: FormData) {
     archived,
   });
 
-  revalidatePath(`/projects/${projectId}`);
+  revalidatePath("/projects/[projectId]", "page");
 }
 
 export async function grantCredentialAccess(
@@ -247,7 +247,7 @@ export async function grantCredentialAccess(
 
   await notifyGrant({ credentialId, profileId, access, grantedBy: viewer.fullName });
 
-  revalidatePath(`/projects/${projectId}`);
+  revalidatePath("/projects/[projectId]", "page");
   return { status: "success", message: "Access granted.", fieldErrors: {} };
 }
 
@@ -265,7 +265,7 @@ export async function revokeCredentialAccess(formData: FormData) {
     target_profile_id: profileId,
   });
 
-  revalidatePath(`/projects/${projectId}`);
+  revalidatePath("/projects/[projectId]", "page");
 }
 
 export type CopyResult =

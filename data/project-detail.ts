@@ -55,6 +55,8 @@ export type FormerProjectMember = ProjectMember & {
 
 export type ProjectDetail = {
   id: string;
+  // Short random identifier that stands in for the uuid in URLs.
+  publicId: string;
   name: string;
   description: string | null;
   status: ProjectStatus;
@@ -127,7 +129,7 @@ function pickCurrentWeek(weeks: MilestoneWeek[]) {
 }
 
 export async function getProjectDetail(
-  projectId: string,
+  publicId: string,
   viewer: Viewer,
 ): Promise<ProjectDetail | null> {
   if (viewer.role !== "owner" && viewer.role !== "member") return null;
@@ -137,13 +139,14 @@ export async function getProjectDetail(
   const { data: project } = await supabase
     .from("app_projects")
     .select(
-      "id, name, description, status, starts_on, due_on, archived_at, client_id, lead_id",
+      "id, public_id, name, description, status, starts_on, due_on, archived_at, client_id, lead_id",
     )
-    .eq("id", projectId)
+    .eq("public_id", publicId)
     .maybeSingle();
 
   if (!project) return null;
 
+  const projectId = String(project.id);
   const isOwner = viewer.role === "owner";
 
   const membersQuery = supabase
@@ -343,7 +346,8 @@ export async function getProjectDetail(
     }));
 
   return {
-    id: String(project.id),
+    id: projectId,
+    publicId: String(project.public_id),
     name: String(project.name),
     description: project.description ? String(project.description) : null,
     status: project.status as ProjectStatus,

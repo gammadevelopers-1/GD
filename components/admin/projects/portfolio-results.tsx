@@ -189,7 +189,7 @@ function ProjectCard({
 
   return (
     <Link
-      href={`/projects/${project.id}`}
+      href={`/projects/${project.publicId}`}
       className="edge-lit card-surface card-lift group flex flex-col overflow-hidden rounded-2xl border border-black/[0.06] p-5 hover:border-[#2fe85c]/40 focus-visible:ring-2 focus-visible:ring-[#16a34a] focus-visible:outline-none"
     >
       <div className="flex items-start justify-between gap-3">
@@ -307,7 +307,7 @@ function ProjectRow({
 
   return (
     <Link
-      href={`/projects/${project.id}`}
+      href={`/projects/${project.publicId}`}
       className={cn(
         "group grid items-center gap-4 px-5 py-3 transition-colors duration-200 hover:bg-[#2fe85c]/[0.05] focus-visible:ring-2 focus-visible:ring-[#16a34a] focus-visible:outline-none",
         isOwner

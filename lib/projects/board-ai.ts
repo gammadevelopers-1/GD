@@ -28,6 +28,24 @@ function openai(): OpenAI {
   return client;
 }
 
+// A failed suggestion should say which kind of failure it was. "It did not
+// work" sends someone reading logs; "no credits" sends them to billing.
+function describeFailure(error: unknown, fallback: string): string {
+  const status = (error as { status?: number } | null)?.status;
+  const code = (error as { code?: string } | null)?.code;
+
+  if (status === 429 || code === "insufficient_quota" || code === "credit_balance_exhausted") {
+    return "The AI account has no credits left, so nothing was suggested.";
+  }
+  if (status === 401 || status === 403) {
+    return "The AI key was rejected. Check OPENAI_API_KEY.";
+  }
+  if (status === 404) {
+    return "That AI model is unavailable. Check OPENAI_MODEL.";
+  }
+  return fallback;
+}
+
 const ORDER_SCHEMA = {
   type: "object",
   properties: {
@@ -128,8 +146,11 @@ export async function suggestIdeaOrder(
           ? parsed.rationale.slice(0, 300)
           : "Reordered by dependency.",
     };
-  } catch {
-    return { ok: false, reason: "The suggestion could not be generated." };
+  } catch (error) {
+    return {
+      ok: false,
+      reason: describeFailure(error, "The suggestion could not be generated."),
+    };
   }
 }
 
@@ -263,7 +284,10 @@ export async function draftIdeaBlocks(
     }
 
     return { ok: true, blocks: blocks.slice(0, 8) };
-  } catch {
-    return { ok: false, reason: "The draft could not be generated." };
+  } catch (error) {
+    return {
+      ok: false,
+      reason: describeFailure(error, "The draft could not be generated."),
+    };
   }
 }

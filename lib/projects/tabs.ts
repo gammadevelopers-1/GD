@@ -22,6 +22,6 @@ export function isProjectTab(value: string | undefined): value is ProjectTab {
 // Lives here for the same reason as the list above. A Server Component cannot
 // hand a function to a Client Component, so the tab bar builds its own hrefs
 // from the project id rather than being passed a builder.
-export function projectTabHref(projectId: string, tab: ProjectTab) {
-  return `/projects/${projectId}${tab === "overview" ? "" : `?tab=${tab}`}`;
+export function projectTabHref(publicId: string, tab: ProjectTab) {
+  return `/projects/${publicId}${tab === "overview" ? "" : `?tab=${tab}`}`;
 }

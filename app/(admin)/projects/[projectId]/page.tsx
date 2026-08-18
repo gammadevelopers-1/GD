@@ -68,6 +68,7 @@ import { addMilestoneWeek, setMilestoneWeekArchived } from "../milestone-actions
 import {
   carryCard,
   createCard,
+  draftCard,
   moveCard,
   organiseWeek,
   saveCard,
@@ -123,20 +124,20 @@ export default async function ProjectPage({
   searchParams: Promise<{ tab?: string; notice?: string }>;
 }) {
   const viewer = await requireRole(["owner", "member"]);
-  const { projectId } = await params;
+  // The URL carries the public id; everything below the lookup works on the
+  // internal uuid, which forms and actions expect.
+  const { projectId: publicId } = await params;
   const query = await searchParams;
   const activeTab: Tab = isProjectTab(query.tab) ? query.tab : "overview";
 
-  const project = await getProjectDetail(projectId, viewer);
+  const project = await getProjectDetail(publicId, viewer);
   if (!project) notFound();
 
+  const projectId = project.id;
   const isOwner = viewer.role === "owner";
   const onThisProject =
     isOwner || project.members.some((member) => member.id === viewer.id);
 
-  // Credentials and their audit history are two more serial round trips and
-  // are only ever shown on one tab, so they stream inside their own boundary
-  // instead of holding up the header and the technical details above them.
   const [financial, options] = await Promise.all([
     getProjectFinancial(projectId, viewer),
     isOwner
@@ -144,9 +145,7 @@ export default async function ProjectPage({
       : Promise.resolve({ clients: [], people: [] }),
   ]);
   const notice = query.notice ? NOTICES[query.notice] : undefined;
-  // Server-side links only. The tab bar is a Client Component and builds its
-  // own hrefs from the project id.
-  const tabHref = (tab: Tab) => projectTabHref(project.id, tab);
+  const tabHref = (tab: Tab) => projectTabHref(project.publicId, tab);
 
   return (
     <div className="mx-auto max-w-[1480px]">
@@ -169,7 +168,7 @@ export default async function ProjectPage({
         >
           <span>{notice.message}</span>
           <Link
-            href={`/projects/${project.id}`}
+            href={`/projects/${project.publicId}`}
             aria-label="Dismiss"
             className="shrink-0 opacity-60 transition hover:opacity-100"
           >
@@ -238,8 +237,6 @@ export default async function ProjectPage({
   );
 }
 
-// The boards need signed attachment URLs and the credential name list, so they
-// fetch their own context and stream behind the header.
 async function BoardsSection({
   projectId,
   viewer,
@@ -264,6 +261,7 @@ async function BoardsSection({
       message: null,
     }),
     organiseWeek,
+    draftCard,
     addWeek: addMilestoneWeek,
     setWeekArchived: setMilestoneWeekArchived,
   };
@@ -282,15 +280,10 @@ async function BoardsSection({
   );
 }
 
-// The Overview shows a compact read of the current week: what is being worked
-// on, then what is still only an idea.
 function currentWeekCards(week: ProjectDetail["weeks"][number]) {
   return [...week.workCards, ...week.ideaCards];
 }
 
-// The technical tab is two sections that share one credential read: the ENV
-// containers and the technical resources. Splitting the read would have meant
-// two trips for the same rows.
 async function TechnicalSections({
   projectId,
   viewer,
@@ -315,8 +308,6 @@ async function TechnicalSections({
   ]);
   const audit = await getCredentialAudit(credentials, viewer);
 
-  // A credential is an ENV variable when it sits in a container. Everything
-  // else is an ordinary project credential.
   const envVariables = credentials.filter((entry) => entry.envGroupId);
   const looseCredentials = credentials.filter((entry) => !entry.envGroupId);
 
@@ -333,17 +324,22 @@ async function TechnicalSections({
   };
 
   return (
-    <div className="space-y-4">
-      <EnvPanel
-        projectId={projectId}
-        groups={envGroups}
-        variables={envVariables}
-        files={envFiles}
-        members={members}
-        isOwner={isOwner}
-        vaultReady={credentialsConfigured()}
-        actions={envActions}
-      />
+    <div className="space-y-6">
+      <div className="space-y-4">
+        <h2 className="px-1 text-[11px] font-semibold tracking-[0.1em] text-black/35 uppercase">
+          Environment &amp; secrets
+        </h2>
+        <EnvPanel
+          projectId={projectId}
+          groups={envGroups}
+          variables={envVariables}
+          files={envFiles}
+          members={members}
+          isOwner={isOwner}
+          vaultReady={credentialsConfigured()}
+          actions={envActions}
+        />
+      </div>
 
       <div className="space-y-4">
         <h2 className="px-1 text-[11px] font-semibold tracking-[0.1em] text-black/35 uppercase">
@@ -392,7 +388,7 @@ function ProjectHeader({
   const deadline = deadlineSignal(project.dueOn, project.status);
 
   return (
-    <section className="mesh-dark overflow-hidden rounded-[20px] border border-black/[0.07] text-white">
+    <section className="panel-dark overflow-hidden rounded-[20px] border border-black/[0.07] text-white">
       <div className="relative px-4 pt-5 pb-5 sm:px-6">
         <div className="pointer-events-none absolute -top-32 right-8 size-80 rounded-full bg-[#2fe85c]/12 blur-3xl" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#2fe85c]/45 to-transparent" />
@@ -427,7 +423,7 @@ function ProjectHeader({
                   action={setProjectStatus}
                 />
                 <Link
-                  href={`/projects/${project.id}/edit`}
+                  href={`/projects/${project.publicId}/edit`}
                   className="inline-flex h-9 items-center gap-1.5 rounded-full bg-white/[0.08] px-3.5 text-xs font-semibold text-white transition duration-200 hover:bg-white/[0.16] hover:shadow-[0_8px_20px_rgba(0,0,0,0.25)] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none active:scale-[0.97]"
                 >
                   <Pencil className="size-3.5" />
@@ -472,7 +468,7 @@ function ProjectHeader({
         </div>
       </div>
 
-      <ProjectTabs projectId={project.id} activeTab={activeTab} />
+      <ProjectTabs publicId={project.publicId} activeTab={activeTab} />
     </section>
   );
 }
@@ -602,8 +598,6 @@ function Overview({
                         >
                           {card.title}
                         </span>
-                        {/* State, not a person — the board reports what was
-                            done rather than who did it. */}
                         {card.status !== "completed" ? (
                           <span
                             className={cn(
@@ -687,7 +681,7 @@ function Overview({
         </Panel>
 
         {isOwner ? (
-          <ValuePanel financial={financial} projectId={project.id} />
+          <ValuePanel financial={financial} publicId={project.publicId} />
         ) : null}
       </div>
     </div>
@@ -696,13 +690,13 @@ function Overview({
 
 function ValuePanel({
   financial,
-  projectId,
+  publicId,
 }: {
   financial: ProjectFinancial | null;
-  projectId: string;
+  publicId: string;
 }) {
   return (
-    <section className="mesh-dark relative overflow-hidden rounded-[18px] border border-black/[0.07] p-5 text-white">
+    <section className="panel-dark relative overflow-hidden rounded-[18px] border border-black/[0.07] p-5 text-white">
       <div className="pointer-events-none absolute -top-20 -right-10 size-52 rounded-full bg-[#2fe85c]/10 blur-3xl" />
       <div className="relative flex items-center gap-2">
         <LockKeyhole className="size-3.5 text-[#69ee88]" />
@@ -738,7 +732,7 @@ function ValuePanel({
             No value recorded for this project yet.
           </p>
           <Link
-            href={`/projects/${projectId}/edit`}
+            href={`/projects/${publicId}/edit`}
             className="mt-4 inline-flex h-9 items-center gap-1.5 rounded-xl bg-white/[0.08] px-3.5 text-xs font-semibold text-white transition duration-200 hover:bg-white/[0.16] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none active:scale-[0.97]"
           >
             <Pencil className="size-3.5" />
@@ -777,14 +771,13 @@ function isThisWeek(dueOn: string, startsOn: string | null) {
   return (startsOn ?? dueOn) <= today && dueOn >= today;
 }
 
-// Missing information is shown as the owner's next action, not a blank field.
 function missingInformation(
   project: ProjectDetail,
   isOwner: boolean,
   tabHref: (tab: Tab) => string,
 ) {
   const gaps: Array<{ label: string; action: string; href?: string }> = [];
-  const editHref = `/projects/${project.id}/edit`;
+  const editHref = `/projects/${project.publicId}/edit`;
 
   if (!project.description) {
     gaps.push({
@@ -832,7 +825,6 @@ function missingInformation(
   return gaps;
 }
 
-// The panel wants plain strings it can drop straight into form fields.
 function technicalDetails(project: ProjectDetail): TechnicalDetails | null {
   const technical = project.technical;
   if (!technical) return null;

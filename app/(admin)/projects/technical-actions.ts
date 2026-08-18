@@ -68,7 +68,7 @@ export async function saveTechnicalDetails(
     };
   }
 
-  revalidatePath(`/projects/${projectId}`);
+  revalidatePath("/projects/[projectId]", "page");
   return {
     status: "success",
     message: "Technical details saved.",

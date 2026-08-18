@@ -12,7 +12,6 @@ import {
   Library,
   LogOut,
   Menu,
-  Search,
   UsersRound,
   X,
 } from "lucide-react";
@@ -119,8 +118,8 @@ export function AdminShell({
   }, [menuOpen]);
 
   return (
-    <div className="app-canvas min-h-dvh overflow-x-clip bg-[#eef0e9] text-[#14171a]">
-      <aside className="mesh-dark fixed inset-y-0 left-0 z-40 hidden w-60 flex-col overflow-y-auto border-r border-white/[0.07] px-3 py-4 text-white lg:flex">
+    <div className="min-h-dvh overflow-x-clip bg-[#eef0e9] text-[#14171a]">
+      <aside className="panel-dark fixed inset-y-0 left-0 z-40 hidden w-60 flex-col overflow-y-auto border-r border-white/[0.07] px-3 py-4 text-white lg:flex">
         <Link
           href="/dashboard"
           className="flex items-center gap-3 rounded-xl px-3 py-2 transition hover:bg-white/[0.04]"
@@ -144,10 +143,15 @@ export function AdminShell({
         </nav>
 
         {plannedItems.length ? (
-          <div className="mt-6 space-y-1 border-t border-white/[0.06] pt-6">
-            {plannedItems.map((item) => (
-              <PlannedNavItem key={item.label} item={item} />
-            ))}
+          <div className="mt-6 border-t border-white/[0.06] pt-5">
+            <p className="px-3 pb-2 font-mono text-[9px] tracking-[0.16em] text-white/25 uppercase">
+              Planned
+            </p>
+            <div className="space-y-1">
+              {plannedItems.map((item) => (
+                <PlannedNavItem key={item.label} item={item} />
+              ))}
+            </div>
           </div>
         ) : null}
 
@@ -183,15 +187,6 @@ export function AdminShell({
             </p>
 
             <div className="ml-auto flex items-center gap-2">
-              <button
-                type="button"
-                disabled
-                title="Search is coming soon"
-                className="hidden h-9 cursor-not-allowed items-center gap-2 rounded-xl border border-black/[0.07] bg-white/40 px-3 text-[13px] text-black/30 md:flex"
-              >
-                <Search className="size-4" />
-                <span>Search</span>
-              </button>
               <div className="flex items-center gap-2.5 rounded-xl border border-black/[0.07] bg-white/55 p-1.5 pr-3 transition hover:border-black/[0.14] hover:bg-white/80">
                 <span className="grid size-7 place-items-center rounded-lg bg-[#15181b] text-[10px] font-semibold text-[#2fe85c]">
                   {viewer.initials}
@@ -260,10 +255,15 @@ export function AdminShell({
               ))}
             </nav>
             {plannedItems.length ? (
-              <div className="mt-6 space-y-1 border-t border-white/[0.07] pt-6">
-                {plannedItems.map((item) => (
-                  <PlannedNavItem key={item.label} item={item} />
-                ))}
+              <div className="mt-6 border-t border-white/[0.07] pt-5">
+                <p className="px-3 pb-2 font-mono text-[9px] tracking-[0.16em] text-white/25 uppercase">
+                  Planned
+                </p>
+                <div className="space-y-1">
+                  {plannedItems.map((item) => (
+                    <PlannedNavItem key={item.label} item={item} />
+                  ))}
+                </div>
               </div>
             ) : null}
             <form action={logout} className="mt-auto pt-8">

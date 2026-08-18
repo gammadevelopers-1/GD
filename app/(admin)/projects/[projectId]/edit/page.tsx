@@ -20,15 +20,15 @@ export default async function EditProjectPage({
   params: Promise<{ projectId: string }>;
 }) {
   const viewer = await requireRole(["owner"]);
-  const { projectId } = await params;
+  const { projectId: publicId } = await params;
 
-  const [project, financial, options] = await Promise.all([
-    getProjectDetail(projectId, viewer),
-    getProjectFinancial(projectId, viewer),
+  const project = await getProjectDetail(publicId, viewer);
+  if (!project) notFound();
+
+  const [financial, options] = await Promise.all([
+    getProjectFinancial(project.id, viewer),
     getProjectFormOptions(),
   ]);
-
-  if (!project) notFound();
 
   const defaults: ProjectFormValues = {
     name: project.name,
@@ -47,7 +47,7 @@ export default async function EditProjectPage({
   return (
     <div className="mx-auto max-w-3xl space-y-4">
       <Link
-        href={`/projects/${project.id}`}
+        href={`/projects/${project.publicId}`}
         className="inline-flex items-center gap-2 text-xs font-medium text-black/42 transition hover:text-black"
       >
         <ArrowLeft className="size-3.5" /> {project.name}
@@ -73,7 +73,7 @@ export default async function EditProjectPage({
             people={options.people}
             defaults={defaults}
             projectId={project.id}
-            cancelHref={`/projects/${project.id}`}
+            cancelHref={`/projects/${project.publicId}`}
           />
         </div>
       </div>

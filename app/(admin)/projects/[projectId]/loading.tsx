@@ -12,7 +12,7 @@ export default function ProjectWorkspaceLoading() {
 
       <Shimmer className="mb-4 h-3 w-24 bg-black/[0.05]" />
 
-      <section className="mesh-dark overflow-hidden rounded-[20px] border border-black/[0.07]">
+      <section className="panel-dark overflow-hidden rounded-[20px] border border-black/[0.07]">
         <div className="px-4 pt-5 pb-5 sm:px-6">
           <span className="block h-2 w-28 animate-pulse rounded bg-white/[0.09]" />
           <span className="mt-3 block h-7 w-2/3 max-w-sm animate-pulse rounded-lg bg-white/[0.11] sm:h-8" />

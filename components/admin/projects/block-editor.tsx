@@ -139,13 +139,20 @@ export function BlockEditor({
   credentials,
   upload,
   signedUrls,
+  allowedTypes,
+  addLabel,
 }: {
   blocks: Block[];
   onChange: (blocks: Block[]) => void;
   credentials: CredentialOption[];
   upload: (file: File) => Promise<UploadResult>;
   signedUrls: Record<string, string>;
+  allowedTypes?: Array<Block["type"]>;
+  addLabel?: string;
 }) {
+  const menu = allowedTypes
+    ? ADD_MENU.filter((entry) => allowedTypes.includes(entry.type))
+    : ADD_MENU;
   const [adding, setAdding] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -323,7 +330,7 @@ export function BlockEditor({
 
       {adding ? (
         <div className="grid grid-cols-2 gap-1 rounded-xl border border-black/[0.08] bg-white p-1.5 sm:grid-cols-4">
-          {ADD_MENU.map((entry) => (
+          {menu.map((entry) => (
             <button
               key={entry.type}
               type="button"
@@ -352,13 +359,15 @@ export function BlockEditor({
           className={cn(BUTTON_GHOST, "h-8 w-full justify-start px-2")}
         >
           <Plus className="size-3.5" />
-          Add a block
+          {addLabel ?? "Add a block"}
         </button>
       )}
 
-      <p className="px-2 text-[10px] text-black/30">
-        Use **bold**, *italic* and `code` inside any text.
-      </p>
+      {!allowedTypes ? (
+        <p className="px-2 text-[10px] text-black/30">
+          Use **bold**, *italic* and `code` inside any text.
+        </p>
+      ) : null}
     </div>
   );
 }

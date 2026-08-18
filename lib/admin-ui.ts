@@ -1,4 +1,3 @@
-// Shared hover and focus styles, so a button feels the same on every tab.
 export const FOCUS_RING =
   "focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none";
 
@@ -29,7 +28,6 @@ export const INPUT = `w-full rounded-xl border border-black/[0.09] bg-white px-3
 
 export const INPUT_SMALL = `rounded-lg border border-black/[0.09] bg-white px-2.5 text-xs outline-none transition duration-150 placeholder:text-black/30 hover:border-black/20 focus:border-[#16a34a] focus-visible:ring-2 focus-visible:ring-[#16a34a]/20`;
 
-// Hidden until you hover on desktop, always visible on touch screens.
 export const REVEAL_ON_HOVER =
   "opacity-100 transition-opacity duration-150 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100";
 

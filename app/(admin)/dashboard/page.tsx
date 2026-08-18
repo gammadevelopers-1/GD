@@ -281,7 +281,7 @@ function ProjectRow({ project }: { project: DashboardProject }) {
   return (
     <tr className="transition hover:bg-black/[0.018]">
       <td className="px-6 py-4">
-        <Link href={`/projects/${project.id}`} className="block">
+        <Link href={`/projects/${project.publicId}`} className="block">
           <p className="text-sm font-semibold tracking-[-0.02em]">
             {project.name}
           </p>
@@ -315,7 +315,7 @@ function ProjectRow({ project }: { project: DashboardProject }) {
 function ProjectCard({ project }: { project: DashboardProject }) {
   return (
     <Link
-      href={`/projects/${project.id}`}
+      href={`/projects/${project.publicId}`}
       className="block p-4 active:bg-black/[0.02]"
     >
       <div className="flex items-start justify-between gap-3">

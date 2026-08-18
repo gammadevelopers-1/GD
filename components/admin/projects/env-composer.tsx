@@ -24,15 +24,13 @@ import {
   ICON_BUTTON,
   INPUT_SMALL,
 } from "@/lib/admin-ui";
+import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
 import { cn } from "@/lib/utils";
 
 type Row = { key: string; value: string; note: string };
 
 const EMPTY_ROW: Row = { key: "", value: "", note: "" };
 
-// Reading a .env happens here, in the browser, and fills the rows. Nothing is
-// sent anywhere until Save, so an accidental file pick costs nothing and the
-// contents can still be corrected first.
 export function EnvComposer({
   projectId,
   groupId,
@@ -54,6 +52,8 @@ export function EnvComposer({
   const [note, setNote] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
+  useCloseOnSuccess(state, onDone);
+
   const filled = rows.filter((row) => row.key.trim() || row.value);
 
   function update(index: number, patch: Partial<Row>) {
@@ -72,7 +72,6 @@ export function EnvComposer({
     );
   }
 
-  // Shared by the file picker, the drop zone and pasting into a Key field.
   function absorb(text: string, source: string) {
     const { pairs, skipped } = parseEnvBlob(text);
     if (!pairs.length) {
@@ -168,8 +167,6 @@ export function EnvComposer({
                 onChange={(event) => update(index, { key: event.target.value })}
                 onPaste={(event) => {
                   const text = event.clipboardData.getData("text");
-                  // Pasting a whole file into the Key box splits it out, the
-                  // way Vercel does. A single key pastes normally.
                   if (text.includes("\n") || /^\s*[\w.]+\s*=/.test(text)) {
                     event.preventDefault();
                     absorb(text, "the pasted text");

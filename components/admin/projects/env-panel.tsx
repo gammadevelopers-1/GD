@@ -32,6 +32,7 @@ import {
   INPUT_SMALL,
 } from "@/lib/admin-ui";
 import { EnvComposer } from "@/components/admin/projects/env-composer";
+import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
 import { cn } from "@/lib/utils";
 
 type FormAction = (
@@ -66,7 +67,6 @@ export function EnvPanel({
 }: {
   projectId: string;
   groups: EnvGroup[];
-  // Every credential that belongs to a container, already grouped by the page.
   variables: ProjectCredential[];
   files: EnvFile[];
   members: Array<{ id: string; name: string }>;
@@ -85,16 +85,20 @@ export function EnvPanel({
   return (
     <section className="card-surface rounded-2xl border border-black/[0.06] p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h2 className="flex items-center gap-2 text-[14px] font-semibold tracking-[-0.025em]">
-            <KeyRound className="size-4 text-black/35" />
-            Environment variables
-          </h2>
-          <p className="mt-1.5 max-w-2xl text-[12px] leading-5 text-black/45">
-            Each key is stored and encrypted on its own, so access is granted
-            per variable rather than per file. Values are copied to the
-            clipboard and never rendered on screen.
-          </p>
+        <div className="flex min-w-0 items-start gap-2.5">
+          <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#2fe85c]/12">
+            <KeyRound className="size-4 text-[#08743d]" />
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-[14px] font-semibold tracking-[-0.025em]">
+              Environment variables
+            </h2>
+            <p className="mt-1 max-w-2xl text-[12px] leading-5 text-black/45">
+              Each key is stored and encrypted on its own, so access is granted
+              per variable rather than per file. Values are copied to the
+              clipboard and never rendered on screen.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -168,8 +172,8 @@ function GroupCard({
   const readable = variables.filter((variable) => variable.myAccess).length;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-black/[0.07]">
-      <header className="flex flex-wrap items-center justify-between gap-2 bg-black/[0.015] px-3.5 py-2.5">
+    <div className="overflow-hidden rounded-xl border border-black/[0.07] bg-white">
+      <header className="flex flex-wrap items-center justify-between gap-2 bg-black/[0.025] px-3.5 py-2.5 transition-colors hover:bg-black/[0.04]">
         <button
           type="button"
           onClick={() => setOpen((value) => !value)}
@@ -358,6 +362,8 @@ function ShareGroupForm({
 }) {
   const [state, formAction, pending] = useActionState(action, IDLE_FORM);
 
+  useCloseOnSuccess(state, onDone);
+
   return (
     <form
       action={formAction}
@@ -410,6 +416,8 @@ function NewGroupForm({
 }) {
   const [state, formAction, pending] = useActionState(action, IDLE_FORM);
   const [open, setOpen] = useState(false);
+
+  useCloseOnSuccess(state, () => setOpen(false));
 
   if (!open) {
     return (

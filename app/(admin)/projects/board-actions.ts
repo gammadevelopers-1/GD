@@ -11,7 +11,7 @@ import {
 import { isUuid } from "@/lib/projects/validation";
 import { BlockError, parseBlocks } from "@/lib/projects/blocks";
 import { isCardStatus } from "@/lib/projects/board";
-import { suggestIdeaOrder } from "@/lib/projects/board-ai";
+import { draftIdeaBlocks, suggestIdeaOrder } from "@/lib/projects/board-ai";
 
 // Stored content is already validated; a row that will not parse should cost
 // the model some context, not fail the request.
@@ -43,8 +43,8 @@ const ALLOWED_TYPES = new Set([
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 ]);
 
-function refresh(projectId: string) {
-  revalidatePath(`/projects/${projectId}`);
+function refresh() {
+  revalidatePath("/projects/[projectId]", "page");
   revalidatePath("/projects");
   revalidatePath("/dashboard");
 }
@@ -116,7 +116,7 @@ export async function createCard(
 
   if (error) return formError("The idea could not be added.");
 
-  refresh(projectId);
+  refresh();
   return formSuccess("Added to the Idea Board.");
 }
 
@@ -157,7 +157,7 @@ export async function saveCard(
 
   if (error) return formError("The card could not be saved.");
 
-  refresh(projectId);
+  refresh();
   return formSuccess("Saved.");
 }
 
@@ -196,7 +196,7 @@ export async function moveCard(
     );
   }
 
-  refresh(projectId);
+  refresh();
   return formSuccess("Moved.");
 }
 
@@ -229,7 +229,7 @@ export async function carryCard(
     );
   }
 
-  refresh(projectId);
+  refresh();
   return formSuccess("Carried into the next week.");
 }
 
@@ -253,7 +253,7 @@ export async function reorderCards(formData: FormData) {
     ordered_ids: ordered,
   });
 
-  refresh(projectId);
+  refresh();
 }
 
 export async function setCardArchived(formData: FormData) {
@@ -271,7 +271,35 @@ export async function setCardArchived(formData: FormData) {
     .update({ archived_at: archived ? new Date().toISOString() : null })
     .eq("id", cardId);
 
-  refresh(projectId);
+  refresh();
+}
+
+// Optional: drafts structure for one card and hands it back for review. It
+// deliberately does not save — the blocks land in the open editor so a person
+// edits and accepts them, rather than the model writing to the board.
+export async function draftCard(
+  _state: SimpleFormState,
+  formData: FormData,
+): Promise<SimpleFormState & { blocks?: unknown }> {
+  await requireRole(["owner", "member"]);
+  const projectId = String(formData.get("projectId") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+
+  if (!isUuid(projectId)) return formError("That project could not be found.");
+
+  const supabase = await createClient();
+  if (!(await assertCanManage(supabase, projectId))) {
+    return formError("Only an owner or the project lead can edit this board.");
+  }
+
+  const existing = safeParseBlocks(formData.get("blocks"));
+  const draft = await draftIdeaBlocks(title, existing);
+  if (!draft.ok) return formError(draft.reason);
+
+  return {
+    ...formSuccess("Drafted below — edit anything, then save."),
+    blocks: draft.blocks,
+  };
 }
 
 // Optional: asks the model to sequence this week's ideas, then applies the
@@ -318,7 +346,7 @@ export async function organiseWeek(
 
   if (error) return formError("The new order could not be saved.");
 
-  refresh(projectId);
+  refresh();
   return formSuccess(suggestion.rationale);
 }
 

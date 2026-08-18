@@ -1041,54 +1041,10 @@ p {
 
 /* ---------------------------------------------------------------------------
    Internal platform surfaces
-   A dot grid that fades out down the page, one soft green bloom behind the
-   header, and a pointer-following highlight for cards. Kept in CSS so the
-   server components stay server components.
+   Flat backgrounds; hover treatments kept in CSS so the server components
+   stay server components.
    --------------------------------------------------------------------------- */
 
-.app-canvas {
-  position: relative;
-  isolation: isolate;
-}
-
-.app-canvas::before {
-  position: fixed;
-  z-index: -1;
-  content: "";
-  background-image: radial-gradient(
-    rgba(20, 23, 26, 0.055) 1px,
-    transparent 1px
-  );
-  background-position: -16px -16px;
-  background-size: 32px 32px;
-  inset: 0;
-  mask-image: radial-gradient(
-    130% 68% at 50% 0%,
-    #000 22%,
-    rgba(0, 0, 0, 0.35) 58%,
-    transparent 82%
-  );
-  pointer-events: none;
-}
-
-.app-canvas::after {
-  position: fixed;
-  top: -20rem;
-  left: 50%;
-  z-index: -1;
-  width: min(78rem, 130vw);
-  height: 38rem;
-  content: "";
-  background: radial-gradient(
-    48% 52% at 50% 50%,
-    rgba(47, 232, 92, 0.16),
-    transparent 72%
-  );
-  pointer-events: none;
-  transform: translateX(-50%);
-}
-
-/* Pointer highlight. The x/y come from one listener on the grid, not per card. */
 /* A hairline that lights up along the top edge on hover. */
 .edge-lit::after {
   position: absolute;
@@ -1114,24 +1070,18 @@ p {
   opacity: 1;
 }
 
-/* Dark panels get a faint grid instead of a flat fill. */
-.mesh-dark {
+.panel-dark {
   background-color: #15181b;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
-  background-size: 46px 46px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .spot::before,
   .edge-lit::after {
     transition-duration: 1ms;
   }
 }
 
 /* Card elevation. Two layers: a tight contact shadow so the edge reads crisp,
-   and a wide soft one so the card sits above the grid rather than on it. */
+   and a wide soft one so the card lifts off the page background. */
 .card-surface {
   background: #fff;
   box-shadow:
@@ -1196,4 +1146,52 @@ p {
     opacity: 1;
     transform: none;
   }
+}
+
+/* Board rich-text editor (Tiptap) */
+.board-editor .ProseMirror {
+  min-height: 96px;
+  outline: none;
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgb(0 0 0 / 0.75);
+}
+
+.board-editor .ProseMirror > * + * {
+  margin-top: 0.5rem;
+}
+
+.board-editor .ProseMirror h2 {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: rgb(0 0 0 / 0.85);
+}
+
+.board-editor .ProseMirror h3 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: rgb(0 0 0 / 0.8);
+}
+
+.board-editor .ProseMirror ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.board-editor .ProseMirror code {
+  background: rgb(0 0 0 / 0.06);
+  border-radius: 0.25rem;
+  padding: 0.1em 0.3em;
+  font-family: var(--font-jetbrains-mono, ui-monospace, monospace);
+  font-size: 0.9em;
+}
+
+.board-editor .ProseMirror hr {
+  border: 0;
+  border-top: 1px solid rgb(0 0 0 / 0.09);
+  margin: 0.75rem 0;
 }

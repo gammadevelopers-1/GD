@@ -12,8 +12,8 @@ import { isIsoDate, isUuid } from "@/lib/projects/validation";
 
 const WEEK_MAX = 999;
 
-function refresh(projectId: string) {
-  revalidatePath(`/projects/${projectId}`);
+function refresh() {
+  revalidatePath("/projects/[projectId]", "page");
   revalidatePath("/projects");
   revalidatePath("/dashboard");
 }
@@ -74,7 +74,7 @@ export async function addMilestoneWeek(
     );
   }
 
-  refresh(projectId);
+  refresh();
   return formSuccess(`Week ${fields.weekNumber} planned.`);
 }
 
@@ -111,7 +111,7 @@ export async function updateMilestoneWeek(
     );
   }
 
-  refresh(projectId);
+  refresh();
   return formSuccess("Week updated.");
 }
 
@@ -129,7 +129,7 @@ export async function setMilestoneWeekArchived(formData: FormData) {
     .eq("id", weekId);
 
   if (error) return;
-  refresh(projectId);
+  refresh();
 }
 
 // Item authoring moved to board-actions.ts when milestones became boards.

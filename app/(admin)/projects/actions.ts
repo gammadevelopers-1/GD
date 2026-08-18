@@ -13,8 +13,8 @@ import {
 } from "@/lib/projects/validation";
 import { isProjectStatus } from "@/lib/projects/status";
 
-function refresh(projectId?: string) {
-  if (projectId) revalidatePath(`/projects/${projectId}`);
+function refresh() {
+  revalidatePath("/projects/[projectId]", "page");
   revalidatePath("/projects");
   revalidatePath("/dashboard");
 }
@@ -52,7 +52,7 @@ export async function createProject(
       status: parsed.status,
       created_by: viewer.id,
     })
-    .select("id")
+    .select("id, public_id")
     .single();
 
   if (error || !project) {
@@ -67,6 +67,7 @@ export async function createProject(
   }
 
   const projectId = String(project.id);
+  const publicId = String(project.public_id);
 
   if (parsed.financial) {
     const { error: financialError } = await supabase
@@ -85,8 +86,8 @@ export async function createProject(
         action_name: "project.created",
         event_metadata: { status: parsed.status, value_recorded: false },
       });
-      refresh(projectId);
-      redirect(`/projects/${projectId}?notice=value-not-saved`);
+      refresh();
+      redirect(`/projects/${publicId}?notice=value-not-saved`);
     }
   }
 
@@ -99,8 +100,8 @@ export async function createProject(
     },
   });
 
-  refresh(projectId);
-  redirect(`/projects/${projectId}?notice=created`);
+  refresh();
+  redirect(`/projects/${publicId}?notice=created`);
 }
 
 export async function updateProject(
@@ -198,7 +199,7 @@ export async function updateProject(
     },
   });
 
-  refresh(projectId);
+  refresh();
 
   return {
     status: "success",
@@ -235,7 +236,7 @@ export async function setProjectStatus(formData: FormData) {
     event_metadata: { status_from: before?.status ?? null, status_to: status },
   });
 
-  refresh(projectId);
+  refresh();
 }
 
 // Archiving hides the project and cuts member access. Nothing is deleted.
@@ -258,7 +259,7 @@ export async function archiveProject(formData: FormData) {
     event_metadata: {},
   });
 
-  refresh(projectId);
+  refresh();
   redirect("/projects?notice=archived");
 }
 
@@ -268,12 +269,14 @@ export async function restoreProject(formData: FormData) {
   if (!isUuid(projectId)) return;
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data: restored, error } = await supabase
     .from("app_projects")
     .update({ archived_at: null })
     .eq("id", projectId)
-    .not("archived_at", "is", null);
-  if (error) return;
+    .not("archived_at", "is", null)
+    .select("public_id")
+    .maybeSingle();
+  if (error || !restored) return;
 
   await supabase.rpc("app_record_project_event", {
     target_project_id: projectId,
@@ -281,6 +284,6 @@ export async function restoreProject(formData: FormData) {
     event_metadata: {},
   });
 
-  refresh(projectId);
-  redirect(`/projects/${projectId}?notice=restored`);
+  refresh();
+  redirect(`/projects/${restored.public_id}?notice=restored`);
 }

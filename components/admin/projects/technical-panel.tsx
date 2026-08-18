@@ -454,8 +454,6 @@ function TechnicalForm({
   const current = state.values ?? values;
   const errors = state.fieldErrors;
 
-  // A save that worked closes the form, and the page behind it already has
-  // the new values from revalidatePath.
   useEffect(() => {
     if (state.status === "success") onDone();
   }, [state, onDone]);

@@ -7,6 +7,7 @@ import type { PortfolioQuery } from "@/lib/projects/portfolio-query";
 
 export type PortfolioProject = {
   id: string;
+  publicId: string;
   name: string;
   status: ProjectStatus;
   clientId: string | null;
@@ -37,6 +38,7 @@ export type PortfolioOptions = {
 
 type PortfolioRow = {
   id: string;
+  public_id: string;
   name: string;
   status: ProjectStatus;
   client_id: string | null;
@@ -88,6 +90,7 @@ export async function getPortfolio(
     const done = Number(row.done_items ?? 0);
     return {
       id: String(row.id),
+      publicId: String(row.public_id),
       name: String(row.name),
       status: row.status,
       clientId: row.client_id ? String(row.client_id) : null,
