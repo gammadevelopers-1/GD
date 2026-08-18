@@ -1103,51 +1103,6 @@ p {
   transform: translateY(-3px);
 }
 
-/* Project workspace tabs.
-   Switching tab only changes ?tab=, so the route segment is unchanged and no
-   loading.tsx fallback can fire. This bar is what confirms the click.
-   It starts invisible and fades in after 120ms, so a fast tab switch never
-   flashes an indicator the user did not need to see. */
-@keyframes tab-indicator-in {
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes tab-indicator-sweep {
-  0% {
-    transform: scaleX(0.2);
-    transform-origin: left center;
-  }
-  50% {
-    transform: scaleX(1);
-    transform-origin: left center;
-  }
-  50.01% {
-    transform: scaleX(1);
-    transform-origin: right center;
-  }
-  100% {
-    transform: scaleX(0.2);
-    transform-origin: right center;
-  }
-}
-
-.tab-indicator-pending {
-  opacity: 0;
-  animation:
-    tab-indicator-in 160ms ease 120ms forwards,
-    tab-indicator-sweep 900ms ease-in-out 120ms infinite;
-}
-
-/* Reduced motion still needs the confirmation, just without the sweep. */
-@media (prefers-reduced-motion: reduce) {
-  .tab-indicator-pending {
-    opacity: 1;
-    transform: none;
-  }
-}
-
 /* Board rich-text editor (Tiptap) */
 .board-editor .ProseMirror {
   min-height: 96px;

@@ -44,9 +44,9 @@ import type { Viewer } from "@/data/auth";
 import {
   type ProjectDetail,
   type ProjectFinancial,
+  getActivePeople,
   getProjectDetail,
   getProjectFinancial,
-  getProjectFormOptions,
 } from "@/data/project-detail";
 import {
   TONE_BAR,
@@ -133,17 +133,10 @@ export default async function ProjectPage({
   const project = await getProjectDetail(publicId, viewer);
   if (!project) notFound();
 
-  const projectId = project.id;
   const isOwner = viewer.role === "owner";
   const onThisProject =
     isOwner || project.members.some((member) => member.id === viewer.id);
 
-  const [financial, options] = await Promise.all([
-    getProjectFinancial(projectId, viewer),
-    isOwner
-      ? getProjectFormOptions()
-      : Promise.resolve({ clients: [], people: [] }),
-  ]);
   const notice = query.notice ? NOTICES[query.notice] : undefined;
   const tabHref = (tab: Tab) => projectTabHref(project.publicId, tab);
 
@@ -185,29 +178,34 @@ export default async function ProjectPage({
 
       <div className="mt-4">
         {activeTab === "overview" ? (
-          <Overview
-            project={project}
-            financial={financial}
-            isOwner={isOwner}
-            tabHref={tabHref}
-          />
+          isOwner ? (
+            <Suspense fallback={<OverviewSkeleton />}>
+              <OverviewSection
+                project={project}
+                viewer={viewer}
+                tabHref={tabHref}
+              />
+            </Suspense>
+          ) : (
+            <Overview
+              project={project}
+              financial={null}
+              isOwner={false}
+              tabHref={tabHref}
+            />
+          )
         ) : null}
         {activeTab === "team" ? (
-          <TeamPanel
-            projectId={project.id}
-            members={project.members}
-            formerMembers={project.formerMembers}
-            people={options.people}
-            isOwner={isOwner}
-            addMember={addProjectMember}
-            updateResponsibility={updateMemberResponsibility}
-            removeMember={removeProjectMember}
-            restoreMember={restoreProjectMember}
-            setLead={setProjectLead}
-          />
+          isOwner ? (
+            <Suspense fallback={<TeamSkeleton />}>
+              <TeamSection project={project} isOwner />
+            </Suspense>
+          ) : (
+            <TeamSection project={project} isOwner={false} />
+          )
         ) : null}
         {activeTab === "milestones" ? (
-          <Suspense fallback={<PanelSkeleton lines={6} />}>
+          <Suspense fallback={<BoardsSkeleton />}>
             <BoardsSection
               projectId={project.id}
               viewer={viewer}
@@ -217,7 +215,7 @@ export default async function ProjectPage({
           </Suspense>
         ) : null}
         {activeTab === "technical" ? (
-          <Suspense fallback={<PanelSkeleton lines={6} />}>
+          <Suspense fallback={<TechnicalSkeleton />}>
             <TechnicalSections
               projectId={project.id}
               viewer={viewer}
@@ -233,6 +231,92 @@ export default async function ProjectPage({
           </Suspense>
         ) : null}
       </div>
+    </div>
+  );
+}
+
+// Only owners get the extra fetches on these tabs — the value panel and the
+// add-member picker. Streaming them behind the tab keeps the header and the
+// rest of the content off that wait; members render with no fetch at all.
+async function OverviewSection({
+  project,
+  viewer,
+  tabHref,
+}: {
+  project: ProjectDetail;
+  viewer: Viewer;
+  tabHref: (tab: Tab) => string;
+}) {
+  const financial = await getProjectFinancial(project.id, viewer);
+  return (
+    <Overview
+      project={project}
+      financial={financial}
+      isOwner
+      tabHref={tabHref}
+    />
+  );
+}
+
+async function TeamSection({
+  project,
+  isOwner,
+}: {
+  project: ProjectDetail;
+  isOwner: boolean;
+}) {
+  const people = isOwner ? await getActivePeople() : [];
+  return (
+    <TeamPanel
+      projectId={project.id}
+      members={project.members}
+      formerMembers={project.formerMembers}
+      people={people}
+      isOwner={isOwner}
+      addMember={addProjectMember}
+      updateResponsibility={updateMemberResponsibility}
+      removeMember={removeProjectMember}
+      restoreMember={restoreProjectMember}
+      setLead={setProjectLead}
+    />
+  );
+}
+
+function OverviewSkeleton() {
+  return (
+    <div className="grid gap-4 lg:grid-cols-[1.35fr_1fr]">
+      <PanelSkeleton lines={8} />
+      <div className="space-y-4">
+        <PanelSkeleton lines={5} />
+        <PanelSkeleton lines={3} />
+      </div>
+    </div>
+  );
+}
+
+function TeamSkeleton() {
+  return (
+    <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+      <PanelSkeleton lines={5} />
+      <PanelSkeleton lines={4} />
+    </div>
+  );
+}
+
+function BoardsSkeleton() {
+  return (
+    <div className="space-y-4">
+      <PanelSkeleton lines={6} />
+      <PanelSkeleton lines={4} />
+    </div>
+  );
+}
+
+function TechnicalSkeleton() {
+  return (
+    <div className="space-y-6">
+      <PanelSkeleton lines={5} />
+      <PanelSkeleton lines={5} />
     </div>
   );
 }

@@ -128,6 +128,69 @@ function pickCurrentWeek(weeks: MilestoneWeek[]) {
   return weeks.length ? weeks[weeks.length - 1] : null;
 }
 
+type NameRef = { full_name: string } | null;
+
+type CardRow = {
+  id: string;
+  milestone_week_id: string;
+  board: string;
+  status: string;
+  title: string;
+  blocks: unknown;
+  position: number;
+  blocker_reason: string | null;
+  carry_reason: string | null;
+  carried_from_week_id: string | null;
+  completed_at: string | null;
+  archived_at: string | null;
+};
+
+type ProjectRow = {
+  id: string;
+  public_id: string;
+  name: string;
+  description: string | null;
+  status: string;
+  starts_on: string | null;
+  due_on: string | null;
+  archived_at: string | null;
+  client_id: string | null;
+  lead_id: string | null;
+  client: { name: string } | null;
+  lead: NameRef;
+  members: Array<{
+    profile_id: string;
+    responsibility: string | null;
+    archived_at: string | null;
+    added_by: string | null;
+    archived_by: string | null;
+    profile: NameRef;
+    addedBy: NameRef;
+    archivedBy: NameRef;
+  }>;
+  weeks: Array<{
+    id: string;
+    week_number: number;
+    starts_on: string | null;
+    due_on: string;
+    archived_at: string | null;
+    cards: CardRow[];
+  }>;
+  technical: {
+    repository_url: string | null;
+    hosting_url: string | null;
+    live_domain: string | null;
+    staging_domain: string | null;
+    design_url: string | null;
+    technical_contact: string | null;
+    stack_notes: string | null;
+    onboarding_notes: string | null;
+    updated_by: string | null;
+    updated_at: string | null;
+    updatedBy: NameRef;
+  } | null;
+};
+
 export async function getProjectDetail(
   publicId: string,
   viewer: Viewer,
@@ -135,116 +198,79 @@ export async function getProjectDetail(
   if (viewer.role !== "owner" && viewer.role !== "member") return null;
 
   const supabase = await createClient();
-
-  const { data: project } = await supabase
-    .from("app_projects")
-    .select(
-      "id, public_id, name, description, status, starts_on, due_on, archived_at, client_id, lead_id",
-    )
-    .eq("public_id", publicId)
-    .maybeSingle();
-
-  if (!project) return null;
-
-  const projectId = String(project.id);
   const isOwner = viewer.role === "owner";
 
-  const membersQuery = supabase
-    .from("app_project_members")
-    .select("profile_id, responsibility, archived_at, added_by, archived_by")
-    .eq("project_id", projectId);
-  const weeksQuery = supabase
-    .from("app_milestone_weeks")
-    .select("id, week_number, starts_on, due_on, archived_at")
-    .eq("project_id", projectId)
-    .order("week_number");
+  // The whole related graph rides along as embedded resources so the
+  // workspace costs one round trip instead of four — the database is remote,
+  // and each extra trip is user-visible latency on every open and tab
+  // switch. Relations with two foreign keys into the same table (profiles,
+  // weeks) name the constraint to disambiguate.
+  let query = supabase
+    .from("app_projects")
+    .select(
+      `id, public_id, name, description, status, starts_on, due_on, archived_at, client_id, lead_id,
+       client:app_clients(name),
+       lead:app_profiles!app_projects_lead_id_fkey(full_name),
+       members:app_project_members(
+         profile_id, responsibility, archived_at, added_by, archived_by,
+         profile:app_profiles!app_project_members_profile_id_fkey(full_name),
+         addedBy:app_profiles!app_project_members_added_by_fkey(full_name),
+         archivedBy:app_profiles!app_project_members_archived_by_fkey(full_name)
+       ),
+       weeks:app_milestone_weeks(
+         id, week_number, starts_on, due_on, archived_at,
+         cards:app_milestone_cards!app_milestone_cards_milestone_week_id_fkey(
+           id, milestone_week_id, board, status, title, blocks, position,
+           blocker_reason, carry_reason, carried_from_week_id, completed_at, archived_at
+         )
+       ),
+       technical:app_project_technical_details(
+         repository_url, hosting_url, live_domain, staging_domain, design_url,
+         technical_contact, stack_notes, onboarding_notes, updated_by, updated_at,
+         updatedBy:app_profiles!app_project_technical_details_updated_by_fkey(full_name)
+       )`,
+    )
+    .eq("public_id", publicId);
 
-  const [clientResult, membersResult, weeksResult, technicalResult] =
-    await Promise.all([
-      // A project may not have a client yet, and there is nothing to look up
-      // when it does not.
-      project.client_id
-        ? supabase
-            .from("app_clients")
-            .select("id, name")
-            .eq("id", project.client_id)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
-      isOwner ? membersQuery : membersQuery.is("archived_at", null),
-      isOwner ? weeksQuery : weeksQuery.is("archived_at", null),
-      supabase
-        .from("app_project_technical_details")
-        .select(
-          "repository_url, hosting_url, live_domain, staging_domain, design_url, technical_contact, stack_notes, onboarding_notes, updated_by, updated_at",
-        )
-        .eq("project_id", projectId)
-        .maybeSingle(),
-    ]);
-
-  const profileIds = new Set(
-    (membersResult.data ?? []).map((row) => String(row.profile_id)),
-  );
-  // Whoever added or removed each member needs a name too, and both are known
-  // already, so they ride along in the same lookup instead of a second trip.
-  for (const row of membersResult.data ?? []) {
-    if (row.added_by) profileIds.add(String(row.added_by));
-    if (row.archived_by) profileIds.add(String(row.archived_by));
-  }
-  if (project.lead_id) profileIds.add(String(project.lead_id));
-  if (technicalResult.data?.updated_by) {
-    profileIds.add(String(technicalResult.data.updated_by));
+  // Members see the workspace without its archive.
+  if (!isOwner) {
+    query = query
+      .is("members.archived_at", null)
+      .is("weeks.archived_at", null)
+      .is("weeks.cards.archived_at", null);
   }
 
-  let names = new Map<string, string>();
-  if (profileIds.size) {
-    const { data } = await supabase
-      .from("app_profiles")
-      .select("id, full_name")
-      .in("id", [...profileIds]);
-    names = new Map(
-      (data ?? []).map((row) => [String(row.id), String(row.full_name)]),
-    );
-  }
+  const { data } = await query
+    .order("week_number", { referencedTable: "weeks" })
+    .maybeSingle();
 
-  const weekIds = (weeksResult.data ?? []).map((week) => String(week.id));
+  if (!data) return null;
+
+  // Without generated database types the client guesses each to-one embed as
+  // an array; PostgREST actually returns objects for these FK relations.
+  const project = data as unknown as ProjectRow;
+  const projectId = String(project.id);
+
+  // Every profile name arrived embedded next to its uuid; one map serves the
+  // member, lead and technical mappings below.
+  const names = new Map<string, string>();
+  const remember = (id: string | null, ref: NameRef) => {
+    if (id && ref?.full_name) names.set(String(id), String(ref.full_name));
+  };
+  for (const member of project.members) {
+    remember(member.profile_id, member.profile);
+    remember(member.added_by, member.addedBy);
+    remember(member.archived_by, member.archivedBy);
+  }
+  remember(project.lead_id, project.lead);
+  remember(project.technical?.updated_by ?? null, project.technical?.updatedBy ?? null);
+
   const weekNumbers = new Map(
-    (weeksResult.data ?? []).map((week) => [
-      String(week.id),
-      Number(week.week_number),
-    ]),
+    project.weeks.map((week) => [String(week.id), Number(week.week_number)]),
   );
-
-  let cardRows: Array<{
-    id: string;
-    milestone_week_id: string;
-    board: string;
-    status: string;
-    title: string;
-    blocks: unknown;
-    position: number;
-    blocker_reason: string | null;
-    carry_reason: string | null;
-    carried_from_week_id: string | null;
-    completed_at: string | null;
-    archived_at: string | null;
-  }> = [];
-
-  if (weekIds.length) {
-    const cardsQuery = supabase
-      .from("app_milestone_cards")
-      .select(
-        "id, milestone_week_id, board, status, title, blocks, position, blocker_reason, carry_reason, carried_from_week_id, completed_at, archived_at",
-      )
-      .in("milestone_week_id", weekIds)
-      .order("position");
-    const { data } = await (isOwner
-      ? cardsQuery
-      : cardsQuery.is("archived_at", null));
-    cardRows = (data ?? []) as typeof cardRows;
-  }
 
   const now = today();
-  const toCard = (card: (typeof cardRows)[number]): MilestoneCard => ({
+  const toCard = (card: CardRow): MilestoneCard => ({
     id: String(card.id),
     title: String(card.title),
     board: card.board as Board,
@@ -262,9 +288,9 @@ export async function getProjectDetail(
     isArchived: Boolean(card.archived_at),
   });
 
-  const allWeeks: MilestoneWeek[] = (weeksResult.data ?? []).map((week) => {
-    const rows = cardRows.filter(
-      (card) => String(card.milestone_week_id) === String(week.id),
+  const allWeeks: MilestoneWeek[] = project.weeks.map((week) => {
+    const rows = [...week.cards].sort(
+      (a, b) => Number(a.position ?? 0) - Number(b.position ?? 0),
     );
     const live = rows.filter((card) => !card.archived_at).map(toCard);
     const ideaCards = live
@@ -311,7 +337,7 @@ export async function getProjectDetail(
     0,
   );
 
-  const memberRows = membersResult.data ?? [];
+  const memberRows = project.members;
   const members: ProjectMember[] = memberRows
     .filter((member) => !member.archived_at)
     .map((member) => ({
@@ -355,9 +381,7 @@ export async function getProjectDetail(
     dueOn: project.due_on ? String(project.due_on) : null,
     isArchived: Boolean(project.archived_at),
     clientId: project.client_id ? String(project.client_id) : null,
-    clientName: clientResult.data?.name
-      ? String(clientResult.data.name)
-      : null,
+    clientName: project.client?.name ? String(project.client.name) : null,
     leadId: project.lead_id ? String(project.lead_id) : null,
     leadName: project.lead_id
       ? (names.get(String(project.lead_id)) ?? "Unassigned")
@@ -371,21 +395,21 @@ export async function getProjectDetail(
     overdueItems,
     progress: totalItems ? Math.round((doneItems / totalItems) * 100) : 0,
     currentWeek,
-    technical: technicalResult.data
+    technical: project.technical
       ? {
-          repositoryUrl: technicalResult.data.repository_url,
-          hostingUrl: technicalResult.data.hosting_url,
-          liveDomain: technicalResult.data.live_domain,
-          stagingDomain: technicalResult.data.staging_domain,
-          designUrl: technicalResult.data.design_url,
-          technicalContact: technicalResult.data.technical_contact,
-          stackNotes: technicalResult.data.stack_notes,
-          onboardingNotes: technicalResult.data.onboarding_notes,
-          updatedBy: technicalResult.data.updated_by
-            ? (names.get(String(technicalResult.data.updated_by)) ?? null)
+          repositoryUrl: project.technical.repository_url,
+          hostingUrl: project.technical.hosting_url,
+          liveDomain: project.technical.live_domain,
+          stagingDomain: project.technical.staging_domain,
+          designUrl: project.technical.design_url,
+          technicalContact: project.technical.technical_contact,
+          stackNotes: project.technical.stack_notes,
+          onboardingNotes: project.technical.onboarding_notes,
+          updatedBy: project.technical.updated_by
+            ? (names.get(String(project.technical.updated_by)) ?? null)
             : null,
-          updatedAt: technicalResult.data.updated_at
-            ? String(technicalResult.data.updated_at)
+          updatedAt: project.technical.updated_at
+            ? String(project.technical.updated_at)
             : null,
         }
       : null,
@@ -422,20 +446,30 @@ export async function getProjectFinancial(
   };
 }
 
+export async function getActivePeople() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("app_profiles")
+    .select("id, full_name")
+    .eq("is_active", true)
+    .is("archived_at", null)
+    .order("full_name");
+
+  return (data ?? []).map((row) => ({
+    id: String(row.id),
+    name: String(row.full_name),
+  }));
+}
+
 export async function getProjectFormOptions() {
   const supabase = await createClient();
-  const [clientsResult, peopleResult] = await Promise.all([
+  const [clientsResult, people] = await Promise.all([
     supabase
       .from("app_clients")
       .select("id, name")
       .is("archived_at", null)
       .order("name"),
-    supabase
-      .from("app_profiles")
-      .select("id, full_name")
-      .eq("is_active", true)
-      .is("archived_at", null)
-      .order("full_name"),
+    getActivePeople(),
   ]);
 
   return {
@@ -443,9 +477,6 @@ export async function getProjectFormOptions() {
       id: String(row.id),
       name: String(row.name),
     })),
-    people: (peopleResult.data ?? []).map((row) => ({
-      id: String(row.id),
-      name: String(row.full_name),
-    })),
+    people,
   };
 }
