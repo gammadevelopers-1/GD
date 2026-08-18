@@ -1,21 +1,3 @@
--- Demo data for the board-era schema.
---
--- The older seeds (demo-projects.sql, dev-seed.sql, gamma-team-seed.sql) all
--- write to app_milestone_items, which no longer receives writes. Data seeded
--- with those will not appear on the boards. Use this one instead.
---
---   psql "$DATABASE_URL" -f supabase/demo-boards-seed.sql
---
--- Safe to run twice: every row has a fixed id and does nothing on conflict.
--- Undo with supabase/demo-boards-remove.sql.
---
--- It attaches itself to an existing owner rather than inventing accounts, so
--- it can run against a real database without creating fake people.
---
--- ENV *variables* are deliberately not seeded: their values are encrypted by
--- the application, not by SQL, so they must be added through the UI once
--- CREDENTIAL_ENCRYPTION_KEYS is set. The containers are created ready for them.
-
 do $$
 declare
   owner_id uuid;

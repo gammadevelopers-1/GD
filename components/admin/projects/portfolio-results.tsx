@@ -325,6 +325,28 @@ function CardBanner({ project }: { project: PortfolioProject }) {
   );
 }
 
+function RowBanner({ project }: { project: PortfolioProject }) {
+  return (
+    <span className="panel-dark relative grid h-9 w-14 shrink-0 place-items-center overflow-hidden rounded-lg">
+      {project.bannerUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={project.bannerUrl}
+          alt=""
+          className={cn(
+            "absolute inset-0 size-full",
+            bannerFitClass(project.bannerFit),
+          )}
+        />
+      ) : (
+        <span className="text-[10px] font-semibold text-white/70">
+          {initials(project.name)}
+        </span>
+      )}
+    </span>
+  );
+}
+
 function ProjectRow({
   project,
   isOwner,
@@ -345,18 +367,21 @@ function ProjectRow({
           : "grid-cols-[minmax(0,2.4fr)_repeat(4,minmax(0,1fr))]",
       )}
     >
-      <div className="min-w-0">
-        <div className="flex items-center gap-2">
-          <p className="truncate text-[13px] font-semibold tracking-[-0.02em] transition-colors group-hover:text-[#08743d]">
-            {project.name}
+      <div className="flex min-w-0 items-center gap-3">
+        <RowBanner project={project} />
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="truncate text-[13px] font-semibold tracking-[-0.02em] transition-colors group-hover:text-[#08743d]">
+              {project.name}
+            </p>
+            {project.isArchived ? (
+              <Archive className="size-3 shrink-0 text-amber-700" />
+            ) : null}
+          </div>
+          <p className="mt-0.5 truncate text-[11px] text-black/38">
+            {project.clientName ?? "No client"}
           </p>
-          {project.isArchived ? (
-            <Archive className="size-3 shrink-0 text-amber-700" />
-          ) : null}
         </div>
-        <p className="mt-0.5 truncate text-[11px] text-black/38">
-          {project.clientName ?? "No client"}
-        </p>
       </div>
 
       <div>

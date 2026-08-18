@@ -90,14 +90,6 @@ const plannedNavigation: Array<{
   { label: "Assets", icon: Library, roles: ["owner", "member"] },
 ];
 
-const titles: Record<string, string> = {
-  dashboard: "Company overview",
-  projects: "Projects",
-  people: "People",
-  clients: "Clients",
-  cms: "Content management",
-};
-
 export function AdminShell({
   viewer,
   defaultSidebarOpen,
@@ -112,7 +104,6 @@ export function AdminShell({
   const plannedItems = plannedNavigation.filter((item) =>
     item.roles.includes(viewer.role),
   );
-  const root = pathname.split("/").filter(Boolean)[0] ?? "dashboard";
 
   return (
     <TooltipProvider>
@@ -208,12 +199,9 @@ export function AdminShell({
         </Sidebar>
 
         <SidebarInset className="text-foreground min-w-0 overflow-x-clip">
-          <header className="sticky top-0 z-30 border-b border-black/6 bg-[#eef0e9]/80 backdrop-blur-xl">
-            <div className="flex h-15.5 items-center gap-3 px-4 sm:px-6 lg:px-8 xl:px-10">
+          <header className="sticky top-0 z-30 bg-[#eef0e9]/80 backdrop-blur-xl">
+            <div className="flex h-14 items-center gap-3 px-4 sm:px-6 lg:px-8 xl:px-10">
               <SidebarTrigger className="-ml-1 text-black/60 hover:text-black" />
-              <p className="min-w-0 truncate text-[15px] font-semibold tracking-[-0.025em]">
-                {titles[root] ?? "Internal platform"}
-              </p>
 
               <div className="ml-auto flex items-center gap-2">
                 <div className="flex items-center gap-2.5 rounded-xl border border-black/[0.07] bg-white/55 p-1.5 pr-3 transition hover:border-black/[0.14] hover:bg-white/80">

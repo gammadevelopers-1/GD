@@ -1,27 +1,5 @@
--- Gamma team seed — real accounts, demo delivery data.
---
--- Run this once against whichever database holds the six real accounts:
---
---   Hosted:  Supabase dashboard -> SQL Editor -> paste -> Run
---   Local:   docker exec -i supabase_db_gd-website psql -U postgres -d postgres \
---              -f - < supabase/gamma-team-seed.sql
---
--- Part 1 assigns the roles. Part 2 loads clients, projects, teams and weekly
--- milestones built to exercise every rule in chunks 1-6.
---
--- Safe to re-run: it clears its own rows first. Every row it creates has an id
--- beginning ac1/ac2/ac3, and every client is marked DEMO DATA in its notes.
 
 begin;
-
--- ---------------------------------------------------------------------------
--- Part 1 — roles
---
--- Matching is by first name against the account's metadata name or the part of
--- the email before the @. If someone's email looks nothing like their name
--- (gammadevelopers0@gmail.com, say), put their exact email in the third column
--- and it will be used instead. Names are normalised to the first name only.
--- ---------------------------------------------------------------------------
 
 with wanted (first_name, app_role, email_override) as (
   values
