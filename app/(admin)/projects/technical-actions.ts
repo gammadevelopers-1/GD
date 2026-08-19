@@ -47,8 +47,8 @@ export async function saveTechnicalDetails(
     new_live_domain: parsed.liveDomain,
     new_staging_domain: parsed.stagingDomain,
     new_design_url: parsed.designUrl,
-    new_technical_contact: parsed.technicalContact,
-    new_stack_notes: parsed.stackNotes,
+    new_technical_contact: null,
+    new_stack_notes: null,
     new_onboarding_notes: parsed.onboardingNotes,
   });
 

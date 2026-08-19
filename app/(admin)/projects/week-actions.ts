@@ -126,7 +126,7 @@ export async function saveTask(input: {
   cardId?: string;
   title: string;
   doc: string;
-  assignedTo: string | null;
+  assignedTo?: string | null;
 }): Promise<SimpleFormState & { cardId?: string }> {
   try {
     const viewer = await requireRole(["owner", "member"]);
@@ -147,7 +147,13 @@ export async function saveTask(input: {
       if (!isUuid(input.cardId)) return formError("That task was not found.");
       const { error } = await supabase
         .from("app_milestone_cards")
-        .update({ title, doc, assigned_to: input.assignedTo })
+        .update({
+          title,
+          doc,
+          ...(input.assignedTo === undefined
+            ? {}
+            : { assigned_to: input.assignedTo }),
+        })
         .eq("id", input.cardId);
 
       if (error) {
@@ -167,7 +173,7 @@ export async function saveTask(input: {
         title,
         doc,
         blocks: [],
-        assigned_to: input.assignedTo,
+        assigned_to: input.assignedTo ?? null,
         position: await nextPosition(supabase, input.weekId),
         created_by: viewer.id,
       })
@@ -327,7 +333,7 @@ export async function acceptWeekTasks(
   weekId: string,
   tasks: Array<{
     title: string;
-    assignedTo: string | null;
+    assignedTo?: string | null;
     detail?: string;
     references?: string[];
     existingId?: string | null;

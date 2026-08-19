@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   Check,
+  FileText,
   Loader2,
   Plus,
   Sparkles,
@@ -14,13 +15,19 @@ import {
   IdeaEditor,
   type IdeaEditorHandle,
 } from "@/components/admin/projects/idea-editor";
-import { EMPTY_DOC, type IdeaDoc } from "@/lib/projects/idea-doc";
+import {
+  EMPTY_DOC,
+  type IdeaDoc,
+  type IdeaNode,
+} from "@/lib/projects/idea-doc";
+import {
+  type UploadAction,
+  useAttachment,
+} from "@/components/admin/projects/use-attachment";
 import type { SimpleFormState } from "@/lib/projects/form-state";
 import type { MilestoneCard } from "@/data/project-detail";
 import { formatDate } from "@/lib/projects/format";
 import { cn } from "@/lib/utils";
-
-export type Person = { id: string; name: string };
 
 export type ProposedTask = {
   title: string;
@@ -37,7 +44,6 @@ export type WorkBoardActions = {
     cardId?: string;
     title: string;
     doc: string;
-    assignedTo: string | null;
   }) => Promise<SimpleFormState & { cardId?: string }>;
   setTaskDone: (cardId: string, done: boolean) => Promise<SimpleFormState>;
   suggest: (
@@ -49,7 +55,6 @@ export type WorkBoardActions = {
     weekId: string,
     tasks: Array<{
       title: string;
-      assignedTo: string | null;
       detail?: string;
       references?: string[];
       existingId?: string | null;
@@ -62,7 +67,6 @@ export function WeekWorkBoard({
   weekId,
   weekNumber,
   tasks,
-  people,
   canManage,
   canTick,
   hasNotes,
@@ -71,13 +75,13 @@ export function WeekWorkBoard({
   open,
   onClose,
   onTaskDone,
+  upload,
   actions,
 }: {
   projectId: string;
   weekId: string;
   weekNumber: number;
   tasks: MilestoneCard[];
-  people: Person[];
   canManage: boolean;
   canTick: boolean;
   hasNotes: boolean;
@@ -86,6 +90,7 @@ export function WeekWorkBoard({
   open: boolean;
   onClose: () => void;
   onTaskDone: (cardId: string, done: boolean) => void;
+  upload: UploadAction;
   actions: WorkBoardActions;
 }) {
   const [editing, setEditing] = useState<MilestoneCard | "new" | null>(null);
@@ -207,6 +212,7 @@ export function WeekWorkBoard({
                 <TaskRow
                   key={task.id}
                   task={task}
+                  hasDetail={hasDetail(task)}
                   canTick={canTick}
                   canManage={canManage}
                   onOpen={() => setEditing(task)}
@@ -241,7 +247,7 @@ export function WeekWorkBoard({
           projectId={projectId}
           weekId={weekId}
           task={editing === "new" ? null : editing}
-          people={people}
+          upload={upload}
           onClose={() => setEditing(null)}
           save={actions.saveTask}
         />
@@ -252,7 +258,6 @@ export function WeekWorkBoard({
           projectId={projectId}
           weekId={weekId}
           proposals={proposals}
-          people={people}
           onClose={() => setProposals(null)}
           accept={actions.accept}
         />
@@ -263,6 +268,7 @@ export function WeekWorkBoard({
 
 function TaskRow({
   task,
+  hasDetail,
   canTick,
   canManage,
   onOpen,
@@ -270,6 +276,7 @@ function TaskRow({
   setDone,
 }: {
   task: MilestoneCard;
+  hasDetail: boolean;
   canTick: boolean;
   canManage: boolean;
   onOpen: () => void;
@@ -332,12 +339,13 @@ function TaskRow({
         {task.title}
       </button>
 
-      {task.assignedName ? (
+      {hasDetail ? (
         <span
-          title={task.assignedName}
-          className="shrink-0 rounded-full bg-[#2fe85c]/12 px-2 py-0.5 text-[9px] font-semibold text-[#08743d]"
+          title="Has notes"
+          aria-label="Has notes"
+          className="shrink-0 text-black/25"
         >
-          {task.assignedName.split(/\s+/)[0]}
+          <FileText className="size-3.5" />
         </span>
       ) : null}
 
@@ -360,6 +368,28 @@ function firstLine(doc: IdeaDoc): string {
     return "";
   };
   return walk(doc.content).replace(/\s+/g, " ").slice(0, 240);
+}
+
+function nodeText(node: IdeaNode): string {
+  if (node.type === "text") return node.text ?? "";
+  return (node.content ?? []).map(nodeText).join("");
+}
+
+// seedDoc writes the title in as a heading, so a task with nothing but a title
+// still has one node. Detail means anything beyond that.
+function hasDetail(task: MilestoneCard): boolean {
+  const nodes = task.doc.content ?? [];
+  if (!nodes.length) return false;
+
+  const [first, ...rest] = nodes;
+  const body =
+    first.type === "heading" && nodeText(first).trim() === task.title.trim()
+      ? rest
+      : nodes;
+
+  return body.some(
+    (node) => node.type === "attachment" || nodeText(node).trim() !== "",
+  );
 }
 
 function seedDoc(task: MilestoneCard | null): IdeaDoc {
@@ -395,23 +425,28 @@ function TaskEditor({
   projectId,
   weekId,
   task,
-  people,
+  upload,
   onClose,
   save,
 }: {
   projectId: string;
   weekId: string;
   task: MilestoneCard | null;
-  people: Person[];
+  upload: UploadAction;
   onClose: () => void;
   save: WorkBoardActions["saveTask"];
 }) {
   const initial = seedDoc(task);
-  const [assignedTo, setAssignedTo] = useState(task?.assignedTo ?? "");
   const [error, setError] = useState<string | null>(null);
   const [pending, startSaving] = useTransition();
   const doc = useRef<IdeaDoc>(initial);
   const editor = useRef<IdeaEditorHandle>(null);
+  const attach = useAttachment({
+    projectId,
+    upload,
+    editorRef: editor,
+    canEdit: true,
+  });
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -436,7 +471,6 @@ function TaskEditor({
         cardId: task?.id,
         title,
         doc: JSON.stringify(doc.current),
-        assignedTo: assignedTo || null,
       });
       if (result.status === "error") setError(result.message);
       else onClose();
@@ -463,22 +497,20 @@ function TaskEditor({
             {task ? "Edit task" : "New task"}
           </span>
 
-          <select
-            value={assignedTo}
-            onChange={(event) => setAssignedTo(event.target.value)}
-            aria-label="Assign to"
-            className="ml-auto h-7 rounded-lg border border-black/[0.12] bg-white px-2 text-[11px] text-black/70 outline-none focus:border-black/35"
-          >
-            <option value="">Unassigned</option>
-            {people.map((person) => (
-              <option key={person.id} value={person.id}>
-                {person.name}
-              </option>
-            ))}
-          </select>
+          {attach.error ? (
+            <span role="alert" className="ml-auto text-[11px] text-red-600">
+              {attach.error}
+            </span>
+          ) : null}
+
+          {attach.input}
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col">
+        <div
+          className="flex min-h-0 flex-1 flex-col"
+          onDrop={attach.onDrop}
+          onDragOver={attach.onDragOver}
+        >
           <IdeaEditor
             ref={editor}
             initialDoc={initial}
@@ -487,6 +519,8 @@ function TaskEditor({
             onChange={(next) => {
               doc.current = next as IdeaDoc;
             }}
+            onAttach={attach.open}
+            attaching={attach.uploading}
           />
         </div>
 
@@ -519,14 +553,12 @@ function ProposalReview({
   projectId,
   weekId,
   proposals,
-  people,
   onClose,
   accept,
 }: {
   projectId: string;
   weekId: string;
   proposals: ProposedTask[];
-  people: Person[];
   onClose: () => void;
   accept: WorkBoardActions["accept"];
 }) {
@@ -538,7 +570,6 @@ function ProposalReview({
       existingId: task.existingId,
       existingTitle: task.existingTitle,
       keep: true,
-      assignedTo: "",
     })),
   );
   const [error, setError] = useState<string | null>(null);
@@ -570,7 +601,6 @@ function ProposalReview({
         weekId,
         chosen.map((row) => ({
           title: row.title,
-          assignedTo: row.assignedTo || null,
           detail: row.detail,
           references: row.references,
           existingId: row.existingId,
@@ -669,22 +699,6 @@ function ProposalReview({
                 >
                   {row.existingId ? "Tidy" : "New"}
                 </span>
-
-                <select
-                  value={row.assignedTo}
-                  onChange={(event) =>
-                    update(index, { assignedTo: event.target.value })
-                  }
-                  aria-label={`Assign ${row.title}`}
-                  className="h-7 shrink-0 rounded-lg border border-black/[0.12] bg-white px-1.5 text-[11px] text-black/65 outline-none focus:border-black/35"
-                >
-                  <option value="">Unassigned</option>
-                  {people.map((person) => (
-                    <option key={person.id} value={person.id}>
-                      {person.name}
-                    </option>
-                  ))}
-                </select>
               </div>
             </div>
           ))}

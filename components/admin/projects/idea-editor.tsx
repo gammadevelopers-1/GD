@@ -34,7 +34,9 @@ import {
   List,
   ListChecks,
   ListOrdered,
+  Loader2,
   Minus,
+  Paperclip,
   Quote,
   Redo2,
   SquareCode,
@@ -197,7 +199,15 @@ function Swatches({
   );
 }
 
-function Toolbar({ editor }: { editor: Editor }) {
+function Toolbar({
+  editor,
+  onAttach,
+  attaching,
+}: {
+  editor: Editor;
+  onAttach?: () => void;
+  attaching?: boolean;
+}) {
   const setLink = useCallback(() => {
     const previous = String(editor.getAttributes("link").href ?? "");
     const href = window.prompt("Link address", previous);
@@ -429,6 +439,19 @@ function Toolbar({ editor }: { editor: Editor }) {
       >
         <RemoveFormatting className="size-4" />
       </Tool>
+
+      {onAttach ? (
+        <>
+          <Divider />
+          <Tool label="Attach a file" disabled={attaching} onClick={onAttach}>
+            {attaching ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Paperclip className="size-4" />
+            )}
+          </Tool>
+        </>
+      ) : null}
     </div>
   );
 }
@@ -438,12 +461,16 @@ export function IdeaEditor({
   editable,
   placeholder,
   onChange,
+  onAttach,
+  attaching,
   ref,
 }: {
   initialDoc: IdeaDoc;
   editable: boolean;
   placeholder?: string;
   onChange: (doc: unknown) => void;
+  onAttach?: () => void;
+  attaching?: boolean;
   ref?: Ref<IdeaEditorHandle>;
 }) {
   const [, setTick] = useState(0);
@@ -533,7 +560,9 @@ export function IdeaEditor({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      {editable ? <Toolbar editor={editor} /> : null}
+      {editable ? (
+        <Toolbar editor={editor} onAttach={onAttach} attaching={attaching} />
+      ) : null}
 
       <div className="idea-surface min-h-0 flex-1 overflow-y-auto py-4 pr-6 pl-3 sm:pr-8 sm:pl-4">
         <EditorContent editor={editor} />

@@ -20,7 +20,6 @@ import {
   WeekIdeaBoard,
 } from "@/components/admin/projects/week-idea-board";
 import {
-  type Person,
   WeekWorkBoard,
   type WorkBoardActions,
 } from "@/components/admin/projects/week-work-board";
@@ -36,6 +35,8 @@ import {
   weekState,
 } from "@/lib/projects/plan";
 import { formatDate } from "@/lib/projects/format";
+import { HIGHLIGHT_YELLOW } from "@/lib/projects/idea-doc";
+import { TONE_SOFT, TONE_SOLID } from "@/lib/admin-ui";
 import type { SimpleFormState } from "@/lib/projects/form-state";
 import { cn } from "@/lib/utils";
 
@@ -49,7 +50,6 @@ export function WeekPlan({
   canWrite,
   canManage,
   canTick,
-  people,
   dismissedCarry,
   acceptCarry,
   dismissCarry,
@@ -69,7 +69,6 @@ export function WeekPlan({
   canWrite: boolean;
   canManage: boolean;
   canTick: boolean;
-  people: Person[];
   dismissedCarry: string[];
   acceptCarry: (
     cardId: string,
@@ -135,7 +134,7 @@ export function WeekPlan({
 
   return (
     <section className="flex min-h-0 flex-1 flex-col bg-[#f8f8f3]">
-      <div className="flex shrink-0 items-center gap-3 border-b border-black/[0.07] bg-[#eef0e9] px-3 py-2.5 sm:px-4">
+      <div className="flex shrink-0 items-center gap-3 border-b border-black/[0.07] bg-[#eef0e9] px-4 py-3 sm:px-6">
         <span className="text-[11px] font-semibold tracking-[0.16em] text-black/55 uppercase">
           Weeks
         </span>
@@ -167,7 +166,7 @@ export function WeekPlan({
       </div>
 
       {weeks.length ? (
-        <div className="min-h-0 flex-1 overflow-y-auto pb-2">
+        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 pt-4 pb-24 sm:px-6 sm:pb-32">
           {weeks.map((week) => (
             <WeekRow
               key={week.id}
@@ -183,7 +182,6 @@ export function WeekPlan({
               }
               onToggle={() => setOpenId(openId === week.id ? null : week.id)}
               onComplete={() => complete(week)}
-              people={people}
               canManage={canManage}
               canTick={canTick}
               workActions={workActions}
@@ -198,7 +196,7 @@ export function WeekPlan({
           ))}
         </div>
       ) : (
-        <p className="px-3 pb-3 text-[12px] text-black/40 sm:px-4">
+        <p className="px-4 pt-4 pb-24 text-[12px] text-black/40 sm:px-6 sm:pb-32">
           {isOwner ? "No weeks yet. Add the first one." : "No weeks yet."}
         </p>
       )}
@@ -235,7 +233,6 @@ function WeekRow({
   onBoardExpandedChange,
   onToggle,
   onComplete,
-  people,
   canManage,
   canTick,
   workActions,
@@ -257,7 +254,6 @@ function WeekRow({
   onBoardExpandedChange: (value: boolean) => void;
   onToggle: () => void;
   onComplete: () => void;
-  people: Person[];
   canManage: boolean;
   canTick: boolean;
   workActions: WorkBoardActions;
@@ -298,14 +294,14 @@ function WeekRow({
   return (
     <div
       className={cn(
-        "border-t border-black/[0.06] first:border-t-0",
+        "overflow-hidden rounded-xl border border-black/[0.07] bg-white",
         complete && "opacity-70",
       )}
     >
       <div
         className={cn(
-          "flex items-center gap-2 pr-2 transition sm:pr-3",
-          open ? "bg-white" : "hover:bg-black/[0.03]",
+          "flex items-center gap-2 pr-3 transition sm:pr-4",
+          open ? "bg-white" : "hover:bg-black/[0.02]",
         )}
       >
         <button
@@ -313,7 +309,7 @@ function WeekRow({
           onClick={onToggle}
           aria-expanded={open}
           aria-controls={panelId}
-          className="flex min-w-0 flex-1 items-center gap-3 py-3 pl-3 text-left sm:pl-4"
+          className="flex min-w-0 flex-1 items-center gap-3 py-3.5 pl-4 text-left sm:pl-5"
         >
           <ChevronRight
             aria-hidden
@@ -340,13 +336,21 @@ function WeekRow({
           {state === "overdue" ? (
             <span
               title="Past its end date with work outstanding"
-              className="inline-flex shrink-0 items-center gap-1 rounded-full border border-red-300 bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-800"
+              className={cn(
+                "inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+                TONE_SOLID.danger,
+              )}
             >
               <TriangleAlert className="size-3" />
               Overdue
             </span>
           ) : state === "current" ? (
-            <span className="shrink-0 rounded-full border border-[#2fe85c]/50 bg-[#2fe85c]/15 px-2 py-0.5 text-[10px] font-semibold text-[#08743d]">
+            <span
+              className={cn(
+                "shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+                TONE_SOFT.ok,
+              )}
+            >
               {WEEK_STATE_LABEL.current}
             </span>
           ) : null}
@@ -355,10 +359,10 @@ function WeekRow({
             className={cn(
               "ml-auto shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium",
               undone
-                ? "bg-amber-100 text-amber-800"
+                ? TONE_SOFT.warning
                 : week.workCards.length
-                  ? "text-[#0f7a37]"
-                  : "text-black/30",
+                  ? "text-[#0b5f2c]"
+                  : "text-black/35",
             )}
           >
             {undone
@@ -431,7 +435,10 @@ function WeekRow({
       ) : null}
 
       {open ? (
-        <div id={panelId} className="bg-[#fcfcf9] px-3 pb-3.5 sm:px-4">
+        <div
+          id={panelId}
+          className="space-y-4 border-t border-black/[0.06] bg-[#fcfcf9] px-4 pt-4 pb-5 sm:px-5"
+        >
           <WeekCarryOver
             items={carryOver}
             weekId={week.id}
@@ -447,7 +454,10 @@ function WeekRow({
                       type: "text",
                       text: `carried from Week ${item.fromWeek}`,
                       marks: [
-                        { type: "highlight", attrs: { color: "#fef08a" } },
+                        {
+                          type: "highlight",
+                          attrs: { color: HIGHLIGHT_YELLOW },
+                        },
                       ],
                     },
                   ],
@@ -480,7 +490,7 @@ function WeekRow({
                 weekId={week.id}
                 weekNumber={week.number}
                 tasks={tasks}
-                people={people}
+                upload={upload}
                 canManage={canManage}
                 canTick={canTick}
                 onTaskDone={(cardId, value) =>

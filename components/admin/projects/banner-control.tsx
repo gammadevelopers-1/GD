@@ -10,12 +10,9 @@ import {
 import { ImagePlus, Loader2, Trash2 } from "lucide-react";
 import { BannerCropper } from "@/components/admin/projects/banner-cropper";
 import {
-  BANNER_FITS,
-  BANNER_FIT_ORDER,
   BANNER_MAX_BYTES,
   BANNER_TOO_LARGE,
   BANNER_TYPES,
-  type BannerFit,
   type BannerFormState,
   IDLE_BANNER,
 } from "@/lib/projects/banner";
@@ -34,20 +31,15 @@ const PILL =
 export function BannerControl({
   projectId,
   hasBanner,
-  fit,
   save,
-  setFit,
   remove,
 }: {
   projectId: string;
   hasBanner: boolean;
-  fit: BannerFit;
   save: BannerAction;
-  setFit: BannerAction;
   remove: BannerAction;
 }) {
   const [saveState, saveAction, saving] = useActionState(save, IDLE_BANNER);
-  const [fitState, fitAction, fitting] = useActionState(setFit, IDLE_BANNER);
   const [removeState, removeAction, removing] = useActionState(
     remove,
     IDLE_BANNER,
@@ -60,11 +52,9 @@ export function BannerControl({
   const serverError =
     saveState.status === "error"
       ? saveState.message
-      : fitState.status === "error"
-        ? fitState.message
-        : removeState.status === "error"
-          ? removeState.message
-          : null;
+      : removeState.status === "error"
+        ? removeState.message
+        : null;
   const warning = saveState.status === "success" ? saveState.warning : null;
 
   const notice = localError ?? serverError ?? warning ?? null;
@@ -104,7 +94,6 @@ export function BannerControl({
     }
     const data = new FormData();
     data.set("projectId", projectId);
-    data.set("fit", fit);
     data.set("file", cropped);
     startTransition(() => saveAction(data));
   }
@@ -112,32 +101,6 @@ export function BannerControl({
   return (
     <div className="flex flex-col items-start gap-1.5 lg:items-end">
       <div className="flex flex-wrap items-center gap-2">
-        {hasBanner ? (
-          <form
-            action={fitAction}
-            className="flex items-center gap-0.5 rounded-full bg-white/[0.08] p-0.5"
-          >
-            <input type="hidden" name="projectId" value={projectId} />
-            {BANNER_FIT_ORDER.map((option) => (
-              <button
-                key={option}
-                name="fit"
-                value={option}
-                disabled={fitting}
-                aria-pressed={fit === option}
-                className={cn(
-                  "rounded-full px-2.5 py-1.5 text-[11px] font-semibold transition duration-200 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none disabled:opacity-60",
-                  fit === option
-                    ? "bg-[#2fe85c] text-[#101512]"
-                    : "text-white/55 hover:text-white",
-                )}
-              >
-                {BANNER_FITS[option]}
-              </button>
-            ))}
-          </form>
-        ) : null}
-
         <input
           ref={inputRef}
           type="file"

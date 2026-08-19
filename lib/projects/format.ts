@@ -1,4 +1,5 @@
 import { type ProjectStatus, isExitStatus } from "@/lib/projects/status";
+import { TONE_FILL, TONE_INK, TONE_SOFT } from "@/lib/admin-ui";
 
 export type SignalTone = "ok" | "warning" | "danger" | "muted";
 
@@ -87,22 +88,22 @@ export function deliverySignal(project: {
 }
 
 export const TONE_TEXT: Record<SignalTone, string> = {
-  ok: "text-[#08743d]",
-  warning: "text-amber-700",
-  danger: "text-red-700",
-  muted: "text-black/45",
+  ok: TONE_INK.ok,
+  warning: TONE_INK.warning,
+  danger: TONE_INK.danger,
+  muted: TONE_INK.muted,
 };
 
 export const TONE_CHIP: Record<SignalTone, string> = {
-  ok: "border-[#2fe85c]/25 bg-[#2fe85c]/10 text-[#08743d]",
-  warning: "border-amber-200/80 bg-amber-50 text-amber-700",
-  danger: "border-red-200/80 bg-red-50 text-red-700",
-  muted: "border-black/[0.07] bg-black/[0.035] text-black/45",
+  ok: TONE_SOFT.ok,
+  warning: TONE_SOFT.warning,
+  danger: TONE_SOFT.danger,
+  muted: TONE_SOFT.muted,
 };
 
 export const TONE_BAR: Record<SignalTone, string> = {
-  ok: "bg-[#2fe85c]",
-  warning: "bg-amber-400",
-  danger: "bg-red-500",
-  muted: "bg-black/20",
+  ok: TONE_FILL.ok,
+  warning: TONE_FILL.warning,
+  danger: TONE_FILL.danger,
+  muted: TONE_FILL.muted,
 };

@@ -34,6 +34,7 @@ export type CredentialAuditEntry = {
   credentialId: string | null;
   credentialName: string;
   action: string;
+  actorId: string | null;
   actor: string;
   occurredAt: string;
   detail: string | null;
@@ -128,7 +129,7 @@ export async function getProjectCredentials(
 export async function getCredentialAudit(
   credentials: ProjectCredential[],
   viewer: Viewer,
-  limit = 40,
+  limit = 250,
 ): Promise<CredentialAuditEntry[]> {
   if (viewer.role !== "owner" || !credentials.length) return [];
 
@@ -185,6 +186,7 @@ export async function getCredentialAudit(
         ? (nameById.get(String(row.resource_id)) ?? "Removed credential")
         : "Unknown",
       action: String(row.action),
+      actorId: row.actor_id ? String(row.actor_id) : null,
       actor: row.actor_id
         ? (names.get(String(row.actor_id)) ?? "Unknown")
         : "System",

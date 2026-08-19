@@ -28,7 +28,7 @@ import {
   type TechnicalDetails,
   TechnicalPanel,
 } from "@/components/admin/projects/technical-panel";
-import { CredentialsPanel } from "@/components/admin/projects/credentials-panel";
+import { AuditHistory } from "@/components/admin/projects/audit-history";
 import {
   type EnvActions,
   EnvPanel,
@@ -62,11 +62,7 @@ import {
 } from "@/lib/projects/status";
 import { CARD_STATUS_CHIP, CARD_STATUS_LABEL } from "@/lib/projects/board";
 import { cn } from "@/lib/utils";
-import {
-  removeProjectBanner,
-  setProjectBanner,
-  setProjectBannerFit,
-} from "../banner-actions";
+import { removeProjectBanner, setProjectBanner } from "../banner-actions";
 import { bannerFitClass } from "@/lib/projects/banner";
 import { setProjectStatus } from "../actions";
 import {
@@ -93,24 +89,19 @@ import {
 } from "../team-actions";
 import { saveTechnicalDetails } from "../technical-actions";
 import {
-  archiveEnvFile,
+  copyEnvValue,
   createEnvGroup,
+  deleteEnvFile,
+  deleteEnvGroup,
+  deleteEnvVariable,
   downloadEnvFile,
-  grantEnvGroupAccess,
+  grantEnvAccess,
   renameEnvGroup,
+  revokeEnvAccess,
   saveEnvVariables,
-  setEnvGroupArchived,
+  updateEnvVariable,
   uploadEnvFile,
 } from "../env-actions";
-import {
-  copyCredentialSecret,
-  createCredential,
-  grantCredentialAccess,
-  replaceCredentialSecret,
-  revokeCredentialAccess,
-  setCredentialArchived,
-  updateCredentialMetadata,
-} from "../credential-actions";
 
 const NOTICES: Record<string, { tone: "ok" | "warning"; message: string }> = {
   created: { tone: "ok", message: "Project created." },
@@ -148,6 +139,7 @@ export default async function ProjectPage({
   const tabHref = (tab: Tab) => projectTabHref(project.publicId, tab);
 
   const wide = activeTab === "ideas";
+  const lean = activeTab === "ideas" || activeTab === "technical";
 
   return (
     <div
@@ -195,7 +187,7 @@ export default async function ProjectPage({
           project={project}
           viewer={viewer}
           activeTab={activeTab}
-          compact={wide}
+          compact={lean}
           milestones={
             <Suspense
               fallback={<HeaderMeta label="Milestones" value="Loading…" />}
@@ -234,10 +226,6 @@ export default async function ProjectPage({
               canPlan={isOwner || viewer.id === project.leadId}
               canTick={onThisProject || viewer.id === project.leadId}
               projectArchived={project.isArchived}
-              members={project.members.map((member) => ({
-                id: member.id,
-                name: member.name,
-              }))}
             />
           </Suspense>
         ) : null}
@@ -401,14 +389,12 @@ async function WorkspaceSection({
   canPlan,
   canTick,
   projectArchived,
-  members,
 }: {
   projectId: string;
   isOwner: boolean;
   canPlan: boolean;
   canTick: boolean;
   projectArchived: boolean;
-  members: Array<{ id: string; name: string }>;
 }) {
   const plan = await getProjectWeeks(projectId, isOwner);
 
@@ -423,7 +409,6 @@ async function WorkspaceSection({
       canWrite={canTick && !projectArchived}
       canManage={canPlan && !projectArchived}
       canTick={canTick && !projectArchived}
-      people={members}
       dismissedCarry={plan.dismissedCarry}
       acceptCarry={acceptCarryOver}
       dismissCarry={dismissCarryOver}
@@ -470,69 +455,43 @@ async function TechnicalSections({
   ]);
   const audit = await getCredentialAudit(credentials, viewer);
 
-  const envVariables = credentials.filter((entry) => entry.envGroupId);
-  const looseCredentials = credentials.filter((entry) => !entry.envGroupId);
-
   const envActions: EnvActions = {
     createGroup: createEnvGroup,
     renameGroup: renameEnvGroup,
-    setGroupArchived: setEnvGroupArchived,
+    deleteGroup: deleteEnvGroup,
     saveVariables: saveEnvVariables,
-    grantGroup: grantEnvGroupAccess,
+    updateVariable: updateEnvVariable,
+    deleteVariable: deleteEnvVariable,
+    grantAccess: grantEnvAccess,
+    revokeAccess: revokeEnvAccess,
     uploadFile: uploadEnvFile,
-    archiveFile: archiveEnvFile,
+    deleteFile: deleteEnvFile,
     downloadFile: downloadEnvFile,
-    copy: copyCredentialSecret,
+    copy: copyEnvValue,
   };
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
-        <h2 className="px-1 text-[11px] font-semibold tracking-[0.1em] text-black/35 uppercase">
-          Environment &amp; secrets
-        </h2>
-        <EnvPanel
-          projectId={projectId}
-          groups={envGroups}
-          variables={envVariables}
-          files={envFiles}
-          members={members}
-          isOwner={isOwner}
-          vaultReady={credentialsConfigured()}
-          actions={envActions}
-        />
-      </div>
+    <div className="space-y-8">
+      <TechnicalPanel
+        projectId={projectId}
+        details={details}
+        canEdit={canEditDetails}
+        isArchived={projectArchived}
+        save={saveTechnicalDetails}
+      />
 
-      <div className="space-y-4">
-        <h2 className="px-1 text-[11px] font-semibold tracking-[0.1em] text-black/35 uppercase">
-          Technical resources
-        </h2>
-        <TechnicalPanel
-          projectId={projectId}
-          details={details}
-          canEdit={canEditDetails}
-          isArchived={projectArchived}
-          save={saveTechnicalDetails}
-        />
-        <CredentialsPanel
-          projectId={projectId}
-          credentials={looseCredentials}
-          members={members}
-          audit={audit}
-          isOwner={isOwner}
-          vaultReady={credentialsConfigured()}
-          projectArchived={projectArchived}
-          actions={{
-            create: createCredential,
-            updateMetadata: updateCredentialMetadata,
-            replaceSecret: replaceCredentialSecret,
-            grant: grantCredentialAccess,
-            setArchived: setCredentialArchived,
-            revoke: revokeCredentialAccess,
-            copy: copyCredentialSecret,
-          }}
-        />
-      </div>
+      <EnvPanel
+        projectId={projectId}
+        groups={envGroups}
+        variables={credentials.filter((entry) => !entry.isArchived)}
+        files={envFiles}
+        members={members}
+        isOwner={isOwner}
+        vaultReady={credentialsConfigured()}
+        actions={envActions}
+      />
+
+      {isOwner ? <AuditHistory entries={audit} /> : null}
     </div>
   );
 }
@@ -555,12 +514,48 @@ function ProjectHeader({
     isOwner || (!project.isArchived && viewer.id === project.leadId);
   const deadline = deadlineSignal(project.dueOn, project.status);
 
+  const statusBadge = isOwner ? (
+    <StatusControl
+      projectId={project.id}
+      status={project.status}
+      action={setProjectStatus}
+    />
+  ) : (
+    <span className="inline-flex rounded-full bg-[#2fe85c]/12 px-2.5 py-1 text-[10px] font-semibold text-[#69ee88]">
+      {PROJECT_STATUS_LABEL[project.status]}
+    </span>
+  );
+
+  if (compact) {
+    return (
+      <section className="panel-dark overflow-hidden rounded-[20px] border border-black/[0.07] text-white">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5 sm:px-6">
+          <span className="shrink-0 text-[11px] text-white/40">
+            {project.clientName ?? "No client yet"}
+          </span>
+          <span aria-hidden className="shrink-0 text-white/20">
+            /
+          </span>
+          <h1 className="font-display min-w-0 flex-1 truncate text-[15px] font-semibold tracking-[-0.03em]">
+            {project.name}
+          </h1>
+          {project.isArchived ? (
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] font-semibold text-amber-300">
+              <Archive className="size-3" /> Archived
+            </span>
+          ) : null}
+          <div className="shrink-0">{statusBadge}</div>
+        </div>
+
+        <ProjectTabs publicId={project.publicId} activeTab={activeTab} />
+      </section>
+    );
+  }
+
   return (
     <section className="panel-dark overflow-hidden rounded-[20px] border border-black/[0.07] text-white">
       {project.bannerUrl ? (
-        <div
-          className={cn("relative", compact ? "h-24 sm:h-28" : "h-36 sm:h-44")}
-        >
+        <div className="relative h-36 sm:h-44">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={project.bannerUrl}
@@ -573,12 +568,7 @@ function ProjectHeader({
           <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-[#15181b]" />
         </div>
       ) : null}
-      <div
-        className={cn(
-          "relative px-4 sm:px-6",
-          compact ? "pt-3 pb-3" : "pt-5 pb-5",
-        )}
-      >
+      <div className="relative px-4 pt-5 pb-5 sm:px-6">
         <div className="pointer-events-none absolute -top-32 right-8 size-80 rounded-full bg-[#2fe85c]/12 blur-3xl" />
         {project.bannerUrl ? null : (
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#2fe85c]/45 to-transparent" />
@@ -595,15 +585,10 @@ function ProjectHeader({
                 </span>
               ) : null}
             </div>
-            <h1
-              className={cn(
-                "font-display mt-2 font-semibold tracking-[-0.045em]",
-                compact ? "text-xl sm:text-2xl" : "text-2xl sm:text-[2rem]",
-              )}
-            >
+            <h1 className="font-display mt-2 text-2xl font-semibold tracking-[-0.045em] sm:text-[2rem]">
               {project.name}
             </h1>
-            {project.description && !compact ? (
+            {project.description ? (
               <p className="mt-2 max-w-2xl text-[13px] leading-5 text-white/45">
                 {project.description}
               </p>
@@ -615,46 +600,24 @@ function ProjectHeader({
               <BannerControl
                 projectId={project.id}
                 hasBanner={Boolean(project.bannerUrl)}
-                fit={project.bannerFit}
                 save={setProjectBanner}
-                setFit={setProjectBannerFit}
                 remove={removeProjectBanner}
               />
             ) : null}
+            {statusBadge}
             {isOwner ? (
-              <>
-                <StatusControl
-                  projectId={project.id}
-                  status={project.status}
-                  action={setProjectStatus}
-                />
-                <Link
-                  href={`/projects/${project.publicId}/edit`}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-full bg-white/[0.08] px-3.5 text-xs font-semibold text-white transition duration-200 hover:bg-white/[0.16] hover:shadow-[0_8px_20px_rgba(0,0,0,0.25)] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none active:scale-[0.97]"
-                >
-                  <Pencil className="size-3.5" />
-                  Edit
-                </Link>
-              </>
-            ) : (
-              <span
-                className={cn(
-                  "inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold",
-                  "bg-[#2fe85c]/12 text-[#69ee88]",
-                )}
+              <Link
+                href={`/projects/${project.publicId}/edit`}
+                className="inline-flex h-9 items-center gap-1.5 rounded-full bg-white/[0.08] px-3.5 text-xs font-semibold text-white transition duration-200 hover:bg-white/[0.16] hover:shadow-[0_8px_20px_rgba(0,0,0,0.25)] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none active:scale-[0.97]"
               >
-                {PROJECT_STATUS_LABEL[project.status]}
-              </span>
-            )}
+                <Pencil className="size-3.5" />
+                Edit
+              </Link>
+            ) : null}
           </div>
         </div>
 
-        <div
-          className={cn(
-            "relative mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4",
-            compact && "hidden",
-          )}
-        >
+        <div className="relative mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
           <HeaderMeta
             label="Project lead"
             value={project.leadName ?? "Unassigned"}
@@ -1037,8 +1000,6 @@ function technicalDetails(project: ProjectCore): TechnicalDetails | null {
     liveDomain: technical.liveDomain ?? "",
     stagingDomain: technical.stagingDomain ?? "",
     designUrl: technical.designUrl ?? "",
-    technicalContact: technical.technicalContact ?? "",
-    stackNotes: technical.stackNotes ?? "",
     onboardingNotes: technical.onboardingNotes ?? "",
     updatedBy: technical.updatedBy,
     updatedAt: technical.updatedAt,

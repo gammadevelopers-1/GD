@@ -94,14 +94,15 @@ export function isEnvKey(value: string) {
 }
 
 export function looksLikeEnvFile(name: string) {
-  const lower = name.toLowerCase();
+  const base = (name.split(/[\\/]/).pop() ?? name).toLowerCase().trim();
+  if (!base) return false;
   return (
-    lower === ".env" ||
-    lower.startsWith(".env.") ||
-    lower.endsWith(".env") ||
-    lower.endsWith(".env.example") ||
-    lower.endsWith(".env.local") ||
-    lower.endsWith(".env.sample")
+    base === "env" ||
+    base === ".env" ||
+    base.startsWith(".env") ||
+    base.startsWith("env.") ||
+    base.includes(".env.") ||
+    base.endsWith(".env")
   );
 }
 
@@ -109,4 +110,42 @@ export function maskValue(value: string) {
   if (!value) return "—";
   if (value.length <= 4) return "•".repeat(value.length);
   return `${value.slice(0, 2)}${"•".repeat(Math.min(value.length - 4, 18))}${value.slice(-2)}`;
+}
+
+export const ENV_NOTE_MAX = 500;
+
+export type EnvDraft = {
+  key: string;
+  value: string;
+  note: string;
+  include: boolean;
+  conflict: boolean;
+};
+
+export function draftFromPairs(
+  pairs: EnvPair[],
+  existingKeys: Iterable<string>,
+): EnvDraft[] {
+  const taken = new Set(existingKeys);
+  return pairs.map((pair) => ({
+    key: pair.key,
+    value: pair.value,
+    note: "",
+    include: true,
+    conflict: taken.has(pair.key),
+  }));
+}
+
+export function summariseDrafts(drafts: EnvDraft[]) {
+  const found = drafts.length;
+  const conflicts = drafts.filter((draft) => draft.conflict).length;
+  return { found, conflicts, fresh: found - conflicts };
+}
+
+export function describeDrafts(drafts: EnvDraft[]) {
+  const { found, conflicts, fresh } = summariseDrafts(drafts);
+  if (!found) return "No variables found.";
+  const noun = `${found} variable${found === 1 ? "" : "s"}`;
+  if (!conflicts) return `Found ${noun}.`;
+  return `Found ${noun} — ${fresh} new, ${conflicts} already exist.`;
 }

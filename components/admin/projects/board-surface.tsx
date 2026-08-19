@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState, type ReactNode, type RefObject } from "react";
-import { AlertTriangle, Check, Loader2, Lock, Paperclip } from "lucide-react";
+import type { ReactNode, RefObject } from "react";
+import { AlertTriangle, Check, Loader2, Lock } from "lucide-react";
 import {
   IdeaEditor,
   type IdeaEditorHandle,
@@ -10,22 +10,12 @@ import type { IdeaDoc } from "@/lib/projects/idea-doc";
 import type { AutosaveStatus } from "@/components/admin/projects/use-autosave";
 import { formatDate } from "@/lib/projects/format";
 import {
-  IDEA_ATTACHMENT_MAX_BYTES,
-  IDEA_ATTACHMENT_TYPES,
-} from "@/lib/projects/idea-media";
-import type { SimpleFormState } from "@/lib/projects/form-state";
+  type UploadAction,
+  type UploadResult,
+  useAttachment,
+} from "@/components/admin/projects/use-attachment";
 
-export type UploadResult = SimpleFormState & {
-  path?: string;
-  name?: string;
-  mime?: string;
-  size?: number;
-};
-
-export type UploadAction = (
-  state: UploadResult,
-  formData: FormData,
-) => Promise<UploadResult>;
+export type { UploadAction, UploadResult };
 
 export function BoardSurface({
   projectId,
@@ -58,39 +48,12 @@ export function BoardSurface({
   actions?: ReactNode;
   editorRef: RefObject<IdeaEditorHandle | null>;
 }) {
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-
-  async function addFile(file: File) {
-    setUploadError(null);
-    if (file.size > IDEA_ATTACHMENT_MAX_BYTES) {
-      setUploadError("Files are limited to 10 MB.");
-      return;
-    }
-    if (!IDEA_ATTACHMENT_TYPES.has(file.type)) {
-      setUploadError("That file type cannot be added.");
-      return;
-    }
-
-    setUploading(true);
-    const data = new FormData();
-    data.set("projectId", projectId);
-    data.set("file", file);
-    const result = await upload({ status: "idle", message: null }, data);
-    setUploading(false);
-
-    if (result.status === "error" || !result.path) {
-      setUploadError(result.message ?? "The file could not be added.");
-      return;
-    }
-    editorRef.current?.insertAttachment({
-      path: result.path,
-      name: result.name ?? file.name,
-      mime: result.mime ?? file.type,
-      size: result.size ?? file.size,
-    });
-  }
+  const attach = useAttachment({
+    projectId,
+    upload,
+    editorRef,
+    canEdit,
+  });
 
   return (
     <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-white">
@@ -107,58 +70,20 @@ export function BoardSurface({
         />
 
         <div className="ml-auto flex items-center gap-2">
-          {uploadError ? (
+          {attach.error ? (
             <span role="alert" className="text-[11px] text-red-600">
-              {uploadError}
+              {attach.error}
             </span>
           ) : null}
-          {canEdit ? (
-            <>
-              <input
-                ref={fileRef}
-                type="file"
-                className="sr-only"
-                accept={[...IDEA_ATTACHMENT_TYPES].join(",")}
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  event.target.value = "";
-                  if (file) void addFile(file);
-                }}
-              />
-              <button
-                type="button"
-                disabled={uploading}
-                onClick={() => fileRef.current?.click()}
-                title="Add an image, video, PDF or document"
-                className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-black/[0.09] bg-white px-2.5 text-xs font-medium text-black/65 transition hover:border-black/25 hover:text-black disabled:opacity-60"
-              >
-                {uploading ? (
-                  <Loader2 className="size-3.5 animate-spin" />
-                ) : (
-                  <Paperclip className="size-3.5" />
-                )}
-                <span className="hidden sm:inline">Attach</span>
-              </button>
-            </>
-          ) : null}
+          {attach.input}
           {actions}
         </div>
       </header>
 
       <div
         className="flex min-h-0 flex-1 flex-col"
-        onDrop={(event) => {
-          if (!canEdit) return;
-          const file = event.dataTransfer.files?.[0];
-          if (!file) return;
-          event.preventDefault();
-          void addFile(file);
-        }}
-        onDragOver={(event) => {
-          if (canEdit && event.dataTransfer.types.includes("Files")) {
-            event.preventDefault();
-          }
-        }}
+        onDrop={attach.onDrop}
+        onDragOver={attach.onDragOver}
       >
         <IdeaEditor
           ref={editorRef}
@@ -166,6 +91,8 @@ export function BoardSurface({
           editable={canEdit}
           placeholder={placeholder}
           onChange={onChange}
+          onAttach={attach.open}
+          attaching={attach.uploading}
         />
       </div>
     </section>

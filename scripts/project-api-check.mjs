@@ -15,6 +15,7 @@ const ID = {
   itemDone: "74000000-0000-4000-8000-000000000001",
   itemOpen: "74000000-0000-4000-8000-000000000002",
   credential: "75000000-0000-4000-8000-000000000001",
+  envGroup: "76000000-0000-4000-8000-000000000001",
 };
 
 const PASSWORD = `Chunk2-${randomUUID()}`;
@@ -241,6 +242,7 @@ async function cleanup() {
     delete from public.app_credential_grants where credential_id = '${ID.credential}';
     delete from public.app_credential_secrets where credential_id = '${ID.credential}';
     delete from public.app_project_credentials where id = '${ID.credential}';
+    delete from public.app_env_groups where id = '${ID.envGroup}';
     delete from public.app_projects
       where id in ('${ID.projectAssigned}', '${ID.projectOwnerOnly}', '${ID.projectArchived}');
     delete from public.app_clients where id in ('${ID.clientA}', '${ID.clientB}');
@@ -763,6 +765,23 @@ async function run() {
   const firstRow = (result) =>
     Array.isArray(result.data) ? result.data[0] : result.data;
 
+  const ownerCreatesGroup = await api("/rest/v1/app_env_groups", {
+    key: PUBLISHABLE,
+    token: ownerToken,
+    method: "POST",
+    body: {
+      id: ID.envGroup,
+      project_id: ID.projectAssigned,
+      name: "API check group",
+      created_by: ID.owner,
+    },
+  });
+  check(
+    "owner can create a group",
+    ownerCreatesGroup.ok,
+    `status ${ownerCreatesGroup.status}`,
+  );
+
   const ownerCreates = await api("/rest/v1/rpc/app_create_credential", {
     key: PUBLISHABLE,
     token: ownerToken,
@@ -770,18 +789,19 @@ async function run() {
     body: {
       new_id: credentialId,
       target_project_id: ID.projectAssigned,
-      new_name: "API check key",
-      new_service: "Supabase",
-      new_environment: "production",
+      new_name: "API_CHECK_KEY",
+      new_service: null,
+      new_environment: "other",
       new_description: null,
       new_ciphertext: "Y2lwaGVydGV4dA==",
       new_nonce: "bm9uY2U=",
       new_auth_tag: "dGFn",
       new_key_version: 1,
+      target_env_group_id: ID.envGroup,
     },
   });
   check(
-    "owner can store a credential",
+    "owner can store a variable",
     ownerCreates.ok,
     `status ${ownerCreates.status}`,
   );
@@ -791,8 +811,8 @@ async function run() {
     { key: PUBLISHABLE, token: memberToken },
   );
   check(
-    "assigned member sees the credential name",
-    memberSeesName.ok && memberSeesName.data?.length === 1,
+    "being on the project does not reveal a variable",
+    memberSeesName.ok && memberSeesName.data?.length === 0,
     JSON.stringify(memberSeesName.data),
   );
 
@@ -822,12 +842,12 @@ async function run() {
       body: {
         target_credential_id: credentialId,
         target_profile_id: ID.assigned,
-        access_level: "edit",
+        access_level: "manage",
       },
     },
   );
   check(
-    "a member cannot grant themselves a credential",
+    "a member cannot grant themselves a variable",
     !memberGrantsItself.ok,
     `status ${memberGrantsItself.status}`,
   );
@@ -839,11 +859,11 @@ async function run() {
     body: {
       target_credential_id: credentialId,
       target_profile_id: ID.assigned,
-      access_level: "view",
+      access_level: "use",
     },
   });
   check(
-    "owner can grant view access",
+    "owner can grant use access",
     ownerGrants.ok,
     `status ${ownerGrants.status}`,
   );
@@ -857,7 +877,7 @@ async function run() {
     JSON.stringify(grantedRead.data),
   );
 
-  const viewCannotReplace = await api(
+  const useCannotReplace = await api(
     "/rest/v1/rpc/app_replace_credential_secret",
     {
       key: PUBLISHABLE,
@@ -873,9 +893,9 @@ async function run() {
     },
   );
   check(
-    "view access cannot replace a credential value",
-    viewCannotReplace.ok && viewCannotReplace.data === false,
-    JSON.stringify(viewCannotReplace.data),
+    "use access cannot replace a value",
+    useCannotReplace.ok && useCannotReplace.data === false,
+    JSON.stringify(useCannotReplace.data),
   );
 
   const ownerRevokes = await api("/rest/v1/rpc/app_revoke_credential_access", {

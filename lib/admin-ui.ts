@@ -32,3 +32,37 @@ export const REVEAL_ON_HOVER =
   "opacity-100 transition-opacity duration-150 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100";
 
 export const DASHED_ACTION = `flex w-full items-center justify-center gap-2 rounded-[20px] border border-dashed border-black/12 bg-white/40 px-4 py-4 text-xs font-semibold text-black/50 transition duration-200 hover:border-[#2fe85c]/60 hover:bg-[#2fe85c]/[0.06] hover:text-[#08743d] active:scale-[0.995] ${FOCUS_RING}`;
+
+export type Tone = "ok" | "warning" | "danger" | "info" | "muted";
+
+export const TONE_SOFT: Record<Tone, string> = {
+  ok: "border-[#0f7a37]/30 bg-[#16a34a]/14 text-[#0b5f2c]",
+  warning: "border-amber-700/30 bg-amber-500/20 text-amber-900",
+  danger: "border-red-700/30 bg-red-600/15 text-red-800",
+  info: "border-blue-800/25 bg-blue-600/12 text-blue-900",
+  muted: "border-black/10 bg-black/[0.04] text-black/60",
+};
+
+export const TONE_SOLID: Record<Tone, string> = {
+  ok: "border-[#0f7a37] bg-[#0f7a37] text-white",
+  warning: "border-amber-700 bg-amber-700 text-white",
+  danger: "border-red-700 bg-red-700 text-white",
+  info: "border-blue-800 bg-blue-800 text-white",
+  muted: "border-black/45 bg-black/45 text-white",
+};
+
+export const TONE_INK: Record<Tone, string> = {
+  ok: "text-[#0b5f2c]",
+  warning: "text-amber-900",
+  danger: "text-red-800",
+  info: "text-blue-900",
+  muted: "text-black/60",
+};
+
+export const TONE_FILL: Record<Tone, string> = {
+  ok: "bg-[#16a34a]",
+  warning: "bg-amber-600",
+  danger: "bg-red-700",
+  info: "bg-blue-700",
+  muted: "bg-black/25",
+};

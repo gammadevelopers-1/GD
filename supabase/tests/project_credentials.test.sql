@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(43);
+select plan(52);
 
 insert into auth.users (
   id, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at
@@ -42,9 +42,18 @@ values
    'a0000000-0000-4000-8000-000000000005', 'Engineer',
    'a0000000-0000-4000-8000-000000000001');
 
+-- Every variable belongs to a group, so one exists before any of them do.
+insert into public.app_env_groups (id, project_id, name, created_by)
+values (
+  'a5000000-0000-4000-8000-000000000009',
+  'a2000000-0000-4000-8000-000000000001',
+  'Root',
+  'a0000000-0000-4000-8000-000000000001'
+);
+
 set local role authenticated;
 
--- Owner creates a credential ------------------------------------------------
+-- Owner creates a variable ----------------------------------------------------
 select set_config(
   'request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000001', true
 );
@@ -55,23 +64,36 @@ select lives_ok(
       'a2000000-0000-4000-8000-000000000001',
       'Supabase service key', 'Supabase', 'production',
       'Server side only',
-      'Y2lwaGVydGV4dA==', 'bm9uY2U=', 'dGFn', 1
+      'Y2lwaGVydGV4dA==', 'bm9uY2U=', 'dGFn', 1,
+      'a5000000-0000-4000-8000-000000000009'
     )$$,
-  'an owner can store a credential'
+  'an owner can store a variable'
+);
+
+select throws_ok(
+  $$select public.app_create_credential(
+      'a3000000-0000-4000-8000-00000000000f',
+      'a2000000-0000-4000-8000-000000000001',
+      'Homeless', null, 'other', null,
+      'eA==', 'eA==', 'eA==', 1, null
+    )$$,
+  '23502',
+  'A variable needs a group.',
+  'a variable cannot be stored without a group'
 );
 
 select is(
   (select count(*) from public.app_project_credentials
    where project_id = 'a2000000-0000-4000-8000-000000000001'),
   1::bigint,
-  'the credential metadata is stored'
+  'the variable metadata is stored'
 );
 
 select is(
   (select action from public.app_audit_logs
    where resource_type = 'credential' order by id desc limit 1),
   'credential.created',
-  'creating a credential writes an audit row'
+  'creating a variable writes an audit row'
 );
 
 select ok(
@@ -83,7 +105,7 @@ select ok(
   'no audit row carries the stored value'
 );
 
--- Assigned member without a grant --------------------------------------------
+-- Assigned member without a grant ---------------------------------------------
 select set_config(
   'request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000002', true
 );
@@ -91,8 +113,8 @@ select set_config(
 select is(
   (select count(*) from public.app_project_credentials
    where project_id = 'a2000000-0000-4000-8000-000000000001'),
-  1::bigint,
-  'an assigned member sees that the credential exists'
+  0::bigint,
+  'being on the project does not reveal that a variable exists'
 );
 
 select throws_ok(
@@ -121,7 +143,7 @@ select is(
   'the member holds no grant'
 );
 
--- Owner grants view access ---------------------------------------------------
+-- "Can see" reveals the variable and nothing else ------------------------------
 select set_config(
   'request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000001', true
 );
@@ -129,22 +151,65 @@ select set_config(
 select lives_ok(
   $$select public.app_grant_credential_access(
       'a3000000-0000-4000-8000-000000000001',
-      'a0000000-0000-4000-8000-000000000002', 'view'
+      'a0000000-0000-4000-8000-000000000002', 'see'
     )$$,
-  'an owner can grant view access to someone on the project'
+  'an owner can grant see access to someone on the project'
 );
 
 select throws_ok(
   $$select public.app_grant_credential_access(
       'a3000000-0000-4000-8000-000000000001',
-      'a0000000-0000-4000-8000-000000000003', 'view'
+      'a0000000-0000-4000-8000-000000000003', 'see'
     )$$,
   '23514',
   'That person is not on this project.',
-  'a credential cannot be shared with someone who is not on the project'
+  'a variable cannot be shared with someone who is not on the project'
 );
 
--- The granted member ---------------------------------------------------------
+select throws_ok(
+  $$select public.app_grant_credential_access(
+      'a3000000-0000-4000-8000-000000000001',
+      'a0000000-0000-4000-8000-000000000002', 'admin'
+    )$$,
+  '22023',
+  'Access is see, use or manage.',
+  'there are exactly three access levels'
+);
+
+select set_config(
+  'request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000002', true
+);
+
+select is(
+  (select count(*) from public.app_project_credentials
+   where project_id = 'a2000000-0000-4000-8000-000000000001'),
+  1::bigint,
+  'a see grant is what reveals the variable'
+);
+
+select is(
+  (select allowed from public.app_read_credential_secret(
+    'a3000000-0000-4000-8000-000000000001')),
+  false,
+  'see access knows the variable exists and cannot copy it'
+);
+
+-- "Can use" copies but does not change -----------------------------------------
+select set_config(
+  'request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000001', true
+);
+select public.app_grant_credential_access(
+  'a3000000-0000-4000-8000-000000000001',
+  'a0000000-0000-4000-8000-000000000002', 'use'
+);
+
+select is(
+  (select action from public.app_audit_logs
+   where resource_type = 'credential' order by id desc limit 1),
+  'credential.access_level_changed',
+  'changing the access level is recorded as a change, not a new grant'
+);
+
 select set_config(
   'request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000002', true
 );
@@ -153,7 +218,7 @@ select is(
   (select allowed from public.app_read_credential_secret(
     'a3000000-0000-4000-8000-000000000001')),
   true,
-  'a granted member can read the ciphertext'
+  'use access can read the ciphertext'
 );
 
 select is(
@@ -169,44 +234,47 @@ select is(
     'bmV3', 'bm9uY2U=', 'dGFn', 1
   ),
   false,
-  'view access cannot replace the value'
+  'use access cannot replace the value'
+);
+
+select throws_ok(
+  $$select public.app_set_credential_archived(
+      'a3000000-0000-4000-8000-000000000001', true
+    )$$,
+  '42501',
+  'You cannot change this variable.',
+  'use access cannot delete the variable'
 );
 
 select throws_ok(
   $$select public.app_create_credential(
       'a3000000-0000-4000-8000-000000000009',
       'a2000000-0000-4000-8000-000000000001',
-      'Sneaky', null, 'other', null, 'eA==', 'eA==', 'eA==', 1
+      'Sneaky', null, 'other', null, 'eA==', 'eA==', 'eA==', 1,
+      'a5000000-0000-4000-8000-000000000009'
     )$$,
   '42501',
-  'Only an owner can create a credential.',
-  'a member cannot create a credential'
+  'Only an owner can add a variable.',
+  'a member cannot create a variable'
 );
 
 select throws_ok(
   $$select public.app_grant_credential_access(
       'a3000000-0000-4000-8000-000000000001',
-      'a0000000-0000-4000-8000-000000000005', 'view'
+      'a0000000-0000-4000-8000-000000000005', 'use'
     )$$,
   '42501',
   'Only an owner can manage credentials.',
-  'a member cannot share a credential with anybody'
+  'a member cannot share a variable with anybody'
 );
 
--- Edit access ----------------------------------------------------------------
+-- "Can manage" edits and deletes -----------------------------------------------
 select set_config(
   'request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000001', true
 );
 select public.app_grant_credential_access(
   'a3000000-0000-4000-8000-000000000001',
-  'a0000000-0000-4000-8000-000000000002', 'edit'
-);
-
-select is(
-  (select action from public.app_audit_logs
-   where resource_type = 'credential' order by id desc limit 1),
-  'credential.access_level_changed',
-  'changing the access level is recorded as a change, not a new grant'
+  'a0000000-0000-4000-8000-000000000002', 'manage'
 );
 
 select set_config(
@@ -219,10 +287,18 @@ select is(
     'cmVwbGFjZWQ=', 'bm9uY2Uy', 'dGFnMg==', 1
   ),
   true,
-  'edit access can replace the value'
+  'manage access can replace the value'
 );
 
--- Revocation -----------------------------------------------------------------
+select lives_ok(
+  $$select public.app_update_credential_metadata(
+      'a3000000-0000-4000-8000-000000000001',
+      'SUPABASE_SERVICE_KEY', null, 'other', 'rotate in the dashboard'
+    )$$,
+  'manage access can edit the key and note'
+);
+
+-- Revocation -------------------------------------------------------------------
 select set_config(
   'request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000001', true
 );
@@ -242,13 +318,20 @@ select is(
   'revocation takes effect on the very next request'
 );
 
--- Leaving the project takes the secrets with it ------------------------------
+select is(
+  (select count(*) from public.app_project_credentials
+   where project_id = 'a2000000-0000-4000-8000-000000000001'),
+  0::bigint,
+  'revocation hides the variable again'
+);
+
+-- Leaving the project takes the secrets with it --------------------------------
 select set_config(
   'request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000001', true
 );
 select public.app_grant_credential_access(
   'a3000000-0000-4000-8000-000000000001',
-  'a0000000-0000-4000-8000-000000000005', 'view'
+  'a0000000-0000-4000-8000-000000000005', 'use'
 );
 
 update public.app_project_members
@@ -261,7 +344,7 @@ select is(
    where profile_id = 'a0000000-0000-4000-8000-000000000005'
      and revoked_at is null),
   0::bigint,
-  'removing someone from the project revokes their credential grants'
+  'removing someone from the project revokes their grants'
 );
 
 select set_config(
@@ -275,13 +358,13 @@ select is(
   'a removed member cannot copy through a direct request'
 );
 
--- Deactivating an account does the same --------------------------------------
+-- Deactivating an account does the same ----------------------------------------
 select set_config(
   'request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000001', true
 );
 select public.app_grant_credential_access(
   'a3000000-0000-4000-8000-000000000001',
-  'a0000000-0000-4000-8000-000000000002', 'view'
+  'a0000000-0000-4000-8000-000000000002', 'use'
 );
 
 update public.app_profiles
@@ -296,7 +379,7 @@ select is(
   'deactivating an account revokes every grant it held'
 );
 
--- Everyone else ---------------------------------------------------------------
+-- Everyone else ----------------------------------------------------------------
 select set_config(
   'request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000003', true
 );
@@ -304,7 +387,7 @@ select set_config(
 select is(
   (select count(*) from public.app_project_credentials),
   0::bigint,
-  'an unassigned member cannot even see that a credential exists'
+  'an unassigned member cannot even see that a variable exists'
 );
 
 select set_config(
@@ -314,17 +397,17 @@ select set_config(
 select is(
   (select count(*) from public.app_project_credentials),
   0::bigint,
-  'finance never sees project credentials'
+  'finance never sees project variables'
 );
 
 select is(
   (select allowed from public.app_read_credential_secret(
     'a3000000-0000-4000-8000-000000000001')),
   false,
-  'finance cannot read a credential value'
+  'finance cannot read a value'
 );
 
--- The audit trail, read with no role filtering it -----------------------------
+-- The audit trail, read with no role filtering it -------------------------------
 reset role;
 
 select ok(
@@ -336,6 +419,17 @@ select ok(
       and actor_id = 'a0000000-0000-4000-8000-000000000002'
   ),
   'a refused read is recorded against the person who tried'
+);
+
+select ok(
+  exists (
+    select 1 from public.app_audit_logs
+    where resource_type = 'credential'
+      and action = 'credential.access_denied'
+      and metadata ->> 'operation' = 'copy'
+      and metadata ->> 'access' = 'see'
+  ),
+  'a refusal records the level the person actually held'
 );
 
 select ok(
@@ -373,7 +467,7 @@ select throws_ok(
   $$select * from public.app_project_credentials$$,
   '42501',
   null,
-  'anonymous visitors have no privilege on credential metadata'
+  'anonymous visitors have no privilege on variable metadata'
 );
 
 select throws_ok(
@@ -387,12 +481,12 @@ select ok(
   not has_function_privilege(
     'anon', 'public.app_read_credential_secret(uuid)', 'EXECUTE'
   ),
-  'anonymous visitors cannot execute the credential read function'
+  'anonymous visitors cannot execute the read function'
 );
 
 
 -- ---------------------------------------------------------------------------
--- ENV containers. Variables are credentials, so they inherit this whole vault:
+-- Groups. A variable is a credential, so a group inherits this whole vault:
 -- the same encryption, the same grants, the same audit trail.
 -- ---------------------------------------------------------------------------
 
@@ -412,10 +506,10 @@ select lives_ok(
     values (
       'a5000000-0000-4000-8000-000000000001',
       'a2000000-0000-4000-8000-000000000001',
-      'Frontend ENV',
+      'Frontend',
       'a0000000-0000-4000-8000-000000000001'
     )$$,
-  'an owner can create an ENV container'
+  'an owner can create a group'
 );
 
 select lives_ok(
@@ -423,10 +517,10 @@ select lives_ok(
     values (
       'a5000000-0000-4000-8000-000000000002',
       'a2000000-0000-4000-8000-000000000001',
-      'Backend ENV',
+      'Backend',
       'a0000000-0000-4000-8000-000000000001'
     )$$,
-  'a project can hold more than one container'
+  'a project can hold more than one group'
 );
 
 select lives_ok(
@@ -436,7 +530,7 @@ select lives_ok(
       'ct-a', 'nonce-a', 'tag-a', 1,
       'a5000000-0000-4000-8000-000000000001'
     )$$,
-  'a variable can be stored in a container'
+  'a variable can be stored in a group'
 );
 
 select lives_ok(
@@ -446,7 +540,7 @@ select lives_ok(
       'ct-b', 'nonce-b', 'tag-b', 1,
       'a5000000-0000-4000-8000-000000000002'
     )$$,
-  'the same key name can exist in a different container'
+  'the same key can exist in a different group'
 );
 
 select throws_ok(
@@ -458,29 +552,30 @@ select throws_ok(
     )$$,
   '23505',
   null,
-  'the same key name twice in one container is refused'
+  'the same key twice in one group is refused'
 );
 
 select lives_ok(
   $$select public.app_create_credential(
       'a6000000-0000-4000-8000-000000000004', 'a2000000-0000-4000-8000-000000000001',
-      'Demo login', null, 'demo', 'client walkthrough',
-      'ct-d', 'nonce-d', 'tag-d', 1, null
+      'DEMO_LOGIN', null, 'demo', 'client walkthrough',
+      'ct-d', 'nonce-d', 'tag-d', 1,
+      'a5000000-0000-4000-8000-000000000002'
     )$$,
   'demo credentials are a supported environment'
 );
 
--- Granting a container is the per-credential grant applied across it.
+-- Granting a group is the per-variable grant applied across it.
 select is(
   (
     select public.app_grant_env_group_access(
       'a5000000-0000-4000-8000-000000000001',
       'a0000000-0000-4000-8000-000000000005',
-      'view'
+      'use'
     )
   ),
   1,
-  'granting a container grants each variable in it'
+  'granting a group grants each variable in it'
 );
 
 select is(
@@ -492,34 +587,40 @@ select is(
       and revoked_at is null
   ),
   1,
-  'the grant is an ordinary per-credential row, still revocable on its own'
+  'the grant is an ordinary per-variable row, still revocable on its own'
 );
 
 select set_config('request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000005', true);
 
 select is(
   (select count(*)::integer from public.app_env_groups),
-  2,
-  'a project member can see the containers'
+  3,
+  'a project member can see the groups'
+);
+
+select is(
+  (select count(*)::integer from public.app_project_credentials),
+  1,
+  'a member sees only the variable they hold a grant on, not the whole group'
 );
 
 select throws_ok(
   $$insert into public.app_env_groups (project_id, name, created_by)
     values (
       'a2000000-0000-4000-8000-000000000001',
-      'Member container',
+      'Member group',
       'a0000000-0000-4000-8000-000000000005'
     )$$,
   '42501',
   null,
-  'a member cannot create a container'
+  'a member cannot create a group'
 );
 
 -- A whole .env file cannot be scoped to one variable, so it stays owner-only.
 select is(
   (select count(*)::integer from public.app_env_files),
   0,
-  'a member sees no uploaded ENV files'
+  'a member sees no stored .env files'
 );
 
 reset role;

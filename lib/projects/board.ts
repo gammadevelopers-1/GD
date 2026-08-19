@@ -1,3 +1,5 @@
+import { TONE_SOFT } from "@/lib/admin-ui";
+
 export const BOARDS = ["idea", "work"] as const;
 export type Board = (typeof BOARDS)[number];
 
@@ -24,11 +26,11 @@ export const CARD_STATUS_LABEL: Record<CardStatus, string> = {
 };
 
 export const CARD_STATUS_CHIP: Record<CardStatus, string> = {
-  idea: "border-black/[0.08] bg-black/[0.03] text-black/50",
-  in_progress: "border-[#2fe85c]/35 bg-[#2fe85c]/10 text-[#08743d]",
-  blocked: "border-red-200 bg-red-50 text-red-700",
-  completed: "border-[#16a34a]/25 bg-[#16a34a]/10 text-[#0f7a37]",
-  incomplete: "border-amber-200 bg-amber-50 text-amber-800",
+  idea: TONE_SOFT.muted,
+  in_progress: TONE_SOFT.info,
+  blocked: TONE_SOFT.danger,
+  completed: TONE_SOFT.ok,
+  incomplete: TONE_SOFT.warning,
 };
 
 export const WORK_ORDER: CardStatus[] = [

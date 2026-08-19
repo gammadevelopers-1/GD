@@ -4,8 +4,6 @@ export const TECHNICAL_FIELDS = [
   "liveDomain",
   "stagingDomain",
   "designUrl",
-  "technicalContact",
-  "stackNotes",
   "onboardingNotes",
 ] as const;
 
@@ -33,13 +31,10 @@ export const TECHNICAL_LABELS: Record<TechnicalField, string> = {
   liveDomain: "Live domain",
   stagingDomain: "Staging domain",
   designUrl: "Design file",
-  technicalContact: "Client technical contact",
-  stackNotes: "Stack notes",
   onboardingNotes: "Onboarding notes",
 };
 
 export const NOTES_MAX = 4000;
-export const CONTACT_MAX = 200;
 const URL_MAX = 500;
 const HOST_MAX = 253;
 
@@ -118,16 +113,8 @@ export function validateTechnical(values: TechnicalValues): {
   host("liveDomain");
   host("stagingDomain");
 
-  if (
-    !errors.technicalContact &&
-    values.technicalContact.length > CONTACT_MAX
-  ) {
-    errors.technicalContact = `Keep it under ${CONTACT_MAX} characters.`;
-  }
-  for (const field of ["stackNotes", "onboardingNotes"] as const) {
-    if (!errors[field] && values[field].length > NOTES_MAX) {
-      errors[field] = `Keep these notes under ${NOTES_MAX} characters.`;
-    }
+  if (!errors.onboardingNotes && values.onboardingNotes.length > NOTES_MAX) {
+    errors.onboardingNotes = `Keep these notes under ${NOTES_MAX} characters.`;
   }
 
   if (Object.keys(errors).length) return { errors, parsed: null };

@@ -29,21 +29,41 @@ export const TEXT_COLORS = [
 ] as const;
 
 export const HIGHLIGHT_COLORS = [
-  { name: "Yellow", value: "#fef08a" },
-  { name: "Lime", value: "#d9f99d" },
-  { name: "Green", value: "#bbf7d0" },
-  { name: "Teal", value: "#99f6e4" },
-  { name: "Blue", value: "#bfdbfe" },
-  { name: "Indigo", value: "#c7d2fe" },
-  { name: "Purple", value: "#e9d5ff" },
-  { name: "Pink", value: "#fbcfe8" },
-  { name: "Red", value: "#fecaca" },
-  { name: "Grey", value: "#e5e7eb" },
+  { name: "Yellow", value: "#fde047" },
+  { name: "Lime", value: "#bef264" },
+  { name: "Green", value: "#86efac" },
+  { name: "Teal", value: "#5eead4" },
+  { name: "Blue", value: "#93c5fd" },
+  { name: "Indigo", value: "#a5b4fc" },
+  { name: "Purple", value: "#d8b4fe" },
+  { name: "Pink", value: "#f9a8d4" },
+  { name: "Red", value: "#fca5a5" },
+  { name: "Grey", value: "#d1d5db" },
 ] as const;
+
+export const HIGHLIGHT_YELLOW = HIGHLIGHT_COLORS[0].value;
+
+// The palette was deepened after these were already written into documents.
+// Dropping them from the allowlist would strip the mark off older notes the
+// next time they were parsed, so they stay valid to read and are simply no
+// longer offered in the picker.
+const RETIRED_HIGHLIGHTS = [
+  "#fef08a",
+  "#d9f99d",
+  "#bbf7d0",
+  "#99f6e4",
+  "#bfdbfe",
+  "#c7d2fe",
+  "#e9d5ff",
+  "#fbcfe8",
+  "#fecaca",
+  "#e5e7eb",
+];
 
 const ALLOWED_COLORS = new Set<string>([
   ...TEXT_COLORS.map((color) => color.value),
   ...HIGHLIGHT_COLORS.map((color) => color.value),
+  ...RETIRED_HIGHLIGHTS,
 ]);
 
 const ALIGNMENTS = new Set(["left", "center", "right", "justify"]);

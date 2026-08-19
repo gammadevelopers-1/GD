@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-  type RefObject,
-} from "react";
+import { useEffect, useRef, type ReactNode, type RefObject } from "react";
 import {
   AlertTriangle,
   Check,
@@ -15,7 +9,6 @@ import {
   Lock,
   Maximize2,
   Minimize2,
-  Paperclip,
   PenLine,
 } from "lucide-react";
 import {
@@ -27,17 +20,12 @@ import type { IdeaDoc } from "@/lib/projects/idea-doc";
 import type { SimpleFormState } from "@/lib/projects/form-state";
 import { formatDate } from "@/lib/projects/format";
 import {
-  IDEA_ATTACHMENT_MAX_BYTES,
-  IDEA_ATTACHMENT_TYPES,
-} from "@/lib/projects/idea-media";
+  type UploadResult,
+  useAttachment,
+} from "@/components/admin/projects/use-attachment";
 import { cn } from "@/lib/utils";
 
-export type UploadResult = SimpleFormState & {
-  path?: string;
-  name?: string;
-  mime?: string;
-  size?: number;
-};
+export type { UploadResult };
 
 export function WeekIdeaBoard({
   projectId,
@@ -76,42 +64,14 @@ export function WeekIdeaBoard({
 }) {
   const own = useRef<IdeaEditorHandle>(null);
   const editor = editorRef ?? own;
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
+  const attach = useAttachment({
+    projectId,
+    upload,
+    editorRef: editor,
+    canEdit,
+  });
   const board = useBoardDoc(weekId, initialDoc, save);
   const { flush, unsaved } = board;
-
-  async function addFile(file: File) {
-    setUploadError(null);
-    if (file.size > IDEA_ATTACHMENT_MAX_BYTES) {
-      setUploadError("Files are limited to 10 MB.");
-      return;
-    }
-    if (!IDEA_ATTACHMENT_TYPES.has(file.type)) {
-      setUploadError("That file type cannot be added.");
-      return;
-    }
-
-    setUploading(true);
-    const data = new FormData();
-    data.set("projectId", projectId);
-    data.set("file", file);
-    const result = await upload({ status: "idle", message: null }, data);
-    setUploading(false);
-
-    if (result.status === "error" || !result.path) {
-      setUploadError(result.message ?? "The file could not be added.");
-      return;
-    }
-
-    editor.current?.insertAttachment({
-      path: result.path,
-      name: result.name ?? file.name,
-      mime: result.mime ?? file.type,
-      size: result.size ?? file.size,
-    });
-  }
 
   useEffect(() => {
     const onHidden = () => {
@@ -162,51 +122,20 @@ export function WeekIdeaBoard({
           updatedBy={updatedBy}
         />
 
-        {uploadError ? (
+        {attach.error ? (
           <span role="alert" className="truncate text-[10px] text-red-600">
-            {uploadError}
+            {attach.error}
           </span>
         ) : null}
 
-        {canEdit ? (
-          <>
-            <input
-              ref={fileRef}
-              type="file"
-              className="sr-only"
-              accept={[...IDEA_ATTACHMENT_TYPES].join(",")}
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                event.target.value = "";
-                if (file) void addFile(file);
-              }}
-            />
-            <button
-              type="button"
-              disabled={uploading}
-              onClick={() => fileRef.current?.click()}
-              title="Add an image, video, PDF or document"
-              aria-label="Attach a file"
-              className="ml-auto grid size-7 place-items-center rounded-lg text-black/45 transition hover:bg-black/[0.06] hover:text-black disabled:opacity-50"
-            >
-              {uploading ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <Paperclip className="size-3.5" />
-              )}
-            </button>
-          </>
-        ) : null}
+        {attach.input}
 
         <button
           type="button"
           onClick={() => onExpandedChange(!expanded)}
           title={expanded ? "Close full screen" : "Open full screen"}
           aria-label={expanded ? "Close full screen" : "Open full screen"}
-          className={cn(
-            "grid size-7 place-items-center rounded-lg text-black/45 transition hover:bg-black/[0.06] hover:text-black",
-            canEdit ? null : "ml-auto",
-          )}
+          className="ml-auto grid size-7 place-items-center rounded-lg text-black/45 transition hover:bg-black/[0.06] hover:text-black"
         >
           {expanded ? (
             <Minimize2 className="size-3.5" />
@@ -218,18 +147,8 @@ export function WeekIdeaBoard({
 
       <div
         className="flex min-h-0 flex-1 flex-col"
-        onDrop={(event) => {
-          if (!canEdit) return;
-          const file = event.dataTransfer.files?.[0];
-          if (!file) return;
-          event.preventDefault();
-          void addFile(file);
-        }}
-        onDragOver={(event) => {
-          if (canEdit && event.dataTransfer.types.includes("Files")) {
-            event.preventDefault();
-          }
-        }}
+        onDrop={attach.onDrop}
+        onDragOver={attach.onDragOver}
       >
         <IdeaEditor
           ref={editor}
@@ -240,6 +159,8 @@ export function WeekIdeaBoard({
             onDocChange?.(next as IdeaDoc);
             board.onChange(next);
           }}
+          onAttach={attach.open}
+          attaching={attach.uploading}
         />
       </div>
 

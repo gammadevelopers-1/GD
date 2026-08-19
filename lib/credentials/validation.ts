@@ -1,3 +1,5 @@
+import { TONE_SOFT } from "@/lib/admin-ui";
+
 export const CREDENTIAL_ENVIRONMENTS = [
   "production",
   "staging",
@@ -15,10 +17,10 @@ export const ENVIRONMENT_LABEL: Record<CredentialEnvironment, string> = {
 };
 
 export const ENVIRONMENT_CHIP: Record<CredentialEnvironment, string> = {
-  production: "border-red-200 bg-red-50 text-red-700",
-  staging: "border-amber-200 bg-amber-50 text-amber-700",
-  development: "border-black/[0.08] bg-black/[0.04] text-black/55",
-  other: "border-black/[0.08] bg-black/[0.04] text-black/55",
+  production: TONE_SOFT.danger,
+  staging: TONE_SOFT.warning,
+  development: TONE_SOFT.muted,
+  other: TONE_SOFT.muted,
 };
 
 export function isCredentialEnvironment(
@@ -27,11 +29,37 @@ export function isCredentialEnvironment(
   return (CREDENTIAL_ENVIRONMENTS as readonly string[]).includes(value);
 }
 
-export const CREDENTIAL_ACCESS = ["view", "edit"] as const;
+export const CREDENTIAL_ACCESS = ["see", "use", "manage"] as const;
 export type CredentialAccess = (typeof CREDENTIAL_ACCESS)[number];
 
 export function isCredentialAccess(value: string): value is CredentialAccess {
-  return value === "view" || value === "edit";
+  return (CREDENTIAL_ACCESS as readonly string[]).includes(value);
+}
+
+export const ACCESS_LABEL: Record<CredentialAccess, string> = {
+  see: "Can see",
+  use: "Can use",
+  manage: "Can manage",
+};
+
+export const ACCESS_HINT: Record<CredentialAccess, string> = {
+  see: "Sees the key and note. Cannot copy the value.",
+  use: "Can copy the value.",
+  manage: "Can copy, edit and delete.",
+};
+
+export const ACCESS_CHIP: Record<CredentialAccess, string> = {
+  see: TONE_SOFT.muted,
+  use: TONE_SOFT.ok,
+  manage: TONE_SOFT.warning,
+};
+
+export function canCopyValue(access: "owner" | CredentialAccess | null) {
+  return access === "owner" || access === "manage" || access === "use";
+}
+
+export function canManageVariable(access: "owner" | CredentialAccess | null) {
+  return access === "owner" || access === "manage";
 }
 
 export const NAME_MAX = 120;
@@ -126,14 +154,21 @@ export function credentialErrorSummary(errors: CredentialErrors) {
 }
 
 export const AUDIT_LABEL: Record<string, string> = {
-  "credential.created": "Created",
+  "credential.created": "Variable created",
   "credential.value_replaced": "Value replaced",
-  "credential.metadata_updated": "Details updated",
-  "credential.archived": "Archived",
-  "credential.restored": "Restored",
+  "credential.metadata_updated": "Variable edited",
+  "credential.archived": "Variable deleted",
+  "credential.restored": "Variable restored",
   "credential.access_granted": "Access granted",
   "credential.access_level_changed": "Access level changed",
   "credential.access_revoked": "Access revoked",
   "credential.secret_copied": "Value copied",
   "credential.access_denied": "Access denied",
+};
+
+export const AUDIT_TONE: Record<string, string> = {
+  "credential.access_denied": TONE_SOFT.danger,
+  "credential.archived": TONE_SOFT.warning,
+  "credential.access_revoked": TONE_SOFT.warning,
+  "credential.secret_copied": TONE_SOFT.ok,
 };

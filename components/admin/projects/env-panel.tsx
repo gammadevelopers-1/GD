@@ -1,27 +1,37 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import {
   AlertCircle,
-  Archive,
   Check,
   CheckCircle2,
   ChevronRight,
   Copy,
   Download,
-  FileWarning,
-  KeyRound,
+  Eye,
+  EyeOff,
   Loader2,
-  Lock,
+  Pencil,
   Plus,
   Share2,
+  Trash2,
   Upload,
 } from "lucide-react";
-import type { ProjectCredential } from "@/data/credentials";
-import type { CopyResult } from "@/app/(admin)/projects/credential-actions";
+import type { CredentialGrant, ProjectCredential } from "@/data/credentials";
+import type { CopyResult } from "@/app/(admin)/projects/env-actions";
 import type { EnvFile, EnvGroup } from "@/data/env";
 import { type SimpleFormState, IDLE_FORM } from "@/lib/projects/form-state";
 import { formatDate } from "@/lib/projects/format";
+import {
+  type CredentialAccess,
+  ACCESS_HINT,
+  ACCESS_LABEL,
+  ACCESS_CHIP,
+  CREDENTIAL_ACCESS,
+  canCopyValue,
+  canManageVariable,
+} from "@/lib/credentials/validation";
+import { ENV_NOTE_MAX } from "@/lib/projects/env";
 import {
   BUTTON_GHOST,
   BUTTON_PRIMARY,
@@ -29,9 +39,16 @@ import {
   DASHED_ACTION,
   FOCUS_RING,
   ICON_BUTTON,
+  INPUT,
   INPUT_SMALL,
+  PANEL,
 } from "@/lib/admin-ui";
-import { EnvComposer } from "@/components/admin/projects/env-composer";
+import {
+  type GroupOption,
+  ImportDialog,
+  ManualDialog,
+} from "@/components/admin/projects/env-composer";
+import { ConfirmAction, Modal } from "@/components/admin/projects/modal";
 import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
 import { cn } from "@/lib/utils";
 
@@ -43,17 +60,22 @@ type FormAction = (
 export type EnvActions = {
   createGroup: FormAction;
   renameGroup: FormAction;
-  setGroupArchived: (formData: FormData) => Promise<void>;
+  deleteGroup: FormAction;
   saveVariables: FormAction;
-  grantGroup: FormAction;
+  updateVariable: FormAction;
+  deleteVariable: FormAction;
+  grantAccess: FormAction;
+  revokeAccess: (formData: FormData) => Promise<void>;
   uploadFile: FormAction;
-  archiveFile: (formData: FormData) => Promise<void>;
+  deleteFile: FormAction;
   downloadFile: (
     state: SimpleFormState,
     formData: FormData,
   ) => Promise<SimpleFormState & { url?: string }>;
   copy: (credentialId: string) => Promise<CopyResult>;
 };
+
+type Member = { id: string; name: string };
 
 export function EnvPanel({
   projectId,
@@ -69,11 +91,14 @@ export function EnvPanel({
   groups: EnvGroup[];
   variables: ProjectCredential[];
   files: EnvFile[];
-  members: Array<{ id: string; name: string }>;
+  members: Member[];
   isOwner: boolean;
   vaultReady: boolean;
   actions: EnvActions;
 }) {
+  const [adding, setAdding] = useState<"none" | "import" | "manual">("none");
+  const [targetGroup, setTargetGroup] = useState<string | null>(null);
+
   const byGroup = new Map<string, ProjectCredential[]>();
   for (const variable of variables) {
     if (!variable.envGroupId) continue;
@@ -82,36 +107,57 @@ export function EnvPanel({
     byGroup.set(variable.envGroupId, list);
   }
 
-  return (
-    <section className="card-surface rounded-2xl border border-black/[0.06] p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex min-w-0 items-start gap-2.5">
-          <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#2fe85c]/12">
-            <KeyRound className="size-4 text-[#08743d]" />
-          </span>
-          <div className="min-w-0">
-            <h2 className="text-[14px] font-semibold tracking-[-0.025em]">
-              Environment variables
-            </h2>
-            <p className="mt-1 max-w-2xl text-[12px] leading-5 text-black/45">
-              Each key is stored and encrypted on its own, so access is granted
-              per variable rather than per file. Values are copied to the
-              clipboard and never rendered on screen.
-            </p>
-          </div>
-        </div>
-      </div>
+  const options: GroupOption[] = groups.map((group) => ({
+    id: group.id,
+    name: group.name,
+    keys: (byGroup.get(group.id) ?? []).map((variable) => variable.name),
+  }));
 
-      {!vaultReady ? (
-        <p className="mt-4 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-[12px] leading-5 text-amber-900">
-          <FileWarning className="mt-0.5 size-3.5 shrink-0" />
-          No encryption key is configured, so the vault is closed. Variables can
-          be read but not added until <code>CREDENTIAL_ENCRYPTION_KEYS</code> is
-          set.
+  const defaultGroupId = targetGroup ?? options[0]?.id ?? "";
+
+  function openAdd(mode: "import" | "manual", groupId?: string) {
+    setTargetGroup(groupId ?? null);
+    setAdding(mode);
+  }
+
+  return (
+    <section className={cn(PANEL, "p-6 sm:p-7")}>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <h2 className="text-[16px] font-semibold tracking-[-0.025em]">
+          Environment variables
+        </h2>
+        {isOwner && options.length ? (
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => openAdd("import")}
+              disabled={!vaultReady}
+              className={cn(BUTTON_SECONDARY, "h-9 text-xs")}
+            >
+              <Upload className="size-3.5" />
+              Upload .env
+            </button>
+            <button
+              type="button"
+              onClick={() => openAdd("manual")}
+              disabled={!vaultReady}
+              className={cn(BUTTON_SECONDARY, "h-9 text-xs")}
+            >
+              <Plus className="size-3.5" />
+              Add variable
+            </button>
+          </div>
+        ) : null}
+      </header>
+
+      {!vaultReady && isOwner ? (
+        <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-[12px] leading-5 text-amber-900">
+          No encryption key is configured, so values cannot be added. Set{" "}
+          <code>CREDENTIAL_ENCRYPTION_KEYS</code> first.
         </p>
       ) : null}
 
-      <div className="mt-5 space-y-3">
+      <div className="mt-6 space-y-4">
         {groups.map((group) => (
           <GroupCard
             key={group.id}
@@ -122,14 +168,15 @@ export function EnvPanel({
             isOwner={isOwner}
             vaultReady={vaultReady}
             actions={actions}
+            onAdd={(mode) => openAdd(mode, group.id)}
           />
         ))}
 
         {!groups.length ? (
-          <p className="rounded-xl border border-dashed border-black/10 px-4 py-6 text-center text-[12px] text-black/40">
-            No ENV containers yet. Most projects want one each for frontend,
-            backend and root.
-          </p>
+          <EmptyLine
+            text="No groups yet."
+            action={isOwner ? "Create the first one below." : null}
+          />
         ) : null}
 
         {isOwner ? (
@@ -145,6 +192,26 @@ export function EnvPanel({
           actions={actions}
         />
       ) : null}
+
+      {isOwner && defaultGroupId && adding === "import" ? (
+        <ImportDialog
+          projectId={projectId}
+          groups={options}
+          defaultGroupId={defaultGroupId}
+          action={actions.saveVariables}
+          onClose={() => setAdding("none")}
+        />
+      ) : null}
+
+      {isOwner && defaultGroupId && adding === "manual" ? (
+        <ManualDialog
+          projectId={projectId}
+          groups={options}
+          defaultGroupId={defaultGroupId}
+          action={actions.saveVariables}
+          onClose={() => setAdding("none")}
+        />
+      ) : null}
     </section>
   );
 }
@@ -157,120 +224,107 @@ function GroupCard({
   isOwner,
   vaultReady,
   actions,
+  onAdd,
 }: {
   projectId: string;
   group: EnvGroup;
   variables: ProjectCredential[];
-  members: Array<{ id: string; name: string }>;
+  members: Member[];
   isOwner: boolean;
   vaultReady: boolean;
   actions: EnvActions;
+  onAdd: (mode: "import" | "manual") => void;
 }) {
   const [open, setOpen] = useState(true);
-  const [panel, setPanel] = useState<"none" | "add" | "share">("none");
-
-  const readable = variables.filter((variable) => variable.myAccess).length;
+  const [renaming, setRenaming] = useState(false);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-black/[0.07] bg-white">
-      <header className="flex flex-wrap items-center justify-between gap-2 bg-black/[0.025] px-3.5 py-2.5 transition-colors hover:bg-black/[0.04]">
+    <div className="overflow-hidden rounded-2xl border border-black/[0.07] bg-white">
+      <header className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
         <button
           type="button"
           onClick={() => setOpen((value) => !value)}
           aria-expanded={open}
-          className={cn("flex min-w-0 items-center gap-2 rounded", FOCUS_RING)}
+          className={cn(
+            "flex min-w-0 items-center gap-2.5 rounded py-0.5",
+            FOCUS_RING,
+          )}
         >
           <ChevronRight
             className={cn(
-              "size-3.5 shrink-0 text-black/35 transition-transform duration-200",
+              "size-4 shrink-0 text-black/30 transition-transform duration-200",
               open && "rotate-90",
             )}
           />
-          <span className="truncate text-[13px] font-semibold">
+          <span className="truncate text-[14px] font-semibold tracking-[-0.02em]">
             {group.name}
           </span>
-          <span className="font-mono text-[10px] text-black/35">
-            {variables.length} key{variables.length === 1 ? "" : "s"}
+          <span className="shrink-0 text-[12px] text-black/35">
+            {variables.length}
           </span>
-          {!isOwner && variables.length ? (
-            <span className="text-[10px] text-black/35">
-              · {readable} shared with you
-            </span>
-          ) : null}
         </button>
 
         {isOwner ? (
-          <div className="flex shrink-0 items-center gap-1">
+          <div className="flex shrink-0 flex-wrap items-center gap-1">
             <button
               type="button"
-              onClick={() => setPanel(panel === "add" ? "none" : "add")}
+              onClick={() => onAdd("manual")}
               disabled={!vaultReady}
-              className={cn(BUTTON_GHOST, "h-7 disabled:opacity-40")}
+              className={cn(BUTTON_GHOST, "h-8 disabled:opacity-40")}
             >
               <Plus className="size-3" />
-              Add variables
+              Add
             </button>
             <button
               type="button"
-              onClick={() => setPanel(panel === "share" ? "none" : "share")}
-              className={cn(BUTTON_GHOST, "h-7")}
+              onClick={() => onAdd("import")}
+              disabled={!vaultReady}
+              className={cn(BUTTON_GHOST, "h-8 disabled:opacity-40")}
             >
-              <Share2 className="size-3" />
-              Share
+              <Upload className="size-3" />
+              Upload
             </button>
-            <form action={actions.setGroupArchived}>
-              <input type="hidden" name="projectId" value={projectId} />
-              <input type="hidden" name="groupId" value={group.id} />
-              <input type="hidden" name="archived" value="1" />
-              <button
-                type="submit"
-                aria-label={`Archive ${group.name}`}
-                className={ICON_BUTTON}
-              >
-                <Archive className="size-3.5" />
-              </button>
-            </form>
+            <button
+              type="button"
+              onClick={() => setRenaming(true)}
+              aria-label={`Rename ${group.name}`}
+              className={ICON_BUTTON}
+            >
+              <Pencil className="size-3.5" />
+            </button>
+            <DeleteGroupButton
+              projectId={projectId}
+              group={group}
+              action={actions.deleteGroup}
+            />
           </div>
         ) : null}
       </header>
 
-      {group.description ? (
-        <p className="border-b border-black/[0.06] px-3.5 py-2 text-[11px] text-black/45">
-          {group.description}
-        </p>
-      ) : null}
-
-      {panel === "add" ? (
-        <EnvComposer
+      {renaming ? (
+        <RenameGroupForm
           projectId={projectId}
-          groupId={group.id}
-          action={actions.saveVariables}
-          onDone={() => setPanel("none")}
-        />
-      ) : null}
-
-      {panel === "share" ? (
-        <ShareGroupForm
-          projectId={projectId}
-          groupId={group.id}
-          members={members}
-          action={actions.grantGroup}
-          onDone={() => setPanel("none")}
+          group={group}
+          action={actions.renameGroup}
+          onDone={() => setRenaming(false)}
         />
       ) : null}
 
       {open ? (
-        <ul className="divide-y divide-black/[0.05]">
+        <ul className="divide-y divide-black/[0.05] border-t border-black/[0.06]">
           {variables.map((variable) => (
             <VariableRow
               key={variable.id}
+              projectId={projectId}
               variable={variable}
-              copy={actions.copy}
+              members={members}
+              isOwner={isOwner}
+              actions={actions}
             />
           ))}
           {!variables.length ? (
-            <li className="px-3.5 py-4 text-center text-[11px] text-black/35">
-              No keys in this container yet.
+            <li className="px-4 py-5 text-[12px] text-black/35">
+              No variables in this group.
             </li>
           ) : null}
         </ul>
@@ -280,135 +334,539 @@ function GroupCard({
 }
 
 function VariableRow({
+  projectId,
   variable,
-  copy,
+  members,
+  isOwner,
+  actions,
 }: {
+  projectId: string;
   variable: ProjectCredential;
-  copy: EnvActions["copy"];
+  members: Member[];
+  isOwner: boolean;
+  actions: EnvActions;
 }) {
-  const [state, setState] = useState<"idle" | "working" | "done" | "error">(
-    "idle",
-  );
-  const [message, setMessage] = useState<string | null>(null);
-  const canCopy = Boolean(variable.myAccess);
+  const [copying, setCopying] = useState<"idle" | "working" | "done">("idle");
+  const [error, setError] = useState<string | null>(null);
+  const [panel, setPanel] = useState<"none" | "edit" | "share">("none");
+
+  const mayCopy = canCopyValue(variable.myAccess);
+  const mayManage = canManageVariable(variable.myAccess);
 
   async function onCopy() {
-    setState("working");
-    const result = await copy(variable.id);
+    setCopying("working");
+    setError(null);
+    const result = await actions.copy(variable.id);
 
     if (!result.ok) {
-      setState("error");
-      setMessage(result.message);
+      setCopying("idle");
+      setError(result.message);
       return;
     }
 
     try {
       await navigator.clipboard.writeText(result.value);
-      setState("done");
-      setMessage(null);
-      window.setTimeout(() => setState("idle"), 1600);
+      setCopying("done");
+      window.setTimeout(() => setCopying("idle"), 1600);
     } catch {
-      setState("error");
-      setMessage("Your browser blocked the clipboard.");
+      setCopying("idle");
+      setError("Your browser blocked the clipboard.");
     }
   }
 
   return (
-    <li className="flex flex-wrap items-center gap-2 px-3.5 py-2">
-      <code className="min-w-0 flex-1 truncate font-mono text-[12px] text-black/75">
-        {variable.name}
-      </code>
+    <li className="px-4 py-3">
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-3">
+        <div className="min-w-0 flex-1">
+          <code className="block truncate font-mono text-[12.5px] text-black/80">
+            {variable.name}
+          </code>
+          {variable.description ? (
+            <p className="mt-0.5 truncate text-[11.5px] text-black/40">
+              {variable.description}
+            </p>
+          ) : null}
+        </div>
 
-      {canCopy ? (
-        <button
-          type="button"
-          onClick={onCopy}
-          disabled={state === "working"}
-          className={cn(BUTTON_GHOST, "h-7 shrink-0")}
-        >
-          {state === "working" ? (
-            <Loader2 className="size-3 animate-spin" />
-          ) : state === "done" ? (
-            <Check className="size-3 text-[#08743d]" />
+        <div className="flex flex-wrap items-center gap-1">
+          {mayCopy ? (
+            <button
+              type="button"
+              onClick={onCopy}
+              disabled={copying === "working"}
+              className={cn(BUTTON_GHOST, "h-8")}
+            >
+              {copying === "working" ? (
+                <Loader2 className="size-3 animate-spin" />
+              ) : copying === "done" ? (
+                <Check className="size-3 text-[#08743d]" />
+              ) : (
+                <Copy className="size-3" />
+              )}
+              {copying === "done" ? "Copied" : "Copy value"}
+            </button>
           ) : (
-            <Copy className="size-3" />
+            <span className="px-2 text-[11px] text-black/30">
+              No access to the value
+            </span>
           )}
-          {state === "done" ? "Copied" : "Copy"}
-        </button>
-      ) : (
-        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-black/[0.04] px-2 py-1 text-[10px] font-medium text-black/35">
-          <Lock className="size-2.5" />
-          No access
-        </span>
-      )}
 
-      {state === "error" && message ? (
-        <p className="w-full text-[11px] font-medium text-red-700">{message}</p>
+          {mayManage ? (
+            <button
+              type="button"
+              onClick={() => setPanel("edit")}
+              className={cn(BUTTON_GHOST, "h-8")}
+            >
+              <Pencil className="size-3" />
+              Edit
+            </button>
+          ) : null}
+
+          {isOwner ? (
+            <button
+              type="button"
+              onClick={() => setPanel("share")}
+              className={cn(BUTTON_GHOST, "h-8")}
+            >
+              <Share2 className="size-3" />
+              Share
+              {variable.grants.length ? (
+                <span className="text-black/35">{variable.grants.length}</span>
+              ) : null}
+            </button>
+          ) : null}
+
+          {mayManage ? (
+            <DeleteVariableButton
+              projectId={projectId}
+              variable={variable}
+              action={actions.deleteVariable}
+            />
+          ) : null}
+        </div>
+      </div>
+
+      {error ? (
+        <p role="alert" className="mt-2 text-[11.5px] font-medium text-red-700">
+          {error}
+        </p>
+      ) : null}
+
+      {panel === "edit" ? (
+        <EditVariableDialog
+          projectId={projectId}
+          variable={variable}
+          action={actions.updateVariable}
+          onClose={() => setPanel("none")}
+        />
+      ) : null}
+
+      {panel === "share" ? (
+        <ShareDialog
+          projectId={projectId}
+          variable={variable}
+          members={members}
+          actions={actions}
+          onClose={() => setPanel("none")}
+        />
       ) : null}
     </li>
   );
 }
 
-function ShareGroupForm({
+function EditVariableDialog({
   projectId,
-  groupId,
+  variable,
+  action,
+  onClose,
+}: {
+  projectId: string;
+  variable: ProjectCredential;
+  action: FormAction;
+  onClose: () => void;
+}) {
+  const [state, formAction, pending] = useActionState(action, IDLE_FORM);
+  const [reveal, setReveal] = useState(false);
+
+  useCloseOnSuccess(state, onClose);
+
+  return (
+    <Modal open onClose={onClose} title={`Edit ${variable.name}`}>
+      <form action={formAction} className="space-y-4">
+        <input type="hidden" name="projectId" value={projectId} />
+        <input type="hidden" name="credentialId" value={variable.id} />
+
+        <label className="block space-y-1.5">
+          <span className="text-[12px] text-black/50">Key</span>
+          <input
+            name="key"
+            defaultValue={variable.name}
+            autoFocus
+            spellCheck={false}
+            className={cn(INPUT, "h-10 font-mono text-xs")}
+          />
+        </label>
+
+        <label className="block space-y-1.5">
+          <span className="text-[12px] text-black/50">
+            New value <span className="text-black/30">(optional)</span>
+          </span>
+          <span className="relative block">
+            <input
+              name="value"
+              type={reveal ? "text" : "password"}
+              autoComplete="off"
+              spellCheck={false}
+              placeholder="Leave empty to keep the current value"
+              className={cn(INPUT, "h-10 pr-10 font-mono text-xs")}
+            />
+            <button
+              type="button"
+              onClick={() => setReveal((value) => !value)}
+              aria-label={reveal ? "Hide value" : "Show value"}
+              className={cn(
+                "absolute top-1/2 right-2 -translate-y-1/2 rounded p-1 text-black/30 transition hover:text-black/70",
+                FOCUS_RING,
+              )}
+            >
+              {reveal ? (
+                <EyeOff className="size-3.5" />
+              ) : (
+                <Eye className="size-3.5" />
+              )}
+            </button>
+          </span>
+        </label>
+
+        <label className="block space-y-1.5">
+          <span className="text-[12px] text-black/50">
+            Note <span className="text-black/30">(optional)</span>
+          </span>
+          <input
+            name="note"
+            defaultValue={variable.description ?? ""}
+            maxLength={ENV_NOTE_MAX}
+            placeholder="Where to rotate this, or who to contact"
+            className={cn(INPUT, "h-10 text-xs")}
+          />
+        </label>
+
+        <Feedback state={state} />
+
+        <div className="flex justify-end gap-2 border-t border-black/[0.07] pt-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className={cn(BUTTON_SECONDARY, "h-9 text-xs")}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={pending}
+            className={cn(BUTTON_PRIMARY, "h-9 text-xs")}
+          >
+            {pending ? <Loader2 className="size-3.5 animate-spin" /> : null}
+            Save
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function ShareDialog({
+  projectId,
+  variable,
   members,
+  actions,
+  onClose,
+}: {
+  projectId: string;
+  variable: ProjectCredential;
+  members: Member[];
+  actions: EnvActions;
+  onClose: () => void;
+}) {
+  const [state, formAction, pending] = useActionState(
+    actions.grantAccess,
+    IDLE_FORM,
+  );
+  const [access, setAccess] = useState<CredentialAccess>("use");
+
+  const granted = new Map(
+    variable.grants.map((grant) => [grant.profileId, grant]),
+  );
+  const available = members.filter((member) => !granted.has(member.id));
+
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      title={`Share ${variable.name}`}
+      description="Access is given to a person, never to a link."
+    >
+      <form action={formAction} className="space-y-4">
+        <input type="hidden" name="projectId" value={projectId} />
+        <input type="hidden" name="credentialId" value={variable.id} />
+        <input type="hidden" name="access" value={access} />
+
+        <label className="block space-y-1.5">
+          <span className="text-[12px] text-black/50">Person</span>
+          <select
+            name="profileId"
+            required
+            defaultValue=""
+            className={cn(INPUT, "h-10 text-xs")}
+          >
+            <option value="" disabled>
+              Choose someone on this project
+            </option>
+            {available.map((member) => (
+              <option key={member.id} value={member.id}>
+                {member.name}
+              </option>
+            ))}
+          </select>
+          {!available.length ? (
+            <span className="text-[11.5px] text-black/40">
+              Everyone on this project already has access.
+            </span>
+          ) : null}
+        </label>
+
+        <fieldset className="space-y-1.5">
+          <legend className="text-[12px] text-black/50">Level</legend>
+          <div className="space-y-1.5">
+            {CREDENTIAL_ACCESS.map((level) => (
+              <label
+                key={level}
+                className={cn(
+                  "flex cursor-pointer items-start gap-2.5 rounded-xl border px-3 py-2.5 transition",
+                  access === level
+                    ? "border-[#16a34a]/40 bg-[#16a34a]/[0.06]"
+                    : "border-black/[0.08] bg-white hover:border-black/20",
+                )}
+              >
+                <input
+                  type="radio"
+                  name="accessChoice"
+                  checked={access === level}
+                  onChange={() => setAccess(level)}
+                  className={cn("mt-0.5 size-3.5 accent-[#16a34a]", FOCUS_RING)}
+                />
+                <span className="min-w-0">
+                  <span className="block text-[13px] font-medium">
+                    {ACCESS_LABEL[level]}
+                  </span>
+                  <span className="block text-[11.5px] text-black/45">
+                    {ACCESS_HINT[level]}
+                  </span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <Feedback state={state} />
+
+        <div className="flex justify-end gap-2">
+          <button
+            type="submit"
+            disabled={pending || !available.length}
+            className={cn(BUTTON_PRIMARY, "h-9 text-xs")}
+          >
+            {pending ? <Loader2 className="size-3.5 animate-spin" /> : null}
+            Share
+          </button>
+        </div>
+      </form>
+
+      <div className="mt-5 border-t border-black/[0.07] pt-4">
+        <h3 className="text-[12px] font-semibold text-black/50">
+          Who has access
+        </h3>
+        {variable.grants.length ? (
+          <ul className="mt-2 space-y-1">
+            {variable.grants.map((grant) => (
+              <GrantRow
+                key={grant.profileId}
+                projectId={projectId}
+                credentialId={variable.id}
+                grant={grant}
+                revoke={actions.revokeAccess}
+              />
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 text-[12px] text-black/35">
+            Nobody yet. Only owners can reach it.
+          </p>
+        )}
+      </div>
+    </Modal>
+  );
+}
+
+function GrantRow({
+  projectId,
+  credentialId,
+  grant,
+  revoke,
+}: {
+  projectId: string;
+  credentialId: string;
+  grant: CredentialGrant;
+  revoke: (formData: FormData) => Promise<void>;
+}) {
+  return (
+    <li className="flex flex-wrap items-center gap-2 rounded-xl border border-black/[0.07] bg-white px-3 py-2">
+      <span className="min-w-0 flex-1 truncate text-[12.5px] text-black/70">
+        {grant.name}
+      </span>
+      <span
+        className={cn(
+          "shrink-0 rounded-md border px-1.5 py-0.5 text-[10.5px] font-medium",
+          ACCESS_CHIP[grant.access],
+        )}
+      >
+        {ACCESS_LABEL[grant.access]}
+      </span>
+      <form action={revoke} className="shrink-0">
+        <input type="hidden" name="projectId" value={projectId} />
+        <input type="hidden" name="credentialId" value={credentialId} />
+        <input type="hidden" name="profileId" value={grant.profileId} />
+        <button
+          type="submit"
+          className={cn(BUTTON_GHOST, "h-7 hover:text-red-700")}
+        >
+          Remove
+        </button>
+      </form>
+    </li>
+  );
+}
+
+function DeleteVariableButton({
+  projectId,
+  variable,
+  action,
+}: {
+  projectId: string;
+  variable: ProjectCredential;
+  action: FormAction;
+}) {
+  const [state, formAction, pending] = useActionState(action, IDLE_FORM);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  return (
+    <form action={formAction} ref={formRef} className="contents">
+      <input type="hidden" name="projectId" value={projectId} />
+      <input type="hidden" name="credentialId" value={variable.id} />
+      <ConfirmAction
+        label={
+          <>
+            <Trash2 className="size-3" />
+            Delete
+          </>
+        }
+        question={`Delete ${variable.name}?`}
+        confirmLabel="Delete"
+        pending={pending}
+        onConfirm={() => formRef.current?.requestSubmit()}
+        className={cn(BUTTON_GHOST, "h-8 hover:text-red-700")}
+      />
+      {state.status === "error" && state.message ? (
+        <p role="alert" className="w-full text-[11.5px] text-red-700">
+          {state.message}
+        </p>
+      ) : null}
+    </form>
+  );
+}
+
+function DeleteGroupButton({
+  projectId,
+  group,
+  action,
+}: {
+  projectId: string;
+  group: EnvGroup;
+  action: FormAction;
+}) {
+  const [state, formAction, pending] = useActionState(action, IDLE_FORM);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  return (
+    <form action={formAction} ref={formRef} className="contents">
+      <input type="hidden" name="projectId" value={projectId} />
+      <input type="hidden" name="groupId" value={group.id} />
+      <ConfirmAction
+        label={<Trash2 className="size-3.5" />}
+        question={`Delete the ${group.name} group?`}
+        confirmLabel="Delete"
+        pending={pending}
+        onConfirm={() => formRef.current?.requestSubmit()}
+        className={cn(ICON_BUTTON, "hover:text-red-700")}
+      />
+      {state.status === "error" && state.message ? (
+        <p role="alert" className="w-full text-[11.5px] text-red-700">
+          {state.message}
+        </p>
+      ) : null}
+    </form>
+  );
+}
+
+function RenameGroupForm({
+  projectId,
+  group,
   action,
   onDone,
 }: {
   projectId: string;
-  groupId: string;
-  members: Array<{ id: string; name: string }>;
+  group: EnvGroup;
   action: FormAction;
   onDone: () => void;
 }) {
   const [state, formAction, pending] = useActionState(action, IDLE_FORM);
-
   useCloseOnSuccess(state, onDone);
 
   return (
     <form
       action={formAction}
-      className="space-y-2 border-b border-black/[0.06] bg-black/[0.012] px-3.5 py-3"
+      className="flex flex-wrap items-center gap-2 border-t border-black/[0.06] bg-black/[0.012] px-4 py-2.5"
     >
       <input type="hidden" name="projectId" value={projectId} />
-      <input type="hidden" name="groupId" value={groupId} />
-      <p className="text-[11px] leading-5 text-black/45">
-        Shares every key in this container with one person. Each stays an
-        individual grant, so any single key can be revoked on its own.
-      </p>
-      <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
-        <select name="profileId" required className={cn(INPUT_SMALL, "h-9")}>
-          <option value="">Choose a person</option>
-          {members.map((member) => (
-            <option key={member.id} value={member.id}>
-              {member.name}
-            </option>
-          ))}
-        </select>
-        <select name="access" className={cn(INPUT_SMALL, "h-9")}>
-          <option value="view">View and copy</option>
-          <option value="edit">Edit and replace</option>
-        </select>
-        <button
-          type="submit"
-          disabled={pending}
-          className={cn(BUTTON_SECONDARY, "h-9 text-xs")}
-        >
-          {pending ? <Loader2 className="size-3.5 animate-spin" /> : null}
-          Share
-        </button>
-      </div>
-      <FormFeedback state={state} />
-      <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={onDone}
-          className={cn(BUTTON_GHOST, "h-8")}
-        >
-          Close
-        </button>
-      </div>
+      <input type="hidden" name="groupId" value={group.id} />
+      <input
+        name="name"
+        defaultValue={group.name}
+        required
+        autoFocus
+        aria-label="Group name"
+        className={cn(INPUT_SMALL, "h-8 flex-1")}
+      />
+      <button
+        type="submit"
+        disabled={pending}
+        className={cn(BUTTON_SECONDARY, "h-8 text-xs")}
+      >
+        {pending ? <Loader2 className="size-3 animate-spin" /> : null}
+        Rename
+      </button>
+      <button
+        type="button"
+        onClick={onDone}
+        className={cn(BUTTON_GHOST, "h-8")}
+      >
+        Cancel
+      </button>
+      {state.status === "error" && state.message ? (
+        <p role="alert" className="w-full text-[11.5px] text-red-700">
+          {state.message}
+        </p>
+      ) : null}
     </form>
   );
 }
@@ -433,7 +891,7 @@ function NewGroupForm({
         className={cn(DASHED_ACTION, "py-3 text-[12px]")}
       >
         <Plus className="size-3.5" />
-        Add an ENV container
+        New group
       </button>
     );
   }
@@ -441,41 +899,37 @@ function NewGroupForm({
   return (
     <form
       action={formAction}
-      className="space-y-2 rounded-xl border border-black/[0.08] p-3"
+      className="flex flex-wrap items-center gap-2 rounded-2xl border border-black/[0.08] bg-white p-3"
     >
       <input type="hidden" name="projectId" value={projectId} />
-      <div className="grid gap-2 sm:grid-cols-2">
-        <input
-          name="name"
-          required
-          autoFocus
-          placeholder="Frontend ENV"
-          className={cn(INPUT_SMALL, "h-9")}
-        />
-        <input
-          name="description"
-          placeholder="What runs with these? (optional)"
-          className={cn(INPUT_SMALL, "h-9")}
-        />
-      </div>
-      <FormFeedback state={state} />
-      <div className="flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={() => setOpen(false)}
-          className={cn(BUTTON_GHOST, "h-8")}
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={pending}
-          className={cn(BUTTON_PRIMARY, "h-8 text-xs")}
-        >
-          {pending ? <Loader2 className="size-3.5 animate-spin" /> : null}
-          Add container
-        </button>
-      </div>
+      <input
+        name="name"
+        required
+        autoFocus
+        placeholder="Frontend"
+        aria-label="Group name"
+        className={cn(INPUT_SMALL, "h-9 flex-1")}
+      />
+      <button
+        type="submit"
+        disabled={pending}
+        className={cn(BUTTON_PRIMARY, "h-9 text-xs")}
+      >
+        {pending ? <Loader2 className="size-3.5 animate-spin" /> : null}
+        Create
+      </button>
+      <button
+        type="button"
+        onClick={() => setOpen(false)}
+        className={cn(BUTTON_GHOST, "h-9")}
+      >
+        Cancel
+      </button>
+      {state.status === "error" && state.message ? (
+        <p role="alert" className="w-full text-[11.5px] text-red-700">
+          {state.message}
+        </p>
+      ) : null}
     </form>
   );
 }
@@ -497,17 +951,12 @@ function EnvFiles({
   );
 
   return (
-    <div className="mt-6 border-t border-black/[0.06] pt-5">
-      <h3 className="text-[13px] font-semibold tracking-[-0.02em]">
-        Uploaded ENV files
+    <div className="mt-8 border-t border-black/[0.07] pt-6">
+      <h3 className="text-[14px] font-semibold tracking-[-0.02em]">
+        Stored .env files
       </h3>
-      <p className="mt-1 max-w-2xl text-[11px] leading-5 text-black/45">
-        Optional, and owner-only in both directions. A whole file is every
-        secret at once, so it cannot be shared per variable the way an
-        individual key can — share the keys above instead.
-      </p>
 
-      <ul className="mt-3 space-y-1.5">
+      <ul className="mt-4 space-y-1.5">
         {files.map((file) => (
           <EnvFileRow
             key={file.id}
@@ -517,23 +966,26 @@ function EnvFiles({
           />
         ))}
         {!files.length ? (
-          <li className="rounded-xl border border-dashed border-black/10 px-3 py-3 text-center text-[11px] text-black/35">
-            No files uploaded.
-          </li>
+          <li className="text-[12px] text-black/35">No files stored.</li>
         ) : null}
       </ul>
 
-      <form action={formAction} className="mt-3 space-y-2">
+      <form action={formAction} className="mt-4 space-y-2">
         <input type="hidden" name="projectId" value={projectId} />
         <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
           <input
             type="file"
             name="file"
             required
+            aria-label="File to store"
             className="block w-full text-[11px] file:mr-3 file:rounded-lg file:border-0 file:bg-black/[0.06] file:px-3 file:py-1.5 file:text-[11px] file:font-medium"
           />
-          <select name="groupId" className={cn(INPUT_SMALL, "h-8")}>
-            <option value="">No container</option>
+          <select
+            name="groupId"
+            aria-label="Group"
+            className={cn(INPUT_SMALL, "h-9")}
+          >
+            <option value="">No group</option>
             {groups.map((group) => (
               <option key={group.id} value={group.id}>
                 {group.name}
@@ -543,17 +995,21 @@ function EnvFiles({
           <button
             type="submit"
             disabled={pending}
-            className={cn(BUTTON_SECONDARY, "h-8 text-xs")}
+            className={cn(BUTTON_SECONDARY, "h-9 text-xs")}
           >
             {pending ? (
               <Loader2 className="size-3.5 animate-spin" />
             ) : (
               <Upload className="size-3.5" />
             )}
-            Upload
+            Store
           </button>
         </div>
-        <FormFeedback state={state} />
+        <p className="text-[11.5px] text-black/40">
+          A whole file is every secret at once, so it stays owner only and
+          cannot be shared per variable.
+        </p>
+        <Feedback state={state} />
       </form>
     </div>
   );
@@ -572,13 +1028,18 @@ function EnvFileRow({
     actions.downloadFile,
     IDLE_FORM as SimpleFormState & { url?: string },
   );
+  const [deleteState, deleteAction, deleting] = useActionState(
+    actions.deleteFile,
+    IDLE_FORM,
+  );
+  const deleteRef = useRef<HTMLFormElement>(null);
 
   return (
-    <li className="flex flex-wrap items-center gap-2 rounded-xl border border-black/[0.07] px-3 py-2">
+    <li className="flex flex-wrap items-center gap-2 rounded-xl border border-black/[0.07] bg-white px-3 py-2">
       <code className="min-w-0 flex-1 truncate font-mono text-[12px]">
         {file.fileName}
       </code>
-      <span className="shrink-0 text-[10px] text-black/35">
+      <span className="shrink-0 text-[10.5px] text-black/35">
         {Math.max(1, Math.round(file.byteSize / 1024))} KB ·{" "}
         {formatDate(file.createdAt.slice(0, 10))}
       </span>
@@ -591,7 +1052,7 @@ function EnvFileRow({
           className={cn(BUTTON_SECONDARY, "h-7 shrink-0 text-[11px]")}
         >
           <Download className="size-3" />
-          Open link
+          Open
         </a>
       ) : (
         <form action={formAction} className="shrink-0">
@@ -611,40 +1072,56 @@ function EnvFileRow({
         </form>
       )}
 
-      <form action={actions.archiveFile} className="shrink-0">
+      <form action={deleteAction} ref={deleteRef} className="shrink-0">
         <input type="hidden" name="projectId" value={projectId} />
         <input type="hidden" name="fileId" value={file.id} />
-        <button
-          type="submit"
-          aria-label={`Remove ${file.fileName}`}
-          className={ICON_BUTTON}
-        >
-          <Archive className="size-3.5" />
-        </button>
+        <ConfirmAction
+          label={<Trash2 className="size-3.5" />}
+          question={`Delete ${file.fileName}?`}
+          confirmLabel="Delete"
+          pending={deleting}
+          onConfirm={() => deleteRef.current?.requestSubmit()}
+          className={cn(ICON_BUTTON, "hover:text-red-700")}
+        />
       </form>
 
       {state.status === "error" && state.message ? (
-        <p className="w-full text-[11px] font-medium text-red-700">
+        <p role="alert" className="w-full text-[11.5px] text-red-700">
           {state.message}
+        </p>
+      ) : null}
+      {deleteState.status === "error" && deleteState.message ? (
+        <p role="alert" className="w-full text-[11.5px] text-red-700">
+          {deleteState.message}
         </p>
       ) : null}
     </li>
   );
 }
 
-function FormFeedback({ state }: { state: SimpleFormState }) {
+function EmptyLine({ text, action }: { text: string; action: string | null }) {
+  return (
+    <p className="text-[12.5px] text-black/40">
+      {text}
+      {action ? ` ${action}` : ""}
+    </p>
+  );
+}
+
+function Feedback({ state }: { state: SimpleFormState }) {
   if (state.status === "idle" || !state.message) return null;
   return (
     <p
+      role={state.status === "error" ? "alert" : "status"}
       className={cn(
-        "flex items-center gap-1.5 text-[11px] font-medium",
+        "flex items-center gap-1.5 text-[12px] font-medium",
         state.status === "success" ? "text-[#08743d]" : "text-red-700",
       )}
     >
       {state.status === "success" ? (
-        <CheckCircle2 className="size-3" />
+        <CheckCircle2 className="size-3.5" />
       ) : (
-        <AlertCircle className="size-3" />
+        <AlertCircle className="size-3.5" />
       )}
       {state.message}
     </p>

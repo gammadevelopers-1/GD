@@ -20,18 +20,15 @@ export const BANNER_ASPECT = 4;
 
 export const BANNER_OUTPUT_WIDTH = 1600;
 
-export const BANNER_FITS = {
-  cover: "Crop",
-  contain: "Fit",
-  fill: "Fill",
-} as const;
+// The stored fit is still honoured when rendering, so banners saved before the
+// crop control was removed keep looking the way they were set. New banners take
+// the default.
+export type BannerFit = "cover" | "contain" | "fill";
 
-export type BannerFit = keyof typeof BANNER_FITS;
-
-export const BANNER_FIT_ORDER: BannerFit[] = ["cover", "contain", "fill"];
+export const BANNER_DEFAULT_FIT: BannerFit = "cover";
 
 export function isBannerFit(value: string): value is BannerFit {
-  return value in BANNER_FITS;
+  return value === "cover" || value === "contain" || value === "fill";
 }
 
 export function bannerFitClass(fit: BannerFit) {
