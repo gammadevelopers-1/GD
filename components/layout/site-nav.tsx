@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRef } from "react";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { navLinks, site } from "@/lib/content/site";
+import { Mark } from "@/components/layout/mark";
 
 export function SiteNav() {
   const nav = useRef<HTMLElement>(null);
@@ -105,15 +106,5 @@ function NavLink({
       <span className="relative z-1">{children}</span>
       <span className="bg-brand/16 absolute inset-x-1.5 bottom-1 h-0.5 origin-left scale-x-0 rounded-full transition-transform duration-300 group-hover:scale-x-100" />
     </Link>
-  );
-}
-
-export function Mark({ className = "" }: { className?: string }) {
-  return (
-    <span
-      className={`text-brand grid size-[25px] shrink-0 place-items-center rounded-[7px] bg-[#14171a] font-mono text-[10.5px] font-semibold ${className}`}
-    >
-      {site.mark}
-    </span>
   );
 }

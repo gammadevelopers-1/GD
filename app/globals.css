@@ -222,6 +222,8 @@
 }
 
 :root {
+  color-scheme: light;
+
   --background: var(--color-gd-light-background);
   --foreground: var(--color-gd-light-headline);
 

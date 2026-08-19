@@ -30,6 +30,12 @@ import {
 } from "@/components/admin/projects/technical-panel";
 import { AuditHistory } from "@/components/admin/projects/audit-history";
 import {
+  type ClientAccessActions,
+  ClientAccessPanel,
+} from "@/components/admin/projects/client-access";
+import { ShareProject } from "@/components/admin/projects/share-project";
+import { getClientAccess } from "@/data/client-access";
+import {
   type EnvActions,
   EnvPanel,
 } from "@/components/admin/projects/env-panel";
@@ -88,6 +94,12 @@ import {
   updateMemberResponsibility,
 } from "../team-actions";
 import { saveTechnicalDetails } from "../technical-actions";
+import {
+  regenerateClientPassword,
+  revokeClientAccess,
+  setClientMilestoneEditing,
+  shareWithClient,
+} from "../client-actions";
 import {
   copyEnvValue,
   createEnvGroup,
@@ -196,9 +208,17 @@ export default async function ProjectPage({
             </Suspense>
           }
         />
+
+        {isOwner && activeTab === "overview" ? (
+          <Suspense fallback={null}>
+            <div className="mt-3">
+              <ClientAccessSection project={project} viewer={viewer} />
+            </div>
+          </Suspense>
+        ) : null}
       </div>
 
-      <div className={wide ? "mt-3 flex min-h-0 flex-1 flex-col" : "mt-4"}>
+      <div className={wide ? "mt-2 flex min-h-0 flex-1 flex-col" : "mt-4"}>
         {activeTab === "overview" ? (
           <Suspense fallback={<OverviewSkeleton />}>
             <OverviewSection
@@ -284,6 +304,7 @@ async function TeamSection({
   isOwner: boolean;
 }) {
   const people = isOwner ? await getActivePeople() : [];
+
   return (
     <TeamPanel
       projectId={project.id}
@@ -296,6 +317,30 @@ async function TeamSection({
       removeMember={removeProjectMember}
       restoreMember={restoreProjectMember}
       setLead={setProjectLead}
+    />
+  );
+}
+
+async function ClientAccessSection({
+  project,
+  viewer,
+}: {
+  project: ProjectCore;
+  viewer: Viewer;
+}) {
+  const grants = await getClientAccess(project.id, viewer);
+
+  const actions: ClientAccessActions = {
+    regenerate: regenerateClientPassword,
+    setEditing: setClientMilestoneEditing,
+    revoke: revokeClientAccess,
+  };
+
+  return (
+    <ClientAccessPanel
+      publicId={project.publicId}
+      grants={grants}
+      actions={actions}
     />
   );
 }
@@ -605,6 +650,13 @@ function ProjectHeader({
               />
             ) : null}
             {statusBadge}
+            {isOwner ? (
+              <ShareProject
+                projectId={project.id}
+                publicId={project.publicId}
+                share={shareWithClient}
+              />
+            ) : null}
             {isOwner ? (
               <Link
                 href={`/projects/${project.publicId}/edit`}
@@ -1000,6 +1052,7 @@ function technicalDetails(project: ProjectCore): TechnicalDetails | null {
     liveDomain: technical.liveDomain ?? "",
     stagingDomain: technical.stagingDomain ?? "",
     designUrl: technical.designUrl ?? "",
+    stackNotes: technical.stackNotes ?? "",
     onboardingNotes: technical.onboardingNotes ?? "",
     updatedBy: technical.updatedBy,
     updatedAt: technical.updatedAt,

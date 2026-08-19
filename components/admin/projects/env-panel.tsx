@@ -11,11 +11,13 @@ import {
   Eye,
   EyeOff,
   Loader2,
+  MoreHorizontal,
   Pencil,
   Plus,
   Share2,
   Trash2,
   Upload,
+  Users,
 } from "lucide-react";
 import type { CredentialGrant, ProjectCredential } from "@/data/credentials";
 import type { CopyResult } from "@/app/(admin)/projects/env-actions";
@@ -31,6 +33,13 @@ import {
   canCopyValue,
   canManageVariable,
 } from "@/lib/credentials/validation";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ENV_NOTE_MAX } from "@/lib/projects/env";
 import {
   BUTTON_GHOST,
@@ -348,7 +357,9 @@ function VariableRow({
 }) {
   const [copying, setCopying] = useState<"idle" | "working" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
-  const [panel, setPanel] = useState<"none" | "edit" | "share">("none");
+  const [panel, setPanel] = useState<"none" | "edit" | "share" | "delete">(
+    "none",
+  );
 
   const mayCopy = canCopyValue(variable.myAccess);
   const mayManage = canManageVariable(variable.myAccess);
@@ -389,6 +400,16 @@ function VariableRow({
         </div>
 
         <div className="flex flex-wrap items-center gap-1">
+          {isOwner && variable.grants.length ? (
+            <span
+              title={`Shared with ${variable.grants.length} ${variable.grants.length === 1 ? "person" : "people"}`}
+              className="mr-1 inline-flex shrink-0 items-center gap-1 text-[11px] text-black/35"
+            >
+              <Users className="size-3" />
+              {variable.grants.length}
+            </span>
+          ) : null}
+
           {mayCopy ? (
             <button
               type="button"
@@ -411,37 +432,46 @@ function VariableRow({
             </span>
           )}
 
-          {mayManage ? (
-            <button
-              type="button"
-              onClick={() => setPanel("edit")}
-              className={cn(BUTTON_GHOST, "h-8")}
-            >
-              <Pencil className="size-3" />
-              Edit
-            </button>
-          ) : null}
-
-          {isOwner ? (
-            <button
-              type="button"
-              onClick={() => setPanel("share")}
-              className={cn(BUTTON_GHOST, "h-8")}
-            >
-              <Share2 className="size-3" />
-              Share
-              {variable.grants.length ? (
-                <span className="text-black/35">{variable.grants.length}</span>
-              ) : null}
-            </button>
-          ) : null}
-
-          {mayManage ? (
-            <DeleteVariableButton
-              projectId={projectId}
-              variable={variable}
-              action={actions.deleteVariable}
-            />
+          {isOwner || mayManage ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                aria-label={`Actions for ${variable.name}`}
+                className={cn(ICON_BUTTON, "size-8")}
+              >
+                <MoreHorizontal className="size-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                {mayCopy ? (
+                  <DropdownMenuItem onSelect={() => void onCopy()}>
+                    <Copy />
+                  </DropdownMenuItem>
+                ) : null}
+                {isOwner ? (
+                  <DropdownMenuItem onSelect={() => setPanel("share")}>
+                    <Share2 />
+                    Share
+                  </DropdownMenuItem>
+                ) : null}
+                {mayManage ? (
+                  <DropdownMenuItem onSelect={() => setPanel("edit")}>
+                    <Pencil />
+                    Edit
+                  </DropdownMenuItem>
+                ) : null}
+                {mayManage ? (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onSelect={() => setPanel("delete")}
+                    >
+                      <Trash2 />
+                      Delete
+                    </DropdownMenuItem>
+                  </>
+                ) : null}
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : null}
         </div>
       </div>
@@ -467,6 +497,15 @@ function VariableRow({
           variable={variable}
           members={members}
           actions={actions}
+          onClose={() => setPanel("none")}
+        />
+      ) : null}
+
+      {panel === "delete" ? (
+        <DeleteVariableDialog
+          projectId={projectId}
+          variable={variable}
+          action={actions.deleteVariable}
           onClose={() => setPanel("none")}
         />
       ) : null}
@@ -636,7 +675,7 @@ function ShareDialog({
         </label>
 
         <fieldset className="space-y-1.5">
-          <legend className="text-[12px] text-black/50">Level</legend>
+          <legend className="text-[12px] text-black/50">Access</legend>
           <div className="space-y-1.5">
             {CREDENTIAL_ACCESS.map((level) => (
               <label
@@ -747,41 +786,55 @@ function GrantRow({
   );
 }
 
-function DeleteVariableButton({
+function DeleteVariableDialog({
   projectId,
   variable,
   action,
+  onClose,
 }: {
   projectId: string;
   variable: ProjectCredential;
   action: FormAction;
+  onClose: () => void;
 }) {
   const [state, formAction, pending] = useActionState(action, IDLE_FORM);
-  const formRef = useRef<HTMLFormElement>(null);
+  useCloseOnSuccess(state, onClose);
 
   return (
-    <form action={formAction} ref={formRef} className="contents">
-      <input type="hidden" name="projectId" value={projectId} />
-      <input type="hidden" name="credentialId" value={variable.id} />
-      <ConfirmAction
-        label={
-          <>
-            <Trash2 className="size-3" />
+    <Modal
+      open
+      title={`Delete ${variable.name}?`}
+      description="The value is destroyed with it. Anyone this variable was shared with loses it too."
+      onClose={onClose}
+    >
+      <form action={formAction} className="space-y-4">
+        <input type="hidden" name="projectId" value={projectId} />
+        <input type="hidden" name="credentialId" value={variable.id} />
+
+        <Feedback state={state} />
+
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className={cn(BUTTON_SECONDARY, "h-9")}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={pending}
+            className={cn(
+              "inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-semibold text-white transition duration-200 hover:bg-red-700 disabled:pointer-events-none disabled:opacity-60",
+              FOCUS_RING,
+            )}
+          >
+            {pending ? <Loader2 className="size-4 animate-spin" /> : null}
             Delete
-          </>
-        }
-        question={`Delete ${variable.name}?`}
-        confirmLabel="Delete"
-        pending={pending}
-        onConfirm={() => formRef.current?.requestSubmit()}
-        className={cn(BUTTON_GHOST, "h-8 hover:text-red-700")}
-      />
-      {state.status === "error" && state.message ? (
-        <p role="alert" className="w-full text-[11.5px] text-red-700">
-          {state.message}
-        </p>
-      ) : null}
-    </form>
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 

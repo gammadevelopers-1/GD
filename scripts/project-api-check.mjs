@@ -12,10 +12,13 @@ const ID = {
   projectOwnerOnly: "72000000-0000-4000-8000-000000000002",
   projectArchived: "72000000-0000-4000-8000-000000000003",
   week: "73000000-0000-4000-8000-000000000001",
+  weekOther: "73000000-0000-4000-8000-000000000002",
   itemDone: "74000000-0000-4000-8000-000000000001",
   itemOpen: "74000000-0000-4000-8000-000000000002",
+  itemOther: "74000000-0000-4000-8000-000000000003",
   credential: "75000000-0000-4000-8000-000000000001",
   envGroup: "76000000-0000-4000-8000-000000000001",
+  portalClient: "77000000-0000-4000-8000-000000000001",
 };
 
 const PASSWORD = `Chunk2-${randomUUID()}`;
@@ -70,6 +73,32 @@ function sql(statement) {
     ],
     { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
   );
+}
+
+function query(statement) {
+  return execFileSync(
+    "docker",
+    [
+      "exec",
+      "-i",
+      DB_CONTAINER,
+      "psql",
+      "-v",
+      "ON_ERROR_STOP=1",
+      "-t",
+      "-A",
+      "-U",
+      "postgres",
+      "-d",
+      "postgres",
+      "-c",
+      statement,
+    ],
+    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+  )
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
 }
 
 function readLocalEnv() {
@@ -223,14 +252,47 @@ async function seed() {
        'API finished item', now(), '${ID.owner}'),
       ('${ID.itemOpen}', '${ID.week}', 'idea', 'idea',
        'API open item', null, '${ID.owner}');
+
+    -- A work item on a project no client is linked to, so "the card id decides
+    -- the project" can be tested rather than assumed.
+    insert into public.app_milestone_weeks (id, project_id, week_number, starts_on, due_on)
+    values ('${ID.weekOther}', '${ID.projectOwnerOnly}', 1, current_date - 6, current_date + 1);
+
+    insert into public.app_milestone_cards
+      (id, milestone_week_id, board, status, title, created_by)
+    values ('${ID.itemOther}', '${ID.weekOther}', 'work', 'in_progress',
+            'API item on another project', '${ID.owner}');
+  `);
+
+  sql(`
+    insert into public.app_client_registrations (email, full_name, created_by)
+    values ('chunk2-api-client@gamma.test', 'API Client', '${ID.owner}')
+    on conflict (email) do update
+      set full_name = excluded.full_name, created_at = now();
+  `);
+
+  await createUser(
+    ID.portalClient,
+    "chunk2-api-client@gamma.test",
+    "client",
+    "API Client",
+  );
+
+  sql(`
+    insert into public.app_project_client_access
+      (project_id, client_user_id, can_edit_milestones, granted_by)
+    values ('${ID.projectAssigned}', '${ID.portalClient}', false, '${ID.owner}')
+    on conflict (project_id, client_user_id) do update
+      set revoked_at = null, can_edit_milestones = false;
   `);
 }
 
 async function cleanup() {
   sql(`
     delete from public.app_milestone_cards
-      where milestone_week_id = '${ID.week}';
-    delete from public.app_milestone_weeks where id = '${ID.week}';
+      where milestone_week_id in ('${ID.week}', '${ID.weekOther}');
+    delete from public.app_milestone_weeks
+      where id in ('${ID.week}', '${ID.weekOther}');
     delete from public.app_project_members
       where project_id in ('${ID.projectAssigned}', '${ID.projectOwnerOnly}', '${ID.projectArchived}');
     delete from public.app_project_financials
@@ -243,6 +305,12 @@ async function cleanup() {
     delete from public.app_credential_secrets where credential_id = '${ID.credential}';
     delete from public.app_project_credentials where id = '${ID.credential}';
     delete from public.app_env_groups where id = '${ID.envGroup}';
+    delete from public.app_client_registrations
+      where email = 'chunk2-api-client@gamma.test';
+    delete from public.app_audit_logs where client_actor_id = '${ID.portalClient}';
+    delete from public.app_project_client_access
+      where client_user_id = '${ID.portalClient}';
+    delete from public.app_client_users where id = '${ID.portalClient}';
     delete from public.app_projects
       where id in ('${ID.projectAssigned}', '${ID.projectOwnerOnly}', '${ID.projectArchived}');
     delete from public.app_clients where id in ('${ID.clientA}', '${ID.clientB}');
@@ -250,7 +318,13 @@ async function cleanup() {
       where id in ('${ID.owner}', '${ID.assigned}', '${ID.unassigned}', '${ID.finance}');
   `);
 
-  for (const id of [ID.owner, ID.assigned, ID.unassigned, ID.finance]) {
+  for (const id of [
+    ID.owner,
+    ID.assigned,
+    ID.unassigned,
+    ID.finance,
+    ID.portalClient,
+  ]) {
     await admin(`/auth/v1/admin/users/${id}`, { method: "DELETE" });
   }
 }
@@ -976,6 +1050,262 @@ async function run() {
     "anonymous callers cannot read internal project rows",
     !anonTable.ok || (Array.isArray(anonTable.data) && !anonTable.data.length),
     JSON.stringify(anonTable.data),
+  );
+
+  const CLIENT_TABLES = [
+    "app_client_users",
+    "app_project_client_access",
+    "app_client_signin_attempts",
+  ];
+
+  for (const table of CLIENT_TABLES) {
+    const asMember = await api(`/rest/v1/${table}?select=*`, {
+      key: PUBLISHABLE,
+      token: memberToken,
+    });
+    check(
+      `an internal member cannot read ${table}`,
+      asMember.ok && Array.isArray(asMember.data) && !asMember.data.length,
+      JSON.stringify(asMember.data),
+    );
+
+    const asAnon = await api(`/rest/v1/${table}?select=*`, {
+      key: PUBLISHABLE,
+    });
+    check(
+      `anonymous callers cannot read ${table}`,
+      !asAnon.ok || (Array.isArray(asAnon.data) && !asAnon.data.length),
+      JSON.stringify(asAnon.data),
+    );
+  }
+
+  const anonPortal = await api("/rest/v1/rpc/app_client_portal", {
+    key: PUBLISHABLE,
+    method: "POST",
+    body: { target_public_id: "anything" },
+  });
+  check(
+    "anonymous callers cannot execute the portal function",
+    !anonPortal.ok,
+    `status ${anonPortal.status}`,
+  );
+
+  const memberPreview = await api("/rest/v1/rpc/app_client_portal_preview", {
+    key: PUBLISHABLE,
+    token: memberToken,
+    method: "POST",
+    body: { target_public_id: "anything" },
+  });
+  check(
+    "a member cannot preview the client portal",
+    memberPreview.ok && memberPreview.data === null,
+    JSON.stringify(memberPreview.data),
+  );
+
+  const internalProfile = query(
+    `select count(*) from public.app_profiles where id = '${ID.portalClient}'`,
+  );
+  check(
+    "creating a client account does not create an internal profile",
+    internalProfile[0] === "0",
+    `app_profiles rows: ${internalProfile[0]}`,
+  );
+
+  const clientRow = query(
+    `select count(*) from public.app_client_users where id = '${ID.portalClient}'`,
+  );
+  check(
+    "creating a client account does create a client row",
+    clientRow[0] === "1",
+    `app_client_users rows: ${clientRow[0]}`,
+  );
+
+  const clientToken = await signIn("chunk2-api-client@gamma.test");
+  const asClient = (path, options = {}) =>
+    api(path, { key: PUBLISHABLE, token: clientToken, ...options });
+
+  const [sharedPublicId] = query(
+    `select public_id from public.app_projects where id = '${ID.projectAssigned}'`,
+  );
+  const [otherPublicId] = query(
+    `select public_id from public.app_projects where id = '${ID.projectOwnerOnly}'`,
+  );
+
+  const clientOwnProject = await asClient("/rest/v1/rpc/app_client_portal", {
+    method: "POST",
+    body: { target_public_id: sharedPublicId },
+  });
+  check(
+    "a client can read the project shared with them",
+    clientOwnProject.ok &&
+      clientOwnProject.data?.project?.name === "API Assigned Platform",
+    JSON.stringify(clientOwnProject.data)?.slice(0, 200),
+  );
+
+  const clientOtherProject = await asClient("/rest/v1/rpc/app_client_portal", {
+    method: "POST",
+    body: { target_public_id: otherPublicId },
+  });
+  check(
+    "a client asking for another project gets nothing",
+    clientOtherProject.ok && clientOtherProject.data === null,
+    JSON.stringify(clientOtherProject.data),
+  );
+
+  const payload = JSON.stringify(clientOwnProject.data ?? {});
+  check(
+    "the client payload carries no money, credential or repository field",
+    !/value|amount|currency|salary|credential|secret|env|repository|hosting|onboarding/i.test(
+      payload,
+    ),
+    payload.slice(0, 300),
+  );
+
+  const CLOSED_TO_CLIENTS = [
+    "app_projects",
+    "app_profiles",
+    "app_project_credentials",
+    "app_credential_secrets",
+    "app_credential_grants",
+    "app_env_groups",
+    "app_env_variable_grants",
+    "app_project_financials",
+    "app_project_members",
+    "app_project_technical_details",
+    "app_milestone_weeks",
+    "app_milestone_cards",
+    "app_week_idea_boards",
+    "app_project_idea_boards",
+    "app_project_work_boards",
+    "app_clients",
+    "app_audit_logs",
+  ];
+
+  for (const table of CLOSED_TO_CLIENTS) {
+    const response = await asClient(`/rest/v1/${table}?select=*`);
+    check(
+      `a client reads nothing from ${table}`,
+      !response.ok || (Array.isArray(response.data) && !response.data.length),
+      `${response.status} ${JSON.stringify(response.data)?.slice(0, 160)}`,
+    );
+  }
+
+  const clientSelfRow = await asClient("/rest/v1/app_client_users?select=*");
+  check(
+    "a client reads only their own identity row",
+    clientSelfRow.ok &&
+      Array.isArray(clientSelfRow.data) &&
+      clientSelfRow.data.length === 1 &&
+      clientSelfRow.data[0].id === ID.portalClient,
+    JSON.stringify(clientSelfRow.data)?.slice(0, 200),
+  );
+
+  const clientPreview = await asClient(
+    "/rest/v1/rpc/app_client_portal_preview",
+    { method: "POST", body: { target_public_id: sharedPublicId } },
+  );
+  check(
+    "a client cannot use the owner preview function",
+    clientPreview.ok && clientPreview.data === null,
+    JSON.stringify(clientPreview.data),
+  );
+
+  const tickDenied = await asClient("/rest/v1/rpc/app_client_set_item_done", {
+    method: "POST",
+    body: { target_card_id: ID.itemDone, done: false },
+  });
+  check(
+    "a read-only client cannot tick an item",
+    !tickDenied.ok,
+    `status ${tickDenied.status}`,
+  );
+
+  const ideaDenied = await asClient("/rest/v1/rpc/app_client_save_week_idea", {
+    method: "POST",
+    body: {
+      target_week_id: ID.week,
+      new_doc: { type: "doc", content: [] },
+    },
+  });
+  check(
+    "a read-only client cannot write the idea board",
+    !ideaDenied.ok,
+    `status ${ideaDenied.status}`,
+  );
+
+  sql(`
+    update public.app_project_client_access
+    set can_edit_milestones = true
+    where client_user_id = '${ID.portalClient}';
+  `);
+
+  const tickAllowed = await asClient("/rest/v1/rpc/app_client_set_item_done", {
+    method: "POST",
+    body: { target_card_id: ID.itemDone, done: false },
+  });
+  check(
+    "a client with milestone editing can tick an item",
+    tickAllowed.ok,
+    `status ${tickAllowed.status} ${JSON.stringify(tickAllowed.data)}`,
+  );
+
+  const statusDenied = await asClient(
+    "/rest/v1/rpc/app_set_milestone_card_status",
+    {
+      method: "POST",
+      body: {
+        target_card_id: ID.itemDone,
+        next_status: "blocked",
+        reason: "x",
+      },
+    },
+  );
+  check(
+    "even then a client cannot use the internal card status function",
+    !statusDenied.ok,
+    `status ${statusDenied.status}`,
+  );
+
+  const crossProjectTick = await asClient(
+    "/rest/v1/rpc/app_client_set_item_done",
+    { method: "POST", body: { target_card_id: ID.itemOther, done: true } },
+  );
+  check(
+    "a client cannot tick an item belonging to another project",
+    !crossProjectTick.ok,
+    `status ${crossProjectTick.status}`,
+  );
+
+  const crossProjectIdeas = await asClient(
+    "/rest/v1/rpc/app_client_save_week_idea",
+    {
+      method: "POST",
+      body: {
+        target_week_id: ID.weekOther,
+        new_doc: { type: "doc", content: [] },
+      },
+    },
+  );
+  check(
+    "a client cannot write notes on another project's week",
+    !crossProjectIdeas.ok,
+    `status ${crossProjectIdeas.status}`,
+  );
+
+  sql(`
+    update public.app_project_client_access
+    set revoked_at = now()
+    where client_user_id = '${ID.portalClient}';
+  `);
+
+  const afterClientRevoke = await asClient("/rest/v1/rpc/app_client_portal", {
+    method: "POST",
+    body: { target_public_id: sharedPublicId },
+  });
+  check(
+    "a revoked client sees nothing on their next request",
+    afterClientRevoke.ok && afterClientRevoke.data === null,
+    JSON.stringify(afterClientRevoke.data),
   );
 
   const anonFinancials = await api("/rest/v1/app_project_financials?select=*", {

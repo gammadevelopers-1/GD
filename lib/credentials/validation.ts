@@ -29,7 +29,7 @@ export function isCredentialEnvironment(
   return (CREDENTIAL_ENVIRONMENTS as readonly string[]).includes(value);
 }
 
-export const CREDENTIAL_ACCESS = ["see", "use", "manage"] as const;
+export const CREDENTIAL_ACCESS = ["use", "manage"] as const;
 export type CredentialAccess = (typeof CREDENTIAL_ACCESS)[number];
 
 export function isCredentialAccess(value: string): value is CredentialAccess {
@@ -37,19 +37,16 @@ export function isCredentialAccess(value: string): value is CredentialAccess {
 }
 
 export const ACCESS_LABEL: Record<CredentialAccess, string> = {
-  see: "Can see",
-  use: "Can use",
-  manage: "Can manage",
+  use: "Copy value",
+  manage: "Full access",
 };
 
 export const ACCESS_HINT: Record<CredentialAccess, string> = {
-  see: "Sees the key and note. Cannot copy the value.",
-  use: "Can copy the value.",
-  manage: "Can copy, edit and delete.",
+  use: "Can copy this value. Cannot change or remove it.",
+  manage: "Can copy, edit and delete this value.",
 };
 
 export const ACCESS_CHIP: Record<CredentialAccess, string> = {
-  see: TONE_SOFT.muted,
   use: TONE_SOFT.ok,
   manage: TONE_SOFT.warning,
 };

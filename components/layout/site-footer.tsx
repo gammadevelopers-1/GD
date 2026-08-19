@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Reveal } from "@/components/common/reveal";
-import { Mark } from "@/components/layout/site-nav";
+import { Mark } from "@/components/layout/mark";
 import { closing } from "@/lib/content/home";
 import { footerColumns, site } from "@/lib/content/site";
 import { FooterArcs } from "./footer-arcs";

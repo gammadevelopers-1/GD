@@ -72,9 +72,7 @@ export function TeamPanel({
               On this project
             </h2>
           </div>
-          <span className="font-mono text-[10px] text-black/35">
-            {members.length} active
-          </span>
+        
         </div>
 
         {members.length ? (
@@ -385,10 +383,6 @@ function AddMemberPanel({
         </h2>
       </div>
 
-      <p className="mb-4 text-[13px] leading-5 text-black/45">
-        Adding a person here is what gives them access to this project. They
-        will see it in their portfolio immediately.
-      </p>
 
       {addable.length ? (
         <form action={formAction} className="space-y-3">

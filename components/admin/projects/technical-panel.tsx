@@ -79,6 +79,12 @@ const ROWS: Row[] = [
     placeholder: "https://figma.com/file/…",
   },
   {
+    field: "stackNotes",
+    label: "Stack notes",
+    kind: "notes",
+    placeholder: "Frameworks, services and anything load-bearing about the build.",
+  },
+  {
     field: "onboardingNotes",
     label: "Onboarding notes",
     kind: "notes",
@@ -410,6 +416,7 @@ function blankDetails(): TechnicalDetails {
     liveDomain: "",
     stagingDomain: "",
     designUrl: "",
+    stackNotes: "",
     onboardingNotes: "",
     updatedBy: null,
     updatedAt: null,

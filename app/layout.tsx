@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { ButtonFillEffects } from "@/components/common/button-fill-effects";
 import "./globals.css";
@@ -49,6 +49,10 @@ export const metadata: Metadata = {
   openGraph: { type: "website", siteName: "Gamma Developers" },
 };
 
+export const viewport: Viewport = {
+  colorScheme: "light",
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -58,7 +62,8 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${generalSans.variable} ${jetbrainsMono.variable} ${syne.variable}`}
-     data-scroll-behavior="smooth">
+      data-scroll-behavior="smooth"
+    >
       <body className="bg-background text-foreground font-body antialiased">
         <ButtonFillEffects />
         {children}

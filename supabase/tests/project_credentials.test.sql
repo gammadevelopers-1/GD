@@ -143,7 +143,7 @@ select is(
   'the member holds no grant'
 );
 
--- "Can see" reveals the variable and nothing else ------------------------------
+-- A grant is what reveals the variable -----------------------------------------
 select set_config(
   'request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000001', true
 );
@@ -151,15 +151,15 @@ select set_config(
 select lives_ok(
   $$select public.app_grant_credential_access(
       'a3000000-0000-4000-8000-000000000001',
-      'a0000000-0000-4000-8000-000000000002', 'see'
+      'a0000000-0000-4000-8000-000000000002', 'manage'
     )$$,
-  'an owner can grant see access to someone on the project'
+  'an owner can grant full access to someone on the project'
 );
 
 select throws_ok(
   $$select public.app_grant_credential_access(
       'a3000000-0000-4000-8000-000000000001',
-      'a0000000-0000-4000-8000-000000000003', 'see'
+      'a0000000-0000-4000-8000-000000000003', 'manage'
     )$$,
   '23514',
   'That person is not on this project.',
@@ -172,8 +172,18 @@ select throws_ok(
       'a0000000-0000-4000-8000-000000000002', 'admin'
     )$$,
   '22023',
-  'Access is see, use or manage.',
-  'there are exactly three access levels'
+  'Access is use or manage.',
+  'there are exactly two access levels'
+);
+
+select throws_ok(
+  $$select public.app_grant_credential_access(
+      'a3000000-0000-4000-8000-000000000001',
+      'a0000000-0000-4000-8000-000000000002', 'see'
+    )$$,
+  '22023',
+  'Access is use or manage.',
+  'the retired see level can no longer be granted'
 );
 
 select set_config(
@@ -184,17 +194,10 @@ select is(
   (select count(*) from public.app_project_credentials
    where project_id = 'a2000000-0000-4000-8000-000000000001'),
   1::bigint,
-  'a see grant is what reveals the variable'
+  'a grant is what reveals the variable'
 );
 
-select is(
-  (select allowed from public.app_read_credential_secret(
-    'a3000000-0000-4000-8000-000000000001')),
-  false,
-  'see access knows the variable exists and cannot copy it'
-);
-
--- "Can use" copies but does not change -----------------------------------------
+-- "Copy value" copies but does not change --------------------------------------
 select set_config(
   'request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000001', true
 );
@@ -218,7 +221,7 @@ select is(
   (select allowed from public.app_read_credential_secret(
     'a3000000-0000-4000-8000-000000000001')),
   true,
-  'use access can read the ciphertext'
+  'copy value can read the ciphertext'
 );
 
 select is(
@@ -234,7 +237,7 @@ select is(
     'bmV3', 'bm9uY2U=', 'dGFn', 1
   ),
   false,
-  'use access cannot replace the value'
+  'copy value cannot replace the value'
 );
 
 select throws_ok(
@@ -243,7 +246,7 @@ select throws_ok(
     )$$,
   '42501',
   'You cannot change this variable.',
-  'use access cannot delete the variable'
+  'copy value cannot delete the variable'
 );
 
 select throws_ok(
@@ -268,7 +271,7 @@ select throws_ok(
   'a member cannot share a variable with anybody'
 );
 
--- "Can manage" edits and deletes -----------------------------------------------
+-- "Full access" edits and deletes -----------------------------------------------
 select set_config(
   'request.jwt.claim.sub', 'a0000000-0000-4000-8000-000000000001', true
 );
@@ -287,7 +290,7 @@ select is(
     'cmVwbGFjZWQ=', 'bm9uY2Uy', 'dGFnMg==', 1
   ),
   true,
-  'manage access can replace the value'
+  'full access can replace the value'
 );
 
 select lives_ok(
@@ -427,7 +430,7 @@ select ok(
     where resource_type = 'credential'
       and action = 'credential.access_denied'
       and metadata ->> 'operation' = 'copy'
-      and metadata ->> 'access' = 'see'
+      and metadata ->> 'access' = 'none'
   ),
   'a refusal records the level the person actually held'
 );

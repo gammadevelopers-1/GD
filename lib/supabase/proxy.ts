@@ -16,12 +16,28 @@ function isProtectedPath(pathname: string) {
   );
 }
 
+function isPortalPath(pathname: string) {
+  return pathname === "/portal" || pathname.startsWith("/portal/");
+}
+
+function isPortalDoor(pathname: string) {
+  return pathname === "/portal/sign-in";
+}
+
 export async function updateSession(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
   if (!hasSupabaseConfig()) {
-    if (isProtectedPath(request.nextUrl.pathname)) {
+    if (isProtectedPath(pathname)) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       url.searchParams.set("reason", "configuration");
+      return NextResponse.redirect(url);
+    }
+    if (isPortalPath(pathname) && !isPortalDoor(pathname)) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/portal/sign-in";
+      url.search = "";
       return NextResponse.redirect(url);
     }
 
@@ -47,10 +63,19 @@ export async function updateSession(request: NextRequest) {
 
   const { data, error } = await supabase.auth.getClaims();
 
-  if (isProtectedPath(request.nextUrl.pathname) && (error || !data?.claims)) {
+  const signedOut = Boolean(error) || !data?.claims;
+
+  if (isProtectedPath(pathname) && signedOut) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    url.searchParams.set("next", request.nextUrl.pathname);
+    url.searchParams.set("next", pathname);
+    return NextResponse.redirect(url);
+  }
+
+  if (isPortalPath(pathname) && !isPortalDoor(pathname) && signedOut) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/portal/sign-in";
+    url.search = "?reason=access";
     return NextResponse.redirect(url);
   }
 

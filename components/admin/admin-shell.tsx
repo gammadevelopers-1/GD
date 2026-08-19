@@ -13,7 +13,7 @@ import {
   LogOut,
   UsersRound,
 } from "lucide-react";
-import { Mark } from "@/components/layout/site-nav";
+import { Mark } from "@/components/layout/mark";
 import {
   Sidebar,
   SidebarContent,

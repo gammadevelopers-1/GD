@@ -4,6 +4,7 @@ export const TECHNICAL_FIELDS = [
   "liveDomain",
   "stagingDomain",
   "designUrl",
+  "stackNotes",
   "onboardingNotes",
 ] as const;
 
@@ -31,6 +32,7 @@ export const TECHNICAL_LABELS: Record<TechnicalField, string> = {
   liveDomain: "Live domain",
   stagingDomain: "Staging domain",
   designUrl: "Design file",
+  stackNotes: "Stack notes",
   onboardingNotes: "Onboarding notes",
 };
 
@@ -112,6 +114,10 @@ export function validateTechnical(values: TechnicalValues): {
   url("designUrl");
   host("liveDomain");
   host("stagingDomain");
+
+  if (!errors.stackNotes && values.stackNotes.length > NOTES_MAX) {
+    errors.stackNotes = `Keep these notes under ${NOTES_MAX} characters.`;
+  }
 
   if (!errors.onboardingNotes && values.onboardingNotes.length > NOTES_MAX) {
     errors.onboardingNotes = `Keep these notes under ${NOTES_MAX} characters.`;

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
-import { Mark } from "@/components/layout/site-nav";
+import { Mark } from "@/components/layout/mark";
 import { getViewer } from "@/data/auth";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { LoginForm } from "./login-form";

@@ -30,3 +30,7 @@ yarn-error.log*
 next-env.d.ts
 
 !.env.example
+
+# Seeds client portal logins whose passwords are written down in the brief.
+# Local and staging only, and therefore never committed.
+/scripts/seed-client-tests.mjs

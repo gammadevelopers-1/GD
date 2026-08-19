@@ -166,7 +166,7 @@ export function WeekPlan({
       </div>
 
       {weeks.length ? (
-        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 pt-4 pb-24 sm:px-6 sm:pb-32">
+        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 pt-4 pb-4 sm:px-6 sm:pb-5">
           {weeks.map((week) => (
             <WeekRow
               key={week.id}
@@ -196,7 +196,7 @@ export function WeekPlan({
           ))}
         </div>
       ) : (
-        <p className="px-4 pt-4 pb-24 text-[12px] text-black/40 sm:px-6 sm:pb-32">
+        <p className="px-4 pt-4 pb-4 text-[12px] text-black/40 sm:px-6 sm:pb-5">
           {isOwner ? "No weeks yet. Add the first one." : "No weeks yet."}
         </p>
       )}
@@ -437,7 +437,7 @@ function WeekRow({
       {open ? (
         <div
           id={panelId}
-          className="space-y-4 border-t border-black/[0.06] bg-[#fcfcf9] px-4 pt-4 pb-5 sm:px-5"
+          className="space-y-4 border-t border-black/[0.06] bg-[#fcfcf9] px-4 pt-4 pb-3 sm:px-5"
         >
           <WeekCarryOver
             items={carryOver}
