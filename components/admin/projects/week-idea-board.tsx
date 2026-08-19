@@ -107,7 +107,7 @@ export function WeekIdeaBoard({
       aria-modal={expanded || undefined}
       className={cn(
         "relative flex flex-col overflow-hidden border border-black/[0.07] bg-white",
-        expanded ? "fixed inset-0 z-50 rounded-none" : "h-90 rounded-xl",
+        expanded ? "fixed inset-0 z-50 rounded-none" : "h-128 rounded-xl",
       )}
     >
       <div className="flex shrink-0 items-center gap-2 border-b border-black/[0.07] bg-[#f1f1ea] px-3 py-1.5">
@@ -135,7 +135,7 @@ export function WeekIdeaBoard({
           onClick={() => onExpandedChange(!expanded)}
           title={expanded ? "Close full screen" : "Open full screen"}
           aria-label={expanded ? "Close full screen" : "Open full screen"}
-          className="ml-auto grid size-7 place-items-center rounded-lg text-black/45 transition hover:bg-black/[0.06] hover:text-black"
+          className="ml-auto grid size-7 place-items-center rounded-lg text-black/45 transition hover:bg-black/6 hover:text-black"
         >
           {expanded ? (
             <Minimize2 className="size-3.5" />

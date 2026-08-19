@@ -29,7 +29,10 @@ export default async function PortalSignInPage({
     <PortalCard
       eyebrow="Client access"
       title="Sign in to your project"
-      
+      intro={
+        (reason ? REASONS[reason] : null) ??
+        "Use the email and password you were sent."
+      }
     >
       <AuthForm
         action={signIn}

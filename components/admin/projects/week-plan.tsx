@@ -437,7 +437,7 @@ function WeekRow({
       {open ? (
         <div
           id={panelId}
-          className="space-y-4 border-t border-black/[0.06] bg-[#fcfcf9] px-4 pt-4 pb-3 sm:px-5"
+          className="space-y-4 border-t border-black/[0.06] bg-[#fcfcf9] px-4 pt-4 pb-2 sm:px-5"
         >
           <WeekCarryOver
             items={carryOver}

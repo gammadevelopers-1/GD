@@ -229,11 +229,5 @@ async function shapePortal(raw: unknown): Promise<Portal> {
     lastUpdatedAt: payload.lastUpdatedAt,
     weeks,
     team,
-    technical: payload.technical ?? {
-      liveDomain: null,
-      stagingDomain: null,
-      designUrl: null,
-      stackNotes: null,
-    },
   };
 }
