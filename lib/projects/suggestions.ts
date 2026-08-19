@@ -24,7 +24,7 @@ export function unfinishedByWeek(
   today = new Date().toISOString().slice(0, 10),
 ): SuggestionGroup[] {
   return weeks
-    .filter((week) => week.dueOn < today)
+    .filter((week) => !week.completedAt && week.dueOn < today)
     .map((week) => ({
       weekNumber: week.number,
       weekDueOn: week.dueOn,

@@ -57,6 +57,9 @@ export type IdeaEditorHandle = {
     mime: string;
     size: number;
   }) => void;
+  replaceContent: (doc: IdeaDoc) => void;
+  appendContent: (nodes: unknown[]) => void;
+  getDoc: () => IdeaDoc | null;
   focus: () => void;
 };
 
@@ -221,7 +224,7 @@ function Toolbar({ editor }: { editor: Editor }) {
   );
 
   return (
-    <div className="sticky top-15.5 z-20 flex flex-wrap items-center gap-0.5 border-b border-black/[0.07] bg-[#f8f8f3]/95 px-2 py-1.5 backdrop-blur-sm">
+    <div className="z-20 flex shrink-0 flex-wrap items-center gap-0.5 border-b border-black/[0.07] bg-[#f8f8f3] px-2 py-1.5">
       <Tool
         label="Undo"
         onClick={() => editor.chain().focus().undo().run()}
@@ -433,11 +436,13 @@ function Toolbar({ editor }: { editor: Editor }) {
 export function IdeaEditor({
   initialDoc,
   editable,
+  placeholder,
   onChange,
   ref,
 }: {
   initialDoc: IdeaDoc;
   editable: boolean;
+  placeholder?: string;
   onChange: (doc: unknown) => void;
   ref?: Ref<IdeaEditorHandle>;
 }) {
@@ -465,7 +470,9 @@ export function IdeaEditor({
       TaskItem.configure({ nested: true }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       Placeholder.configure({
-        placeholder: "Start writing — plans, decisions, research, anything.",
+        placeholder:
+          placeholder ??
+          "Start writing — plans, decisions, research, anything.",
       }),
       CharacterCount,
       Attachment,
@@ -500,6 +507,19 @@ export function IdeaEditor({
           .createParagraphNear()
           .run();
       },
+      replaceContent(doc) {
+        editor?.commands.setContent(doc, { emitUpdate: false });
+      },
+      appendContent(nodes) {
+        editor
+          ?.chain()
+          .focus("end")
+          .insertContentAt(editor.state.doc.content.size, nodes)
+          .run();
+      },
+      getDoc() {
+        return (editor?.getJSON() as IdeaDoc | undefined) ?? null;
+      },
       focus() {
         editor?.chain().focus().run();
       },
@@ -515,7 +535,7 @@ export function IdeaEditor({
     <div className="flex min-h-0 flex-1 flex-col">
       {editable ? <Toolbar editor={editor} /> : null}
 
-      <div className="idea-surface min-h-0 flex-1 overflow-y-auto px-6 py-8 sm:px-10 lg:px-14">
+      <div className="idea-surface min-h-0 flex-1 overflow-y-auto py-4 pr-6 pl-3 sm:pr-8 sm:pl-4">
         <EditorContent editor={editor} />
       </div>
 

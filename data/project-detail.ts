@@ -1,10 +1,17 @@
 import "server-only";
 
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Viewer } from "@/data/auth";
 import type { ProjectStatus } from "@/lib/projects/status";
 import { type Board, type CardStatus, workRank } from "@/lib/projects/board";
-import { type Block, parseBlocks } from "@/lib/projects/blocks";
+import type { Block } from "@/lib/projects/blocks";
+import {
+  EMPTY_DOC,
+  type IdeaDoc,
+  IdeaDocError,
+  parseIdeaDoc,
+} from "@/lib/projects/idea-doc";
 import type { BannerFit } from "@/lib/projects/banner";
 
 export type MilestoneCard = {
@@ -13,6 +20,11 @@ export type MilestoneCard = {
   board: Board;
   status: CardStatus;
   blocks: Block[];
+  doc: IdeaDoc;
+  assignedTo: string | null;
+  assignedName: string | null;
+  updatedAt: string | null;
+  updatedBy: string | null;
   position: number;
   blockerReason: string | null;
   carryReason: string | null;
@@ -27,6 +39,14 @@ export type MilestoneWeek = {
   number: number;
   startsOn: string | null;
   dueOn: string;
+  focus: string | null;
+  completedAt: string | null;
+  completedBy: string | null;
+  ideaDoc: IdeaDoc;
+  ideaUpdatedAt: string | null;
+  ideaUpdatedBy: string | null;
+  workUpdatedAt: string | null;
+  workUpdatedBy: string | null;
   ideaCards: MilestoneCard[];
   workCards: MilestoneCard[];
   archivedCards: MilestoneCard[];
@@ -50,7 +70,7 @@ export type FormerProjectMember = ProjectMember & {
   removedBy: string | null;
 };
 
-export type ProjectDetail = {
+export type ProjectCore = {
   id: string;
   publicId: string;
   bannerUrl: string | null;
@@ -67,13 +87,6 @@ export type ProjectDetail = {
   leadName: string | null;
   members: ProjectMember[];
   formerMembers: FormerProjectMember[];
-  weeks: MilestoneWeek[];
-  archivedWeeks: MilestoneWeek[];
-  totalItems: number;
-  doneItems: number;
-  overdueItems: number;
-  progress: number;
-  currentWeek: MilestoneWeek | null;
   technical: {
     repositoryUrl: string | null;
     hostingUrl: string | null;
@@ -88,6 +101,19 @@ export type ProjectDetail = {
   } | null;
 };
 
+export type ProjectWeeks = {
+  dismissedCarry: string[];
+  weeks: MilestoneWeek[];
+  archivedWeeks: MilestoneWeek[];
+  totalItems: number;
+  doneItems: number;
+  overdueItems: number;
+  progress: number;
+  currentWeek: MilestoneWeek | null;
+};
+
+export type ProjectDetail = ProjectCore & ProjectWeeks;
+
 export type ProjectFinancial = {
   amount: number;
   currency: "PKR" | "USD";
@@ -101,11 +127,13 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function safeBlocks(raw: unknown): Block[] {
+function safeDoc(raw: unknown): IdeaDoc {
+  if (raw === null || raw === undefined) return EMPTY_DOC;
   try {
-    return parseBlocks(raw);
-  } catch {
-    return [];
+    return parseIdeaDoc(raw);
+  } catch (error) {
+    if (error instanceof IdeaDocError) return EMPTY_DOC;
+    throw error;
   }
 }
 
@@ -124,6 +152,23 @@ function pickCurrentWeek(weeks: MilestoneWeek[]) {
 
 type NameRef = { full_name: string } | null;
 
+type WeekRow = {
+  id: string;
+  week_number: number;
+  starts_on: string | null;
+  due_on: string;
+  archived_at: string | null;
+  focus: string | null;
+  completed_at: string | null;
+  completedBy: NameRef;
+  ideaBoard:
+    | { doc: unknown; updated_at: string | null; editor: NameRef }
+    | Array<{ doc: unknown; updated_at: string | null; editor: NameRef }>
+    | null;
+  carryDismissals: Array<{ card_id: string }> | null;
+  cards: CardRow[];
+};
+
 type CardRow = {
   id: string;
   milestone_week_id: string;
@@ -139,6 +184,12 @@ type CardRow = {
   archived_at: string | null;
   created_by: string | null;
   createdBy: NameRef;
+  assigned_to: string | null;
+  doc: unknown;
+  assignee: NameRef;
+  updated_at: string | null;
+  updated_by: string | null;
+  editor: NameRef;
 };
 
 type ProjectRow = {
@@ -166,14 +217,6 @@ type ProjectRow = {
     addedBy: NameRef;
     archivedBy: NameRef;
   }>;
-  weeks: Array<{
-    id: string;
-    week_number: number;
-    starts_on: string | null;
-    due_on: string;
-    archived_at: string | null;
-    cards: CardRow[];
-  }>;
   technical: {
     repository_url: string | null;
     hosting_url: string | null;
@@ -189,10 +232,10 @@ type ProjectRow = {
   } | null;
 };
 
-export async function getProjectDetail(
+export const getProjectDetail = cache(async function getProjectDetail(
   publicId: string,
   viewer: Viewer,
-): Promise<ProjectDetail | null> {
+): Promise<ProjectCore | null> {
   if (viewer.role !== "owner" && viewer.role !== "member") return null;
 
   const supabase = await createClient();
@@ -210,14 +253,6 @@ export async function getProjectDetail(
          addedBy:app_profiles!app_project_members_added_by_fkey(full_name),
          archivedBy:app_profiles!app_project_members_archived_by_fkey(full_name)
        ),
-       weeks:app_milestone_weeks(
-         id, week_number, starts_on, due_on, archived_at,
-         cards:app_milestone_cards!app_milestone_cards_milestone_week_id_fkey(
-           id, milestone_week_id, board, status, title, blocks, position,
-           blocker_reason, carry_reason, carried_from_week_id, completed_at, archived_at,
-           createdBy:app_profiles!app_milestone_cards_created_by_fkey(full_name)
-         )
-       ),
        technical:app_project_technical_details(
          repository_url, hosting_url, live_domain, staging_domain, design_url,
          technical_contact, stack_notes, onboarding_notes, updated_by, updated_at,
@@ -227,15 +262,10 @@ export async function getProjectDetail(
     .eq("public_id", publicId);
 
   if (!isOwner) {
-    query = query
-      .is("members.archived_at", null)
-      .is("weeks.archived_at", null)
-      .is("weeks.cards.archived_at", null);
+    query = query.is("members.archived_at", null);
   }
 
-  const { data } = await query
-    .order("week_number", { referencedTable: "weeks" })
-    .maybeSingle();
+  const { data } = await query.maybeSingle();
 
   if (!data) return null;
 
@@ -263,77 +293,6 @@ export async function getProjectDetail(
   remember(
     project.technical?.updated_by ?? null,
     project.technical?.updatedBy ?? null,
-  );
-
-  const weekNumbers = new Map(
-    project.weeks.map((week) => [String(week.id), Number(week.week_number)]),
-  );
-
-  const now = today();
-  const toCard = (card: CardRow): MilestoneCard => ({
-    id: String(card.id),
-    title: String(card.title),
-    board: card.board as Board,
-    status: card.status as CardStatus,
-    blocks: safeBlocks(card.blocks),
-    position: Number(card.position ?? 0),
-    blockerReason: card.blocker_reason ? String(card.blocker_reason) : null,
-    carryReason: card.carry_reason ? String(card.carry_reason) : null,
-    carriedFromWeek: card.carried_from_week_id
-      ? (weekNumbers.get(String(card.carried_from_week_id)) ?? null)
-      : null,
-    completedAt: card.completed_at ? String(card.completed_at) : null,
-    isArchived: Boolean(card.archived_at),
-    createdBy: card.createdBy?.full_name
-      ? String(card.createdBy.full_name)
-      : null,
-  });
-
-  const allWeeks: MilestoneWeek[] = project.weeks.map((week) => {
-    const rows = [...week.cards].sort(
-      (a, b) => Number(a.position ?? 0) - Number(b.position ?? 0),
-    );
-    const live = rows.filter((card) => !card.archived_at).map(toCard);
-    const ideaCards = live
-      .filter((card) => card.board === "idea")
-      .sort((a, b) => a.position - b.position);
-    const workCards = live
-      .filter((card) => card.board === "work")
-      .sort(
-        (a, b) =>
-          workRank(a.status) - workRank(b.status) || a.position - b.position,
-      );
-    const done = workCards.filter((card) => card.status === "completed").length;
-    const total = live.length;
-    const dueOn = String(week.due_on);
-
-    return {
-      id: String(week.id),
-      number: Number(week.week_number),
-      startsOn: week.starts_on ? String(week.starts_on) : null,
-      dueOn,
-      ideaCards,
-      workCards,
-      archivedCards: rows.filter((card) => card.archived_at).map(toCard),
-      done,
-      total,
-      isCurrent: false,
-      isOverdue: dueOn < now && done < total,
-      isArchived: Boolean(week.archived_at),
-    };
-  });
-
-  const weeks = allWeeks.filter((week) => !week.isArchived);
-  const archivedWeeks = allWeeks.filter((week) => week.isArchived);
-
-  const currentWeek = pickCurrentWeek(weeks);
-  if (currentWeek) currentWeek.isCurrent = true;
-
-  const totalItems = weeks.reduce((sum, week) => sum + week.total, 0);
-  const doneItems = weeks.reduce((sum, week) => sum + week.done, 0);
-  const overdueItems = weeks.reduce(
-    (sum, week) => sum + (week.dueOn < now ? week.total - week.done : 0),
-    0,
   );
 
   const memberRows = project.members;
@@ -389,13 +348,6 @@ export async function getProjectDetail(
       : null,
     members,
     formerMembers,
-    weeks,
-    archivedWeeks,
-    totalItems,
-    doneItems,
-    overdueItems,
-    progress: totalItems ? Math.round((doneItems / totalItems) * 100) : 0,
-    currentWeek,
     technical: project.technical
       ? {
           repositoryUrl: project.technical.repository_url,
@@ -415,7 +367,161 @@ export async function getProjectDetail(
         }
       : null,
   };
-}
+});
+
+export const getProjectWeeks = cache(async function getProjectWeeks(
+  projectId: string,
+  isOwner: boolean,
+): Promise<ProjectWeeks> {
+  const supabase = await createClient();
+
+  let query = supabase
+    .from("app_milestone_weeks")
+    .select(
+      `id, week_number, starts_on, due_on, archived_at, focus, completed_at,
+       completedBy:app_profiles!app_milestone_weeks_completed_by_fkey(full_name),
+       ideaBoard:app_week_idea_boards(doc, updated_at,
+         editor:app_profiles!app_week_idea_boards_updated_by_fkey(full_name)
+       ),
+       carryDismissals:app_card_carry_dismissals(card_id),
+       cards:app_milestone_cards!app_milestone_cards_milestone_week_id_fkey(
+         id, milestone_week_id, board, status, title, doc, position, assigned_to,
+         blocker_reason, carry_reason, carried_from_week_id, completed_at, archived_at,
+         updated_at, updated_by,
+         createdBy:app_profiles!app_milestone_cards_created_by_fkey(full_name),
+         assignee:app_profiles!app_milestone_cards_assigned_to_fkey(full_name),
+         editor:app_profiles!app_milestone_cards_updated_by_fkey(full_name)
+       )`,
+    )
+    .eq("project_id", projectId);
+
+  if (!isOwner) {
+    query = query.is("archived_at", null).is("cards.archived_at", null);
+  }
+
+  const { data } = await query.order("week_number");
+
+  const rows = (data ?? []) as unknown as WeekRow[];
+
+  const dismissedCarry = rows.flatMap((week) =>
+    (week.carryDismissals ?? []).map(
+      (row) => `${String(row.card_id)}:${String(week.id)}`,
+    ),
+  );
+
+  const weekNumbers = new Map(
+    rows.map((week) => [String(week.id), Number(week.week_number)]),
+  );
+
+  const now = today();
+  const toCard = (card: CardRow): MilestoneCard => ({
+    id: String(card.id),
+    title: String(card.title),
+    board: card.board as Board,
+    status: card.status as CardStatus,
+    blocks: [],
+    doc: safeDoc(card.doc),
+    assignedTo: card.assigned_to ? String(card.assigned_to) : null,
+    assignedName: card.assignee?.full_name
+      ? String(card.assignee.full_name)
+      : null,
+    updatedAt: card.updated_at ? String(card.updated_at) : null,
+    updatedBy: card.editor?.full_name ? String(card.editor.full_name) : null,
+    position: Number(card.position ?? 0),
+    blockerReason: card.blocker_reason ? String(card.blocker_reason) : null,
+    carryReason: card.carry_reason ? String(card.carry_reason) : null,
+    carriedFromWeek: card.carried_from_week_id
+      ? (weekNumbers.get(String(card.carried_from_week_id)) ?? null)
+      : null,
+    completedAt: card.completed_at ? String(card.completed_at) : null,
+    isArchived: Boolean(card.archived_at),
+    createdBy: card.createdBy?.full_name
+      ? String(card.createdBy.full_name)
+      : null,
+  });
+
+  const allWeeks: MilestoneWeek[] = rows.map((week) => {
+    const cards = [...week.cards].sort(
+      (a, b) => Number(a.position ?? 0) - Number(b.position ?? 0),
+    );
+    const live = cards.filter((card) => !card.archived_at).map(toCard);
+    const ideaCards = live
+      .filter((card) => card.board === "idea")
+      .sort((a, b) => a.position - b.position);
+    const workCards = live
+      .filter((card) => card.board === "work")
+      .sort(
+        (a, b) =>
+          workRank(a.status) - workRank(b.status) || a.position - b.position,
+      );
+    const done = workCards.filter((card) => card.status === "completed").length;
+    const total = live.length;
+    const dueOn = String(week.due_on);
+    const completedAt = week.completed_at ? String(week.completed_at) : null;
+    const ideaBoard = Array.isArray(week.ideaBoard)
+      ? (week.ideaBoard[0] ?? null)
+      : week.ideaBoard;
+
+    const lastWorkEdit = workCards
+      .filter((card) => card.updatedAt)
+      .sort((a, b) => (a.updatedAt! < b.updatedAt! ? 1 : -1))[0];
+
+    return {
+      id: String(week.id),
+      number: Number(week.week_number),
+      startsOn: week.starts_on ? String(week.starts_on) : null,
+      dueOn,
+      focus: week.focus ? String(week.focus) : null,
+      ideaDoc: safeDoc(ideaBoard?.doc),
+      ideaUpdatedAt: ideaBoard?.updated_at
+        ? String(ideaBoard.updated_at)
+        : null,
+      ideaUpdatedBy: ideaBoard?.editor?.full_name
+        ? String(ideaBoard.editor.full_name)
+        : null,
+      workUpdatedAt: lastWorkEdit?.updatedAt ?? null,
+      workUpdatedBy: lastWorkEdit?.updatedBy ?? null,
+      completedAt,
+      completedBy: week.completedBy?.full_name
+        ? String(week.completedBy.full_name)
+        : null,
+      ideaCards,
+      workCards,
+      archivedCards: cards.filter((card) => card.archived_at).map(toCard),
+      done,
+      total,
+      isCurrent: false,
+      isOverdue: !completedAt && dueOn < now && done < total,
+      isArchived: Boolean(week.archived_at),
+    };
+  });
+
+  const weeks = allWeeks.filter((week) => !week.isArchived);
+  const archivedWeeks = allWeeks.filter((week) => week.isArchived);
+
+  const currentWeek = pickCurrentWeek(weeks);
+  if (currentWeek) currentWeek.isCurrent = true;
+
+  const totalItems = weeks.reduce((sum, week) => sum + week.total, 0);
+  const doneItems = weeks.reduce((sum, week) => sum + week.done, 0);
+  const overdueItems = weeks.reduce(
+    (sum, week) =>
+      sum +
+      (!week.completedAt && week.dueOn < now ? week.total - week.done : 0),
+    0,
+  );
+
+  return {
+    dismissedCarry,
+    weeks,
+    archivedWeeks,
+    totalItems,
+    doneItems,
+    overdueItems,
+    progress: totalItems ? Math.round((doneItems / totalItems) * 100) : 0,
+    currentWeek,
+  };
+});
 
 export async function getProjectFinancial(
   projectId: string,

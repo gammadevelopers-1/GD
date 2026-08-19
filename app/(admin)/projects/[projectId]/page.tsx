@@ -20,9 +20,7 @@ import {
   isProjectTab,
   projectTabHref,
 } from "@/lib/projects/tabs";
-import { IdeaBoard } from "@/components/admin/projects/idea-board";
-import { getIdeaBoard } from "@/data/idea-board";
-import { unfinishedByWeek } from "@/lib/projects/suggestions";
+import { WeekPlan } from "@/components/admin/projects/week-plan";
 import { BannerControl } from "@/components/admin/projects/banner-control";
 import { StatusControl } from "@/components/admin/projects/status-control";
 import { TeamPanel } from "@/components/admin/projects/team-panel";
@@ -41,11 +39,13 @@ import { credentialsConfigured } from "@/lib/credentials/crypto";
 import { requireRole } from "@/data/auth";
 import type { Viewer } from "@/data/auth";
 import {
+  type ProjectCore,
   type ProjectDetail,
   type ProjectFinancial,
   getActivePeople,
   getProjectDetail,
   getProjectFinancial,
+  getProjectWeeks,
 } from "@/data/project-detail";
 import {
   TONE_BAR,
@@ -69,7 +69,21 @@ import {
 } from "../banner-actions";
 import { bannerFitClass } from "@/lib/projects/banner";
 import { setProjectStatus } from "../actions";
-import { saveIdeaBoard, uploadIdeaAttachment } from "../idea-actions";
+import {
+  addMilestoneWeek,
+  setMilestoneWeekArchived,
+  setMilestoneWeekComplete,
+} from "../milestone-actions";
+import { uploadIdeaAttachment } from "../idea-actions";
+import {
+  acceptCarryOver,
+  acceptWeekTasks,
+  dismissCarryOver,
+  saveTask,
+  saveWeekIdeaBoard,
+  setTaskDone,
+  suggestWeekTasks,
+} from "../week-actions";
 import {
   addProjectMember,
   removeProjectMember,
@@ -116,7 +130,7 @@ export default async function ProjectPage({
   searchParams,
 }: {
   params: Promise<{ projectId: string }>;
-  searchParams: Promise<{ tab?: string; notice?: string }>;
+  searchParams: Promise<{ tab?: string; notice?: string; board?: string }>;
 }) {
   const viewer = await requireRole(["owner", "member"]);
   const { projectId: publicId } = await params;
@@ -130,18 +144,25 @@ export default async function ProjectPage({
   const onThisProject =
     isOwner || project.members.some((member) => member.id === viewer.id);
 
-  const canWriteBoard =
-    (onThisProject || viewer.id === project.leadId) && !project.isArchived;
   const notice = query.notice ? NOTICES[query.notice] : undefined;
   const tabHref = (tab: Tab) => projectTabHref(project.publicId, tab);
 
   const wide = activeTab === "ideas";
 
   return (
-    <div className={wide ? "w-full" : "mx-auto max-w-[1480px]"}>
+    <div
+      className={cn(
+        wide
+          ? "-mx-4 -mb-8 flex h-[calc(100dvh-4rem)] w-auto flex-col overflow-hidden sm:-mx-6 sm:-mb-10 lg:-mx-8 xl:-mx-10"
+          : "mx-auto max-w-[1480px]",
+      )}
+    >
       <Link
         href="/projects"
-        className="mb-4 inline-flex items-center gap-2 text-xs font-medium text-black/42 transition hover:text-black"
+        className={cn(
+          "inline-flex items-center gap-2 text-xs font-medium text-black/42 transition hover:text-black",
+          wide ? "mb-2 shrink-0 px-4 pt-1 sm:px-6 lg:px-8 xl:px-10" : "mb-4",
+        )}
       >
         <ArrowLeft className="size-3.5" /> All projects
       </Link>
@@ -167,26 +188,34 @@ export default async function ProjectPage({
         </div>
       ) : null}
 
-      <ProjectHeader project={project} viewer={viewer} activeTab={activeTab} />
-
-      <div className="mt-4">
-        {activeTab === "overview" ? (
-          isOwner ? (
-            <Suspense fallback={<OverviewSkeleton />}>
-              <OverviewSection
-                project={project}
-                viewer={viewer}
-                tabHref={tabHref}
-              />
+      <div
+        className={wide ? "shrink-0 px-4 sm:px-6 lg:px-8 xl:px-10" : undefined}
+      >
+        <ProjectHeader
+          project={project}
+          viewer={viewer}
+          activeTab={activeTab}
+          compact={wide}
+          milestones={
+            <Suspense
+              fallback={<HeaderMeta label="Milestones" value="Loading…" />}
+            >
+              <MilestoneMeta projectId={project.id} isOwner={isOwner} />
             </Suspense>
-          ) : (
-            <Overview
+          }
+        />
+      </div>
+
+      <div className={wide ? "mt-3 flex min-h-0 flex-1 flex-col" : "mt-4"}>
+        {activeTab === "overview" ? (
+          <Suspense fallback={<OverviewSkeleton />}>
+            <OverviewSection
               project={project}
-              financial={null}
-              isOwner={false}
+              viewer={viewer}
+              isOwner={isOwner}
               tabHref={tabHref}
             />
-          )
+          </Suspense>
         ) : null}
         {activeTab === "team" ? (
           isOwner ? (
@@ -198,12 +227,17 @@ export default async function ProjectPage({
           )
         ) : null}
         {activeTab === "ideas" ? (
-          <Suspense fallback={<IdeaSkeleton />}>
-            <IdeaSection
+          <Suspense fallback={<WorkspaceSkeleton />}>
+            <WorkspaceSection
               projectId={project.id}
-              viewer={viewer}
-              weeks={project.weeks}
-              canEdit={canWriteBoard}
+              isOwner={isOwner}
+              canPlan={isOwner || viewer.id === project.leadId}
+              canTick={onThisProject || viewer.id === project.leadId}
+              projectArchived={project.isArchived}
+              members={project.members.map((member) => ({
+                id: member.id,
+                name: member.name,
+              }))}
             />
           </Suspense>
         ) : null}
@@ -231,18 +265,24 @@ export default async function ProjectPage({
 async function OverviewSection({
   project,
   viewer,
+  isOwner,
   tabHref,
 }: {
-  project: ProjectDetail;
+  project: ProjectCore;
   viewer: Viewer;
+  isOwner: boolean;
   tabHref: (tab: Tab) => string;
 }) {
-  const financial = await getProjectFinancial(project.id, viewer);
+  const [financial, weeks] = await Promise.all([
+    getProjectFinancial(project.id, viewer),
+    getProjectWeeks(project.id, isOwner),
+  ]);
+
   return (
     <Overview
-      project={project}
+      project={{ ...project, ...weeks }}
       financial={financial}
-      isOwner
+      isOwner={isOwner}
       tabHref={tabHref}
     />
   );
@@ -252,7 +292,7 @@ async function TeamSection({
   project,
   isOwner,
 }: {
-  project: ProjectDetail;
+  project: ProjectCore;
   isOwner: boolean;
 }) {
   const people = isOwner ? await getActivePeople() : [];
@@ -293,11 +333,31 @@ function TeamSkeleton() {
   );
 }
 
-function IdeaSkeleton() {
+function WorkspaceSkeleton() {
   return (
-    <div className="flex min-h-[calc(100dvh-15rem)] gap-4">
-      <div className="flex-1 animate-pulse rounded-2xl border border-black/[0.07] bg-white" />
-      <div className="hidden w-72 shrink-0 animate-pulse rounded-2xl border border-black/[0.07] bg-[#f8f8f3] xl:block" />
+    <div
+      aria-busy
+      className="flex min-h-0 flex-1 flex-col border-y border-black/[0.07] bg-white"
+    >
+      <div className="shrink-0 border-b border-black/[0.07] bg-[#f8f8f3] px-3 py-2 sm:px-4">
+        <span className="block h-2.5 w-14 animate-pulse rounded bg-black/[0.07]" />
+        <div className="mt-2.5 flex gap-1.5">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <span
+              key={index}
+              className="h-7 w-24 shrink-0 animate-pulse rounded-lg bg-black/[0.05]"
+            />
+          ))}
+        </div>
+      </div>
+      <div className="h-11 shrink-0 border-b border-black/[0.07] bg-[#f8f8f3]" />
+      <div className="mx-auto w-full max-w-[78ch] flex-1 space-y-4 px-6 py-10">
+        <div className="h-7 w-2/5 animate-pulse rounded bg-black/[0.06]" />
+        <div className="h-4 w-full animate-pulse rounded bg-black/[0.04]" />
+        <div className="h-4 w-11/12 animate-pulse rounded bg-black/[0.04]" />
+        <div className="h-4 w-3/4 animate-pulse rounded bg-black/[0.04]" />
+        <div className="h-4 w-5/6 animate-pulse rounded bg-black/[0.04]" />
+      </div>
     </div>
   );
 }
@@ -311,29 +371,73 @@ function TechnicalSkeleton() {
   );
 }
 
-async function IdeaSection({
+async function MilestoneMeta({
   projectId,
-  viewer,
-  weeks,
-  canEdit,
+  isOwner,
 }: {
   projectId: string;
-  viewer: Viewer;
-  weeks: ProjectDetail["weeks"];
-  canEdit: boolean;
+  isOwner: boolean;
 }) {
-  const board = await getIdeaBoard(projectId, viewer);
+  const { weeks, doneItems, totalItems } = await getProjectWeeks(
+    projectId,
+    isOwner,
+  );
+  const closed = weeks.filter((week) => week.completedAt).length;
 
   return (
-    <IdeaBoard
+    <HeaderMeta
+      label="Milestones"
+      value={
+        weeks.length ? `${closed}/${weeks.length} weeks closed` : "Not planned"
+      }
+      note={totalItems ? `${doneItems}/${totalItems} items done` : undefined}
+    />
+  );
+}
+
+async function WorkspaceSection({
+  projectId,
+  isOwner,
+  canPlan,
+  canTick,
+  projectArchived,
+  members,
+}: {
+  projectId: string;
+  isOwner: boolean;
+  canPlan: boolean;
+  canTick: boolean;
+  projectArchived: boolean;
+  members: Array<{ id: string; name: string }>;
+}) {
+  const plan = await getProjectWeeks(projectId, isOwner);
+
+  return (
+    <WeekPlan
       projectId={projectId}
-      initialDoc={board.doc}
-      canEdit={canEdit}
-      updatedAt={board.updatedAt}
-      updatedBy={board.updatedBy}
-      suggestions={unfinishedByWeek(weeks)}
-      save={saveIdeaBoard}
+      weeks={plan.weeks}
+      currentWeekId={plan.currentWeek?.id ?? null}
+      progress={plan.progress}
+      canPlan={canPlan && !projectArchived}
+      isOwner={isOwner && !projectArchived}
+      canWrite={canTick && !projectArchived}
+      canManage={canPlan && !projectArchived}
+      canTick={canTick && !projectArchived}
+      people={members}
+      dismissedCarry={plan.dismissedCarry}
+      acceptCarry={acceptCarryOver}
+      dismissCarry={dismissCarryOver}
+      setComplete={setMilestoneWeekComplete}
+      addWeek={addMilestoneWeek}
+      archiveWeek={setMilestoneWeekArchived}
+      saveIdeaBoard={saveWeekIdeaBoard}
       upload={uploadIdeaAttachment}
+      workActions={{
+        saveTask,
+        setTaskDone,
+        suggest: suggestWeekTasks,
+        accept: acceptWeekTasks,
+      }}
     />
   );
 }
@@ -437,10 +541,14 @@ function ProjectHeader({
   project,
   viewer,
   activeTab,
+  compact = false,
+  milestones,
 }: {
-  project: ProjectDetail;
+  project: ProjectCore;
   viewer: Viewer;
   activeTab: Tab;
+  compact?: boolean;
+  milestones: React.ReactNode;
 }) {
   const isOwner = viewer.role === "owner";
   const canManageBanner =
@@ -450,7 +558,9 @@ function ProjectHeader({
   return (
     <section className="panel-dark overflow-hidden rounded-[20px] border border-black/[0.07] text-white">
       {project.bannerUrl ? (
-        <div className="relative h-36 sm:h-44">
+        <div
+          className={cn("relative", compact ? "h-24 sm:h-28" : "h-36 sm:h-44")}
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={project.bannerUrl}
@@ -463,7 +573,12 @@ function ProjectHeader({
           <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-[#15181b]" />
         </div>
       ) : null}
-      <div className="relative px-4 pt-5 pb-5 sm:px-6">
+      <div
+        className={cn(
+          "relative px-4 sm:px-6",
+          compact ? "pt-3 pb-3" : "pt-5 pb-5",
+        )}
+      >
         <div className="pointer-events-none absolute -top-32 right-8 size-80 rounded-full bg-[#2fe85c]/12 blur-3xl" />
         {project.bannerUrl ? null : (
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#2fe85c]/45 to-transparent" />
@@ -480,10 +595,15 @@ function ProjectHeader({
                 </span>
               ) : null}
             </div>
-            <h1 className="font-display mt-2 text-2xl font-semibold tracking-[-0.045em] sm:text-[2rem]">
+            <h1
+              className={cn(
+                "font-display mt-2 font-semibold tracking-[-0.045em]",
+                compact ? "text-xl sm:text-2xl" : "text-2xl sm:text-[2rem]",
+              )}
+            >
               {project.name}
             </h1>
-            {project.description ? (
+            {project.description && !compact ? (
               <p className="mt-2 max-w-2xl text-[13px] leading-5 text-white/45">
                 {project.description}
               </p>
@@ -529,7 +649,12 @@ function ProjectHeader({
           </div>
         </div>
 
-        <div className="relative mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div
+          className={cn(
+            "relative mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4",
+            compact && "hidden",
+          )}
+        >
           <HeaderMeta
             label="Project lead"
             value={project.leadName ?? "Unassigned"}
@@ -543,14 +668,7 @@ function ProjectHeader({
             value={formatDate(project.dueOn)}
             note={deadline.label}
           />
-          <HeaderMeta
-            label="Milestones"
-            value={
-              project.totalItems
-                ? `${project.doneItems}/${project.totalItems} done`
-                : "Not planned"
-            }
-          />
+          {milestones}
         </div>
       </div>
 
@@ -705,6 +823,7 @@ function Overview({
 
               <Link
                 href={tabHref("ideas")}
+                prefetch
                 className="mt-3 inline-flex rounded text-[11px] font-semibold text-[#08743d] transition hover:underline focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
               >
                 Open Milestone →
@@ -908,7 +1027,7 @@ function missingInformation(
   return gaps;
 }
 
-function technicalDetails(project: ProjectDetail): TechnicalDetails | null {
+function technicalDetails(project: ProjectCore): TechnicalDetails | null {
   const technical = project.technical;
   if (!technical) return null;
 

@@ -14,8 +14,6 @@ const WEEK_MAX = 999;
 
 function refresh() {
   revalidatePath("/projects/[projectId]", "page");
-  revalidatePath("/projects");
-  revalidatePath("/dashboard");
 }
 
 function readWeekFields(formData: FormData) {
@@ -49,7 +47,7 @@ function validateWeek({
 export async function addMilestoneWeek(
   _state: SimpleFormState,
   formData: FormData,
-): Promise<SimpleFormState> {
+): Promise<SimpleFormState & { weekId?: string }> {
   await requireRole(["owner"]);
   const projectId = String(formData.get("projectId") ?? "");
   if (!isUuid(projectId)) return formError("That project could not be found.");
@@ -59,23 +57,30 @@ export async function addMilestoneWeek(
   if (problem) return formError(problem);
 
   const supabase = await createClient();
-  const { error } = await supabase.from("app_milestone_weeks").insert({
-    project_id: projectId,
-    week_number: fields.weekNumber,
-    starts_on: fields.startsOn || null,
-    due_on: fields.dueOn,
-  });
+  const { data, error } = await supabase
+    .from("app_milestone_weeks")
+    .insert({
+      project_id: projectId,
+      week_number: fields.weekNumber,
+      starts_on: fields.startsOn || null,
+      due_on: fields.dueOn,
+    })
+    .select("id")
+    .single();
 
-  if (error) {
+  if (error || !data) {
     return formError(
-      error.code === "23505"
+      error?.code === "23505"
         ? `Week ${fields.weekNumber} already exists on this project.`
         : "The week could not be added.",
     );
   }
 
   refresh();
-  return formSuccess(`Week ${fields.weekNumber} planned.`);
+  return {
+    ...formSuccess(`Week ${fields.weekNumber} planned.`),
+    weekId: String(data.id),
+  };
 }
 
 export async function updateMilestoneWeek(
@@ -113,6 +118,55 @@ export async function updateMilestoneWeek(
 
   refresh();
   return formSuccess("Week updated.");
+}
+
+export async function setMilestoneWeekComplete(
+  weekId: string,
+  complete: boolean,
+): Promise<SimpleFormState> {
+  await requireRole(["owner", "member"]);
+  if (!isUuid(weekId)) return formError("That week could not be found.");
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("app_set_milestone_week_complete", {
+    target_week_id: weekId,
+    complete,
+  });
+
+  if (error) {
+    return formError(
+      "That week was not updated. Only an owner or the project lead can close a week.",
+    );
+  }
+
+  refresh();
+  return formSuccess(complete ? "Week closed." : "Week reopened.");
+}
+
+export async function setMilestoneWeekFocus(
+  weekId: string,
+  focus: string,
+): Promise<SimpleFormState> {
+  await requireRole(["owner", "member"]);
+  if (!isUuid(weekId)) return formError("That week could not be found.");
+  if (focus.length > 240) {
+    return formError("Keep the focus under 240 characters.");
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("app_set_milestone_week_focus", {
+    target_week_id: weekId,
+    new_focus: focus,
+  });
+
+  if (error) {
+    return formError(
+      "That focus was not saved. Only an owner or the project lead can set it.",
+    );
+  }
+
+  refresh();
+  return formSuccess("Saved.");
 }
 
 export async function setMilestoneWeekArchived(formData: FormData) {

@@ -359,7 +359,7 @@ const COLUMN_TONE = {
   },
 } as const;
 
-function BoardColumn({
+export function BoardColumn({
   title,
   hint,
   icon: Icon,
@@ -398,7 +398,7 @@ function BoardColumn({
   );
 }
 
-function EmptyNote({ children }: { children: React.ReactNode }) {
+export function EmptyNote({ children }: { children: React.ReactNode }) {
   return (
     <p className="rounded-xl border border-dashed border-black/10 px-3 py-4 text-center text-[11px] text-black/35">
       {children}
@@ -415,7 +415,7 @@ const QUICK_ACTION: Record<CardStatus, { label: string; target: CardStatus }> =
     incomplete: { label: "Reopen", target: "in_progress" },
   };
 
-function CardRow({
+export function CardRow({
   projectId,
   card,
   nextWeek,
@@ -963,7 +963,7 @@ function StatusControls({
   );
 }
 
-function AddCardForm({
+export function AddCardForm({
   projectId,
   weekId,
   action,

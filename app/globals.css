@@ -1170,7 +1170,7 @@ p {
    the rhythm looser than the rest of the platform. */
 .idea-prose {
   max-width: 78ch;
-  margin-inline: auto;
+  margin-inline: 0;
   font-size: 15px;
   line-height: 1.75;
   color: rgb(0 0 0 / 0.78);

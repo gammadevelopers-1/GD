@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireRole } from "@/data/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
+  IDLE_FORM,
   type SimpleFormState,
   formError,
   formSuccess,
@@ -379,4 +380,8 @@ export async function uploadAttachment(
     name: file.name.slice(0, 200),
     size: file.size,
   };
+}
+
+export async function uploadCardFile(formData: FormData) {
+  return uploadAttachment(IDLE_FORM, formData);
 }
