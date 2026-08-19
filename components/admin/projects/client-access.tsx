@@ -33,12 +33,10 @@ export function ClientAccessPanel({
   return (
     <section className="overflow-hidden rounded-[20px] border border-black/[0.07] bg-white/70">
       <header className="flex items-baseline gap-2 px-5 pt-4 pb-3">
-        <h2 className="text-[11px] font-semibold tracking-[0.06em] text-black/45 uppercase">
+        <h2 className="text-[11px] font-semibold tracking-[0.06em]  uppercase">
           Client access
         </h2>
-        <span className="text-[11px] text-black/30">
-          {grants.length === 1 ? "1 person" : `${grants.length} people`}
-        </span>
+       
       </header>
 
       <ul className="divide-y divide-black/[0.05] border-t border-black/[0.05]">
