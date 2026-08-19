@@ -324,10 +324,7 @@ function FormerMembers({
       <h3 className="text-[13px] font-semibold tracking-[-0.02em]">
         Previously on this project
       </h3>
-      <p className="mt-1.5 text-[11px] text-black/40">
-        Assignments are archived, never deleted. Restoring reuses the original
-        record rather than creating a second one.
-      </p>
+     
       <ul className="mt-3 space-y-2">
         {formerMembers.map((member) => (
           <li
