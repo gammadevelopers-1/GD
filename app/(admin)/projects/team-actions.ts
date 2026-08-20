@@ -13,7 +13,7 @@ import { isUuid } from "@/lib/projects/validation";
 const RESPONSIBILITY_MAX = 120;
 
 function refresh() {
-  revalidatePath("/projects/[projectId]", "page");
+  revalidatePath("/projects/[projectId]", "layout");
   revalidatePath("/projects");
   revalidatePath("/dashboard");
 }

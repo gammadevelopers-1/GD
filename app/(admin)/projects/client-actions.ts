@@ -30,7 +30,7 @@ export type IssuedAccess = {
 export type ShareState = SimpleFormState & { issued?: IssuedAccess };
 
 function refresh() {
-  revalidatePath("/projects/[projectId]", "page");
+  revalidatePath("/projects/[projectId]", "layout");
 }
 
 async function portalUrl(publicId: string) {

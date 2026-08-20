@@ -42,7 +42,7 @@ const ALLOWED_TYPES = new Set([
 ]);
 
 function refresh() {
-  revalidatePath("/projects/[projectId]", "page");
+  revalidatePath("/projects/[projectId]", "layout");
   revalidatePath("/projects");
   revalidatePath("/dashboard");
 }

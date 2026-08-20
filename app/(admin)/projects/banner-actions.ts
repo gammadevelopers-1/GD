@@ -30,7 +30,7 @@ function done(message: string, warning: string | null): BannerFormState {
 }
 
 function refresh() {
-  revalidatePath("/projects/[projectId]", "page");
+  revalidatePath("/projects/[projectId]", "layout");
   revalidatePath("/projects");
   revalidatePath("/dashboard");
 }

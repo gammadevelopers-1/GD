@@ -30,7 +30,7 @@ import { sendEmailQuietly } from "@/lib/notifications/send";
 const ENV_FILE_MAX_BYTES = 1024 * 1024;
 
 function refresh() {
-  revalidatePath("/projects/[projectId]", "page");
+  revalidatePath("/projects/[projectId]", "layout");
 }
 
 function vaultClosed() {

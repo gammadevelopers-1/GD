@@ -59,7 +59,7 @@ function deniedOr(
 }
 
 function refresh() {
-  revalidatePath("/projects/[projectId]", "page");
+  revalidatePath("/projects/[projectId]", "layout");
 }
 
 function isFrameworkSignal(error: unknown) {

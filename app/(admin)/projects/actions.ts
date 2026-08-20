@@ -14,7 +14,7 @@ import {
 import { isProjectStatus } from "@/lib/projects/status";
 
 function refresh() {
-  revalidatePath("/projects/[projectId]", "page");
+  revalidatePath("/projects/[projectId]", "layout");
   revalidatePath("/projects");
   revalidatePath("/dashboard");
 }

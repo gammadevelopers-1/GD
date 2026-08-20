@@ -369,23 +369,35 @@ export const getProjectDetail = cache(async function getProjectDetail(
   };
 });
 
+// withDocs is what separates the Milestone tab from everybody else. The tab
+// edits the rich text and needs every document; Overview only counts and titles
+// the same cards, and pulling their documents to do that moved the largest
+// column in the schema across the wire for nothing.
 export const getProjectWeeks = cache(async function getProjectWeeks(
   projectId: string,
   isOwner: boolean,
+  withDocs = true,
 ): Promise<ProjectWeeks> {
   const supabase = await createClient();
+
+  const cardDoc = withDocs ? "doc, " : "";
+  const ideaBoard = withDocs
+    ? `ideaBoard:app_week_idea_boards(doc, updated_at,
+         editor:app_profiles!app_week_idea_boards_updated_by_fkey(full_name)
+       ),`
+    : `ideaBoard:app_week_idea_boards(updated_at,
+         editor:app_profiles!app_week_idea_boards_updated_by_fkey(full_name)
+       ),`;
 
   let query = supabase
     .from("app_milestone_weeks")
     .select(
       `id, week_number, starts_on, due_on, archived_at, focus, completed_at,
        completedBy:app_profiles!app_milestone_weeks_completed_by_fkey(full_name),
-       ideaBoard:app_week_idea_boards(doc, updated_at,
-         editor:app_profiles!app_week_idea_boards_updated_by_fkey(full_name)
-       ),
+       ${ideaBoard}
        carryDismissals:app_card_carry_dismissals(card_id),
        cards:app_milestone_cards!app_milestone_cards_milestone_week_id_fkey(
-         id, milestone_week_id, board, status, title, doc, position, assigned_to,
+         id, milestone_week_id, board, status, title, ${cardDoc}position, assigned_to,
          blocker_reason, carry_reason, carried_from_week_id, completed_at, archived_at,
          updated_at, updated_by,
          createdBy:app_profiles!app_milestone_cards_created_by_fkey(full_name),
@@ -586,3 +598,205 @@ export async function getProjectFormOptions() {
     people,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Split reads
+//
+// getProjectDetail pulls the project, every member with three separate profile
+// joins, and the whole technical row. The hero needs almost none of that, and
+// it was being paid for on every tab. These four read only what one part of the
+// screen actually shows, so a tab stops funding the tabs next to it.
+// ---------------------------------------------------------------------------
+
+export type ProjectShell = Omit<
+  ProjectCore,
+  "members" | "formerMembers" | "technical"
+> & { memberCount: number };
+
+export const getProjectCore = cache(async function getProjectCore(
+  publicId: string,
+): Promise<ProjectShell | null> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("app_projects")
+    .select(
+      `id, public_id, banner_path, banner_fit, name, description, status,
+       starts_on, due_on, archived_at, client_id, lead_id,
+       client:app_clients(name),
+       lead:app_profiles!app_projects_lead_id_fkey(full_name),
+       members:app_project_members(count)`,
+    )
+    .eq("public_id", publicId)
+    .is("members.archived_at", null)
+    .maybeSingle();
+
+  if (!data) return null;
+
+  const project = data as unknown as ProjectRow & {
+    members: Array<{ count: number }>;
+  };
+
+  let bannerUrl: string | null = null;
+  if (project.banner_path) {
+    const { data: signed } = await supabase.storage
+      .from("app-project-attachments")
+      .createSignedUrl(String(project.banner_path), 60 * 60);
+    bannerUrl = signed?.signedUrl ?? null;
+  }
+
+  return {
+    id: String(project.id),
+    publicId: String(project.public_id),
+    bannerUrl,
+    bannerFit: project.banner_fit ?? "cover",
+    name: String(project.name),
+    description: project.description ? String(project.description) : null,
+    status: project.status as ProjectStatus,
+    startsOn: project.starts_on ? String(project.starts_on) : null,
+    dueOn: project.due_on ? String(project.due_on) : null,
+    isArchived: Boolean(project.archived_at),
+    clientId: project.client_id ? String(project.client_id) : null,
+    clientName: project.client?.name ? String(project.client.name) : null,
+    leadId: project.lead_id ? String(project.lead_id) : null,
+    leadName: project.lead?.full_name ? String(project.lead.full_name) : null,
+    memberCount: Number(project.members?.[0]?.count ?? 0),
+  };
+});
+
+// leadId is passed in rather than looked up: every caller has already read the
+// project through getProjectCore, and asking again for one column it is holding
+// costs a whole round trip.
+export const getProjectMembers = cache(async function getProjectMembers(
+  projectId: string,
+  leadId: string | null,
+): Promise<ProjectMember[]> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("app_project_members")
+    .select(
+      `profile_id, responsibility, added_by,
+       profile:app_profiles!app_project_members_profile_id_fkey(full_name),
+       addedBy:app_profiles!app_project_members_added_by_fkey(full_name)`,
+    )
+    .eq("project_id", projectId)
+    .is("archived_at", null);
+
+  const members = (data ?? []).map((row) => {
+    const member = row as unknown as {
+      profile_id: string;
+      responsibility: string | null;
+      added_by: string | null;
+      profile: NameRef;
+      addedBy: NameRef;
+    };
+    return {
+      id: String(member.profile_id),
+      name: member.profile?.full_name
+        ? String(member.profile.full_name)
+        : "Team member",
+      responsibility: member.responsibility
+        ? String(member.responsibility)
+        : null,
+      isLead: String(member.profile_id) === leadId,
+      addedBy: member.addedBy?.full_name
+        ? String(member.addedBy.full_name)
+        : null,
+    };
+  });
+
+  members.sort((a, b) => Number(b.isLead) - Number(a.isLead));
+  return members;
+});
+
+export const getProjectTechnical = cache(async function getProjectTechnical(
+  projectId: string,
+): Promise<ProjectCore["technical"]> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("app_project_technical_details")
+    .select(
+      `repository_url, hosting_url, live_domain, staging_domain, design_url,
+       technical_contact, stack_notes, onboarding_notes, updated_at,
+       updatedBy:app_profiles!app_project_technical_details_updated_by_fkey(full_name)`,
+    )
+    .eq("project_id", projectId)
+    .maybeSingle();
+
+  if (!data) return null;
+
+  const row = data as unknown as {
+    repository_url: string | null;
+    hosting_url: string | null;
+    live_domain: string | null;
+    staging_domain: string | null;
+    design_url: string | null;
+    technical_contact: string | null;
+    stack_notes: string | null;
+    onboarding_notes: string | null;
+    updated_at: string | null;
+    updatedBy: NameRef;
+  };
+
+  return {
+    repositoryUrl: row.repository_url,
+    hostingUrl: row.hosting_url,
+    liveDomain: row.live_domain,
+    stagingDomain: row.staging_domain,
+    designUrl: row.design_url,
+    technicalContact: row.technical_contact,
+    stackNotes: row.stack_notes,
+    onboardingNotes: row.onboarding_notes,
+    updatedBy: row.updatedBy?.full_name ? String(row.updatedBy.full_name) : null,
+    updatedAt: row.updated_at ? String(row.updated_at) : null,
+  };
+});
+
+export type ProjectWeekStats = {
+  weeks: number;
+  closedWeeks: number;
+  totalItems: number;
+  doneItems: number;
+};
+
+// The header shows "3/5 weeks closed, 12/40 items done". Reading it through
+// getProjectWeeks meant transferring every card's rich-text document to count
+// them, so this asks for the three columns the arithmetic needs and nothing else.
+export const getProjectWeekStats = cache(async function getProjectWeekStats(
+  projectId: string,
+): Promise<ProjectWeekStats> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("app_milestone_weeks")
+    .select(
+      `id, completed_at,
+       cards:app_milestone_cards!app_milestone_cards_milestone_week_id_fkey(status)`,
+    )
+    .eq("project_id", projectId)
+    .is("archived_at", null)
+    .is("cards.archived_at", null);
+
+  const rows = (data ?? []) as unknown as Array<{
+    completed_at: string | null;
+    cards: Array<{ status: string }>;
+  }>;
+
+  let totalItems = 0;
+  let doneItems = 0;
+  for (const week of rows) {
+    for (const card of week.cards ?? []) {
+      totalItems += 1;
+      if (card.status === "completed") doneItems += 1;
+    }
+  }
+
+  return {
+    weeks: rows.length,
+    closedWeeks: rows.filter((week) => week.completed_at).length,
+    totalItems,
+    doneItems,
+  };
+});

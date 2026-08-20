@@ -20,11 +20,13 @@ export default async function ProjectsPage({
 }: {
   searchParams: Promise<RawSearchParams>;
 }) {
+  // Only the role gate blocks the shell now. The filter options and the results
+  // are two more round trips that used to run one after the other in front of
+  // the heading; they stream into their own boundaries instead.
   const viewer = await requireRole(["owner", "member"]);
   const isOwner = viewer.role === "owner";
   const raw = await searchParams;
   const query = parsePortfolioQuery(raw, isOwner);
-  const options = await getPortfolioOptions(viewer);
   const archived =
     (Array.isArray(raw.notice) ? raw.notice[0] : raw.notice) === "archived";
 
@@ -66,11 +68,11 @@ export default async function ProjectsPage({
         ) : null}
       </div>
 
-      <PortfolioFilters
-        query={query}
-        options={options}
-        canSeeArchived={isOwner}
-      />
+      <Suspense
+        fallback={<PortfolioFilters query={query} canSeeArchived={isOwner} />}
+      >
+        <FiltersSection viewer={viewer} query={query} isOwner={isOwner} />
+      </Suspense>
 
       <Suspense
         key={portfolioQueryKey(query)}
@@ -79,6 +81,26 @@ export default async function ProjectsPage({
         <PortfolioList viewer={viewer} query={query} />
       </Suspense>
     </div>
+  );
+}
+
+async function FiltersSection({
+  viewer,
+  query,
+  isOwner,
+}: {
+  viewer: Viewer;
+  query: PortfolioQuery;
+  isOwner: boolean;
+}) {
+  const options = await getPortfolioOptions(viewer);
+
+  return (
+    <PortfolioFilters
+      query={query}
+      options={options}
+      canSeeArchived={isOwner}
+    />
   );
 }
 

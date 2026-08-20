@@ -23,11 +23,11 @@ const SEARCH_DEBOUNCE_MS = 300;
 
 export function PortfolioFilters({
   query,
-  options,
+  options = { clients: [], people: [] },
   canSeeArchived,
 }: {
   query: PortfolioQuery;
-  options: PortfolioOptions;
+  options?: PortfolioOptions;
   canSeeArchived: boolean;
 }) {
   const router = useRouter();

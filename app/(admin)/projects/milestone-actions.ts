@@ -13,7 +13,7 @@ import { isIsoDate, isUuid } from "@/lib/projects/validation";
 const WEEK_MAX = 999;
 
 function refresh() {
-  revalidatePath("/projects/[projectId]", "page");
+  revalidatePath("/projects/[projectId]", "layout");
 }
 
 function readWeekFields(formData: FormData) {
