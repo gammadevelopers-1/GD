@@ -1,29 +1,29 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState, useTransition } from "react";
 import {
   AlertCircle,
   CheckCircle2,
   Crown,
   Loader2,
-  RotateCcw,
+  Pencil,
+  Trash2,
   UserPlus,
   UserRound,
-  X,
 } from "lucide-react";
-import type { FormerProjectMember, ProjectMember } from "@/data/project-detail";
+import type { ProjectMember } from "@/data/project-detail";
 import { type SimpleFormState, IDLE_FORM } from "@/lib/projects/form-state";
-import { formatDate, initials } from "@/lib/projects/format";
+import { ConfirmAction } from "@/components/admin/projects/modal";
+import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
+import { initials } from "@/lib/projects/format";
 import {
-  BUTTON_DANGER,
   BUTTON_GHOST,
   BUTTON_PRIMARY,
-  BUTTON_SECONDARY,
-  FOCUS_RING,
+  ICON_BUTTON,
+  ICON_BUTTON_DANGER,
   INPUT,
   INPUT_SMALL,
   PANEL,
-  REVEAL_ON_HOVER,
 } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 
@@ -37,25 +37,19 @@ type PlainAction = (formData: FormData) => Promise<void>;
 export function TeamPanel({
   projectId,
   members,
-  formerMembers,
   people,
   isOwner,
   addMember,
   updateResponsibility,
   removeMember,
-  restoreMember,
-  setLead,
 }: {
   projectId: string;
   members: ProjectMember[];
-  formerMembers: FormerProjectMember[];
   people: Person[];
   isOwner: boolean;
   addMember: FormAction;
   updateResponsibility: FormAction;
   removeMember: PlainAction;
-  restoreMember: PlainAction;
-  setLead: PlainAction;
 }) {
   const assigned = new Set(members.map((member) => member.id));
   const addable = people.filter((person) => !assigned.has(person.id));
@@ -85,7 +79,6 @@ export function TeamPanel({
                 isOwner={isOwner}
                 updateResponsibility={updateResponsibility}
                 removeMember={removeMember}
-                setLead={setLead}
               />
             ))}
           </ul>
@@ -96,13 +89,6 @@ export function TeamPanel({
           </p>
         )}
 
-        {isOwner && formerMembers.length ? (
-          <FormerMembers
-            projectId={projectId}
-            formerMembers={formerMembers}
-            restoreMember={restoreMember}
-          />
-        ) : null}
       </section>
 
       {isOwner ? (
@@ -132,29 +118,43 @@ function MemberRow({
   isOwner,
   updateResponsibility,
   removeMember,
-  setLead,
 }: {
   projectId: string;
   member: ProjectMember;
   isOwner: boolean;
   updateResponsibility: FormAction;
   removeMember: PlainAction;
-  setLead: PlainAction;
 }) {
   const [editing, setEditing] = useState(false);
-  const [confirming, setConfirming] = useState(false);
+  const [removing, startRemoving] = useTransition();
   const [state, formAction, pending] = useActionState(
     updateResponsibility,
     IDLE_FORM,
   );
+  const formRef = useRef<HTMLFormElement>(null);
+  const fieldRef = useRef<HTMLInputElement>(null);
+
+  useCloseOnSuccess(state, () => setEditing(false));
+
+  // Clearing is the same save with an empty field: the action already maps an
+  // empty string to null, so there is no separate delete path to keep in step.
+  function deleteMember() {
+    const data = new FormData();
+    data.set("projectId", projectId);
+    data.set("profileId", member.id);
+    startRemoving(() => removeMember(data));
+  }
+
+  function clearResponsibility() {
+    if (fieldRef.current) fieldRef.current.value = "";
+    formRef.current?.requestSubmit();
+  }
 
   return (
     <li
       className={cn(
-        "group/member rounded-2xl border bg-white/50 p-3.5 transition duration-200",
-        confirming
-          ? "border-red-200 bg-red-50/40"
-          : "border-black/[0.065] hover:border-black/[0.14] hover:bg-white hover:shadow-[0_10px_26px_rgba(20,23,26,0.05)]",
+        "group/member rounded-2xl border border-black/[0.065] bg-white/50 p-3.5 transition duration-200",
+        "hover:border-black/[0.14] hover:bg-white hover:shadow-[0_10px_26px_rgba(20,23,26,0.05)]",
       )}
     >
       <div className="flex items-start gap-3">
@@ -180,15 +180,21 @@ function MemberRow({
           </p>
 
           {editing ? (
-            <form action={formAction} className="mt-2 flex flex-wrap gap-2">
+            <form
+              ref={formRef}
+              action={formAction}
+              className="mt-2 flex flex-wrap gap-2"
+            >
               <input type="hidden" name="projectId" value={projectId} />
               <input type="hidden" name="profileId" value={member.id} />
               <input
+                ref={fieldRef}
                 name="responsibility"
-                defaultValue={member.responsibility}
+                defaultValue={member.responsibility ?? ""}
                 maxLength={120}
                 autoFocus
-                aria-label={`Responsibility for ${member.name}`}
+                placeholder="Frontend, QA, client contact…"
+                aria-label={`What ${member.name} does on this project`}
                 className={cn(INPUT_SMALL, "h-9 min-w-0 flex-1")}
               />
               <button
@@ -199,6 +205,19 @@ function MemberRow({
                 {pending ? <Loader2 className="size-3 animate-spin" /> : null}
                 Save
               </button>
+              {member.responsibility ? (
+                <button
+                  type="button"
+                  onClick={clearResponsibility}
+                  disabled={pending}
+                  className={cn(
+                    BUTTON_GHOST,
+                    "h-9 hover:bg-red-50 hover:text-red-700",
+                  )}
+                >
+                  Clear
+                </button>
+              ) : null}
               <button
                 type="button"
                 onClick={() => setEditing(false)}
@@ -209,14 +228,17 @@ function MemberRow({
             </form>
           ) : (
             <>
-              <p className="mt-1 truncate text-[11px] text-black/45">
-                {member.responsibility}
-              </p>
-              {isOwner && member.addedBy ? (
-                <p className="mt-0.5 truncate text-[10px] text-black/32">
-                  Added by {member.addedBy}
+              <div className="mt-1 flex items-center gap-1">
+                <p
+                  className={cn(
+                    "truncate text-[11px]",
+                    member.responsibility ? "text-black/45" : "text-black/30",
+                  )}
+                >
+                  {member.responsibility ?? "No role set"}
                 </p>
-              ) : null}
+              </div>
+              
             </>
           )}
 
@@ -227,9 +249,9 @@ function MemberRow({
                 state.status === "success" ? "text-[#08743d]" : "text-red-700",
               )}
             >
-              {state.status === "success" ? (
-                <CheckCircle2 className="size-3" />
-              ) : (
+              {state.status === "success" ? 
+                null
+              : (
                 <AlertCircle className="size-3" />
               )}
               {state.message}
@@ -238,123 +260,33 @@ function MemberRow({
         </div>
 
         {isOwner && !editing ? (
-          <div
-            className={cn(
-              "flex shrink-0 flex-wrap items-center justify-end gap-1",
-              confirming ? "opacity-100" : REVEAL_ON_HOVER,
-            )}
-          >
-            {confirming ? (
-              <>
-                <form action={removeMember}>
-                  <input type="hidden" name="projectId" value={projectId} />
-                  <input type="hidden" name="profileId" value={member.id} />
-                  <button type="submit" className={cn(BUTTON_DANGER, "h-8")}>
-                    Remove access
-                  </button>
-                </form>
-                <button
-                  type="button"
-                  onClick={() => setConfirming(false)}
-                  aria-label="Keep them on the project"
-                  className={cn(
-                    "grid size-8 place-items-center rounded-lg text-black/40 transition hover:bg-black/[0.05] hover:text-black",
-                    FOCUS_RING,
-                  )}
-                >
-                  <X className="size-3.5" />
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setEditing(true)}
-                  className={cn(BUTTON_GHOST, "h-8")}
-                >
-                  Edit role
-                </button>
-                {member.isLead ? null : (
-                  <form action={setLead}>
-                    <input type="hidden" name="projectId" value={projectId} />
-                    <input type="hidden" name="profileId" value={member.id} />
-                    <button type="submit" className={cn(BUTTON_GHOST, "h-8")}>
-                      Make lead
-                    </button>
-                  </form>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setConfirming(true)}
-                  className={cn(
-                    BUTTON_GHOST,
-                    "h-8 hover:bg-red-50 hover:text-red-700",
-                  )}
-                >
-                  Remove
-                </button>
-              </>
-            )}
+          <div className="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              aria-label={`Edit what ${member.name} does on this project`}
+              title="Edit what they do"
+              className={ICON_BUTTON}
+            >
+              <Pencil className="size-3.5" />
+            </button>
+            <ConfirmAction
+              label={<Trash2 className="size-3.5" />}
+              confirmLabel="Delete"
+              question={
+                member.isLead
+                  ? `Delete ${member.name} from this project? They are the lead, so the project is left without one. This cannot be undone.`
+                  : `Delete ${member.name} from this project? They lose access immediately and this cannot be undone.`
+              }
+              pending={removing}
+              className={ICON_BUTTON_DANGER}
+              onConfirm={deleteMember}
+            />
           </div>
         ) : null}
       </div>
 
-      {confirming ? (
-        <p className="mt-2.5 rounded-lg bg-white/70 px-3 py-2 text-[11px] leading-4 text-black/60">
-          {member.isLead
-            ? "They are the project lead. Removing them clears the lead as well, so pick a new one afterwards."
-            : "They lose access to this project immediately. The assignment is archived, not deleted, so you can restore it."}
-        </p>
-      ) : null}
     </li>
-  );
-}
-
-function FormerMembers({
-  projectId,
-  formerMembers,
-  restoreMember,
-}: {
-  projectId: string;
-  formerMembers: FormerProjectMember[];
-  restoreMember: PlainAction;
-}) {
-  return (
-    <div className="mt-6 border-t border-black/[0.06] pt-5">
-      <h3 className="text-[13px] font-semibold tracking-[-0.02em]">
-        Previously on this project
-      </h3>
-     
-      <ul className="mt-3 space-y-2">
-        {formerMembers.map((member) => (
-          <li
-            key={member.id}
-            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-black/[0.06] px-3 py-2 transition duration-150 hover:border-black/[0.14] hover:bg-white"
-          >
-            <div className="min-w-0">
-              <p className="truncate text-[13px] font-medium text-black/60">
-                {member.name}
-              </p>
-              <p className="text-[10px] text-black/35">
-                Removed {formatDate(member.removedAt.slice(0, 10))}
-                {member.removedBy ? ` by ${member.removedBy}` : ""}
-              </p>
-            </div>
-            <form action={restoreMember}>
-              <input type="hidden" name="projectId" value={projectId} />
-              <input type="hidden" name="profileId" value={member.id} />
-              <button
-                type="submit"
-                className={cn(BUTTON_SECONDARY, "h-8 px-2.5 text-[11px]")}
-              >
-                <RotateCcw className="size-3" />
-                Restore
-              </button>
-            </form>
-          </li>
-        ))}
-      </ul>
-    </div>
   );
 }
 
@@ -368,6 +300,11 @@ function AddMemberPanel({
   addMember: FormAction;
 }) {
   const [state, formAction, pending] = useActionState(addMember, IDLE_FORM);
+  const [chosen, setChosen] = useState("");
+
+  // The person just added drops out of `addable`, so a stale selection would
+  // leave the button live with nothing valid behind it.
+  useCloseOnSuccess(state, () => setChosen(""));
 
   return (
     <section className={cn(PANEL, "h-fit p-5")}>
@@ -389,6 +326,8 @@ function AddMemberPanel({
             <select
               name="profileId"
               required
+              value={chosen}
+              onChange={(event) => setChosen(event.target.value)}
               className={cn(INPUT, "h-10 cursor-pointer")}
             >
               <option value="">Choose a team member</option>
@@ -401,7 +340,8 @@ function AddMemberPanel({
           </label>
           <label className="block space-y-1.5">
             <span className="text-xs font-medium text-black/55">
-              What are they doing on it?
+              What are they doing on it?{" "}
+              <span className="font-normal text-black/30">(optional)</span>
             </span>
             <input
               name="responsibility"
@@ -412,7 +352,7 @@ function AddMemberPanel({
           </label>
           <button
             type="submit"
-            disabled={pending}
+            disabled={pending || !chosen}
             className={cn(BUTTON_PRIMARY, "h-10 w-full")}
           >
             {pending ? <Loader2 className="size-4 animate-spin" /> : null}

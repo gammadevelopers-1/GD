@@ -60,7 +60,7 @@ export type MilestoneWeek = {
 export type ProjectMember = {
   id: string;
   name: string;
-  responsibility: string;
+  responsibility: string | null;
   isLead: boolean;
   addedBy: string | null;
 };
@@ -303,7 +303,7 @@ export const getProjectDetail = cache(async function getProjectDetail(
       name: names.get(String(member.profile_id)) ?? "Team member",
       responsibility: member.responsibility
         ? String(member.responsibility)
-        : "Contributor",
+        : null,
       isLead: String(member.profile_id) === String(project.lead_id),
       addedBy: member.added_by
         ? (names.get(String(member.added_by)) ?? "An owner")
@@ -318,7 +318,7 @@ export const getProjectDetail = cache(async function getProjectDetail(
       name: names.get(String(member.profile_id)) ?? "Team member",
       responsibility: member.responsibility
         ? String(member.responsibility)
-        : "Contributor",
+        : null,
       isLead: false,
       addedBy: member.added_by
         ? (names.get(String(member.added_by)) ?? "An owner")

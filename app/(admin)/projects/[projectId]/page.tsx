@@ -89,8 +89,6 @@ import {
 import {
   addProjectMember,
   removeProjectMember,
-  restoreProjectMember,
-  setProjectLead,
   updateMemberResponsibility,
 } from "../team-actions";
 import { saveTechnicalDetails } from "../technical-actions";
@@ -309,14 +307,11 @@ async function TeamSection({
     <TeamPanel
       projectId={project.id}
       members={project.members}
-      formerMembers={project.formerMembers}
       people={people}
       isOwner={isOwner}
       addMember={addProjectMember}
       updateResponsibility={updateMemberResponsibility}
       removeMember={removeProjectMember}
-      restoreMember={restoreProjectMember}
-      setLead={setProjectLead}
     />
   );
 }

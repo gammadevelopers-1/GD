@@ -98,11 +98,11 @@ export async function updateMemberResponsibility(
   if (error) return formError("The change could not be saved.");
 
   refresh();
-  return formSuccess("Responsibility updated.");
+  return formSuccess(" ");
 }
 
 export async function removeProjectMember(formData: FormData) {
-  const viewer = await requireRole(["owner"]);
+  await requireRole(["owner"]);
   const projectId = String(formData.get("projectId") ?? "");
   const profileId = String(formData.get("profileId") ?? "");
   if (!isUuid(projectId) || !isUuid(profileId)) return;
@@ -124,10 +124,9 @@ export async function removeProjectMember(formData: FormData) {
 
   const { error } = await supabase
     .from("app_project_members")
-    .update({ archived_at: new Date().toISOString(), archived_by: viewer.id })
+    .delete()
     .eq("project_id", projectId)
-    .eq("profile_id", profileId)
-    .is("archived_at", null);
+    .eq("profile_id", profileId);
 
   if (error) return;
 

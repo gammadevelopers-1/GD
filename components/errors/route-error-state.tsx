@@ -31,7 +31,7 @@ const content = {
     code: "500",
     title: "Something broke on our side.",
     description:
-      "Nothing you did caused this, and nothing was lost. Try again — if it keeps happening, send the reference below to whoever looks after the platform.",
+      "Nothing you did caused this, and nothing was lost. Try again",
     primaryHref: "/dashboard",
     primaryLabel: "Go to dashboard",
     secondaryHref: null,
