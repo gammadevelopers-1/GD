@@ -54,18 +54,16 @@ const navigation: Array<{
     roles: ["owner", "member"],
   },
   {
-    label: "People",
-    href: "/people",
+    label: "Team",
+    href: "/team",
     icon: UsersRound,
-    roles: ["owner", "member"],
-    inProgress: true,
+    roles: ["owner"],
   },
   {
     label: "Clients",
     href: "/clients",
     icon: Building2,
     roles: ["owner"],
-    inProgress: true,
   },
   {
     label: "CMS",

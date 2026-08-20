@@ -5,7 +5,7 @@ import { hasSupabaseConfig, getSupabaseConfig } from "@/lib/supabase/config";
 const protectedRoots = [
   "/dashboard",
   "/projects",
-  "/people",
+  "/team",
   "/clients",
   "/cms",
 ];

@@ -70,6 +70,8 @@ export default async function LoginPage({
             Use the account created for your Gamma work email.
           </p>
 
+         
+
           {params.reason === "access" ? (
             <div className="mt-8 rounded-2xl border border-amber-300/15 bg-amber-300/[0.07] p-5">
               <div className="flex gap-3">

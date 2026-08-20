@@ -311,6 +311,11 @@ async function cleanup() {
     delete from public.app_project_client_access
       where client_user_id = '${ID.portalClient}';
     delete from public.app_client_users where id = '${ID.portalClient}';
+    delete from public.app_documents
+      where profile_id in ('${ID.assigned}', '${ID.unassigned}');
+    delete from public.app_employment_private
+      where profile_id in ('${ID.owner}', '${ID.assigned}', '${ID.unassigned}', '${ID.finance}');
+    delete from public.app_audit_logs where action = 'member.activated';
     delete from public.app_projects
       where id in ('${ID.projectAssigned}', '${ID.projectOwnerOnly}', '${ID.projectArchived}');
     delete from public.app_clients where id in ('${ID.clientA}', '${ID.clientB}');
@@ -1306,6 +1311,326 @@ async function run() {
     "a revoked client sees nothing on their next request",
     afterClientRevoke.ok && afterClientRevoke.data === null,
     JSON.stringify(afterClientRevoke.data),
+  );
+
+  sql(`
+    insert into public.app_employment_private
+      (profile_id, employment_type, start_date, salary_amount, cnic,
+       bank_account_title, bank_account_number, bank_name)
+    values
+      ('${ID.assigned}', 'employee', current_date - 30, 250000,
+       '35202-1234567-1', 'API Assigned', 'PK00APICHECK0000000001', 'Meezan'),
+      ('${ID.unassigned}', 'employee', current_date - 30, 275000,
+       '35202-7654321-9', 'API Unassigned', 'PK00APICHECK0000000002', 'HBL')
+    on conflict (profile_id) do nothing;
+
+    insert into public.app_documents
+      (profile_id, document_type, file_name, storage_path, uploaded_by)
+    values ('${ID.unassigned}', 'contract', 'api-contract.pdf',
+            'api-check/${ID.unassigned}-contract.pdf', '${ID.owner}')
+    on conflict (storage_path) do nothing;
+  `);
+
+  const employment = (token) =>
+    api("/rest/v1/app_employment_private?select=profile_id,salary_amount,cnic,bank_account_number", {
+      key: PUBLISHABLE,
+      token,
+    });
+
+  const ownerEmployment = await employment(ownerToken);
+  const ownerSeen = (ownerEmployment.data ?? []).filter((row) =>
+    [ID.assigned, ID.unassigned].includes(row.profile_id),
+  );
+  check(
+    "owner reads salary, CNIC and bank details for the team",
+    ownerSeen.length === 2 &&
+      ownerSeen.every((row) => row.salary_amount && row.cnic),
+    JSON.stringify(ownerEmployment.data),
+  );
+
+  const memberEmployment = await employment(memberToken);
+  check(
+    "a member reads exactly one employment record, their own",
+    Array.isArray(memberEmployment.data) &&
+      memberEmployment.data.length === 1 &&
+      memberEmployment.data[0].profile_id === ID.assigned,
+    JSON.stringify(memberEmployment.data),
+  );
+
+  const memberOnColleague = await api(
+    `/rest/v1/app_employment_private?select=*&profile_id=eq.${ID.unassigned}`,
+    { key: PUBLISHABLE, token: memberToken },
+  );
+  check(
+    "a member asking for a colleague's salary by id gets an empty list",
+    Array.isArray(memberOnColleague.data) && !memberOnColleague.data.length,
+    JSON.stringify(memberOnColleague.data),
+  );
+
+  const financeEmployment = await employment(financeToken);
+  check(
+    "finance reads no employment record at all",
+    Array.isArray(financeEmployment.data) && !financeEmployment.data.length,
+    JSON.stringify(financeEmployment.data),
+  );
+
+  const memberDocuments = await api(
+    `/rest/v1/app_documents?select=*&profile_id=eq.${ID.unassigned}`,
+    { key: PUBLISHABLE, token: memberToken },
+  );
+  check(
+    "a member cannot reach a colleague's contract",
+    Array.isArray(memberDocuments.data) && !memberDocuments.data.length,
+    JSON.stringify(memberDocuments.data),
+  );
+
+  const financeDocuments = await api("/rest/v1/app_documents?select=*", {
+    key: PUBLISHABLE,
+    token: financeToken,
+  });
+  check(
+    "finance reads no HR document",
+    Array.isArray(financeDocuments.data) && !financeDocuments.data.length,
+    JSON.stringify(financeDocuments.data),
+  );
+
+  const strangerProfile = await api(
+    `/rest/v1/app_profiles?select=id,job_title,phone&id=eq.${ID.unassigned}`,
+    { key: PUBLISHABLE, token: memberToken },
+  );
+  check(
+    "a member sees no profile row for someone they share no project with",
+    Array.isArray(strangerProfile.data) && !strangerProfile.data.length,
+    JSON.stringify(strangerProfile.data),
+  );
+
+  const promotion = await api(`/rest/v1/app_profiles?id=eq.${ID.assigned}`, {
+    key: PUBLISHABLE,
+    token: memberToken,
+    method: "PATCH",
+    body: { role: "owner" },
+    prefer: "return=representation",
+  });
+  check(
+    "a member cannot promote themselves over the API",
+    !promotion.ok ||
+      (Array.isArray(promotion.data) && !promotion.data.length),
+    JSON.stringify(promotion.data),
+  );
+
+  const stamped = await api("/rest/v1/rpc/app_member_activated", {
+    key: PUBLISHABLE,
+    token: memberToken,
+    method: "POST",
+    body: {},
+  });
+  const activationRows = query(`
+    select id from public.app_profiles
+    where activated_at is not null
+      and id in ('${ID.assigned}', '${ID.unassigned}', '${ID.finance}');
+  `);
+  check(
+    "setting a password stamps only the caller's own arrival",
+    stamped.ok &&
+      activationRows.length === 1 &&
+      activationRows[0] === ID.assigned,
+    JSON.stringify(activationRows),
+  );
+
+  const anonEmployment = await api(
+    "/rest/v1/app_employment_private?select=*",
+    { key: PUBLISHABLE },
+  );
+  check(
+    "anonymous callers cannot read salaries",
+    !anonEmployment.ok ||
+      (Array.isArray(anonEmployment.data) && !anonEmployment.data.length),
+    JSON.stringify(anonEmployment.data),
+  );
+
+  const anonDocuments = await api("/rest/v1/app_documents?select=*", {
+    key: PUBLISHABLE,
+  });
+  check(
+    "anonymous callers cannot read contracts",
+    !anonDocuments.ok ||
+      (Array.isArray(anonDocuments.data) && !anonDocuments.data.length),
+    JSON.stringify(anonDocuments.data),
+  );
+
+  const deleteRpc = (token, target) =>
+    api("/rest/v1/rpc/app_delete_team_member", {
+      key: PUBLISHABLE,
+      token,
+      method: "POST",
+      body: { target },
+    });
+
+  const memberDeletes = await deleteRpc(memberToken, ID.unassigned);
+  check(
+    "a member cannot delete a team member over the API",
+    !memberDeletes.ok,
+    JSON.stringify(memberDeletes.data),
+  );
+
+  const financeDeletes = await deleteRpc(financeToken, ID.unassigned);
+  check(
+    "finance cannot delete a team member over the API",
+    !financeDeletes.ok,
+    JSON.stringify(financeDeletes.data),
+  );
+
+  const anonDeletes = await api("/rest/v1/rpc/app_delete_team_member", {
+    key: PUBLISHABLE,
+    method: "POST",
+    body: { target: ID.unassigned },
+  });
+  check(
+    "anonymous callers cannot delete a team member",
+    !anonDeletes.ok,
+    JSON.stringify(anonDeletes.data),
+  );
+
+  const ownerDeletesWorker = await deleteRpc(ownerToken, ID.assigned);
+  check(
+    "an owner deleting someone with project work gets the written refusal",
+    !ownerDeletesWorker.ok &&
+      String(ownerDeletesWorker.data?.message ?? "").includes(
+        "Archive them instead",
+      ),
+    JSON.stringify(ownerDeletesWorker.data),
+  );
+
+  check(
+    "and that person is still there afterwards",
+    query(
+      `select id from public.app_profiles where id = '${ID.assigned}';`,
+    ).length === 1,
+  );
+
+  const ownerDeletesSelf = await deleteRpc(ownerToken, ID.owner);
+  check(
+    "an owner cannot delete their own account",
+    !ownerDeletesSelf.ok,
+    JSON.stringify(ownerDeletesSelf.data),
+  );
+
+  sql(`
+    update public.app_profiles
+    set activated_at = now(), password_link_pending = false
+    where id = '${ID.unassigned}';
+  `);
+
+  const linkSpent = await api("/rest/v1/rpc/app_password_already_set", {
+    key: PUBLISHABLE,
+    method: "POST",
+    body: { target: ID.unassigned },
+  });
+  check(
+    "the set-password page can learn a spent link is spent without a session",
+    linkSpent.ok && linkSpent.data === true,
+    JSON.stringify(linkSpent.data),
+  );
+
+  sql(`
+    update public.app_profiles
+    set password_link_pending = true
+    where id = '${ID.unassigned}';
+  `);
+
+  const linkReissued = await api("/rest/v1/rpc/app_password_already_set", {
+    key: PUBLISHABLE,
+    method: "POST",
+    body: { target: ID.unassigned },
+  });
+  check(
+    "a reissued link opens the form again, so a password reset still works",
+    linkReissued.ok && linkReissued.data === false,
+    JSON.stringify(linkReissued.data),
+  );
+
+  const linkUnknown = await api("/rest/v1/rpc/app_password_already_set", {
+    key: PUBLISHABLE,
+    method: "POST",
+    body: { target: "99999999-0000-4000-8000-000000000009" },
+  });
+  check(
+    "an id matching nobody answers false rather than revealing an account",
+    linkUnknown.ok && linkUnknown.data === false,
+    JSON.stringify(linkUnknown.data),
+  );
+
+  const profilesAnon = await api("/rest/v1/app_profiles?select=email", {
+    key: PUBLISHABLE,
+  });
+  check(
+    "and the profile table stays shut to anonymous callers regardless",
+    !profilesAnon.ok ||
+      (Array.isArray(profilesAnon.data) && profilesAnon.data.length === 0),
+    JSON.stringify(profilesAnon.data),
+  );
+
+  const clientAccounts = await api("/rest/v1/app_client_users?select=email", {
+    key: PUBLISHABLE,
+    token: memberToken,
+  });
+  check(
+    "a member reads no client portal account",
+    !clientAccounts.ok ||
+      (Array.isArray(clientAccounts.data) && clientAccounts.data.length === 0),
+    JSON.stringify(clientAccounts.data),
+  );
+
+  const clientAccountsFinance = await api(
+    "/rest/v1/app_client_users?select=email",
+    { key: PUBLISHABLE, token: financeToken },
+  );
+  check(
+    "finance reads no client portal account either",
+    !clientAccountsFinance.ok ||
+      (Array.isArray(clientAccountsFinance.data) &&
+        clientAccountsFinance.data.length === 0),
+    JSON.stringify(clientAccountsFinance.data),
+  );
+
+  const memberDeletesClient = await api(
+    "/rest/v1/rpc/app_delete_client_account",
+    {
+      key: PUBLISHABLE,
+      token: memberToken,
+      method: "POST",
+      body: { target: ID.portalClient },
+    },
+  );
+  check(
+    "a member cannot delete a client account over the API",
+    !memberDeletesClient.ok,
+    JSON.stringify(memberDeletesClient.data),
+  );
+
+  const anonDeletesClient = await api(
+    "/rest/v1/rpc/app_delete_client_account",
+    {
+      key: PUBLISHABLE,
+      method: "POST",
+      body: { target: ID.portalClient },
+    },
+  );
+  check(
+    "anonymous callers cannot delete a client account",
+    !anonDeletesClient.ok,
+    JSON.stringify(anonDeletesClient.data),
+  );
+
+  const clientLinkUnknown = await api("/rest/v1/rpc/app_client_link_state", {
+    key: PUBLISHABLE,
+    method: "POST",
+    body: { target: "99999999-0000-4000-8000-000000000009" },
+  });
+  check(
+    "a client id matching nobody answers false rather than revealing an account",
+    clientLinkUnknown.ok && clientLinkUnknown.data === false,
+    JSON.stringify(clientLinkUnknown.data),
   );
 
   const anonFinancials = await api("/rest/v1/app_project_financials?select=*", {

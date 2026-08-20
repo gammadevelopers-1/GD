@@ -34,6 +34,7 @@ import {
 import type { PortfolioQuery } from "@/lib/projects/portfolio-query";
 import { isPortfolioFiltered } from "@/lib/projects/portfolio-query";
 import { bannerFitClass } from "@/lib/projects/banner";
+import { TONE_SOFT } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 
 export function PortfolioResults({
@@ -201,6 +202,20 @@ function ProjectCard({
             <p className="truncate text-[11px] font-medium text-black/35">
               {project.clientName ?? "No client"}
             </p>
+            {isOwner && project.clientAccess !== "none" ? (
+              <span
+                className={cn(
+                  "mt-1 inline-flex rounded-full border px-2 py-0.5 text-[9px] font-semibold",
+                  project.clientAccess === "active"
+                    ? TONE_SOFT.ok
+                    : TONE_SOFT.info,
+                )}
+              >
+                {project.clientAccess === "active"
+                  ? "Client signed in"
+                  : "Client invited"}
+              </span>
+            ) : null}
             {project.bannerUrl ? (
               <h3 className="mt-1 truncate text-[17px] leading-tight font-semibold tracking-[-0.035em] transition-colors group-hover:text-[#08743d]">
                 {project.name}

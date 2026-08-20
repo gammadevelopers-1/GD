@@ -76,6 +76,52 @@ export async function createClientAuthUser(input: {
   return { ok: true, id };
 }
 
+export async function createInternalAuthUser(input: {
+  email: string;
+  fullName: string;
+  role: "owner" | "member" | "finance";
+  password: string;
+}): Promise<{ ok: true; id: string } | { ok: false; message: string }> {
+  const result = await call("/auth/v1/admin/users", {
+    method: "POST",
+    body: {
+      email: input.email,
+      password: input.password,
+      email_confirm: true,
+      app_metadata: { role: input.role },
+      user_metadata: { full_name: input.fullName },
+    },
+  });
+
+  if (!result.ok) return result;
+
+  const id = (result.data as { id?: string } | null)?.id;
+  if (!id) return { ok: false, message: "Auth did not return an account id." };
+  return { ok: true, id };
+}
+
+export async function generatePasswordToken(
+  email: string,
+): Promise<{ ok: true; token: string } | { ok: false; message: string }> {
+  const result = await call("/auth/v1/admin/generate_link", {
+    method: "POST",
+    body: { type: "recovery", email },
+  });
+
+  if (!result.ok) return result;
+
+  const payload = result.data as {
+    hashed_token?: string;
+    properties?: { hashed_token?: string };
+  } | null;
+  const token = payload?.hashed_token ?? payload?.properties?.hashed_token;
+
+  if (!token) {
+    return { ok: false, message: "Auth did not return a set-password token." };
+  }
+  return { ok: true, token };
+}
+
 export async function setAuthPassword(
   userId: string,
   password: string,

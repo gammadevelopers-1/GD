@@ -60,10 +60,7 @@ export default async function EditProjectPage({
         <h1 className="font-display mt-5 text-[1.75rem] leading-none font-semibold tracking-[-0.045em]">
           Edit project
         </h1>
-        <p className="mt-2.5 text-sm leading-6 text-black/45">
-          Changing the lead adds that person to the team. Every change here is
-          recorded against your account.
-        </p>
+      
 
         <div className="mt-7">
           <ProjectForm

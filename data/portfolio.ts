@@ -32,7 +32,10 @@ export type PortfolioProject = {
     done: number;
   } | null;
   value: { amount: number; currency: "PKR" | "USD" } | null;
+  clientAccess: ClientAccessState;
 };
+
+export type ClientAccessState = "none" | "invited" | "active";
 
 export type PortfolioOptions = {
   clients: Array<{ id: string; name: string }>;
@@ -85,7 +88,7 @@ export async function getPortfolio(
   if (error) throw new Error(`Portfolio read failed: ${error.message}`);
 
   const rows = (data ?? []) as PortfolioRow[];
-  const [values, bannerUrls] = await Promise.all([
+  const [values, bannerUrls, clientAccess] = await Promise.all([
     getProjectValues(
       viewer,
       rows.map((row) => row.id),
@@ -93,6 +96,10 @@ export async function getPortfolio(
     signBannerUrls(
       supabase,
       rows.map((row) => row.banner_path),
+    ),
+    getClientAccessStates(
+      viewer,
+      rows.map((row) => row.id),
     ),
   ]);
 
@@ -130,6 +137,7 @@ export async function getPortfolio(
               done: Number(row.current_week_done ?? 0),
             },
       value: values.get(String(row.id)) ?? null,
+      clientAccess: clientAccess.get(String(row.id)) ?? "none",
     };
   });
 }
@@ -152,6 +160,44 @@ async function signBannerUrls(
     if (entry?.path && entry.signedUrl) urls.set(entry.path, entry.signedUrl);
   }
   return urls;
+}
+
+async function getClientAccessStates(viewer: Viewer, projectIds: string[]) {
+  const states = new Map<string, ClientAccessState>();
+  if (viewer.role !== "owner" || !projectIds.length) return states;
+
+  const supabase = await createClient();
+  const { data: grants } = await supabase
+    .from("app_project_client_access")
+    .select("project_id, client_user_id")
+    .in("project_id", projectIds)
+    .is("revoked_at", null);
+
+  const rows = grants ?? [];
+  if (!rows.length) return states;
+
+  const { data: people } = await supabase
+    .from("app_client_users")
+    .select("id, activated_at, archived_at")
+    .in(
+      "id",
+      rows.map((row) => String(row.client_user_id)),
+    );
+
+  const byId = new Map(
+    (people ?? []).map((person) => [String(person.id), person]),
+  );
+
+  for (const row of rows) {
+    const person = byId.get(String(row.client_user_id));
+    if (!person || person.archived_at) continue;
+    const state: ClientAccessState = person.activated_at ? "active" : "invited";
+    const known = states.get(String(row.project_id));
+    if (known === "active") continue;
+    states.set(String(row.project_id), state);
+  }
+
+  return states;
 }
 
 async function getProjectValues(viewer: Viewer, projectIds: string[]) {

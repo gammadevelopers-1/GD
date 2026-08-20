@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Archive, Pencil } from "lucide-react";
 import { BannerControl } from "@/components/admin/projects/banner-control";
 import { StatusControl } from "@/components/admin/projects/status-control";
-import { ShareProject } from "@/components/admin/projects/share-project";
+import { InviteClientLauncher } from "@/components/admin/clients/invite-client-launcher";
 import type { ProjectShell } from "@/data/project-detail";
 import { getProjectWeekStats } from "@/data/project-detail";
 import type { Viewer } from "@/data/auth";
@@ -15,7 +15,6 @@ import {
   setProjectBanner,
 } from "@/app/(admin)/projects/banner-actions";
 import { setProjectStatus } from "@/app/(admin)/projects/actions";
-import { shareWithClient } from "@/app/(admin)/projects/client-actions";
 
 function StatusBadge({
   project,
@@ -135,11 +134,7 @@ export function ProjectHeroFull({
             ) : null}
             <StatusBadge project={project} isOwner={isOwner} />
             {isOwner ? (
-              <ShareProject
-                projectId={project.id}
-                publicId={project.publicId}
-                share={shareWithClient}
-              />
+              <InviteClientLauncher projectId={project.id} viewer={viewer} />
             ) : null}
             {isOwner ? (
               <Link

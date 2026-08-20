@@ -69,10 +69,6 @@ export function ProjectForm({
         </div>
       ) : null}
 
-      <p className="text-[11px] text-black/40">
-        Only the project name is required. Everything else can be added later,
-        from Edit project.
-      </p>
 
       <fieldset disabled={pending} className="grid gap-5 sm:grid-cols-2">
         <Field
@@ -98,11 +94,7 @@ export function ProjectForm({
           name="clientId"
           label="Client"
           error={errors.clientId}
-          hint={
-            clients.length
-              ? "Can be attached later."
-              : "No clients recorded yet — you can add one later."
-          }
+         
         >
           <select
             id="clientId"
@@ -139,7 +131,6 @@ export function ProjectForm({
           name="leadId"
           label="Project lead"
           error={errors.leadId}
-          hint="The lead is added to the project team automatically."
         >
           <select
             id="leadId"
@@ -185,7 +176,6 @@ export function ProjectForm({
           label="Description"
           error={errors.description}
           className="sm:col-span-2"
-          hint="What are we building, and why does the client want it?"
         >
           <textarea
             id="description"
@@ -205,14 +195,10 @@ export function ProjectForm({
           <div className="flex items-center gap-2">
             <Lock className="size-3.5 text-[#69ee88]" />
             <p className="font-mono text-[9px] tracking-[0.14em] text-[#69ee88] uppercase">
-              Owner only — never shown to team members
+              Owner only
             </p>
           </div>
-          <p className="mt-2 text-[13px] leading-5 text-white/45">
-            Record what was agreed, in the currency it was agreed in, with the
-            rate on that date. Both currencies are worked out at display time,
-            so this figure stays true when the rate moves.
-          </p>
+       
 
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <DarkField

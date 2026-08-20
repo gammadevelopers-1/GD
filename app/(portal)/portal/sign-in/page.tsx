@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 };
 
 const REASONS: Record<string, string> = {
+  "password-set": "Your password is set. Sign in with it now.",
   access: "Sign in to see your project.",
   expired: "You were signed out after a while away. Sign in again.",
 };
