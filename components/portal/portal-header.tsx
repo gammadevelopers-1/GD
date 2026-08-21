@@ -1,8 +1,9 @@
 import { Mark } from "@/components/layout/mark";
 import { signOutClient } from "@/app/(portal)/portal/sign-in/actions";
 import { PortalTabs } from "@/components/portal/portal-tabs";
+import { ProjectSwitcher } from "@/components/portal/project-switcher";
 import type { PortalTab } from "@/lib/portal/tabs";
-import type { ClientViewer } from "@/data/portal";
+import type { ClientViewer, PortalProject } from "@/data/portal";
 import type { Portal } from "@/lib/portal/types";
 import { PROJECT_STATUS_LABEL, isProjectStatus } from "@/lib/projects/status";
 import { bannerFitClass } from "@/lib/projects/banner";
@@ -17,9 +18,13 @@ export type PortalMeta = {
 export function PortalTopBar({
   viewer,
   preview = false,
+  projects = [],
+  currentPublicId,
 }: {
   viewer: ClientViewer | null;
   preview?: boolean;
+  projects?: PortalProject[];
+  currentPublicId?: string;
 }) {
   return (
     <header className="sticky top-0 z-30 bg-[#eef0e9]/80 backdrop-blur-xl">
@@ -30,6 +35,13 @@ export function PortalTopBar({
             Gamma Developers
           </span>
         </span>
+
+        {viewer && currentPublicId ? (
+          <ProjectSwitcher
+            projects={projects}
+            currentPublicId={currentPublicId}
+          />
+        ) : null}
 
         {viewer ? (
           <div className="ml-auto flex items-center gap-2">

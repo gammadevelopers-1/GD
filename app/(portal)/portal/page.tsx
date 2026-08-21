@@ -1,8 +1,6 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { getPortalProjects, requirePortalAccess } from "@/data/portal";
-import { PROJECT_STATUS_LABEL, isProjectStatus } from "@/lib/projects/status";
+import { PortalProjectCard } from "@/components/portal/portal-project-card";
 import { PortalTopBar } from "@/components/portal/portal-header";
 
 export default async function PortalIndexPage() {
@@ -27,25 +25,10 @@ export default async function PortalIndexPage() {
 
         <div className="mt-4">
           {projects.length ? (
-            <ul className="grid gap-3 sm:grid-cols-2">
+            <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {projects.map((project) => (
                 <li key={project.publicId}>
-                  <Link
-                    href={`/portal/${project.publicId}`}
-                    className="card-surface group flex items-center gap-4 rounded-2xl border border-black/[0.06] px-5 py-4 transition duration-200 hover:border-black/[0.14]"
-                  >
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[14px] font-semibold tracking-[-0.025em]">
-                        {project.name}
-                      </span>
-                      <span className="mt-0.5 block text-[12px] text-black/45">
-                        {isProjectStatus(project.status)
-                          ? PROJECT_STATUS_LABEL[project.status]
-                          : project.status}
-                      </span>
-                    </span>
-                    <ArrowRight className="size-4 shrink-0 text-black/25 transition group-hover:translate-x-0.5 group-hover:text-black/60" />
-                  </Link>
+                  <PortalProjectCard project={project} />
                 </li>
               ))}
             </ul>

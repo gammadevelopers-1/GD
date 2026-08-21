@@ -81,9 +81,7 @@ export default async function LoginPage({
                     Account access unavailable
                   </p>
                   <p className="mt-1.5 text-sm leading-6 text-amber-100/55">
-                    This account does not have an active internal-platform
-                    profile. Ask an owner to activate it, or sign in with a
-                    different account.
+                    This account does not have access to internal platform. Use a different account.
                   </p>
                 </div>
               </div>

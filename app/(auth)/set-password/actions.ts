@@ -83,6 +83,8 @@ export async function setPassword(
   await supabase.auth.signOut();
 
   redirect(
-    isClient ? "/portal/sign-in?reason=password-set" : "/login?reason=password-set",
+    isClient
+      ? "/portal/sign-in?reason=password-set"
+      : "/login?reason=password-set",
   );
 }

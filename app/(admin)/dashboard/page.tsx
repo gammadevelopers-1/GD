@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   ArrowUpRight,
   CalendarClock,
+  CheckCircle2,
   CircleDollarSign,
   Clock3,
   FolderKanban,
@@ -9,6 +10,9 @@ import {
   ReceiptText,
 } from "lucide-react";
 import { PageHeading } from "@/components/admin/page-heading";
+import { KpiCard } from "@/components/admin/kpi-card";
+import { DeliveryPulse } from "@/components/admin/delivery-pulse";
+import { cn } from "@/lib/utils";
 import { requireViewer, type Viewer } from "@/data/auth";
 import {
   getDashboardData,
@@ -44,11 +48,6 @@ function DashboardView({
   return (
     <div className="mx-auto max-w-[1480px]">
       <PageHeading
-        eyebrow={new Intl.DateTimeFormat("en", {
-          weekday: "long",
-          month: "long",
-          day: "numeric",
-        }).format(new Date())}
         title={`Good morning, ${firstName}.`}
         action={
           viewer.role === "owner" ? (
@@ -66,42 +65,61 @@ function DashboardView({
 
       <section
         aria-label="Company signals"
-        className={`grid gap-3 sm:grid-cols-2 ${data.financials ? "xl:grid-cols-4" : "lg:grid-cols-3"}`}
+        className={cn(
+          "grid gap-3 sm:grid-cols-2",
+          data.financials ? "xl:grid-cols-4" : "lg:grid-cols-3",
+        )}
       >
-        <MetricCard
+        <KpiCard
           icon={FolderKanban}
-          label={
-            viewer.role === "member" ? "My active projects" : "Active projects"
-          }
+          label={viewer.role === "member" ? "My projects" : "Active projects"}
           value={String(data.activeCount)}
-          note="Current workload"
-          accent
+          note="In delivery now"
         />
-        <MetricCard
+        <KpiCard
+          icon={CheckCircle2}
+          label="Work closed"
+          value={String(data.shipped.current)}
+          trend={data.shipped}
+        />
+        <KpiCard
+          icon={Clock3}
+          label="Overdue"
+          value={String(data.overdueMilestones)}
+          tone={data.overdueMilestones > 0 ? "danger" : "neutral"}
+          note={
+            data.overdueMilestones
+              ? "Left from past weeks"
+              : "Nothing outstanding"
+          }
+        />
+        {data.financials ? (
+          <KpiCard
+            icon={CircleDollarSign}
+            label="Unpaid"
+            value={formatMoney(data.financials.unpaidPkr, "PKR")}
+            tone={data.financials.unpaidCount > 0 ? "warning" : "neutral"}
+            note={`${data.financials.unpaidCount} invoice${data.financials.unpaidCount === 1 ? "" : "s"} outstanding`}
+          />
+        ) : (
+          <KpiCard
+            icon={CalendarClock}
+            label="Due in 14 days"
+            value={String(data.dueSoonCount)}
+            note={data.dueSoonCount ? "Closing soon" : "Nothing due"}
+          />
+        )}
+      </section>
+
+      <div className="mt-3 grid gap-3 lg:grid-cols-[1.6fr_1fr]">
+        <DeliveryPulse weeks={data.delivery} />
+        <KpiCard
           icon={CalendarClock}
           label="Due in 14 days"
           value={String(data.dueSoonCount)}
-          note={data.dueSoonCount ? "Needs attention" : "Nothing due soon"}
+          note={data.dueSoonCount ? "Closing soon" : "Nothing due"}
         />
-        <MetricCard
-          icon={Clock3}
-          label="Overdue milestones"
-          value={String(data.overdueMilestones)}
-          note={
-            data.overdueMilestones ? "Across past weeks" : "Everything on track"
-          }
-          warning={data.overdueMilestones > 0}
-        />
-        {data.financials ? (
-          <FinancialMetric
-            label="Revenue this month"
-            pkr={data.financials.revenuePkr}
-            usd={data.financials.revenueUsd}
-            icon={CircleDollarSign}
-            footer={`${data.financials.unpaidCount} invoice${data.financials.unpaidCount === 1 ? "" : "s"} unpaid`}
-          />
-        ) : null}
-      </section>
+      </div>
 
       <section className="mt-6 overflow-hidden rounded-[22px] border border-black/[0.07] bg-[#f8f8f3] shadow-[0_12px_40px_rgba(20,23,26,0.035)]">
         <div className="flex items-center justify-between border-b border-black/[0.065] px-4 py-4 sm:px-5 lg:px-6">
@@ -109,9 +127,6 @@ function DashboardView({
             <h2 className="text-[15px] font-semibold tracking-[-0.025em]">
               Active projects
             </h2>
-            <p className="mt-1 text-xs text-black/40">
-              A live view of delivery across the team.
-            </p>
           </div>
           <Link
             href="/projects"
@@ -201,78 +216,6 @@ function DashboardView({
         </section>
       ) : null}
     </div>
-  );
-}
-
-function MetricCard({
-  icon: Icon,
-  label,
-  value,
-  note,
-  accent = false,
-  warning = false,
-}: {
-  icon: typeof FolderKanban;
-  label: string;
-  value: string;
-  note: string;
-  accent?: boolean;
-  warning?: boolean;
-}) {
-  return (
-    <article
-      className={`relative overflow-hidden rounded-[20px] border p-4 sm:p-5 ${accent ? "border-[#2fe85c]/20 bg-[#dff7df]" : "border-black/[0.07] bg-[#f8f8f3]"}`}
-    >
-      {accent ? (
-        <div className="absolute -top-14 -right-10 size-28 rounded-full bg-[#2fe85c]/20 blur-2xl" />
-      ) : null}
-      <div className="relative flex items-start justify-between">
-        <p className="text-xs font-medium text-black/48">{label}</p>
-        <span
-          className={`grid size-8 place-items-center rounded-lg ${accent ? "bg-[#15181b] text-[#2fe85c]" : "bg-black/[0.045] text-black/45"}`}
-        >
-          <Icon className="size-4" />
-        </span>
-      </div>
-      <p className="relative mt-5 text-[2rem] leading-none font-semibold tracking-[-0.055em]">
-        {value}
-      </p>
-      <p
-        className={`relative mt-3 text-[11px] ${warning ? "font-medium text-amber-700" : "text-black/38"}`}
-      >
-        {note}
-      </p>
-    </article>
-  );
-}
-
-function FinancialMetric({
-  label,
-  pkr,
-  usd,
-  icon: Icon,
-  footer,
-}: {
-  label: string;
-  pkr: number;
-  usd: number;
-  icon: typeof CircleDollarSign;
-  footer: string;
-}) {
-  return (
-    <article className="rounded-[20px] border border-black/[0.07] bg-[#f8f8f3] p-4 sm:p-5">
-      <div className="flex items-start justify-between">
-        <p className="text-xs font-medium text-black/48">{label}</p>
-        <span className="grid size-8 place-items-center rounded-lg bg-black/[0.045] text-black/45">
-          <Icon className="size-4" />
-        </span>
-      </div>
-      <p className="mt-5 text-[1.45rem] leading-none font-semibold tracking-[-0.045em]">
-        {formatMoney(pkr, "PKR")}
-      </p>
-      <p className="mt-2 text-xs text-black/42">{formatMoney(usd, "USD")}</p>
-      <p className="mt-3 text-[11px] text-black/38">{footer}</p>
-    </article>
   );
 }
 

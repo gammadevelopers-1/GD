@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState, useState } from "react";
 import { ArrowRight, LoaderCircle } from "lucide-react";
+import { LinkSpentNotice } from "@/components/auth/link-spent-notice";
 import { PASSWORD_MIN } from "@/lib/team/records";
 import { setPassword, type SetPasswordState } from "./actions";
 
@@ -16,26 +16,34 @@ export function SetPasswordForm({
   email,
   locked = false,
   kind = "member",
+  signInHref,
 }: {
   token: string;
   email: string;
   locked?: boolean;
   kind?: "member" | "client";
+  signInHref: string;
 }) {
   const [state, action, pending] = useActionState(setPassword, initialState);
   const [password, setPasswordValue] = useState("");
   const [confirmation, setConfirmation] = useState("");
-  const [touched, setTouched] = useState({ password: false, confirmation: false });
+  const [touched, setTouched] = useState({
+    password: false,
+    confirmation: false,
+  });
 
   const tooShort = password.length > 0 && password.length < PASSWORD_MIN;
   const mismatch = confirmation.length > 0 && confirmation !== password;
+  const isLocked = locked || state.spent === true;
   const valid =
-    !locked && password.length >= PASSWORD_MIN && confirmation === password;
+    !isLocked && password.length >= PASSWORD_MIN && confirmation === password;
 
   return (
     <form action={action} className="mt-8 space-y-5">
       <input type="hidden" name="token" value={token} />
       <input type="hidden" name="kind" value={kind} />
+
+      {state.spent ? <LinkSpentNotice signInHref={signInHref} /> : null}
 
       {email ? (
         <label className="block space-y-2">
@@ -68,9 +76,9 @@ export function SetPasswordForm({
           value={password}
           onChange={(event) => setPasswordValue(event.target.value)}
           onBlur={() => setTouched((was) => ({ ...was, password: true }))}
-          disabled={locked}
+          disabled={isLocked}
           required
-          autoFocus={!locked}
+          autoFocus={!isLocked}
         />
         {tooShort && touched.password ? (
           <Hint>
@@ -94,29 +102,19 @@ export function SetPasswordForm({
           value={confirmation}
           onChange={(event) => setConfirmation(event.target.value)}
           onBlur={() => setTouched((was) => ({ ...was, confirmation: true }))}
-          disabled={locked}
+          disabled={isLocked}
           required
         />
         {mismatch ? <Hint>Those two passwords do not match.</Hint> : null}
       </label>
 
-      {state.error ? (
+      {state.error && !state.spent ? (
         <p
           role="alert"
           className="rounded-xl bg-red-400/10 px-3.5 py-3 text-sm text-red-200"
         >
           {state.error}
         </p>
-      ) : null}
-
-      {state.spent ? (
-        <Link
-          href={kind === "client" ? "/portal/sign-in" : "/login"}
-          className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-white/12 text-sm font-medium text-white/70 transition hover:border-white/25 hover:text-white"
-        >
-          Go to sign in
-          <ArrowRight className="size-4" />
-        </Link>
       ) : null}
 
       <button

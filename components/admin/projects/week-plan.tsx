@@ -133,8 +133,8 @@ export function WeekPlan({
   }
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col bg-[#f8f8f3]">
-      <div className="flex shrink-0 items-center gap-3 border-b border-black/[0.07] bg-[#eef0e9] px-4 py-3 sm:px-6">
+    <section className="flex flex-col rounded-[20px] border border-black/[0.07] bg-[#f8f8f3]">
+      <div className="flex shrink-0 items-center gap-3 rounded-t-[20px] border-b border-black/[0.07] bg-[#eef0e9] px-4 py-3 sm:px-6">
         <span className="text-[11px] font-semibold tracking-[0.16em] text-black/55 uppercase">
           Weeks
         </span>
@@ -166,7 +166,7 @@ export function WeekPlan({
       </div>
 
       {weeks.length ? (
-        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 pt-4 pb-4 sm:px-6 sm:pb-5">
+        <div className="space-y-3 px-4 pt-4 pb-4 sm:px-6 sm:pb-5">
           {weeks.map((week) => (
             <WeekRow
               key={week.id}
@@ -479,6 +479,7 @@ function WeekRow({
             updatedAt={week.ideaUpdatedAt}
             updatedBy={week.ideaUpdatedBy}
             expanded={boardExpanded}
+            workOpen={workOpen}
             editorRef={editorRef}
             onDocChange={setDoc}
             onExpandedChange={onBoardExpandedChange}

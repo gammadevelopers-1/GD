@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { ProjectTabs } from "@/components/admin/projects/project-tabs";
-import { cn } from "@/lib/utils";
 
 // The frame every project tab sits inside. It lives in the layout, so switching
 // tabs replaces only what is below it: no refetch of the project, no rebuilt
@@ -26,40 +25,26 @@ export function ProjectShell({
   children: React.ReactNode;
 }) {
   const segment = useSelectedLayoutSegment();
-  const wide = segment === "milestone";
-  const lean = wide || segment === "technical";
+  const lean = segment === "milestone" || segment === "technical";
 
   return (
-    <div
-      className={cn(
-        wide
-          ? "-mx-4 -mb-8 flex h-[calc(100dvh-4rem)] w-auto flex-col overflow-hidden sm:-mx-6 sm:-mb-10 lg:-mx-8 xl:-mx-10"
-          : "mx-auto max-w-[1480px]",
-      )}
-    >
+    <div className="mx-auto max-w-[1480px]">
       <Link
         href="/projects"
         prefetch
-        className={cn(
-          "inline-flex items-center gap-2 text-xs font-medium text-black/42 transition hover:text-black",
-          wide ? "mb-2 shrink-0 px-4 pt-1 sm:px-6 lg:px-8 xl:px-10" : "mb-4",
-        )}
+        className="mb-4 inline-flex items-center gap-2 text-xs font-medium text-black/42 transition hover:text-black"
       >
         <ArrowLeft className="size-3.5" /> All projects
       </Link>
 
-      <div
-        className={wide ? "shrink-0 px-4 sm:px-6 lg:px-8 xl:px-10" : undefined}
-      >
+      <div>
         <section className="panel-dark overflow-hidden rounded-[20px] border border-black/[0.07] text-white">
           {lean ? heroCompact : hero}
           <ProjectTabs publicId={publicId} />
         </section>
       </div>
 
-      <div className={wide ? "mt-2 flex min-h-0 flex-1 flex-col" : "mt-4"}>
-        {children}
-      </div>
+      <div className="mt-4">{children}</div>
     </div>
   );
 }

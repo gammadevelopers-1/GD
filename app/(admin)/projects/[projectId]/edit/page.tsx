@@ -10,17 +10,26 @@ import {
   getProjectFormOptions,
 } from "@/data/project-detail";
 import type { ProjectFormValues } from "@/lib/projects/validation";
+import {
+  type ProjectTab,
+  isProjectTab,
+  projectTabHref,
+} from "@/lib/projects/tabs";
 import { archiveProject, restoreProject, updateProject } from "../../actions";
 
 export const metadata = { title: "Edit project · Internal platform" };
 
 export default async function EditProjectPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ projectId: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   const viewer = await requireRole(["owner"]);
   const { projectId: publicId } = await params;
+  const { from } = await searchParams;
+  const returnTab: ProjectTab = isProjectTab(from) ? from : "overview";
 
   const project = await getProjectDetail(publicId, viewer);
   if (!project) notFound();
@@ -47,7 +56,7 @@ export default async function EditProjectPage({
   return (
     <div className="mx-auto max-w-3xl space-y-4">
       <Link
-        href={`/projects/${project.publicId}`}
+        href={projectTabHref(project.publicId, returnTab)}
         className="inline-flex items-center gap-2 text-xs font-medium text-black/42 transition hover:text-black"
       >
         <ArrowLeft className="size-3.5" /> {project.name}
@@ -60,7 +69,6 @@ export default async function EditProjectPage({
         <h1 className="font-display mt-5 text-[1.75rem] leading-none font-semibold tracking-[-0.045em]">
           Edit project
         </h1>
-      
 
         <div className="mt-7">
           <ProjectForm
@@ -70,7 +78,8 @@ export default async function EditProjectPage({
             people={options.people}
             defaults={defaults}
             projectId={project.id}
-            cancelHref={`/projects/${project.publicId}`}
+            cancelHref={projectTabHref(project.publicId, returnTab)}
+            returnTo={returnTab}
           />
         </div>
       </div>

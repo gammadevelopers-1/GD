@@ -24,6 +24,7 @@ export function ProjectForm({
   defaults,
   projectId,
   cancelHref,
+  returnTo,
 }: {
   mode: "create" | "edit";
   action: (
@@ -35,6 +36,7 @@ export function ProjectForm({
   defaults: ProjectFormValues;
   projectId?: string;
   cancelHref: string;
+  returnTo?: string;
 }) {
   const [state, formAction, pending] = useActionState(action, {
     ...IDLE_PROJECT_FORM,
@@ -49,6 +51,8 @@ export function ProjectForm({
       {projectId ? (
         <input type="hidden" name="projectId" value={projectId} />
       ) : null}
+
+      {returnTo ? <input type="hidden" name="from" value={returnTo} /> : null}
 
       {state.status !== "idle" && state.message ? (
         <div
@@ -68,7 +72,6 @@ export function ProjectForm({
           <span>{state.message}</span>
         </div>
       ) : null}
-
 
       <fieldset disabled={pending} className="grid gap-5 sm:grid-cols-2">
         <Field
@@ -90,12 +93,7 @@ export function ProjectForm({
           />
         </Field>
 
-        <Field
-          name="clientId"
-          label="Client"
-          error={errors.clientId}
-         
-        >
+        <Field name="clientId" label="Client" error={errors.clientId}>
           <select
             id="clientId"
             name="clientId"
@@ -127,11 +125,7 @@ export function ProjectForm({
           </select>
         </Field>
 
-        <Field
-          name="leadId"
-          label="Project lead"
-          error={errors.leadId}
-        >
+        <Field name="leadId" label="Project lead" error={errors.leadId}>
           <select
             id="leadId"
             name="leadId"
@@ -198,7 +192,6 @@ export function ProjectForm({
               Owner only
             </p>
           </div>
-       
 
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <DarkField

@@ -10,14 +10,15 @@ import {
   FilePenLine,
   FolderKanban,
   Library,
-  LogOut,
+  Settings,
+  UserRound,
   UsersRound,
 } from "lucide-react";
 import { Mark } from "@/components/layout/mark";
+import { AccountMenu } from "@/components/admin/account-menu";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -31,7 +32,6 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { logout } from "@/app/(auth)/login/actions";
 import type { AppRole, Viewer } from "@/data/auth";
 
 const navigation: Array<{
@@ -72,6 +72,18 @@ const navigation: Array<{
     roles: ["owner"],
     inProgress: true,
   },
+  {
+    label: "Profile",
+    href: "/profile",
+    icon: UserRound,
+    roles: ["owner", "member", "finance"],
+  },
+  {
+    label: "Settings",
+    href: "/settings",
+    icon: Settings,
+    roles: ["owner", "member", "finance"],
+  },
 ];
 
 const plannedNavigation: Array<{
@@ -90,10 +102,12 @@ const plannedNavigation: Array<{
 
 export function AdminShell({
   viewer,
+  avatarUrl,
   defaultSidebarOpen,
   children,
 }: {
   viewer: Viewer;
+  avatarUrl: string | null;
   defaultSidebarOpen: boolean;
   children: React.ReactNode;
 }) {
@@ -108,6 +122,7 @@ export function AdminShell({
       <SidebarProvider
         defaultOpen={defaultSidebarOpen}
         className="bg-background"
+        style={{ "--sidebar-width": "17rem" } as React.CSSProperties}
       >
         <Sidebar collapsible="icon">
           <SidebarHeader>
@@ -128,17 +143,18 @@ export function AdminShell({
           <SidebarContent>
             <SidebarGroup>
               <SidebarGroupContent>
-                <SidebarMenu>
+                <SidebarMenu className="gap-1.5">
                   {items.map((item) => (
                     <SidebarMenuItem key={item.href}>
                       <SidebarMenuButton
                         asChild
+                        size="lg"
                         isActive={
                           pathname === item.href ||
                           pathname.startsWith(`${item.href}/`)
                         }
                         tooltip={item.label}
-                        className="data-active:bg-[#2fe85c]/10 data-active:text-[#2fe85c]"
+                        className="gap-3 px-3 text-[13.5px] font-medium data-active:bg-[#2fe85c]/10 data-active:font-semibold data-active:text-[#2fe85c] [&_svg]:size-[18px]"
                       >
                         <Link href={item.href}>
                           <item.icon />
@@ -161,13 +177,14 @@ export function AdminShell({
               <SidebarGroup>
                 <SidebarGroupLabel>Planned</SidebarGroupLabel>
                 <SidebarGroupContent>
-                  <SidebarMenu>
+                  <SidebarMenu className="gap-1.5">
                     {plannedItems.map((item) => (
                       <SidebarMenuItem key={item.label}>
                         <SidebarMenuButton
                           type="button"
+                          size="lg"
                           tooltip={`${item.label} — planned`}
-                          className="text-sidebar-foreground/35 hover:text-sidebar-foreground/35 active:text-sidebar-foreground/35 cursor-default hover:bg-transparent active:bg-transparent"
+                          className="text-sidebar-foreground/30 hover:text-sidebar-foreground/30 active:text-sidebar-foreground/30 cursor-default gap-3 px-3 text-[13.5px] hover:bg-transparent active:bg-transparent [&_svg]:size-[18px]"
                         >
                           <item.icon />
                           <span>{item.label}</span>
@@ -180,19 +197,6 @@ export function AdminShell({
             ) : null}
           </SidebarContent>
 
-          <SidebarFooter>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <form action={logout}>
-                  <SidebarMenuButton tooltip="Sign out">
-                    <LogOut />
-                    <span>Sign out</span>
-                  </SidebarMenuButton>
-                </form>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarFooter>
-
           <SidebarRail />
         </Sidebar>
 
@@ -202,19 +206,7 @@ export function AdminShell({
               <SidebarTrigger className="-ml-1 text-black/60 hover:text-black" />
 
               <div className="ml-auto flex items-center gap-2">
-                <div className="flex items-center gap-2.5 rounded-xl border border-black/[0.07] bg-white/55 p-1.5 pr-3 transition hover:border-black/[0.14] hover:bg-white/80">
-                  <span className="grid size-7 place-items-center rounded-lg bg-[#15181b] text-[10px] font-semibold text-[#2fe85c]">
-                    {viewer.initials}
-                  </span>
-                  <div className="hidden leading-none sm:block">
-                    <p className="max-w-28 truncate text-[11px] font-semibold">
-                      {viewer.fullName}
-                    </p>
-                    <p className="mt-1 text-[9px] text-black/40 capitalize">
-                      {viewer.role}
-                    </p>
-                  </div>
-                </div>
+                <AccountMenu viewer={viewer} avatarUrl={avatarUrl} />
               </div>
             </div>
           </header>

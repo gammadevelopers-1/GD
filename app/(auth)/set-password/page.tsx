@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { AlertTriangle } from "lucide-react";
 import { Mark } from "@/components/layout/mark";
+import { LinkSpentNotice } from "@/components/auth/link-spent-notice";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { isUuid } from "@/lib/projects/validation";
@@ -47,26 +48,7 @@ export default async function SetPasswordPage({
           You will sign in with your work email and this password from now on.
         </p>
 
-        {alreadySet ? (
-          <div className="mt-6 rounded-2xl border border-amber-300/15 bg-amber-300/[0.07] p-5">
-            <div className="flex gap-3">
-              <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-200" />
-              <div>
-                <p className="text-sm leading-6 text-amber-100/75">
-                  This link has already been used or has expired. If you have set
-                  your password, sign in below. Otherwise ask an owner to send a
-                  new one.
-                </p>
-                <Link
-                  href={signInHref}
-                  className="mt-3 inline-flex text-sm font-medium text-amber-100 transition hover:text-white"
-                >
-                  Sign in now
-                </Link>
-              </div>
-            </div>
-          </div>
-        ) : null}
+        {alreadySet ? <LinkSpentNotice signInHref={signInHref} /> : null}
 
         {token ? (
           <SetPasswordForm
@@ -74,6 +56,7 @@ export default async function SetPasswordPage({
             email={email ?? ""}
             locked={alreadySet}
             kind={isClient ? "client" : "member"}
+            signInHref={signInHref}
           />
         ) : (
           <div className="mt-8 rounded-2xl border border-amber-300/15 bg-amber-300/[0.07] p-5">

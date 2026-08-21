@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { signStoragePaths } from "@/lib/supabase/admin";
-import { isBannerFit } from "@/lib/projects/banner";
+import { type BannerFit, isBannerFit } from "@/lib/projects/banner";
 import { isProjectStatus } from "@/lib/projects/status";
 import {
   type IdeaDoc,
@@ -27,6 +27,15 @@ export type PortalProject = {
   publicId: string;
   name: string;
   status: string;
+  bannerUrl: string | null;
+  bannerFit: BannerFit;
+  startsOn: string | null;
+  dueOn: string | null;
+  totalItems: number;
+  doneItems: number;
+  overdueItems: number;
+  progress: number;
+  currentWeek: { number: number; dueOn: string | null } | null;
 };
 
 function initialsOf(name: string, email: string) {
@@ -93,11 +102,43 @@ export async function getPortalProjects(): Promise<PortalProject[]> {
   const { data, error } = await supabase.rpc("app_client_projects");
   if (error || !Array.isArray(data)) return [];
 
-  return data.map((row) => ({
-    publicId: String(row.public_id),
-    name: String(row.name),
-    status: String(row.status),
-  }));
+  const paths = data
+    .map((row) => row.banner_path)
+    .filter((path): path is string => Boolean(path));
+
+  const signed = paths.length
+    ? await signStoragePaths(ATTACHMENTS_BUCKET, [...new Set(paths)])
+    : {};
+
+  return data.map((row) => {
+    const total = Number(row.total_items ?? 0);
+    const done = Number(row.done_items ?? 0);
+    const fit = String(row.banner_fit ?? "cover");
+
+    return {
+      publicId: String(row.public_id),
+      name: String(row.name),
+      status: String(row.status),
+      bannerUrl: row.banner_path ? (signed[row.banner_path] ?? null) : null,
+      bannerFit: isBannerFit(fit) ? fit : "cover",
+      startsOn: row.starts_on ? String(row.starts_on) : null,
+      dueOn: row.due_on ? String(row.due_on) : null,
+      totalItems: total,
+      doneItems: done,
+      overdueItems: Number(row.overdue_items ?? 0),
+      progress: total ? Math.round((done / total) * 100) : 0,
+      currentWeek:
+        row.current_week_number === null ||
+        row.current_week_number === undefined
+          ? null
+          : {
+              number: Number(row.current_week_number),
+              dueOn: row.current_week_due_on
+                ? String(row.current_week_due_on)
+                : null,
+            },
+    };
+  });
 }
 
 export async function getPortal(publicId: string): Promise<Portal | null> {

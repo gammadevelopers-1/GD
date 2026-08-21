@@ -24,3 +24,32 @@ export function buildClientInviteEmail({
     ].join("\n"),
   };
 }
+
+export function buildClientReturnEmail({
+  fullName,
+  projectName,
+  invitedBy,
+}: {
+  fullName: string;
+  projectName: string;
+  invitedBy: string;
+}): InviteEmail {
+  const firstName = fullName.split(/\s+/)[0] ?? fullName;
+
+  return {
+    subject: `${projectName} — added to your Gamma Developers portal`,
+    body: [
+      `Hi ${firstName},`,
+      "",
+      `${projectName} has been added to your Gamma Developers client portal.`,
+      "",
+      "Sign in with the email address and password you already use. Your password has not changed.",
+      "",
+      `— ${invitedBy}`,
+    ].join("\n"),
+  };
+}
+
+export function withSignInLink(body: string, url: string) {
+  return `${body.trimEnd()}\n\nSign in:\n${url}\n`;
+}

@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(18);
+select plan(26);
 
 insert into auth.users (
   id, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at
@@ -63,6 +63,31 @@ values
    'c0000000-0000-4000-8000-000000000001');
 
 -- One client has only ever signed in; the other has ticked something.
+update public.app_projects
+set starts_on = current_date - 5, due_on = current_date + 20
+where id = 'c3000000-0000-4000-8000-000000000002';
+
+insert into public.app_project_financials
+  (project_id, value_amount, value_currency, exchange_rate_to_pkr, booked_on)
+values (
+  'c3000000-0000-4000-8000-000000000002', 500000, 'USD', 278.5, current_date
+);
+
+insert into public.app_milestone_weeks (id, project_id, week_number, due_on)
+values (
+  'c4000000-0000-4000-8000-000000000001',
+  'c3000000-0000-4000-8000-000000000002',
+  1, current_date + 3
+);
+
+insert into public.app_milestone_cards
+  (milestone_week_id, board, title, status, completed_at, created_by)
+values
+  ('c4000000-0000-4000-8000-000000000001', 'work', 'Done card', 'completed',
+   now(), 'c0000000-0000-4000-8000-000000000001'),
+  ('c4000000-0000-4000-8000-000000000001', 'work', 'Open card', 'in_progress',
+   null, 'c0000000-0000-4000-8000-000000000001');
+
 insert into public.app_audit_logs
   (actor_id, client_actor_id, action, resource_type)
 values
@@ -188,6 +213,83 @@ select ok(
   (select activated_at from public.app_client_users
    where id = 'c1000000-0000-4000-8000-000000000001') is not null,
   'and the stamp lands on their account'
+);
+
+select is(
+  (select count(*) from public.app_client_projects())::int,
+  1,
+  'they see only the project they were invited to'
+);
+
+-- A second project on one account: the same password, two projects ----------
+reset role;
+
+insert into public.app_project_client_access
+  (project_id, client_user_id, granted_by)
+values (
+  'c3000000-0000-4000-8000-000000000002',
+  'c1000000-0000-4000-8000-000000000001',
+  'c0000000-0000-4000-8000-000000000001'
+);
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claim.sub', 'c1000000-0000-4000-8000-000000000001', true
+);
+
+select is(
+  (select count(*) from public.app_client_projects())::int,
+  2,
+  'a second grant adds the project without a second account'
+);
+
+select is(
+  (select count(*) from public.app_projects)::int,
+  0,
+  'and still no direct read of the projects table'
+);
+
+reset role;
+
+update public.app_project_client_access
+set revoked_at = now()
+where project_id = 'c3000000-0000-4000-8000-000000000001'
+  and client_user_id = 'c1000000-0000-4000-8000-000000000001';
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claim.sub', 'c1000000-0000-4000-8000-000000000001', true
+);
+
+select is(
+  (select count(*) from public.app_client_projects())::int,
+  1,
+  'revoking one project leaves the other'
+);
+
+-- The card columns, and the ones that must never appear -------------------
+select is(
+  (select due_on from public.app_client_projects()),
+  current_date + 20,
+  'the picker carries the due date a card needs'
+);
+
+select is(
+  (select total_items from public.app_client_projects())::int,
+  2,
+  'and the progress rollup counts this project''s work'
+);
+
+select is(
+  (select done_items from public.app_client_projects())::int,
+  1,
+  'counting only what is completed as done'
+);
+
+select is(
+  (select count(*) from public.app_project_financials)::int,
+  0,
+  'while the money table stays unreadable to them'
 );
 
 -- Owner ---------------------------------------------------------------------

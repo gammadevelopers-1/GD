@@ -47,11 +47,7 @@ export default async function TeamPersonPage({
         Team
       </Link>
 
-      <PageHeading
-        eyebrow={ROLE_LABELS[person.role]}
-        title={person.fullName}
-        description={person.jobTitle ?? undefined}
-      />
+      <PageHeading title={person.fullName} />
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <PersonEditor person={person} />
@@ -94,10 +90,7 @@ export default async function TeamPersonPage({
             )}
           </section>
 
-          <DocumentsPanel
-            profileId={person.id}
-            documents={person.documents}
-          />
+          <DocumentsPanel profileId={person.id} documents={person.documents} />
         </div>
       </div>
     </div>

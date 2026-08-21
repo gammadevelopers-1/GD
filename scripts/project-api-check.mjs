@@ -1136,6 +1136,39 @@ async function run() {
     `select public_id from public.app_projects where id = '${ID.projectOwnerOnly}'`,
   );
 
+  const clientPicker = await asClient("/rest/v1/rpc/app_client_projects", {
+    method: "POST",
+    body: {},
+  });
+  const pickerBody = JSON.stringify(clientPicker.data ?? "");
+  check(
+    "the client picker returns the columns a card needs",
+    clientPicker.ok &&
+      Array.isArray(clientPicker.data) &&
+      clientPicker.data.every(
+        (row) =>
+          "total_items" in row && "due_on" in row && "banner_path" in row,
+      ),
+    pickerBody.slice(0, 200),
+  );
+
+  check(
+    "and carries no money field of any kind",
+    !/value_amount|value_currency|exchange_rate|salary/i.test(pickerBody),
+    pickerBody.slice(0, 200),
+  );
+
+  const clientFinancials = await asClient(
+    "/rest/v1/app_project_financials?select=value_amount",
+  );
+  check(
+    "a client reads no row from the project money table",
+    !clientFinancials.ok ||
+      (Array.isArray(clientFinancials.data) &&
+        clientFinancials.data.length === 0),
+    JSON.stringify(clientFinancials.data),
+  );
+
   const clientOwnProject = await asClient("/rest/v1/rpc/app_client_portal", {
     method: "POST",
     body: { target_public_id: sharedPublicId },
@@ -1631,6 +1664,109 @@ async function run() {
     "a client id matching nobody answers false rather than revealing an account",
     clientLinkUnknown.ok && clientLinkUnknown.data === false,
     JSON.stringify(clientLinkUnknown.data),
+  );
+
+  sql(`
+    update public.app_client_users
+    set activated_at = now(), password_link_pending = false, invited_at = now()
+    where id = '${ID.portalClient}';
+
+    insert into public.app_project_client_access
+      (project_id, client_user_id, granted_by)
+    values ('${ID.projectOwnerOnly}', '${ID.portalClient}', '${ID.owner}')
+    on conflict (project_id, client_user_id) do update
+      set revoked_at = null;
+  `);
+
+  const stillActivated = query(`
+    select activated_at is not null from public.app_client_users
+    where id = '${ID.portalClient}';
+  `);
+  check(
+    "a second project grant leaves an activated client's password alone",
+    stillActivated[0]?.trim() === "t",
+    stillActivated.join(" "),
+  );
+
+  const linkNotReopened = query(`
+    select password_link_pending from public.app_client_users
+    where id = '${ID.portalClient}';
+  `);
+  check(
+    "and does not reopen their set-password link",
+    linkNotReopened[0]?.trim() === "f",
+    linkNotReopened.join(" "),
+  );
+
+  const reachesNewProject = query(`
+    select count(*) from public.app_project_client_access
+    where client_user_id = '${ID.portalClient}'
+      and project_id = '${ID.projectOwnerOnly}'
+      and revoked_at is null;
+  `);
+  check(
+    "and that one account now reaches the newly granted project",
+    reachesNewProject[0]?.trim() === "1",
+    reachesNewProject.join(" "),
+  );
+
+  const memberRenames = await api("/rest/v1/rpc/app_update_my_profile", {
+    key: PUBLISHABLE,
+    token: memberToken,
+    method: "POST",
+    body: { new_display_name: "Renamed", new_avatar_path: null },
+  });
+  check(
+    "a member may set their own display name",
+    memberRenames.ok,
+    JSON.stringify(memberRenames.data),
+  );
+
+  const [afterRename] = query(
+    `select role || '|' || full_name from public.app_profiles where id = '${ID.assigned}';`,
+  );
+  check(
+    "and the same call leaves their role and official name alone",
+    afterRename?.trim().startsWith("member|"),
+    afterRename,
+  );
+
+  const stealAvatar = await api("/rest/v1/rpc/app_update_my_profile", {
+    key: PUBLISHABLE,
+    token: memberToken,
+    method: "POST",
+    body: { new_display_name: "Nope", new_avatar_path: `${ID.owner}/face.png` },
+  });
+  check(
+    "a member cannot point their avatar at another account's folder",
+    !stealAvatar.ok,
+    JSON.stringify(stealAvatar.data),
+  );
+
+  const anonRenames = await api("/rest/v1/rpc/app_update_my_profile", {
+    key: PUBLISHABLE,
+    method: "POST",
+    body: { new_display_name: "Anyone", new_avatar_path: null },
+  });
+  check(
+    "anonymous callers cannot touch a profile",
+    !anonRenames.ok,
+    JSON.stringify(anonRenames.data),
+  );
+
+  const financeNotifications = await api(
+    "/rest/v1/rpc/app_update_my_notifications",
+    {
+      key: PUBLISHABLE,
+      token: financeToken,
+      method: "POST",
+      body: { milestones: false, weekly: false },
+    },
+  );
+  check(
+    "finance may set their own email preferences",
+    financeNotifications.ok,
+    JSON.stringify(financeNotifications.data),
   );
 
   const anonFinancials = await api("/rest/v1/app_project_financials?select=*", {

@@ -1,6 +1,11 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getPortal, markPortalSeen, requirePortalAccess } from "@/data/portal";
+import {
+  getPortal,
+  getPortalProjects,
+  markPortalSeen,
+  requirePortalAccess,
+} from "@/data/portal";
 import {
   type PortalMeta,
   PortalHero,
@@ -30,7 +35,10 @@ export default async function PortalProjectPage({
   const { tab } = await searchParams;
   const activeTab = isPortalTab(tab) ? tab : "overview";
 
-  const portal = await getPortal(publicId);
+  const [portal, projects] = await Promise.all([
+    getPortal(publicId),
+    getPortalProjects(),
+  ]);
   if (!portal) notFound();
 
   await markPortalSeen(publicId);
@@ -44,7 +52,11 @@ export default async function PortalProjectPage({
 
   return (
     <>
-      <PortalTopBar viewer={viewer} />
+      <PortalTopBar
+        viewer={viewer}
+        projects={projects}
+        currentPublicId={publicId}
+      />
 
       <div className="mx-auto max-w-[1480px] min-w-0 px-4 pt-2 pb-8 sm:px-6 sm:pb-10 lg:px-8 lg:pt-3 xl:px-10">
         <PortalHero

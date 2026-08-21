@@ -33,11 +33,7 @@ export default async function ClientRecordPage({
         All clients
       </Link>
 
-      <PageHeading
-        eyebrow="Client"
-        title={client.name}
-        description={client.website ?? undefined}
-      />
+      <PageHeading title={client.name} />
 
       <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="space-y-4">

@@ -11,6 +11,8 @@ export type Viewer = {
   id: string;
   email: string;
   fullName: string;
+  displayName: string | null;
+  avatarPath: string | null;
   role: AppRole;
   initials: string;
 };
@@ -26,7 +28,9 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
 
   const { data: profile, error: profileError } = await supabase
     .from("app_profiles")
-    .select("id, full_name, role, is_active, archived_at")
+    .select(
+      "id, full_name, display_name, avatar_path, role, is_active, archived_at",
+    )
     .eq("id", claims.sub)
     .eq("is_active", true)
     .is("archived_at", null)
@@ -35,13 +39,18 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
   if (profileError || !profile) return null;
 
   const fullName = String(profile.full_name);
+  const displayName = profile.display_name
+    ? String(profile.display_name)
+    : null;
 
   return {
     id: String(profile.id),
     email: typeof claims.email === "string" ? claims.email : "",
     fullName,
+    displayName,
+    avatarPath: profile.avatar_path ? String(profile.avatar_path) : null,
     role: profile.role as AppRole,
-    initials: fullName
+    initials: (displayName ?? fullName)
       .split(/\s+/)
       .slice(0, 2)
       .map((part) => part[0])

@@ -1,10 +1,10 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/data/auth";
+import { baseUrl } from "@/lib/invites/base-url";
 import { createClient } from "@/lib/supabase/server";
 import {
   adminConfigured,
@@ -56,19 +56,6 @@ const DOCUMENT_MIME = [
 function refresh(profileId?: string) {
   revalidatePath("/team");
   if (profileId) revalidatePath(`/team/${profileId}`);
-}
-
-async function baseUrl() {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(
-    /\/$/,
-    "",
-  );
-  if (configured) return configured;
-
-  const headerList = await headers();
-  const host = headerList.get("host") ?? "";
-  const scheme = host.startsWith("localhost") ? "http" : "https";
-  return `${scheme}://${host}`;
 }
 
 async function addressIsTaken(email: string) {

@@ -16,11 +16,7 @@ export default async function TeamPage() {
 
   return (
     <div className="mx-auto max-w-[1480px]">
-      <PageHeading
-        eyebrow="People"
-        title="Team"
-        action={<AddMember />}
-      />
+      <PageHeading title="Team" action={<AddMember />} />
 
       {active.length ? (
         <TeamList members={active} />

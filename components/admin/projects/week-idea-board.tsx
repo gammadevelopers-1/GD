@@ -37,6 +37,7 @@ export function WeekIdeaBoard({
   updatedAt,
   updatedBy,
   expanded,
+  workOpen,
   onExpandedChange,
   onOpenWork,
   save,
@@ -54,6 +55,7 @@ export function WeekIdeaBoard({
   updatedAt: string | null;
   updatedBy: string | null;
   expanded: boolean;
+  workOpen: boolean;
   onExpandedChange: (value: boolean) => void;
   onOpenWork: () => void;
   save: (weekId: string, doc: string) => Promise<SimpleFormState>;
@@ -92,13 +94,13 @@ export function WeekIdeaBoard({
   }, [flush, unsaved]);
 
   useEffect(() => {
-    if (!expanded) return;
+    if (!expanded || workOpen) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onExpandedChange(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [expanded, onExpandedChange]);
+  }, [expanded, workOpen, onExpandedChange]);
 
   return (
     <div
@@ -107,7 +109,7 @@ export function WeekIdeaBoard({
       aria-modal={expanded || undefined}
       className={cn(
         "relative flex flex-col overflow-hidden border border-black/[0.07] bg-white",
-        expanded ? "fixed inset-0 z-50 rounded-none" : "h-128 rounded-xl",
+        expanded ? "fixed inset-0 z-50 rounded-none" : "min-h-128 rounded-xl",
       )}
     >
       <div className="flex shrink-0 items-center gap-2 border-b border-black/[0.07] bg-[#f1f1ea] px-3 py-1.5">
@@ -164,24 +166,22 @@ export function WeekIdeaBoard({
         />
       </div>
 
-      {expanded ? null : (
-        <button
-          type="button"
-          onClick={onOpenWork}
-          title="Open the Work Board"
-          className="group absolute top-1/2 right-0 z-10 flex -translate-y-1/2 items-center gap-2 rounded-l-xl bg-[#15181b] py-4 pr-2 pl-2 text-white shadow-[0_10px_30px_rgba(20,23,26,0.2)] transition hover:pr-3 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/60 focus-visible:outline-none"
-        >
-          <ChevronLeft className="size-3.5 shrink-0 text-[#2fe85c] transition group-hover:-translate-x-0.5" />
-          <span className="text-[11px] font-semibold tracking-[0.04em] [writing-mode:vertical-rl]">
-            Work Board
+      <button
+        type="button"
+        onClick={onOpenWork}
+        title="Open the Work Board"
+        className="group absolute top-1/2 right-0 z-10 flex -translate-y-1/2 items-center gap-2 rounded-l-xl bg-[#15181b] py-4 pr-2 pl-2 text-white shadow-[0_10px_30px_rgba(20,23,26,0.2)] transition hover:pr-3 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/60 focus-visible:outline-none"
+      >
+        <ChevronLeft className="size-3.5 shrink-0 text-[#2fe85c] transition group-hover:-translate-x-0.5" />
+        <span className="text-[11px] font-semibold tracking-[0.04em] [writing-mode:vertical-rl]">
+          Work Board
+        </span>
+        {openTasks ? (
+          <span className="rounded-full bg-[#2fe85c]/20 px-1 py-0.5 font-mono text-[9px] text-[#2fe85c]">
+            {openTasks}
           </span>
-          {openTasks ? (
-            <span className="rounded-full bg-[#2fe85c]/20 px-1 py-0.5 font-mono text-[9px] text-[#2fe85c]">
-              {openTasks}
-            </span>
-          ) : null}
-        </button>
-      )}
+        ) : null}
+      </button>
 
       {workBoard}
     </div>

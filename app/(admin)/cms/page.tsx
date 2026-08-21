@@ -10,11 +10,7 @@ export default async function CmsPage() {
   const pages = await getCmsPages();
   return (
     <div className="mx-auto max-w-[1480px]">
-      <PageHeading
-        eyebrow="Public content boundary"
-        title="CMS"
-        description="Only published CMS records can be read by the marketing site. Internal app tables remain unreachable to anonymous visitors."
-      />
+      <PageHeading title="CMS" />
       <ComingSoon
         title="CMS authoring and publishing"
         description="Content records can be listed today, but the writing workflow is not ready. Drafting, previewing, publishing and revision history will arrive here."

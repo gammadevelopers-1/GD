@@ -14,12 +14,7 @@ export default async function ClientsPage() {
 
   return (
     <div className="mx-auto max-w-[1480px]">
-      <PageHeading
-        eyebrow="Relationships"
-        title="Clients"
-        description="Companies, the people we speak with and every project connected to them."
-        action={<AddClient />}
-      />
+      <PageHeading title="Clients" action={<AddClient />} />
 
       {clients.length ? (
         <div className="space-y-8">

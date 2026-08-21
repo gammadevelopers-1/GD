@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { isProjectTab, projectTabHref } from "@/lib/projects/tabs";
 import { requireRole } from "@/data/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -142,7 +143,7 @@ export async function updateProject(
 
   const { data: before } = await supabase
     .from("app_projects")
-    .select("status")
+    .select("status, public_id")
     .eq("id", projectId)
     .maybeSingle();
 
@@ -201,6 +202,16 @@ export async function updateProject(
 
   refresh();
 
+  const from = String(formData.get("from") ?? "");
+  if (before?.public_id) {
+    redirect(
+      projectTabHref(
+        String(before.public_id),
+        isProjectTab(from) ? from : "overview",
+      ),
+    );
+  }
+
   return {
     status: "success",
     message: "Project saved.",
@@ -218,7 +229,7 @@ export async function setProjectStatus(formData: FormData) {
   const supabase = await createClient();
   const { data: before } = await supabase
     .from("app_projects")
-    .select("status")
+    .select("status, public_id")
     .eq("id", projectId)
     .maybeSingle();
 

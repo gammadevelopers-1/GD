@@ -1,9 +1,9 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/data/auth";
+import { baseUrl } from "@/lib/invites/base-url";
 import { createClient } from "@/lib/supabase/server";
 import {
   adminConfigured,
@@ -15,7 +15,11 @@ import {
 import { generatePassword } from "@/lib/portal/password";
 import { sendEmail } from "@/lib/notifications/send";
 import { withInviteLink } from "@/lib/invites/email";
-import { buildClientInviteEmail } from "@/lib/clients/invite-email";
+import {
+  buildClientInviteEmail,
+  buildClientReturnEmail,
+  withSignInLink,
+} from "@/lib/clients/invite-email";
 import {
   type SimpleFormState,
   formError,
@@ -34,19 +38,6 @@ function refresh(clientId?: string) {
   if (clientId) revalidatePath(`/clients/${clientId}`);
 }
 
-async function baseUrl() {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(
-    /\/$/,
-    "",
-  );
-  if (configured) return configured;
-
-  const headerList = await headers();
-  const host = headerList.get("host") ?? "";
-  const scheme = host.startsWith("localhost") ? "http" : "https";
-  return `${scheme}://${host}`;
-}
-
 function readCompany(formData: FormData) {
   return {
     name: String(formData.get("name") ?? "")
@@ -55,6 +46,38 @@ function readCompany(formData: FormData) {
     website: String(formData.get("website") ?? "").trim() || null,
     notes: String(formData.get("notes") ?? "").trim() || null,
   };
+}
+
+function readNewContacts(formData: FormData) {
+  const rows: Array<{
+    full_name: string;
+    email: string | null;
+    phone: string | null;
+    job_title: string | null;
+    is_primary: boolean;
+  }> = [];
+
+  for (let index = 0; index < 12; index += 1) {
+    const fullName = String(formData.get(`contactName${index}`) ?? "")
+      .trim()
+      .slice(0, 120);
+    if (!fullName) continue;
+
+    const email = String(formData.get(`contactEmail${index}`) ?? "")
+      .trim()
+      .toLowerCase();
+
+    rows.push({
+      full_name: fullName,
+      email: email || null,
+      phone: String(formData.get(`contactPhone${index}`) ?? "").trim() || null,
+      job_title:
+        String(formData.get(`contactTitle${index}`) ?? "").trim() || null,
+      is_primary: rows.length === 0,
+    });
+  }
+
+  return rows;
 }
 
 export async function createClientCompany(
@@ -66,10 +89,40 @@ export async function createClientCompany(
 
   if (values.name.length < 2) return formError("Give the client a name.");
 
-  const supabase = await createClient();
-  const { error } = await supabase.from("app_clients").insert(values);
+  const contacts = readNewContacts(formData);
+  const badEmail = contacts.find(
+    (contact) => contact.email && !EMAIL.test(contact.email),
+  );
+  if (badEmail) {
+    return formError(`${badEmail.email} is not a valid email address.`);
+  }
 
-  if (error) return formError("That client could not be saved.");
+  const supabase = await createClient();
+  const { data: created, error } = await supabase
+    .from("app_clients")
+    .insert(values)
+    .select("id")
+    .maybeSingle();
+
+  if (error || !created) return formError("That client could not be saved.");
+
+  if (contacts.length) {
+    const { error: contactError } = await supabase
+      .from("app_client_contacts")
+      .insert(
+        contacts.map((contact) => ({
+          ...contact,
+          client_id: String(created.id),
+        })),
+      );
+
+    if (contactError) {
+      refresh();
+      return formError(
+        `${values.name} was added, but the contacts did not save. Add them from the client record.`,
+      );
+    }
+  }
 
   refresh();
   return formSuccess(`${values.name} was added.`);
@@ -263,20 +316,122 @@ async function ensureClientAccount(
   return { ok: true, id: created.id };
 }
 
+type Recipient = { email: string; fullName: string; accountId?: string };
+
+function readRecipients(formData: FormData): Recipient[] {
+  const found = new Map<string, Recipient>();
+
+  for (const raw of formData.getAll("contact")) {
+    const [email, ...rest] = String(raw).split("|");
+    const address = email.trim().toLowerCase();
+    if (!EMAIL.test(address)) continue;
+    found.set(address, {
+      email: address,
+      fullName: rest.join("|").trim() || address,
+    });
+  }
+
+  for (const raw of formData.getAll("accountId")) {
+    const value = String(raw);
+    if (isUuid(value))
+      found.set(value, { email: "", fullName: "", accountId: value });
+  }
+
+  const email = String(formData.get("email") ?? "")
+    .trim()
+    .toLowerCase();
+  const fullName = String(formData.get("fullName") ?? "")
+    .trim()
+    .slice(0, 120);
+
+  if (email && EMAIL.test(email)) {
+    found.set(email, { email, fullName: fullName || email });
+  }
+
+  return [...found.values()];
+}
+
+async function sendProjectInvite(
+  recipient: { id: string; email: string; fullName: string },
+  project: { name: string },
+  invitedBy: string,
+  override: { subject: string; body: string } | null,
+): Promise<
+  | { ok: true; returning: boolean }
+  | { ok: false; message: string; link?: string }
+> {
+  const supabase = await createClient();
+
+  const { data: account } = await supabase
+    .from("app_client_users")
+    .select("activated_at")
+    .eq("id", recipient.id)
+    .maybeSingle();
+
+  const returning = Boolean(account?.activated_at);
+
+  if (returning) {
+    const draft = buildClientReturnEmail({
+      fullName: recipient.fullName,
+      projectName: project.name,
+      invitedBy,
+    });
+    const result = await sendEmail({
+      to: recipient.email,
+      subject: override?.subject || draft.subject,
+      body: withSignInLink(
+        override?.body || draft.body,
+        `${await baseUrl()}/portal/sign-in`,
+      ),
+    });
+
+    if (!result.sent) {
+      return { ok: false, message: recipient.email };
+    }
+    return { ok: true, returning: true };
+  }
+
+  const token = await generatePasswordToken(recipient.email);
+  if (!token.ok) return { ok: false, message: recipient.email };
+
+  const link = `${await baseUrl()}/set-password?token=${encodeURIComponent(token.token)}&email=${encodeURIComponent(recipient.email)}&id=${recipient.id}&kind=client`;
+
+  await supabase
+    .from("app_client_users")
+    .update({ password_link_pending: true })
+    .eq("id", recipient.id);
+
+  const draft = buildClientInviteEmail({
+    fullName: recipient.fullName,
+    projectName: project.name,
+    invitedBy,
+  });
+
+  const result = await sendEmail({
+    to: recipient.email,
+    subject: override?.subject || draft.subject,
+    body: withInviteLink(override?.body || draft.body, link),
+  });
+
+  if (!result.sent) return { ok: false, message: recipient.email, link };
+
+  await supabase
+    .from("app_client_users")
+    .update({ invited_at: new Date().toISOString() })
+    .eq("id", recipient.id);
+
+  return { ok: true, returning: false };
+}
+
 export async function inviteClientToProject(
   _state: ClientInviteState,
   formData: FormData,
 ): Promise<ClientInviteState> {
   const viewer = await requireRole(["owner"]);
   const projectId = String(formData.get("projectId") ?? "");
-  const existingAccountId = String(formData.get("clientUserId") ?? "");
-  const fullName = String(formData.get("fullName") ?? "")
-    .trim()
-    .slice(0, 120);
-  const email = String(formData.get("email") ?? "")
-    .trim()
-    .toLowerCase();
+  const clientId = String(formData.get("clientId") ?? "");
   const canEditMilestones = formData.get("canEditMilestones") === "on";
+  const saveAsContact = formData.get("saveAsContact") === "on";
 
   if (!isUuid(projectId)) return formError("That project was not found.");
   if (!adminConfigured()) {
@@ -284,6 +439,10 @@ export async function inviteClientToProject(
       "SUPABASE_SECRET_KEY is not set, so client accounts cannot be created yet.",
     );
   }
+
+  const recipients = readRecipients(formData);
+  if (!recipients.length)
+    return formError("Choose at least one person to invite.");
 
   const supabase = await createClient();
 
@@ -295,95 +454,124 @@ export async function inviteClientToProject(
 
   if (!project) return formError("That project was not found.");
 
-  let accountId: string;
-  let recipient: string;
-  let recipientName: string;
+  const override =
+    recipients.length === 1 && formData.get("subject")
+      ? {
+          subject: String(formData.get("subject") ?? "").trim(),
+          body: String(formData.get("body") ?? "").trim(),
+        }
+      : null;
 
-  if (isUuid(existingAccountId)) {
-    const { data: account } = await supabase
-      .from("app_client_users")
-      .select("id, email, full_name")
-      .eq("id", existingAccountId)
-      .is("archived_at", null)
-      .maybeSingle();
+  let sent = 0;
+  let returning = 0;
+  const failed: string[] = [];
+  let fallbackLink: string | undefined;
 
-    if (!account) return formError("That client account was not found.");
-    accountId = String(account.id);
-    recipient = String(account.email);
-    recipientName = account.full_name ? String(account.full_name) : recipient;
-  } else {
-    if (!EMAIL.test(email)) return formError("Enter a valid email address.");
-    if (fullName.length < 2) return formError("Enter the client's name.");
+  for (const recipient of recipients) {
+    let resolved: { id: string; email: string; fullName: string };
 
-    const ensured = await ensureClientAccount(email, fullName, viewer.id);
-    if (!ensured.ok) return formError(ensured.message);
+    if (recipient.accountId) {
+      const { data: account } = await supabase
+        .from("app_client_users")
+        .select("id, email, full_name")
+        .eq("id", recipient.accountId)
+        .is("archived_at", null)
+        .maybeSingle();
 
-    accountId = ensured.id;
-    recipient = email;
-    recipientName = fullName;
-  }
+      if (!account) {
+        failed.push("an account that no longer exists");
+        continue;
+      }
+      resolved = {
+        id: String(account.id),
+        email: String(account.email),
+        fullName: account.full_name
+          ? String(account.full_name)
+          : String(account.email),
+      };
+    } else {
+      const ensured = await ensureClientAccount(
+        recipient.email,
+        recipient.fullName,
+        viewer.id,
+      );
+      if (!ensured.ok) {
+        failed.push(recipient.email);
+        continue;
+      }
+      resolved = {
+        id: ensured.id,
+        email: recipient.email,
+        fullName: recipient.fullName,
+      };
 
-  const { error: linkError } = await supabase
-    .from("app_project_client_access")
-    .upsert(
-      {
-        project_id: projectId,
-        client_user_id: accountId,
-        can_edit_milestones: canEditMilestones,
-        granted_by: viewer.id,
-        granted_at: new Date().toISOString(),
-        revoked_at: null,
-        revoked_by: null,
-      },
-      { onConflict: "project_id,client_user_id" },
+      if (saveAsContact && isUuid(clientId)) {
+        await supabase.from("app_client_contacts").insert({
+          client_id: clientId,
+          full_name: recipient.fullName,
+          email: recipient.email,
+        });
+      }
+    }
+
+    const { error: linkError } = await supabase
+      .from("app_project_client_access")
+      .upsert(
+        {
+          project_id: projectId,
+          client_user_id: resolved.id,
+          can_edit_milestones: canEditMilestones,
+          granted_by: viewer.id,
+          granted_at: new Date().toISOString(),
+          revoked_at: null,
+          revoked_by: null,
+        },
+        { onConflict: "project_id,client_user_id" },
+      );
+
+    if (linkError) {
+      failed.push(resolved.email);
+      continue;
+    }
+
+    const outcome = await sendProjectInvite(
+      resolved,
+      { name: String(project.name) },
+      viewer.fullName,
+      override,
     );
 
-  if (linkError) return formError("The project could not be linked.");
+    if (outcome.ok) {
+      sent += 1;
+      if (outcome.returning) returning += 1;
+    } else {
+      failed.push(outcome.message);
+      if (outcome.link) fallbackLink = outcome.link;
+    }
+  }
 
-  const token = await generatePasswordToken(recipient);
-  if (!token.ok) return formError(token.message);
+  refresh(isUuid(clientId) ? clientId : undefined);
 
-  const link = `${await baseUrl()}/set-password?token=${encodeURIComponent(token.token)}&email=${encodeURIComponent(recipient)}&id=${accountId}&kind=client`;
-
-  await supabase
-    .from("app_client_users")
-    .update({ password_link_pending: true })
-    .eq("id", accountId);
-
-  const draft = buildClientInviteEmail({
-    fullName: recipientName,
-    projectName: String(project.name),
-    invitedBy: viewer.fullName,
-  });
-
-  const subject = String(formData.get("subject") ?? "").trim() || draft.subject;
-  const body = String(formData.get("body") ?? "").trim() || draft.body;
-
-  const result = await sendEmail({
-    to: recipient,
-    subject,
-    body: withInviteLink(body, link),
-  });
-
-  if (!result.sent) {
-    refresh();
+  if (!sent) {
     return {
       ...formError(
-        result.reason === "not-configured"
-          ? "Email is not configured, so nothing was sent. Send this link yourself."
-          : "The invitation could not be sent. Send this link yourself.",
+        `Nothing was sent to ${failed.join(", ")}. Send the link yourself.`,
       ),
-      link,
+      link: fallbackLink,
     };
   }
 
-  await supabase
-    .from("app_client_users")
-    .update({ invited_at: new Date().toISOString() })
-    .eq("id", accountId);
+  const parts = [
+    `${sent} invitation${sent === 1 ? "" : "s"} sent`,
+    returning
+      ? `${returning} already had a password and were sent a sign-in link`
+      : null,
+    failed.length ? `${failed.join(", ")} failed` : null,
+  ].filter(Boolean);
 
-  refresh();
-  return formSuccess(`Invitation sent to ${recipient}.`);
+  return failed.length
+    ? { ...formError(parts.join(". ") + "."), link: fallbackLink }
+    : formSuccess(parts.join(". ") + ".");
 }
 
 export async function setClientAccountArchived(formData: FormData) {

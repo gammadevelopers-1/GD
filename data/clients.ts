@@ -38,7 +38,10 @@ export type ClientCompany = {
   activeCount: number;
   primaryContact: string | null;
   primaryEmail: string | null;
+  inviteState: ClientInviteStatus;
 };
+
+export type ClientInviteStatus = "none" | "invited" | "active";
 
 export type ClientRecord = ClientCompany & {
   contacts: ClientContact[];
@@ -79,6 +82,8 @@ export const getClientCompanies = cache(
         .is("archived_at", null),
     ]);
 
+    const inviteStates = await inviteStatesByClient(projectsResult.data ?? []);
+
     return (clientsResult.data ?? []).map((client) => {
       const projects = (projectsResult.data ?? []).filter(
         (project) => String(project.client_id) === String(client.id),
@@ -101,10 +106,60 @@ export const getClientCompanies = cache(
         ).length,
         primaryContact: primary ? String(primary.full_name) : null,
         primaryEmail: primary?.email ? String(primary.email) : null,
+        inviteState: inviteStates.get(String(client.id)) ?? "none",
       };
     });
   },
 );
+
+async function inviteStatesByClient(
+  projects: Array<{ id: unknown; client_id: unknown }>,
+): Promise<Map<string, ClientInviteStatus>> {
+  const states = new Map<string, ClientInviteStatus>();
+  const owned = projects.filter((project) => project.client_id);
+  if (!owned.length) return states;
+
+  const supabase = await createClient();
+  const { data: grants } = await supabase
+    .from("app_project_client_access")
+    .select("project_id, client_user_id")
+    .in(
+      "project_id",
+      owned.map((project) => String(project.id)),
+    )
+    .is("revoked_at", null);
+
+  const rows = grants ?? [];
+  if (!rows.length) return states;
+
+  const { data: people } = await supabase
+    .from("app_client_users")
+    .select("id, activated_at, archived_at")
+    .in(
+      "id",
+      rows.map((row) => String(row.client_user_id)),
+    );
+
+  const byAccount = new Map(
+    (people ?? []).map((person) => [String(person.id), person]),
+  );
+  const clientByProject = new Map(
+    owned.map((project) => [String(project.id), String(project.client_id)]),
+  );
+
+  for (const row of rows) {
+    const person = byAccount.get(String(row.client_user_id));
+    if (!person || person.archived_at) continue;
+
+    const clientId = clientByProject.get(String(row.project_id));
+    if (!clientId) continue;
+
+    if (states.get(clientId) === "active") continue;
+    states.set(clientId, person.activated_at ? "active" : "invited");
+  }
+
+  return states;
+}
 
 export const getClientRecord = cache(
   async (clientId: string, viewer: Viewer): Promise<ClientRecord | null> => {
@@ -157,6 +212,11 @@ export const getClientRecord = cache(
       ).length,
       primaryContact: primary ? String(primary.full_name) : null,
       primaryEmail: primary?.email ? String(primary.email) : null,
+      inviteState: accounts.some((account) => account.state === "active")
+        ? "active"
+        : accounts.length
+          ? "invited"
+          : "none",
       contacts: contacts.map((contact) => ({
         id: String(contact.id),
         fullName: String(contact.full_name),
@@ -254,7 +314,18 @@ async function accountsForProjects(
     .sort((a, b) => a.fullName.localeCompare(b.fullName));
 }
 
+export type InviteContact = {
+  id: string;
+  fullName: string;
+  email: string;
+  jobTitle: string | null;
+  hasAccount: boolean;
+  onThisProject: boolean;
+};
+
 export type ProjectInviteContext = {
+  clientId: string | null;
+  contacts: InviteContact[];
   suggestion: { fullName: string; email: string } | null;
   accounts: Array<{
     id: string;
@@ -266,7 +337,9 @@ export type ProjectInviteContext = {
 
 export const getProjectInviteContext = cache(
   async (projectId: string, viewer: Viewer): Promise<ProjectInviteContext> => {
-    if (viewer.role !== "owner") return { suggestion: null, accounts: [] };
+    if (viewer.role !== "owner") {
+      return { clientId: null, contacts: [], suggestion: null, accounts: [] };
+    }
 
     const supabase = await createClient();
 
@@ -292,26 +365,59 @@ export const getProjectInviteContext = cache(
       : { data: [] };
 
     let suggestion: ProjectInviteContext["suggestion"] = null;
+    let contacts: InviteContact[] = [];
 
     if (project?.client_id) {
-      const { data: contacts } = await supabase
+      const { data: rows } = await supabase
         .from("app_client_contacts")
-        .select("full_name, email, is_primary")
+        .select("id, full_name, email, job_title, is_primary")
         .eq("client_id", String(project.client_id))
         .is("archived_at", null)
         .not("email", "is", null)
-        .order("is_primary", { ascending: false });
+        .order("is_primary", { ascending: false })
+        .order("full_name");
 
-      const first = (contacts ?? [])[0];
-      if (first?.email) {
-        suggestion = {
-          fullName: String(first.full_name),
-          email: String(first.email),
+      const addresses = (rows ?? [])
+        .map((row) => String(row.email).toLowerCase())
+        .filter(Boolean);
+
+      const { data: accounts } = addresses.length
+        ? await supabase
+            .from("app_client_users")
+            .select("id, email")
+            .in("email", addresses)
+        : { data: [] };
+
+      const accountByEmail = new Map(
+        (accounts ?? []).map((account) => [
+          String(account.email).toLowerCase(),
+          String(account.id),
+        ]),
+      );
+      const grantedSet = new Set(grantedIds);
+
+      contacts = (rows ?? []).map((row) => {
+        const address = String(row.email).toLowerCase();
+        const accountId = accountByEmail.get(address);
+        return {
+          id: String(row.id),
+          fullName: String(row.full_name),
+          email: address,
+          jobTitle: row.job_title ? String(row.job_title) : null,
+          hasAccount: Boolean(accountId),
+          onThisProject: Boolean(accountId && grantedSet.has(accountId)),
         };
+      });
+
+      const first = contacts[0];
+      if (first) {
+        suggestion = { fullName: first.fullName, email: first.email };
       }
     }
 
     return {
+      clientId: project?.client_id ? String(project.client_id) : null,
+      contacts,
       suggestion,
       accounts: (people ?? []).map((person) => ({
         id: String(person.id),

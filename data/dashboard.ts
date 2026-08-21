@@ -17,11 +17,24 @@ export type DashboardProject = {
   progress: number;
 };
 
+export type Trend = {
+  current: number;
+  previous: number;
+};
+
+export type DeliveryWeek = {
+  label: string;
+  done: number;
+  total: number;
+};
+
 export type DashboardData = {
   projects: DashboardProject[];
   activeCount: number;
   dueSoonCount: number;
   overdueMilestones: number;
+  shipped: Trend;
+  delivery: DeliveryWeek[];
   financials: null | {
     revenuePkr: number;
     revenueUsd: number;
@@ -97,15 +110,15 @@ export async function getDashboardData(viewer: Viewer): Promise<DashboardData> {
 
   const weekIds = (weeksResult.data ?? []).map((week) => String(week.id));
   let overdueMilestones = 0;
-  let itemRows: Array<{ milestone_week_id: string; is_done: boolean }> = [];
+  let itemRows: Array<{ milestone_week_id: string; status: string }> = [];
 
   if (weekIds.length) {
     const { data } = await supabase
-      .from("app_milestone_items")
-      .select("milestone_week_id, is_done")
+      .from("app_milestone_cards")
+      .select("milestone_week_id, status")
       .in("milestone_week_id", weekIds)
       .is("archived_at", null)
-      .eq("is_done", false);
+      .neq("status", "completed");
     itemRows = (data ?? []) as typeof itemRows;
     overdueMilestones = itemRows.length;
   }
@@ -130,8 +143,8 @@ export async function getDashboardData(viewer: Viewer): Promise<DashboardData> {
 
     if (allWeekIds.length) {
       const { data: allItems } = await supabase
-        .from("app_milestone_items")
-        .select("milestone_week_id, is_done")
+        .from("app_milestone_cards")
+        .select("milestone_week_id, status")
         .in("milestone_week_id", allWeekIds)
         .is("archived_at", null);
 
@@ -139,7 +152,7 @@ export async function getDashboardData(viewer: Viewer): Promise<DashboardData> {
         const projectId = weekProject.get(String(item.milestone_week_id));
         if (!projectId) continue;
         totalByProject.set(projectId, (totalByProject.get(projectId) ?? 0) + 1);
-        if (!item.is_done) {
+        if (String(item.status) !== "completed") {
           openByProject.set(projectId, (openByProject.get(projectId) ?? 0) + 1);
         }
       }
@@ -162,6 +175,46 @@ export async function getDashboardData(viewer: Viewer): Promise<DashboardData> {
       progress: total ? Math.round(((total - open) / total) * 100) : 0,
     };
   });
+
+  const dayMs = 24 * 60 * 60 * 1000;
+  const weekAgo = new Date(now.getTime() - 7 * dayMs);
+  const fortnightAgo = new Date(now.getTime() - 14 * dayMs);
+
+  const { data: completedRows } = await supabase
+    .from("app_milestone_cards")
+    .select("completed_at")
+    .eq("status", "completed")
+    .not("completed_at", "is", null)
+    .gte("completed_at", new Date(now.getTime() - 42 * dayMs).toISOString())
+    .is("archived_at", null);
+
+  const completions = (completedRows ?? [])
+    .map((row) => new Date(String(row.completed_at)).getTime())
+    .filter((value) => Number.isFinite(value));
+
+  const shipped: Trend = {
+    current: completions.filter((at) => at >= weekAgo.getTime()).length,
+    previous: completions.filter(
+      (at) => at >= fortnightAgo.getTime() && at < weekAgo.getTime(),
+    ).length,
+  };
+
+  const delivery: DeliveryWeek[] = [];
+  for (let back = 5; back >= 0; back -= 1) {
+    const end = new Date(now.getTime() - back * 7 * dayMs);
+    const start = new Date(end.getTime() - 7 * dayMs);
+    const done = completions.filter(
+      (at) => at >= start.getTime() && at < end.getTime(),
+    ).length;
+    delivery.push({
+      label: back === 0 ? "Now" : `-${back}w`,
+      done,
+      total: done,
+    });
+  }
+
+  const peak = Math.max(1, ...delivery.map((week) => week.done));
+  for (const week of delivery) week.total = peak;
 
   let financials: DashboardData["financials"] = null;
 
@@ -214,6 +267,8 @@ export async function getDashboardData(viewer: Viewer): Promise<DashboardData> {
 
   return {
     projects,
+    shipped,
+    delivery,
     activeCount: projects.length,
     dueSoonCount: projects.filter((project) => {
       if (!project.dueOn) return false;

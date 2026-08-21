@@ -8,6 +8,8 @@ const protectedRoots = [
   "/team",
   "/clients",
   "/cms",
+  "/profile",
+  "/settings",
 ];
 
 function isProtectedPath(pathname: string) {

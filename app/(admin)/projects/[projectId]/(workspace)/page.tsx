@@ -35,7 +35,10 @@ import {
   formatDate,
   formatMoney,
 } from "@/lib/projects/format";
-import { PROJECT_STATUS_CHIP, PROJECT_STATUS_LABEL } from "@/lib/projects/status";
+import {
+  PROJECT_STATUS_CHIP,
+  PROJECT_STATUS_LABEL,
+} from "@/lib/projects/status";
 import { CARD_STATUS_CHIP, CARD_STATUS_LABEL } from "@/lib/projects/board";
 import { cn } from "@/lib/utils";
 import {
@@ -497,7 +500,6 @@ function missingInformation(
 
   return gaps;
 }
-
 
 function Panel({
   title,
