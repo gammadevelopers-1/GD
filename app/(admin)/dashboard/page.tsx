@@ -2,7 +2,7 @@ import Link from "next/link";
 import {
   ArrowUpRight,
   CalendarClock,
-  CheckCircle2,
+  CalendarOff,
   CircleDollarSign,
   Clock3,
   FolderKanban,
@@ -12,7 +12,6 @@ import {
 import { PageHeading } from "@/components/admin/page-heading";
 import { KpiCard } from "@/components/admin/kpi-card";
 import { DeliveryPulse } from "@/components/admin/delivery-pulse";
-import { cn } from "@/lib/utils";
 import { requireViewer, type Viewer } from "@/data/auth";
 import {
   getDashboardData,
@@ -26,6 +25,8 @@ import {
 } from "@/lib/projects/status";
 
 export const metadata = { title: "Overview · Internal platform" };
+
+const ACTIVE_STATUSES = "discovery,building,review,live,retainer";
 
 const statusLabels = PROJECT_STATUS_LABEL;
 const statusStyles = PROJECT_STATUS_TONE;
@@ -64,62 +65,78 @@ function DashboardView({
       />
 
       <section
-        aria-label="Company signals"
-        className={cn(
-          "grid gap-3 sm:grid-cols-2",
-          data.financials ? "xl:grid-cols-4" : "lg:grid-cols-3",
-        )}
+        aria-label="Needs attention"
+        className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
       >
         <KpiCard
           icon={FolderKanban}
           label={viewer.role === "member" ? "My projects" : "Active projects"}
           value={String(data.activeCount)}
-          note="In delivery now"
-        />
-        <KpiCard
-          icon={CheckCircle2}
-          label="Work closed"
-          value={String(data.shipped.current)}
-          trend={data.shipped}
+          href={`/projects?status=${ACTIVE_STATUSES}`}
+          action="Open the list"
         />
         <KpiCard
           icon={Clock3}
           label="Overdue"
           value={String(data.overdueMilestones)}
           tone={data.overdueMilestones > 0 ? "danger" : "neutral"}
-          note={
-            data.overdueMilestones
-              ? "Left from past weeks"
-              : "Nothing outstanding"
-          }
+          href={data.overdueMilestones ? "/projects?view=table" : undefined}
+          action={data.overdueMilestones ? "See what is behind" : undefined}
+          note={data.overdueMilestones ? undefined : "Nothing outstanding"}
         />
-        {data.financials ? (
-          <KpiCard
-            icon={CircleDollarSign}
-            label="Unpaid"
-            value={formatMoney(data.financials.unpaidPkr, "PKR")}
-            tone={data.financials.unpaidCount > 0 ? "warning" : "neutral"}
-            note={`${data.financials.unpaidCount} invoice${data.financials.unpaidCount === 1 ? "" : "s"} outstanding`}
-          />
-        ) : (
-          <KpiCard
-            icon={CalendarClock}
-            label="Due in 14 days"
-            value={String(data.dueSoonCount)}
-            note={data.dueSoonCount ? "Closing soon" : "Nothing due"}
-          />
-        )}
-      </section>
-
-      <div className="mt-3 grid gap-3 lg:grid-cols-[1.6fr_1fr]">
-        <DeliveryPulse weeks={data.delivery} />
         <KpiCard
           icon={CalendarClock}
           label="Due in 14 days"
           value={String(data.dueSoonCount)}
-          note={data.dueSoonCount ? "Closing soon" : "Nothing due"}
+          href={data.dueSoonCount ? "/projects?view=table" : undefined}
+          action={data.dueSoonCount ? "Check the dates" : undefined}
+          note={data.dueSoonCount ? undefined : "Nothing due"}
         />
-      </div>
+        <KpiCard
+          icon={CalendarOff}
+          label="No plan yet"
+          value={String(data.planlessCount)}
+          tone={data.planlessCount > 0 ? "warning" : "neutral"}
+          href={data.planlessCount ? "/projects?view=table" : undefined}
+          action={data.planlessCount ? "Give them a week" : undefined}
+          note={data.planlessCount ? undefined : "Every project is planned"}
+        />
+      </section>
+
+      {data.financials ? (
+        <section
+          aria-label="Money this month"
+          className="mt-3 grid gap-3 sm:grid-cols-2"
+        >
+          <KpiCard
+            icon={CircleDollarSign}
+            label="Paid this month"
+            value={formatMoney(data.financials.revenuePkr, "PKR")}
+            tone="money"
+            trend={{
+              current: data.financials.revenuePkr,
+              previous: data.financials.revenuePkrPrevious,
+            }}
+            window="vs last month"
+            note={formatMoney(data.financials.revenueUsd, "USD")}
+          />
+          <KpiCard
+            icon={ReceiptText}
+            label="Unpaid"
+            value={formatMoney(data.financials.unpaidPkr, "PKR")}
+            tone={data.financials.overdueCount > 0 ? "danger" : "neutral"}
+            note={
+              data.financials.unpaidCount
+                ? `${data.financials.unpaidCount} invoice${data.financials.unpaidCount === 1 ? "" : "s"}${data.financials.overdueCount ? ` · ${data.financials.overdueCount} past due` : ""}`
+                : "Everything settled"
+            }
+          />
+        </section>
+      ) : null}
+
+      <section aria-label="Recent delivery" className="mt-3">
+        <DeliveryPulse weeks={data.delivery} />
+      </section>
 
       <section className="mt-6 overflow-hidden rounded-[22px] border border-black/[0.07] bg-[#f8f8f3] shadow-[0_12px_40px_rgba(20,23,26,0.035)]">
         <div className="flex items-center justify-between border-b border-black/[0.065] px-4 py-4 sm:px-5 lg:px-6">
@@ -167,54 +184,6 @@ function DashboardView({
           <EmptyProjects owner={viewer.role === "owner"} />
         )}
       </section>
-
-      {data.financials ? (
-        <section className="mt-6 grid gap-4 lg:grid-cols-[1fr_0.72fr]">
-          <div className="rounded-[22px] border border-black/[0.07] bg-[#15181b] p-5 text-white sm:p-6">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="font-mono text-[9px] tracking-[0.14em] text-[#2fe85c] uppercase">
-                  Money waiting
-                </p>
-                <h2 className="mt-3 text-xl font-semibold tracking-[-0.035em]">
-                  Unpaid invoices
-                </h2>
-              </div>
-              <ReceiptText className="size-5 text-white/25" />
-            </div>
-            <div className="mt-8 flex flex-wrap items-end gap-x-7 gap-y-2">
-              <p className="text-3xl font-semibold tracking-[-0.05em]">
-                {formatMoney(data.financials.unpaidPkr, "PKR")}
-              </p>
-              <p className="pb-1 text-sm text-white/40">
-                {formatMoney(data.financials.unpaidUsd, "USD")}
-              </p>
-            </div>
-            <p className="mt-4 text-xs text-white/35">
-              Amounts use the exchange rate stored on each invoice.
-            </p>
-          </div>
-          <div className="rounded-[22px] border border-black/[0.07] bg-[#f8f8f3] p-5 sm:p-6">
-            <p className="font-mono text-[9px] tracking-[0.14em] text-black/35 uppercase">
-              This week
-            </p>
-            <h2 className="mt-3 text-xl font-semibold tracking-[-0.035em]">
-              What needs attention
-            </h2>
-            <div className="mt-6 space-y-3">
-              <Signal
-                label="Overdue milestone items"
-                value={data.overdueMilestones}
-              />
-              <Signal label="Projects due soon" value={data.dueSoonCount} />
-              <Signal
-                label="Unpaid invoices"
-                value={data.financials.unpaidCount}
-              />
-            </div>
-          </div>
-        </section>
-      ) : null}
     </div>
   );
 }
@@ -309,19 +278,6 @@ function EmptyProjects({ owner }: { owner: boolean }) {
             : "Projects assigned to you will appear here."}
         </p>
       </div>
-    </div>
-  );
-}
-
-function Signal({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="flex items-center justify-between rounded-xl bg-black/[0.035] px-3.5 py-3 text-xs">
-      <span className="text-black/52">{label}</span>
-      <span
-        className={`font-mono font-semibold ${value ? "text-amber-700" : "text-[#08743d]"}`}
-      >
-        {value}
-      </span>
     </div>
   );
 }

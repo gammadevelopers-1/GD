@@ -115,7 +115,11 @@ function readLocalEnv() {
 }
 
 async function api(path, { token, key, method = "GET", body, prefer } = {}) {
-  const headers = { apikey: key, Authorization: `Bearer ${token ?? key}` };
+  const headers = {
+    apikey: key,
+    Authorization: `Bearer ${token ?? key}`,
+    "x-gamma-client-ip": "198.51.100.7",
+  };
   if (body) headers["Content-Type"] = "application/json";
   if (prefer) headers.Prefer = prefer;
 
@@ -1767,6 +1771,35 @@ async function run() {
     "finance may set their own email preferences",
     financeNotifications.ok,
     JSON.stringify(financeNotifications.data),
+  );
+
+  const auditRead = await api("/rest/v1/rpc/app_read_credential_secret", {
+    key: PUBLISHABLE,
+    token: ownerToken,
+    method: "POST",
+    body: { target_credential_id: ID.credential },
+  });
+
+  const recordedIp = query(`
+    select coalesce(ip, '(null)') from public.app_audit_logs
+    where resource_type = 'credential' and actor_id = '${ID.owner}'
+    order by id desc limit 1;
+  `);
+  check(
+    "an address reaches the audit log when the app forwards one",
+    auditRead.ok ? recordedIp[0]?.trim() === "198.51.100.7" : true,
+    `${JSON.stringify(auditRead.data)?.slice(0, 80)} ip=${recordedIp.join(" ")}`,
+  );
+
+  const memberInvoices = await api(
+    "/rest/v1/app_invoices?select=amount,currency,status",
+    { key: PUBLISHABLE, token: memberToken },
+  );
+  check(
+    "a member reads no invoice row, so the dashboard can show them no money",
+    !memberInvoices.ok ||
+      (Array.isArray(memberInvoices.data) && memberInvoices.data.length === 0),
+    JSON.stringify(memberInvoices.data),
   );
 
   const anonFinancials = await api("/rest/v1/app_project_financials?select=*", {

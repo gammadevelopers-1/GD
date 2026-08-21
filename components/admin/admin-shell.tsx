@@ -4,24 +4,23 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Building2,
-  CircleDollarSign,
   CircleGauge,
-  ContactRound,
   FilePenLine,
   FolderKanban,
-  Library,
+  LogOut,
   Settings,
   UserRound,
   UsersRound,
 } from "lucide-react";
 import { Mark } from "@/components/layout/mark";
+import { logout } from "@/app/(auth)/login/actions";
 import { AccountMenu } from "@/components/admin/account-menu";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
@@ -86,20 +85,6 @@ const navigation: Array<{
   },
 ];
 
-const plannedNavigation: Array<{
-  label: string;
-  icon: typeof CircleGauge;
-  roles: AppRole[];
-}> = [
-  {
-    label: "Finance",
-    icon: CircleDollarSign,
-    roles: ["owner", "finance"],
-  },
-  { label: "Leads", icon: ContactRound, roles: ["owner"] },
-  { label: "Assets", icon: Library, roles: ["owner", "member"] },
-];
-
 export function AdminShell({
   viewer,
   avatarUrl,
@@ -113,9 +98,6 @@ export function AdminShell({
 }) {
   const pathname = usePathname();
   const items = navigation.filter((item) => item.roles.includes(viewer.role));
-  const plannedItems = plannedNavigation.filter((item) =>
-    item.roles.includes(viewer.role),
-  );
 
   return (
     <TooltipProvider>
@@ -172,30 +154,24 @@ export function AdminShell({
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
-
-            {plannedItems.length ? (
-              <SidebarGroup>
-                <SidebarGroupLabel>Planned</SidebarGroupLabel>
-                <SidebarGroupContent>
-                  <SidebarMenu className="gap-1.5">
-                    {plannedItems.map((item) => (
-                      <SidebarMenuItem key={item.label}>
-                        <SidebarMenuButton
-                          type="button"
-                          size="lg"
-                          tooltip={`${item.label} — planned`}
-                          className="text-sidebar-foreground/30 hover:text-sidebar-foreground/30 active:text-sidebar-foreground/30 cursor-default gap-3 px-3 text-[13.5px] hover:bg-transparent active:bg-transparent [&_svg]:size-[18px]"
-                        >
-                          <item.icon />
-                          <span>{item.label}</span>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
-            ) : null}
           </SidebarContent>
+
+          <SidebarFooter>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <form action={logout}>
+                  <SidebarMenuButton
+                    size="lg"
+                    tooltip="Sign out"
+                    className="text-sidebar-foreground/70 hover:text-sidebar-foreground gap-3 px-3 text-[13.5px] font-medium [&_svg]:size-[18px]"
+                  >
+                    <LogOut />
+                    <span>Sign out</span>
+                  </SidebarMenuButton>
+                </form>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarFooter>
 
           <SidebarRail />
         </Sidebar>

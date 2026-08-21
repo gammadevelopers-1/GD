@@ -487,6 +487,78 @@ export async function grantEnvAccess(
   return formSuccess("Access granted.");
 }
 
+export async function shareEnvGroups(
+  _state: SimpleFormState,
+  formData: FormData,
+): Promise<SimpleFormState> {
+  const viewer = await requireRole(["owner"]);
+  const projectId = String(formData.get("projectId") ?? "");
+  const profileId = String(formData.get("profileId") ?? "");
+  const access = String(formData.get("access") ?? "use");
+  const groupIds = formData
+    .getAll("groupId")
+    .map((value) => String(value))
+    .filter(isUuid);
+
+  if (!isUuid(projectId)) return formError("That project could not be found.");
+  if (!isUuid(profileId)) return formError("Choose who to share them with.");
+  if (!isCredentialAccess(access)) return formError("Choose use or manage.");
+  if (!groupIds.length) return formError("Choose at least one container.");
+
+  const supabase = await createClient();
+
+  const { data: rows, error: readError } = await supabase
+    .from("app_project_credentials")
+    .select("id, env_group_id")
+    .eq("project_id", projectId)
+    .in("env_group_id", groupIds)
+    .is("archived_at", null);
+
+  if (readError) return formError("Those containers could not be read.");
+
+  const credentialIds = (rows ?? []).map((row) => String(row.id));
+  if (!credentialIds.length) {
+    return formError("There is nothing in those containers yet.");
+  }
+
+  let granted = 0;
+  const failed: string[] = [];
+
+  for (const credentialId of credentialIds) {
+    const { error } = await supabase.rpc("app_grant_credential_access", {
+      target_credential_id: credentialId,
+      target_profile_id: profileId,
+      access_level: access,
+    });
+
+    if (error) {
+      failed.push(credentialId);
+      continue;
+    }
+
+    granted += 1;
+    await notifyGrant({
+      credentialId,
+      profileId,
+      access,
+      grantedBy: viewer.fullName,
+    });
+  }
+
+  refresh();
+
+  if (!granted) return formError("Nothing could be shared.");
+
+  const variables = `${granted} variable${granted === 1 ? "" : "s"}`;
+  const containers = `${groupIds.length} container${groupIds.length === 1 ? "" : "s"}`;
+
+  return failed.length
+    ? formError(
+        `${variables} shared from ${containers}. ${failed.length} could not be.`,
+      )
+    : formSuccess(`${variables} shared from ${containers}.`);
+}
+
 export async function revokeEnvAccess(formData: FormData) {
   await requireRole(["owner"]);
   const projectId = String(formData.get("projectId") ?? "");

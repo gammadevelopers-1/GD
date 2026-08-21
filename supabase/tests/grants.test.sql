@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(5);
+select plan(6);
 
 -- Supabase hands anon and authenticated every privilege on every new table in
 -- public, so the question is never "was this granted" but "was it taken back".
@@ -57,6 +57,17 @@ select is(
      )),
   0,
   'every security definer function pins its search_path'
+);
+
+-- The audit log records where a request came from, and says so honestly when
+-- it does not know.
+select is(
+  (select count(*)::int from information_schema.columns
+   where table_schema = 'public'
+     and table_name = 'app_audit_logs'
+     and column_name = 'ip'),
+  1,
+  'the audit log has somewhere to put the address a request came from'
 );
 
 select * from finish();

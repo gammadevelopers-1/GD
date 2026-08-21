@@ -23,6 +23,7 @@ import { saveTechnicalDetails } from "../../../technical-actions";
 import {
   copyEnvValue,
   createEnvGroup,
+  shareEnvGroups,
   deleteEnvFile,
   deleteEnvGroup,
   deleteEnvVariable,
@@ -75,6 +76,7 @@ async function TechnicalSections({ publicId }: { publicId: string }) {
 
   const envActions: EnvActions = {
     createGroup: createEnvGroup,
+    shareGroups: shareEnvGroups,
     renameGroup: renameEnvGroup,
     deleteGroup: deleteEnvGroup,
     saveVariables: saveEnvVariables,

@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { hasSupabaseConfig, getSupabaseConfig } from "@/lib/supabase/config";
+import { AUTH_COOKIE_OPTIONS } from "@/lib/supabase/cookies";
 
 const protectedRoots = [
   "/dashboard",
@@ -49,6 +50,7 @@ export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
   const { url, publishableKey } = getSupabaseConfig();
   const supabase = createServerClient(url, publishableKey, {
+    cookieOptions: AUTH_COOKIE_OPTIONS,
     cookies: {
       getAll: () => request.cookies.getAll(),
       setAll(cookiesToSet) {

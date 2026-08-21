@@ -35,12 +35,16 @@ export type DashboardData = {
   overdueMilestones: number;
   shipped: Trend;
   delivery: DeliveryWeek[];
+  planlessCount: number;
   financials: null | {
     revenuePkr: number;
     revenueUsd: number;
+    revenuePkrPrevious: number;
     unpaidPkr: number;
     unpaidUsd: number;
     unpaidCount: number;
+    overdueCount: number;
+    overduePkr: number;
   };
 };
 
@@ -70,6 +74,11 @@ export async function getDashboardData(viewer: Viewer): Promise<DashboardData> {
   const monthStart = new Date(
     now.getFullYear(),
     now.getMonth(),
+    1,
+  ).toISOString();
+  const previousMonthStart = new Date(
+    now.getFullYear(),
+    now.getMonth() - 1,
     1,
   ).toISOString();
 
@@ -126,6 +135,7 @@ export async function getDashboardData(viewer: Viewer): Promise<DashboardData> {
   const openByProject = new Map<string, number>();
   const totalByProject = new Map<string, number>();
   const projectIds = rawProjects.map((project) => project.id);
+  const projectsWithWeeks = new Set<string>();
 
   if (projectIds.length) {
     const { data: allWeeks } = await supabase
@@ -139,6 +149,9 @@ export async function getDashboardData(viewer: Viewer): Promise<DashboardData> {
         String(week.project_id),
       ]),
     );
+    for (const projectId of weekProject.values()) {
+      projectsWithWeeks.add(projectId);
+    }
     const allWeekIds = [...weekProject.keys()];
 
     if (allWeekIds.length) {
@@ -240,6 +253,11 @@ export async function getDashboardData(viewer: Viewer): Promise<DashboardData> {
           invoice.status === "paid" &&
           invoice.paid_at &&
           invoice.paid_at >= monthStart;
+        const paidLastMonth =
+          invoice.status === "paid" &&
+          invoice.paid_at &&
+          invoice.paid_at >= previousMonthStart &&
+          invoice.paid_at < monthStart;
         const unpaid =
           invoice.status === "sent" || invoice.status === "overdue";
 
@@ -247,16 +265,26 @@ export async function getDashboardData(viewer: Viewer): Promise<DashboardData> {
           result.revenuePkr += pkr;
           result.revenueUsd += usd;
         }
+        if (paidLastMonth) {
+          result.revenuePkrPrevious += pkr;
+        }
         if (unpaid) {
           result.unpaidPkr += pkr;
           result.unpaidUsd += usd;
           result.unpaidCount += 1;
+        }
+        if (invoice.status === "overdue") {
+          result.overdueCount += 1;
+          result.overduePkr += pkr;
         }
         return result;
       },
       {
         revenuePkr: 0,
         revenueUsd: 0,
+        revenuePkrPrevious: 0,
+        overdueCount: 0,
+        overduePkr: 0,
         unpaidPkr: 0,
         unpaidUsd: 0,
         unpaidCount: 0,
@@ -269,6 +297,7 @@ export async function getDashboardData(viewer: Viewer): Promise<DashboardData> {
     projects,
     shipped,
     delivery,
+    planlessCount: projectIds.filter((id) => !projectsWithWeeks.has(id)).length,
     activeCount: projects.length,
     dueSoonCount: projects.filter((project) => {
       if (!project.dueOn) return false;

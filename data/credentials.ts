@@ -36,6 +36,9 @@ export type CredentialAuditEntry = {
   action: string;
   actorId: string | null;
   actor: string;
+  actorEmail: string | null;
+  actorRole: string | null;
+  ip: string | null;
   occurredAt: string;
   detail: string | null;
 };
@@ -75,7 +78,11 @@ export async function getProjectCredentials(
     if (grant.granted_by) profileIds.add(String(grant.granted_by));
   }
 
-  const names = await resolveNames(supabase, [...profileIds]);
+  const names = new Map(
+    [...(await resolvePeople(supabase, [...profileIds]))].map(
+      ([id, person]) => [id, person.name] as const,
+    ),
+  );
 
   const grantsByCredential = new Map<string, CredentialGrant[]>();
   let myAccessById = new Map<string, CredentialAccess>();
@@ -140,7 +147,7 @@ export async function getCredentialAudit(
 
   const { data, error } = await supabase
     .from("app_audit_logs")
-    .select("id, actor_id, action, resource_id, metadata, occurred_at")
+    .select("id, actor_id, action, resource_id, metadata, occurred_at, ip")
     .eq("resource_type", "credential")
     .in("resource_id", [...nameById.keys()])
     .order("occurred_at", { ascending: false })
@@ -157,7 +164,10 @@ export async function getCredentialAudit(
     if (typeof profileId === "string") subjectIds.add(profileId);
   }
 
-  const names = await resolveNames(supabase, [...actorIds, ...subjectIds]);
+  const people = await resolvePeople(supabase, [...actorIds, ...subjectIds]);
+  const names = new Map(
+    [...people].map(([id, person]) => [id, person.name] as const),
+  );
 
   return data.map((row) => {
     const metadata = (row.metadata ?? {}) as Record<string, unknown>;
@@ -188,8 +198,15 @@ export async function getCredentialAudit(
       action: String(row.action),
       actorId: row.actor_id ? String(row.actor_id) : null,
       actor: row.actor_id
-        ? (names.get(String(row.actor_id)) ?? "Unknown")
+        ? (people.get(String(row.actor_id))?.name ?? "Unknown")
         : "System",
+      actorEmail: row.actor_id
+        ? (people.get(String(row.actor_id))?.email ?? null)
+        : null,
+      actorRole: row.actor_id
+        ? (people.get(String(row.actor_id))?.role ?? null)
+        : null,
+      ip: row.ip ? String(row.ip) : null,
       occurredAt: String(row.occurred_at),
       detail: parts.length ? parts.join(" · ") : null,
     };
@@ -198,18 +215,24 @@ export async function getCredentialAudit(
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
-async function resolveNames(supabase: SupabaseClient, ids: string[]) {
+type AuditPerson = { name: string; email: string | null; role: string | null };
+
+async function resolvePeople(supabase: SupabaseClient, ids: string[]) {
   const unique = [...new Set(ids)].filter(Boolean);
-  const names = new Map<string, string>();
-  if (!unique.length) return names;
+  const people = new Map<string, AuditPerson>();
+  if (!unique.length) return people;
 
   const { data } = await supabase
     .from("app_profiles")
-    .select("id, full_name")
+    .select("id, full_name, email, role")
     .in("id", unique);
 
   for (const profile of data ?? []) {
-    names.set(String(profile.id), String(profile.full_name));
+    people.set(String(profile.id), {
+      name: String(profile.full_name),
+      email: profile.email ? String(profile.email) : null,
+      role: profile.role ? String(profile.role) : null,
+    });
   }
-  return names;
+  return people;
 }

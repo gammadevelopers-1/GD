@@ -22,6 +22,10 @@ import {
 import type { CredentialGrant, ProjectCredential } from "@/data/credentials";
 import type { CopyResult } from "@/app/(admin)/projects/env-actions";
 import type { EnvFile, EnvGroup } from "@/data/env";
+import {
+  ShareContainers,
+  type ShareTarget,
+} from "@/components/admin/projects/share-containers";
 import { type SimpleFormState, IDLE_FORM } from "@/lib/projects/form-state";
 import { formatDate } from "@/lib/projects/format";
 import {
@@ -68,6 +72,7 @@ type FormAction = (
 
 export type EnvActions = {
   createGroup: FormAction;
+  shareGroups: FormAction;
   renameGroup: FormAction;
   deleteGroup: FormAction;
   saveVariables: FormAction;
@@ -107,6 +112,7 @@ export function EnvPanel({
 }) {
   const [adding, setAdding] = useState<"none" | "import" | "manual">("none");
   const [targetGroup, setTargetGroup] = useState<string | null>(null);
+  const [sharing, setSharing] = useState<string[] | null>(null);
 
   const byGroup = new Map<string, ProjectCredential[]>();
   for (const variable of variables) {
@@ -123,6 +129,14 @@ export function EnvPanel({
   }));
 
   const defaultGroupId = targetGroup ?? options[0]?.id ?? "";
+
+  const shareTargets: ShareTarget[] = groups
+    .map((group) => ({
+      id: group.id,
+      name: group.name,
+      count: (byGroup.get(group.id) ?? []).length,
+    }))
+    .filter((target) => target.count > 0);
 
   function openAdd(mode: "import" | "manual", groupId?: string) {
     setTargetGroup(groupId ?? null);
@@ -148,6 +162,14 @@ export function EnvPanel({
             </button>
             <button
               type="button"
+              onClick={() => setSharing([])}
+              className={cn(BUTTON_SECONDARY, "h-9 text-xs")}
+            >
+              <Share2 className="size-3.5" />
+              Share containers
+            </button>
+            <button
+              type="button"
               onClick={() => openAdd("manual")}
               disabled={!vaultReady}
               className={cn(BUTTON_SECONDARY, "h-9 text-xs")}
@@ -166,6 +188,18 @@ export function EnvPanel({
         </p>
       ) : null}
 
+      {isOwner && sharing !== null ? (
+        <ShareContainers
+          projectId={projectId}
+          containers={shareTargets}
+          members={members}
+          action={actions.shareGroups}
+          preselected={sharing}
+          open
+          onClose={() => setSharing(null)}
+        />
+      ) : null}
+
       <div className="mt-6 space-y-4">
         {groups.map((group) => (
           <GroupCard
@@ -177,6 +211,7 @@ export function EnvPanel({
             isOwner={isOwner}
             vaultReady={vaultReady}
             actions={actions}
+            onShare={() => setSharing([group.id])}
             onAdd={(mode) => openAdd(mode, group.id)}
           />
         ))}
@@ -234,6 +269,7 @@ function GroupCard({
   vaultReady,
   actions,
   onAdd,
+  onShare,
 }: {
   projectId: string;
   group: EnvGroup;
@@ -243,6 +279,7 @@ function GroupCard({
   vaultReady: boolean;
   actions: EnvActions;
   onAdd: (mode: "import" | "manual") => void;
+  onShare: () => void;
 }) {
   const [open, setOpen] = useState(true);
   const [renaming, setRenaming] = useState(false);
@@ -293,6 +330,16 @@ function GroupCard({
               <Upload className="size-3" />
               Upload
             </button>
+            {variables.length ? (
+              <button
+                type="button"
+                onClick={onShare}
+                aria-label={`Share everything in ${group.name}`}
+                className={ICON_BUTTON}
+              >
+                <Share2 className="size-3.5" />
+              </button>
+            ) : null}
             <button
               type="button"
               onClick={() => setRenaming(true)}
