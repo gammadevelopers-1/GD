@@ -60,6 +60,7 @@ import {
   useAutosave,
 } from "@/components/admin/projects/use-autosave";
 import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
+import { FormDatePicker } from "@/components/common/form-date-picker";
 
 type FormAction = (
   state: SimpleFormState,
@@ -1068,19 +1069,17 @@ function AddWeekForm({
         </label>
         <label className="text-[11px] font-medium text-black/50">
           Starts on
-          <input
+          <FormDatePicker
             name="startsOn"
-            type="date"
-            className={cn(INPUT_SMALL, "mt-1 h-9 w-full")}
+            triggerClassName={cn(INPUT_SMALL, "mt-1 h-9 w-full")}
           />
         </label>
         <label className="text-[11px] font-medium text-black/50">
           Due on
-          <input
+          <FormDatePicker
             name="dueOn"
-            type="date"
             required
-            className={cn(INPUT_SMALL, "mt-1 h-9 w-full")}
+            triggerClassName={cn(INPUT_SMALL, "mt-1 h-9 w-full")}
           />
         </label>
       </div>

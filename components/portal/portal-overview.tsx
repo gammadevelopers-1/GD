@@ -13,6 +13,7 @@ import { formatDate } from "@/lib/projects/format";
 import { PROJECT_STATUS_LABEL } from "@/lib/projects/status";
 import { TONE_SOFT } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Progress } from "@/components/ui/progress";
 
 export function PortalOverview({ portal }: { portal: Portal }) {
   const now = today();
@@ -52,12 +53,12 @@ export function PortalOverview({ portal }: { portal: Portal }) {
                 <span>Overall progress</span>
                 <span className="font-mono">{summary.percent}%</span>
               </div>
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-black/[0.07]">
-                <div
-                  className="h-full rounded-full bg-[#2fe85c] transition-[width] duration-500"
-                  style={{ width: `${summary.percent}%` }}
-                />
-              </div>
+              <Progress
+                value={summary.percent}
+                aria-label="Overall progress"
+                className="mt-2 h-2 bg-black/[0.07]"
+                indicatorClassName="rounded-full bg-[#2fe85c] transition-transform duration-500"
+              />
               <p className="mt-2 text-[11px] text-black/40">
                 {summary.done} of {summary.total} milestones done
               </p>

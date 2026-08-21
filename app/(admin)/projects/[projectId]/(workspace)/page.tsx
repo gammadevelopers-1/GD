@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 import { PanelSkeleton } from "@/components/admin/skeletons";
+import { Progress } from "@/components/ui/progress";
 import {
   type ClientAccessActions,
   ClientAccessPanel,
@@ -215,12 +216,12 @@ function Overview({
               <span>Overall progress</span>
               <span className="font-mono">{project.progress}%</span>
             </div>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-black/[0.07]">
-              <div
-                className={cn("h-full rounded-full", TONE_BAR[signal.tone])}
-                style={{ width: `${project.progress}%` }}
-              />
-            </div>
+            <Progress
+              value={project.progress}
+              aria-label={`${project.name} progress`}
+              className="mt-2 h-2 bg-black/[0.07]"
+              indicatorClassName={cn("rounded-full", TONE_BAR[signal.tone])}
+            />
           </div>
 
           {project.currentWeek ? (

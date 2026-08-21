@@ -32,6 +32,7 @@ import {
   ICON_BUTTON_DANGER,
   INPUT_SMALL,
 } from "@/lib/admin-ui";
+import { FormSelect } from "@/components/common/form-select";
 import { cn } from "@/lib/utils";
 
 export type CredentialOption = { id: string; name: string };
@@ -381,20 +382,25 @@ function BlockFields({
     case "heading":
       return (
         <div className="flex items-center gap-2">
-          <select
-            value={block.level}
-            onChange={(event) =>
+          <FormSelect
+            value={String(block.level)}
+            onValueChange={(value) =>
               onChange({
                 ...block,
-                level: Number(event.target.value) === 3 ? 3 : 2,
+                level: Number(value) === 3 ? 3 : 2,
               })
             }
-            aria-label="Heading level"
-            className={cn(INPUT_SMALL, "h-7 w-14 shrink-0")}
-          >
-            <option value={2}>H2</option>
-            <option value={3}>H3</option>
-          </select>
+            ariaLabel="Heading level"
+            triggerSize="sm"
+            triggerClassName={cn(
+              INPUT_SMALL,
+              "h-7 w-[68px] shrink-0 rounded-lg px-2 text-[11px]",
+            )}
+            options={[
+              { value: "2", label: "H2" },
+              { value: "3", label: "H3" },
+            ]}
+          />
           <AutoTextarea
             value={block.text}
             onChange={(text) => onChange({ ...block, text })}
@@ -472,23 +478,24 @@ function BlockFields({
         >
           <div className="mb-1.5 flex items-center gap-2">
             <Info className="size-3.5 shrink-0 opacity-60" />
-            <select
+            <FormSelect
               value={block.tone}
-              onChange={(event) =>
+              onValueChange={(value) =>
                 onChange({
                   ...block,
-                  tone: event.target.value as CalloutTone,
+                  tone: value as CalloutTone,
                 })
               }
-              aria-label="Callout kind"
-              className="h-6 rounded-md border border-black/10 bg-white/70 px-1.5 text-[10px] font-semibold"
-            >
-              {(["note", "warn", "key"] as CalloutTone[]).map((tone) => (
-                <option key={tone} value={tone}>
-                  {CALLOUT_LABEL[tone]}
-                </option>
-              ))}
-            </select>
+              ariaLabel="Callout kind"
+              triggerSize="sm"
+              triggerClassName="h-7 w-[104px] rounded-lg border-black/10 bg-white/75 px-2 text-[10px] font-semibold shadow-sm"
+              options={(["note", "warn", "key"] as CalloutTone[]).map(
+                (tone) => ({
+                  value: tone,
+                  label: CALLOUT_LABEL[tone],
+                }),
+              )}
+            />
           </div>
           <AutoTextarea
             value={block.text}
@@ -549,27 +556,34 @@ function BlockFields({
       return (
         <div className="flex items-center gap-2.5 rounded-xl border border-[#2fe85c]/30 bg-[#2fe85c]/[0.06] px-3 py-2.5">
           <KeyRound className="size-4 shrink-0 text-[#08743d]" />
-          <select
+          <FormSelect
             value={block.credentialId}
-            onChange={(event) => {
-              const chosen = credentials.find(
-                (option) => option.id === event.target.value,
-              );
+            onValueChange={(value) => {
+              const chosen = credentials.find((option) => option.id === value);
               onChange({
                 ...block,
-                credentialId: event.target.value,
+                credentialId: value,
                 name: chosen?.name ?? block.name,
               });
             }}
-            aria-label="Credential"
-            className={cn(INPUT_SMALL, "h-8 flex-1")}
-          >
-            {credentials.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.name}
-              </option>
-            ))}
-          </select>
+            ariaLabel="Credential"
+            triggerSize="sm"
+            triggerClassName={cn(INPUT_SMALL, "h-8 min-w-0 flex-1")}
+            options={
+              credentials.length > 0
+                ? credentials.map((option) => ({
+                    value: option.id,
+                    label: option.name,
+                  }))
+                : [
+                    {
+                      value: "",
+                      label: "No credentials available",
+                      disabled: true,
+                    },
+                  ]
+            }
+          />
           <span className="shrink-0 text-[10px] text-black/40">
             name only — open it on Technical
           </span>

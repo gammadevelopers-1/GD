@@ -48,6 +48,7 @@ import {
   Undo2,
 } from "lucide-react";
 import { Attachment } from "@/components/admin/projects/attachment-node";
+import { FormSelect } from "@/components/common/form-select";
 import { TEXT_COLORS, HIGHLIGHT_COLORS } from "@/lib/projects/idea-doc";
 import type { IdeaDoc } from "@/lib/projects/idea-doc";
 import { cn } from "@/lib/utils";
@@ -251,12 +252,11 @@ function Toolbar({
       </Tool>
       <Divider />
 
-      <select
-        aria-label="Text style"
-        title="Text style"
+      <FormSelect
+        ariaLabel="Text style"
         value={String(activeBlock?.level ?? 0)}
-        onChange={(event) => {
-          const level = Number(event.target.value);
+        onValueChange={(value) => {
+          const level = Number(value);
           if (level === 0) editor.chain().focus().setParagraph().run();
           else
             editor
@@ -265,14 +265,13 @@ function Toolbar({
               .setHeading({ level: level as 2 | 3 | 4 })
               .run();
         }}
-        className="h-8 shrink-0 rounded-md border border-black/[0.09] bg-white px-2 text-xs text-black/70 transition outline-none hover:border-black/25"
-      >
-        {BLOCKS.map((block) => (
-          <option key={block.level} value={block.level}>
-            {block.label}
-          </option>
-        ))}
-      </select>
+        triggerSize="sm"
+        triggerClassName="h-8 w-[118px] shrink-0 rounded-lg border-black/[0.09] bg-white px-2.5 text-xs text-black/70 shadow-sm transition hover:border-black/20"
+        options={BLOCKS.map((block) => ({
+          value: String(block.level),
+          label: block.label,
+        }))}
+      />
       <Divider />
 
       <Tool

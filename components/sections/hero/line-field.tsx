@@ -20,9 +20,9 @@ const WAVE_SPEED_MAX = 58;
 const WAVE_GENERATION_FADE_TIME = 0.34;
 const SIGNAL_START = -0.045;
 const SIGNAL_END = 1.055;
-const MESSY_HALF_PROGRESS = 0.14;
-const MESSY_END_PROGRESS = 0.34;
-const SOLUTION_START_PROGRESS = 0.76;
+const MESSY_HALF_PROGRESS = 0.16;
+const MESSY_END_PROGRESS = 0.31;
+const SOLUTION_START_PROGRESS = 0.79;
 const FLAW_FADE_IN_END = 0.035;
 const CARD_GAP = 14;
 const CONTENT_SAFETY_GAP = 18;
@@ -120,11 +120,11 @@ export function LineField() {
       if (journeysRef.current.has(finding.id)) continue;
       const lineIndex = clamp(
         Math.round(
-          ((finding.index + 0.5) / Math.max(finding.total, 1)) * BASE_LINES -
+          ((finding.index + 0.5) / Math.max(finding.total, 1)) * MAX_LINES -
             0.5,
         ),
         0,
-        BASE_LINES - 1,
+        MAX_LINES - 1,
       );
       const journey: SignalJourney = {
         finding,
@@ -612,16 +612,17 @@ export function LineField() {
         if (!notification) continue;
 
         const boundary = contentBoundary;
-        const cardWidth = Math.min(210, window.innerWidth * 0.54);
-        const showingSolution = dx >= (boundary.left + boundary.right) / 2;
-        const flawCardRight = dx + CARD_GAP + cardWidth;
-        const flawBoundaryOpacity = smooth(
-          clamp((boundary.left - flawCardRight) / CONTENT_FADE_DISTANCE, 0, 1),
+        const showingSolution = dx >= boundary.right;
+        const flawCardX = Math.max(8, dx + CARD_GAP);
+        const flawFadeIn = smooth(
+          clamp((dotProgress + 0.005) / (FLAW_FADE_IN_END + 0.005), 0, 1),
         );
-        const flawOpacity =
+        const flawBoundaryOpacity =
+          1 -
           smooth(
-            clamp((dotProgress + 0.005) / (FLAW_FADE_IN_END + 0.005), 0, 1),
-          ) * flawBoundaryOpacity;
+            clamp((flawCardX - boundary.left) / CONTENT_FADE_DISTANCE, 0, 1),
+          );
+        const flawOpacity = flawFadeIn * flawBoundaryOpacity;
         const solutionCardLeft = dx + CARD_GAP;
         const solutionBoundaryOpacity = smooth(
           clamp(
@@ -646,7 +647,7 @@ export function LineField() {
         notification.style.opacity = `${opacity}`;
         notification.style.transform = showingSolution
           ? `translate3d(${dx}px, ${dy}px, 0) translate(${CARD_GAP}px, calc(-100% - 10px))`
-          : `translate3d(${dx}px, ${dy}px, 0) translate(${CARD_GAP}px, -50%)`;
+          : `translate3d(${flawCardX}px, ${dy}px, 0) translate(0px, -50%)`;
       }
 
       if (inView) frame = requestAnimationFrame(draw);

@@ -34,3 +34,9 @@ next-env.d.ts
 # Seeds client portal logins whose passwords are written down in the brief.
 # Local and staging only, and therefore never committed.
 /scripts/seed-client-tests.mjs
+
+.ds-sync/
+ds-bundle/
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/node_modules

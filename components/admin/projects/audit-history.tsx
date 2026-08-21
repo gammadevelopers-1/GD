@@ -6,6 +6,7 @@ import { AUDIT_LABEL, AUDIT_TONE } from "@/lib/credentials/validation";
 import { ROLE_LABELS, type TeamRole } from "@/lib/team/records";
 import { BUTTON_GHOST, FOCUS_RING, INPUT_SMALL, PANEL } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { FormSelect } from "@/components/common/form-select";
 
 export function AuditHistory({ entries }: { entries: CredentialAuditEntry[] }) {
   const [person, setPerson] = useState("");
@@ -44,32 +45,26 @@ export function AuditHistory({ entries }: { entries: CredentialAuditEntry[] }) {
         </h2>
         {entries.length ? (
           <div className="flex flex-wrap items-center gap-2">
-            <select
+            <FormSelect
               value={person}
-              onChange={(event) => setPerson(event.target.value)}
-              aria-label="Filter by person"
-              className={cn(INPUT_SMALL, "h-9")}
-            >
-              <option value="">Everyone</option>
-              {people.map(([id, name]) => (
-                <option key={id} value={id}>
-                  {name}
-                </option>
-              ))}
-            </select>
-            <select
+              onValueChange={setPerson}
+              ariaLabel="Filter by person"
+              triggerClassName={cn(INPUT_SMALL, "h-9")}
+              options={[
+                { value: "", label: "Everyone" },
+                ...people.map(([value, label]) => ({ value, label })),
+              ]}
+            />
+            <FormSelect
               value={variable}
-              onChange={(event) => setVariable(event.target.value)}
-              aria-label="Filter by variable"
-              className={cn(INPUT_SMALL, "h-9 max-w-52")}
-            >
-              <option value="">Every variable</option>
-              {variables.map(([id, name]) => (
-                <option key={id} value={id}>
-                  {name}
-                </option>
-              ))}
-            </select>
+              onValueChange={setVariable}
+              ariaLabel="Filter by variable"
+              triggerClassName={cn(INPUT_SMALL, "h-9 max-w-52")}
+              options={[
+                { value: "", label: "Every variable" },
+                ...variables.map(([value, label]) => ({ value, label })),
+              ]}
+            />
             {filtered ? (
               <button
                 type="button"

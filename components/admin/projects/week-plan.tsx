@@ -24,6 +24,7 @@ import {
   type WorkBoardActions,
 } from "@/components/admin/projects/week-work-board";
 import { WeekCarryOver } from "@/components/admin/projects/week-carry-over";
+import { FormDatePicker } from "@/components/common/form-date-picker";
 import type { IdeaEditorHandle } from "@/components/admin/projects/idea-editor";
 import { type CarryOver, carryOverFor } from "@/lib/projects/carry-over";
 import type { MilestoneWeek } from "@/data/project-detail";
@@ -576,21 +577,19 @@ function AddWeek({
           </p>
           <label className="mt-2 block text-[10px] text-black/45">
             Starts
-            <input
-              type="date"
+            <FormDatePicker
               name="startsOn"
               defaultValue={startsOn}
-              className="mt-1 w-full rounded-lg border border-black/[0.12] px-2 py-1 text-[11px] outline-none focus:border-black/35"
+              triggerClassName="mt-1 h-auto w-full rounded-lg border border-black/[0.12] px-2 py-1 text-[11px] outline-none focus-visible:border-black/35 focus-visible:ring-0"
             />
           </label>
           <label className="mt-2 block text-[10px] text-black/45">
             Due
-            <input
-              type="date"
+            <FormDatePicker
               name="dueOn"
               required
               defaultValue={addDays(startsOn, 6)}
-              className="mt-1 w-full rounded-lg border border-black/[0.12] px-2 py-1 text-[11px] outline-none focus:border-black/35"
+              triggerClassName="mt-1 h-auto w-full rounded-lg border border-black/[0.12] px-2 py-1 text-[11px] outline-none focus-visible:border-black/35 focus-visible:ring-0"
             />
           </label>
           {message ? (

@@ -29,6 +29,7 @@ import {
 } from "@/lib/admin-ui";
 import { Modal } from "@/components/admin/projects/modal";
 import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
+import { FormSelect } from "@/components/common/form-select";
 import { cn } from "@/lib/utils";
 
 export type GroupOption = { id: string; name: string; keys: string[] };
@@ -242,17 +243,15 @@ export function ImportDialog({
             <p className="text-[13px] text-black/60">{summary}</p>
             <label className="flex items-center gap-2 text-[12px] text-black/45">
               Group
-              <select
+              <FormSelect
                 value={groupId}
-                onChange={(event) => setGroupId(event.target.value)}
-                className={cn(INPUT_SMALL, "h-9")}
-              >
-                {groups.map((group) => (
-                  <option key={group.id} value={group.id}>
-                    {group.name}
-                  </option>
-                ))}
-              </select>
+                onValueChange={setGroupId}
+                triggerClassName={cn(INPUT_SMALL, "h-9")}
+                options={groups.map((group) => ({
+                  value: group.id,
+                  label: group.name,
+                }))}
+              />
             </label>
           </div>
 
@@ -451,17 +450,15 @@ export function ManualDialog({
 
         <label className="flex items-center gap-2 text-[12px] text-black/45">
           Group
-          <select
+          <FormSelect
             value={groupId}
-            onChange={(event) => setGroupId(event.target.value)}
-            className={cn(INPUT_SMALL, "h-9")}
-          >
-            {groups.map((group) => (
-              <option key={group.id} value={group.id}>
-                {group.name}
-              </option>
-            ))}
-          </select>
+            onValueChange={setGroupId}
+            triggerClassName={cn(INPUT_SMALL, "h-9")}
+            options={groups.map((group) => ({
+              value: group.id,
+              label: group.name,
+            }))}
+          />
         </label>
 
         <div className="space-y-4">

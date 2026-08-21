@@ -26,6 +26,7 @@ import {
   ShareContainers,
   type ShareTarget,
 } from "@/components/admin/projects/share-containers";
+import { FormSelect } from "@/components/common/form-select";
 import { type SimpleFormState, IDLE_FORM } from "@/lib/projects/form-state";
 import { formatDate } from "@/lib/projects/format";
 import {
@@ -699,21 +700,23 @@ function ShareDialog({
 
         <label className="block space-y-1.5">
           <span className="text-[12px] text-black/50">Person</span>
-          <select
+          <FormSelect
             name="profileId"
             required
             defaultValue=""
-            className={cn(INPUT, "h-10 text-xs")}
-          >
-            <option value="" disabled>
-              Choose someone on this project
-            </option>
-            {available.map((member) => (
-              <option key={member.id} value={member.id}>
-                {member.name}
-              </option>
-            ))}
-          </select>
+            triggerClassName={cn(INPUT, "h-10 text-xs")}
+            options={[
+              {
+                value: "",
+                label: "Choose someone on this project",
+                disabled: true,
+              },
+              ...available.map((member) => ({
+                value: member.id,
+                label: member.name,
+              })),
+            ]}
+          />
           {!available.length ? (
             <span className="text-[11.5px] text-black/40">
               Everyone on this project already has access.
@@ -1080,18 +1083,18 @@ function EnvFiles({
             aria-label="File to store"
             className="block w-full text-[11px] file:mr-3 file:rounded-lg file:border-0 file:bg-black/[0.06] file:px-3 file:py-1.5 file:text-[11px] file:font-medium"
           />
-          <select
+          <FormSelect
             name="groupId"
-            aria-label="Group"
-            className={cn(INPUT_SMALL, "h-9")}
-          >
-            <option value="">No group</option>
-            {groups.map((group) => (
-              <option key={group.id} value={group.id}>
-                {group.name}
-              </option>
-            ))}
-          </select>
+            ariaLabel="Group"
+            triggerClassName={cn(INPUT_SMALL, "h-9")}
+            options={[
+              { value: "", label: "No group" },
+              ...groups.map((group) => ({
+                value: group.id,
+                label: group.name,
+              })),
+            ]}
+          />
           <button
             type="submit"
             disabled={pending}

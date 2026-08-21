@@ -11,6 +11,7 @@ import { EMPTY_DOC } from "@/lib/projects/idea-doc";
 import type { SimpleFormState } from "@/lib/projects/form-state";
 import { formatDate } from "@/lib/projects/format";
 import { cn } from "@/lib/utils";
+import { Progress } from "@/components/ui/progress";
 
 export type MilestoneActions = {
   setDone: (
@@ -62,12 +63,12 @@ export function PortalMilestone({
           <span className="ml-auto font-mono text-[10px] text-black/40">
             {summary.done}/{summary.total} done
           </span>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-black/[0.07]">
-            <div
-              className="h-full rounded-full bg-[#2fe85c] transition-[width] duration-500"
-              style={{ width: `${summary.percent}%` }}
-            />
-          </div>
+          <Progress
+            value={summary.percent}
+            aria-label="Milestone progress"
+            className="h-2 w-full bg-black/[0.07]"
+            indicatorClassName="rounded-full bg-[#2fe85c] transition-transform duration-500"
+          />
         </div>
       ) : null}
 

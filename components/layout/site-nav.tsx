@@ -1,33 +1,31 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRef } from "react";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { navLinks, site } from "@/lib/content/site";
-import { Mark } from "@/components/layout/mark";
 
 export function SiteNav() {
   const nav = useRef<HTMLElement>(null);
+  const solid = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
-    const show = gsap.to(nav.current, {
-      yPercent: -140,
-      duration: 0.35,
-      ease: "power2.inOut",
-      paused: true,
-    });
+    gsap.set(solid.current, { opacity: 1 });
 
     ScrollTrigger.create({
-      start: "top -240",
-      end: 99999,
-      onUpdate: (self) => {
-        if (self.direction === 1) show.play();
-        else show.reverse();
-      },
+      start: 0,
+      end: 180,
+      scrub: 0.55,
+      animation: gsap.to(solid.current, {
+        opacity: 0,
+        ease: "none",
+        duration: 1,
+      }),
     });
 
     gsap.from(nav.current, {
-      y: -24,
+      y: -20,
       opacity: 0,
       duration: 0.7,
       ease: "power3.out",
@@ -36,58 +34,70 @@ export function SiteNav() {
   });
 
   return (
-    <nav
+    <header
       ref={nav}
-      aria-label="Primary navigation"
-      className="fixed inset-x-0 top-4 z-[60] flex items-center justify-between gap-3 px-3 md:top-5 md:px-6"
+      className="fixed inset-x-0 top-0 z-[60] will-change-transform"
     >
-      <Group className="gap-1.5 py-1 pr-1.5 pl-1.5 md:gap-2">
+      <div
+        aria-hidden
+        className="absolute inset-0 border-b border-black/[0.07] bg-white/68 shadow-[0_10px_32px_rgba(20,23,26,0.045)] backdrop-blur-[8px]"
+      />
+      <div
+        ref={solid}
+        aria-hidden
+        className="absolute inset-0 border-b border-black/[0.055] bg-white"
+      />
+
+      <nav
+        aria-label="Primary navigation"
+        className="relative mx-auto grid h-[72px] w-full max-w-[1480px] grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 sm:px-6 lg:px-8 xl:px-10"
+      >
         <Link
           href="#"
-          aria-label="Gamma Developers home"
-          className="group flex items-center gap-2.5 rounded-full py-1 pr-3 pl-1 transition-colors hover:bg-black/[0.04]"
+          aria-label={`${site.name} home`}
+          className="group/logo relative block h-9 w-[46px] overflow-hidden rounded-lg transition-[width,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black/[0.025] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none md:hover:w-[152px] md:focus-visible:w-[152px]"
         >
-          <Mark />
-          <span className="text-[14px] font-medium tracking-[-0.015em] max-sm:hidden">
-            {site.name}
+          <span className="absolute inset-0 transition-all duration-300 ease-out group-hover/logo:-translate-x-2 group-hover/logo:scale-95 group-hover/logo:opacity-0 group-focus-visible/logo:-translate-x-2 group-focus-visible/logo:scale-95 group-focus-visible/logo:opacity-0 max-md:group-hover/logo:translate-x-0 max-md:group-hover/logo:scale-100 max-md:group-hover/logo:opacity-100">
+            <Image
+              src="/logo.png"
+              alt=""
+              width={102}
+              height={76}
+              priority
+              className="absolute top-[-24px] left-[-27px] h-auto max-w-none"
+            />
+          </span>
+          <span className="absolute inset-0 translate-x-3 opacity-0 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/logo:translate-x-0 group-hover/logo:opacity-100 group-focus-visible/logo:translate-x-0 group-focus-visible/logo:opacity-100 max-md:group-hover/logo:translate-x-3 max-md:group-hover/logo:opacity-0">
+            <Image
+              src="/full-logo.png"
+              alt=""
+              width={213}
+              height={137}
+              priority
+              className="absolute top-[-55px] left-[-34px] h-auto max-w-none"
+            />
           </span>
         </Link>
-        <span className="mx-1 hidden h-5 w-px bg-black/10 md:block" />
-        <div className="hidden items-center md:flex">
-          {navLinks.map((l) => (
-            <NavLink key={l.href} href={l.href}>
-              {l.label}
+
+        <div className="hidden items-center justify-center rounded-full border border-black/[0.055] bg-white/38 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] md:flex">
+          {navLinks.map((link) => (
+            <NavLink key={link.href} href={link.href}>
+              {link.label}
             </NavLink>
           ))}
         </div>
-      </Group>
 
-      <Group className="py-1 pr-1 pl-1">
-        <Link
-          href={site.calendly}
-          data-button-fill
-          className="button-fill-fx nav-cta bg-brand relative overflow-hidden rounded-full px-4 py-2 text-[13px] font-medium text-[#101512] shadow-[0_5px_18px_rgba(47,232,92,0.22)] transition-all hover:-translate-y-px hover:shadow-[0_8px_24px_rgba(47,232,92,0.34)] md:px-[18px] md:text-sm"
-        >
-          <span className="button-fill-fx__label">Book a call</span>
-        </Link>
-      </Group>
-    </nav>
-  );
-}
-
-function Group({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div
-      className={`flex items-center rounded-full border border-black/10 bg-white/72 p-1 shadow-[0_8px_30px_rgba(20,23,26,0.07),inset_0_1px_0_rgba(255,255,255,0.85)] backdrop-blur-xl ${className}`}
-    >
-      {children}
-    </div>
+        <div className="flex items-center justify-end gap-2">
+          <Link
+            href={site.calendly}
+            data-button-fill
+            className="button-fill-fx nav-cta bg-brand relative inline-flex h-10 items-center overflow-hidden rounded-full px-4 text-[13px] font-semibold text-[#101512] shadow-[0_5px_18px_rgba(47,232,92,0.22)] transition-all hover:-translate-y-px hover:shadow-[0_8px_24px_rgba(47,232,92,0.34)] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none md:px-[19px] md:text-sm"
+          >
+            <span className="button-fill-fx__label">Book a call</span>
+          </Link>
+        </div>
+      </nav>
+    </header>
   );
 }
 
@@ -101,7 +111,7 @@ function NavLink({
   return (
     <Link
       href={href}
-      className="text-muted-foreground hover:text-foreground group relative rounded-full px-3.5 py-2 text-[13px] transition-colors"
+      className="text-muted-foreground hover:text-foreground group relative rounded-full px-4 py-2 text-[12.5px] font-medium tracking-[-0.01em] transition-colors hover:bg-white/70 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none"
     >
       <span className="relative z-1">{children}</span>
       <span className="bg-brand/16 absolute inset-x-1.5 bottom-1 h-0.5 origin-left scale-x-0 rounded-full transition-transform duration-300 group-hover:scale-x-100" />

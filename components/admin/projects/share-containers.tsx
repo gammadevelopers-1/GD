@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { AlertCircle, Loader2, Share2 } from "lucide-react";
 import { Modal } from "@/components/admin/projects/modal";
 import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
+import { FormSelect } from "@/components/common/form-select";
 import { type SimpleFormState, IDLE_FORM } from "@/lib/projects/form-state";
 import { BUTTON_PRIMARY, INPUT } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
@@ -88,26 +89,31 @@ export function ShareContainers({
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block space-y-1.5">
             <span className="text-[12px] text-black/55">Share with</span>
-            <select name="profileId" required className={cn(INPUT, "h-10")}>
-              <option value="">Choose someone</option>
-              {members.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.name}
-                </option>
-              ))}
-            </select>
+            <FormSelect
+              name="profileId"
+              required
+              triggerClassName={cn(INPUT, "h-10")}
+              options={[
+                { value: "", label: "Choose someone" },
+                ...members.map((member) => ({
+                  value: member.id,
+                  label: member.name,
+                })),
+              ]}
+            />
           </label>
 
           <label className="block space-y-1.5">
             <span className="text-[12px] text-black/55">They may</span>
-            <select
+            <FormSelect
               name="access"
               defaultValue="use"
-              className={cn(INPUT, "h-10")}
-            >
-              <option value="use">Copy the value</option>
-              <option value="manage">Copy and change it</option>
-            </select>
+              triggerClassName={cn(INPUT, "h-10")}
+              options={[
+                { value: "use", label: "Copy the value" },
+                { value: "manage", label: "Copy and change it" },
+              ]}
+            />
           </label>
         </div>
 

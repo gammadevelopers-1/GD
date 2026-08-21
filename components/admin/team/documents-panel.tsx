@@ -1,6 +1,12 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState, useTransition } from "react";
+import {
+  useActionState,
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import {
   AlertCircle,
   ExternalLink,
@@ -14,6 +20,7 @@ import {
   uploadTeamDocument,
 } from "@/app/(admin)/team/actions";
 import { ConfirmAction, Modal } from "@/components/admin/projects/modal";
+import { FormSelect } from "@/components/common/form-select";
 import type { TeamDocument } from "@/data/team";
 import { IDLE_FORM } from "@/lib/projects/form-state";
 import {
@@ -39,7 +46,10 @@ export function DocumentsPanel({
   profileId: string;
   documents: TeamDocument[];
 }) {
-  const [state, action, pending] = useActionState(uploadTeamDocument, IDLE_FORM);
+  const [state, action, pending] = useActionState(
+    uploadTeamDocument,
+    IDLE_FORM,
+  );
   const [preview, setPreview] = useState<TeamDocument | null>(null);
   const uploadForm = useRef<HTMLFormElement>(null);
 
@@ -98,13 +108,14 @@ export function DocumentsPanel({
 
         <label className="block space-y-1.5">
           <span className="text-[12px] text-black/55">Kind</span>
-          <select name="documentType" className={cn(INPUT, "h-10 w-40")}>
-            {Object.entries(TYPE_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
+          <FormSelect
+            name="documentType"
+            triggerClassName={cn(INPUT, "h-10 w-40")}
+            options={Object.entries(TYPE_LABELS).map(([value, label]) => ({
+              value,
+              label,
+            }))}
+          />
         </label>
 
         <label className="block min-w-56 flex-1 space-y-1.5">

@@ -14,6 +14,7 @@ import {
 import type { ProjectMember } from "@/data/project-detail";
 import { type SimpleFormState, IDLE_FORM } from "@/lib/projects/form-state";
 import { ConfirmAction } from "@/components/admin/projects/modal";
+import { FormSelect } from "@/components/common/form-select";
 import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
 import { initials } from "@/lib/projects/format";
 import {
@@ -66,7 +67,6 @@ export function TeamPanel({
               On this project
             </h2>
           </div>
-        
         </div>
 
         {members.length ? (
@@ -88,7 +88,6 @@ export function TeamPanel({
             to this project.
           </p>
         )}
-
       </section>
 
       {isOwner ? (
@@ -238,7 +237,6 @@ function MemberRow({
                   {member.responsibility ?? "No role set"}
                 </p>
               </div>
-              
             </>
           )}
 
@@ -249,9 +247,7 @@ function MemberRow({
                 state.status === "success" ? "text-[#08743d]" : "text-red-700",
               )}
             >
-              {state.status === "success" ? 
-                null
-              : (
+              {state.status === "success" ? null : (
                 <AlertCircle className="size-3" />
               )}
               {state.message}
@@ -285,7 +281,6 @@ function MemberRow({
           </div>
         ) : null}
       </div>
-
     </li>
   );
 }
@@ -317,26 +312,25 @@ function AddMemberPanel({
         </h2>
       </div>
 
-
       {addable.length ? (
         <form action={formAction} className="space-y-3">
           <input type="hidden" name="projectId" value={projectId} />
           <label className="block space-y-1.5">
             <span className="text-xs font-medium text-black/55">Person</span>
-            <select
+            <FormSelect
               name="profileId"
               required
               value={chosen}
-              onChange={(event) => setChosen(event.target.value)}
-              className={cn(INPUT, "h-10 cursor-pointer")}
-            >
-              <option value="">Choose a team member</option>
-              {addable.map((person) => (
-                <option key={person.id} value={person.id}>
-                  {person.name}
-                </option>
-              ))}
-            </select>
+              onValueChange={setChosen}
+              triggerClassName={cn(INPUT, "h-10 cursor-pointer")}
+              options={[
+                { value: "", label: "Choose a team member" },
+                ...addable.map((person) => ({
+                  value: person.id,
+                  label: person.name,
+                })),
+              ]}
+            />
           </label>
           <label className="block space-y-1.5">
             <span className="text-xs font-medium text-black/55">

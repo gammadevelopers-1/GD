@@ -31,9 +31,9 @@ export interface AuditFinding {
 }
 
 export const BASE_LINES = 8;
-export const MAX_LINES = 9;
+export const MAX_LINES = 11;
 
-export const SIGNAL_TRAVEL_TIME = 11;
+export const SIGNAL_TRAVEL_TIME = 9;
 
 interface HeroContextValue {
   motionRef: React.RefObject<HeroMotion>;
@@ -125,10 +125,10 @@ export function HeroProvider({ children }: { children: ReactNode }) {
 
         for (let index = 0; index < total; index += 1) {
           const entryAt = nextEntryAt;
-          const messyHalfTime = gsap.utils.random(3, 3.5, 0.05);
-          const messyFinishTime = gsap.utils.random(1.1, 1.35, 0.05);
-          const centerCrossTime = gsap.utils.random(1, 1.25, 0.05);
-          const rightTravelTime = gsap.utils.random(4.4, 5, 0.05);
+          const messyHalfTime = gsap.utils.random(2.25, 2.75, 0.05);
+          const messyFinishTime = gsap.utils.random(0.9, 1.1, 0.05);
+          const centerCrossTime = gsap.utils.random(0.75, 0.95, 0.05);
+          const rightTravelTime = gsap.utils.random(3.8, 4.3, 0.05);
           const travelTime =
             messyHalfTime + messyFinishTime + centerCrossTime + rightTravelTime;
           lastSignalAt = Math.max(lastSignalAt, entryAt + travelTime);
@@ -158,7 +158,7 @@ export function HeroProvider({ children }: { children: ReactNode }) {
             entryAt,
           );
 
-          nextEntryAt += messyHalfTime;
+          nextEntryAt += gsap.utils.random(1.7, 2.1, 0.05);
         }
 
         const resolveAt = SIGNAL_TRAVEL_TIME * 0.29;

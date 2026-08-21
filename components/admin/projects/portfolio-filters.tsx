@@ -17,6 +17,7 @@ import {
   PROJECT_STATUS_LABEL,
   type ProjectStatus,
 } from "@/lib/projects/status";
+import { FormSelect } from "@/components/common/form-select";
 import { cn } from "@/lib/utils";
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -216,19 +217,20 @@ function Select({
   return (
     <label className="flex h-10 min-w-0 items-center gap-2 rounded-xl border border-black/8 bg-black/[0.02] pr-1 pl-3 transition focus-within:border-[#16a34a] hover:border-black/15 lg:w-42">
       <span className="sr-only">{label}</span>
-      <select
+      <FormSelect
         value={value}
-        onChange={(event) => onChange(event.target.value || null)}
+        onValueChange={(nextValue) => onChange(nextValue || null)}
         disabled={!options.length}
-        className="h-full w-full min-w-0 cursor-pointer truncate bg-transparent text-sm outline-none disabled:cursor-not-allowed disabled:text-black/30"
-      >
-        <option value="">{allLabel}</option>
-        {options.map((option) => (
-          <option key={option.id} value={option.id}>
-            {option.name}
-          </option>
-        ))}
-      </select>
+        ariaLabel={label}
+        triggerClassName="h-full w-full min-w-0 cursor-pointer truncate rounded-none border-0 bg-transparent px-0 text-sm shadow-none outline-none focus-visible:border-transparent focus-visible:ring-0 disabled:cursor-not-allowed disabled:text-black/30"
+        options={[
+          { value: "", label: allLabel },
+          ...options.map((option) => ({
+            value: option.id,
+            label: option.name,
+          })),
+        ]}
+      />
     </label>
   );
 }

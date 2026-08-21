@@ -12,6 +12,7 @@ import {
 import { PageHeading } from "@/components/admin/page-heading";
 import { KpiCard } from "@/components/admin/kpi-card";
 import { DeliveryPulse } from "@/components/admin/delivery-pulse";
+import { Progress } from "@/components/ui/progress";
 import { requireViewer, type Viewer } from "@/data/auth";
 import {
   getDashboardData,
@@ -205,12 +206,12 @@ function ProjectRow({ project }: { project: DashboardProject }) {
       <td className="px-4 py-4 text-xs text-black/55">{project.lead}</td>
       <td className="px-4 py-4">
         <div className="flex items-center gap-3">
-          <div className="h-1.5 w-20 overflow-hidden rounded-full bg-black/[0.07]">
-            <div
-              className="h-full rounded-full bg-[#16a34a]"
-              style={{ width: `${project.progress}%` }}
-            />
-          </div>
+          <Progress
+            value={project.progress}
+            aria-label={`${project.name} progress`}
+            className="h-1.5 w-20 bg-black/[0.07]"
+            indicatorClassName="rounded-full bg-[#16a34a]"
+          />
           <span className="font-mono text-[9px] text-black/40">
             {project.progress}%
           </span>
@@ -244,12 +245,12 @@ function ProjectCard({ project }: { project: DashboardProject }) {
         <span className="truncate">{project.lead}</span>
         <span className="text-right">{formatDate(project.dueOn)}</span>
       </div>
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-black/[0.07]">
-        <div
-          className="h-full rounded-full bg-[#16a34a]"
-          style={{ width: `${project.progress}%` }}
-        />
-      </div>
+      <Progress
+        value={project.progress}
+        aria-label={`${project.name} progress`}
+        className="mt-3 h-1.5 bg-black/[0.07]"
+        indicatorClassName="rounded-full bg-[#16a34a]"
+      />
     </Link>
   );
 }

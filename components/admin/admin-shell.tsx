@@ -106,14 +106,22 @@ export function AdminShell({
         className="bg-background"
         style={{ "--sidebar-width": "17rem" } as React.CSSProperties}
       >
-        <Sidebar collapsible="icon">
-          <SidebarHeader>
+        <Sidebar
+          collapsible="icon"
+          className="group-data-[collapsible=icon]:[&_[data-sidebar=sidebar]]:overflow-hidden"
+        >
+          <SidebarHeader className="group-data-[collapsible=icon]:items-center">
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild size="lg" tooltip="Gamma Developers">
+                <SidebarMenuButton
+                  asChild
+                  size="lg"
+                  tooltip="Gamma Developers"
+                  className="group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0!"
+                >
                   <Link href="/dashboard">
                     <Mark className="size-8 rounded-[9px] border border-white/10" />
-                    <span className="font-semibold tracking-[-0.02em] text-white">
+                    <span className="font-semibold tracking-[-0.02em] text-white group-data-[collapsible=icon]:hidden">
                       Gamma Developers
                     </span>
                   </Link>
@@ -136,11 +144,13 @@ export function AdminShell({
                           pathname.startsWith(`${item.href}/`)
                         }
                         tooltip={item.label}
-                        className="gap-3 px-3 text-[13.5px] font-medium data-active:bg-[#2fe85c]/10 data-active:font-semibold data-active:text-[#2fe85c] [&_svg]:size-[18px]"
+                        className="gap-3 px-3 text-[13.5px] font-medium group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0! data-active:bg-[#2fe85c]/10 data-active:font-semibold data-active:text-[#2fe85c] [&_svg]:size-[18px]"
                       >
                         <Link href={item.href}>
                           <item.icon />
-                          <span>{item.label}</span>
+                          <span className="group-data-[collapsible=icon]:hidden">
+                            {item.label}
+                          </span>
                           {item.inProgress ? (
                             <span
                               title="In progress"
@@ -163,10 +173,12 @@ export function AdminShell({
                   <SidebarMenuButton
                     size="lg"
                     tooltip="Sign out"
-                    className="text-sidebar-foreground/70 hover:text-sidebar-foreground gap-3 px-3 text-[13.5px] font-medium [&_svg]:size-[18px]"
+                    className="text-sidebar-foreground/70 hover:text-sidebar-foreground gap-3 px-3 text-[13.5px] font-medium group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0! [&_svg]:size-[18px]"
                   >
                     <LogOut />
-                    <span>Sign out</span>
+                    <span className="group-data-[collapsible=icon]:hidden">
+                      Sign out
+                    </span>
                   </SidebarMenuButton>
                 </form>
               </SidebarMenuItem>

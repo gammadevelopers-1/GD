@@ -1,7 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { X } from "lucide-react";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { FOCUS_RING, ICON_BUTTON } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 
@@ -20,59 +28,53 @@ export function Modal({
   size?: "md" | "lg";
   children: React.ReactNode;
 }) {
-  const ref = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    const node = ref.current;
-    if (!node) return;
-    if (open && !node.open) node.showModal();
-    if (!open && node.open) node.close();
-  }, [open]);
-
-  if (!open) return null;
-
   return (
-    <dialog
-      ref={ref}
-      onCancel={(event) => {
-        event.preventDefault();
-        onClose();
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) onClose();
       }}
-      onClick={(event) => {
-        if (event.target === ref.current) onClose();
-      }}
-      aria-label={title}
-      className={cn(
-        "m-auto w-[calc(100vw-2rem)] rounded-[20px] border border-black/[0.08] bg-[#f8f8f3] p-0 text-black shadow-[0_30px_80px_rgba(20,23,26,0.22)] backdrop:bg-black/35",
-        size === "lg" ? "max-w-3xl" : "max-w-lg",
-      )}
     >
-      <div className="flex max-h-[85vh] flex-col">
-        <header className="flex items-start justify-between gap-4 border-b border-black/[0.07] px-5 py-4">
-          <div className="min-w-0">
-            <h2 className="text-[15px] font-semibold tracking-[-0.025em]">
-              {title}
-            </h2>
-            {description ? (
-              <p className="mt-1 text-[12px] leading-5 text-black/45">
-                {description}
-              </p>
-            ) : null}
+      <DialogContent
+        showCloseButton={false}
+        overlayClassName="bg-black/35 backdrop-blur-none supports-backdrop-filter:backdrop-blur-none"
+        className={cn(
+          "w-[calc(100vw-2rem)] gap-0 rounded-[20px] border border-black/[0.08] bg-[#f8f8f3] p-0 text-black shadow-[0_30px_80px_rgba(20,23,26,0.22)] ring-0",
+          size === "lg" ? "sm:max-w-3xl" : "sm:max-w-lg",
+        )}
+      >
+        <div className="flex max-h-[85vh] flex-col">
+          <DialogHeader className="flex-row items-start justify-between gap-4 space-y-0 border-b border-black/[0.07] px-5 py-4 text-left">
+            <div className="min-w-0">
+              <DialogTitle className="text-[15px] leading-normal font-semibold tracking-[-0.025em]">
+                {title}
+              </DialogTitle>
+              {description ? (
+                <DialogDescription className="mt-1 text-[12px] leading-5 text-black/45">
+                  {description}
+                </DialogDescription>
+              ) : (
+                <DialogDescription className="sr-only">
+                  {title}
+                </DialogDescription>
+              )}
+            </div>
+            <DialogClose asChild>
+              <button
+                type="button"
+                aria-label="Close"
+                className={cn(ICON_BUTTON, "shrink-0")}
+              >
+                <X className="size-4" />
+              </button>
+            </DialogClose>
+          </DialogHeader>
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+            {children}
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className={cn(ICON_BUTTON, "shrink-0")}
-          >
-            <X className="size-4" />
-          </button>
-        </header>
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-          {children}
         </div>
-      </div>
-    </dialog>
+      </DialogContent>
+    </Dialog>
   );
 }
 

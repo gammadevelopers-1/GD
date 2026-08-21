@@ -10,6 +10,8 @@ import {
   type TeamFormValues,
 } from "@/lib/team/records";
 import { INPUT } from "@/lib/admin-ui";
+import { FormSelect } from "@/components/common/form-select";
+import { FormDatePicker } from "@/components/common/form-date-picker";
 import { cn } from "@/lib/utils";
 
 export type MemberFieldDefaults = Partial<TeamFormValues>;
@@ -105,30 +107,32 @@ export function MemberFields({
 
       <Group title="Employment">
         <Field label="Type (optional)" error={errors.employmentType}>
-          <select
+          <FormSelect
             name="employmentType"
             defaultValue={defaults.employmentType ?? ""}
-            className={cn(INPUT, "h-10")}
-          >
-            <option value="">Not recorded</option>
-            {EMPLOYMENT_TYPES.map((type) => (
-              <option key={type} value={type}>
-                {EMPLOYMENT_LABELS[type]}
-              </option>
-            ))}
-          </select>
-        </Field>
-
-        <Field label="Start date (optional)" error={errors.startDate}>
-          <input
-            name="startDate"
-            type="date"
-            defaultValue={defaults.startDate ?? ""}
-            className={cn(INPUT, "h-10")}
+            triggerClassName={cn(INPUT, "h-10")}
+            options={[
+              { value: "", label: "Not recorded" },
+              ...EMPLOYMENT_TYPES.map((type) => ({
+                value: type,
+                label: EMPLOYMENT_LABELS[type],
+              })),
+            ]}
           />
         </Field>
 
-        <Field label="Monthly salary, PKR (optional)" error={errors.salaryAmount}>
+        <Field label="Start date (optional)" error={errors.startDate}>
+          <FormDatePicker
+            name="startDate"
+            defaultValue={defaults.startDate ?? ""}
+            triggerClassName={cn(INPUT, "h-10")}
+          />
+        </Field>
+
+        <Field
+          label="Monthly salary, PKR (optional)"
+          error={errors.salaryAmount}
+        >
           <input
             name="salaryAmount"
             inputMode="decimal"

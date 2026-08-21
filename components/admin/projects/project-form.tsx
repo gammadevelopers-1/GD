@@ -12,6 +12,8 @@ import {
   NAME_MAX,
 } from "@/lib/projects/validation";
 import { PROJECT_STATUSES, PROJECT_STATUS_LABEL } from "@/lib/projects/status";
+import { FormSelect } from "@/components/common/form-select";
+import { FormDatePicker } from "@/components/common/form-date-picker";
 import { cn } from "@/lib/utils";
 
 type Option = { id: string; name: string };
@@ -94,73 +96,70 @@ export function ProjectForm({
         </Field>
 
         <Field name="clientId" label="Client" error={errors.clientId}>
-          <select
+          <FormSelect
             id="clientId"
             name="clientId"
             defaultValue={values.clientId}
-            aria-invalid={Boolean(errors.clientId)}
-            className={inputClass(Boolean(errors.clientId))}
-          >
-            <option value="">No client yet</option>
-            {clients.map((client) => (
-              <option key={client.id} value={client.id}>
-                {client.name}
-              </option>
-            ))}
-          </select>
+            ariaInvalid={Boolean(errors.clientId)}
+            triggerClassName={inputClass(Boolean(errors.clientId))}
+            options={[
+              { value: "", label: "No client yet" },
+              ...clients.map((client) => ({
+                value: client.id,
+                label: client.name,
+              })),
+            ]}
+          />
         </Field>
 
         <Field name="status" label="Status" error={errors.status}>
-          <select
+          <FormSelect
             id="status"
             name="status"
             defaultValue={values.status || "discovery"}
-            className={inputClass(Boolean(errors.status))}
-          >
-            {PROJECT_STATUSES.map((status) => (
-              <option key={status} value={status}>
-                {PROJECT_STATUS_LABEL[status]}
-              </option>
-            ))}
-          </select>
+            ariaInvalid={Boolean(errors.status)}
+            triggerClassName={inputClass(Boolean(errors.status))}
+            options={PROJECT_STATUSES.map((status) => ({
+              value: status,
+              label: PROJECT_STATUS_LABEL[status],
+            }))}
+          />
         </Field>
 
         <Field name="leadId" label="Project lead" error={errors.leadId}>
-          <select
+          <FormSelect
             id="leadId"
             name="leadId"
             defaultValue={values.leadId}
-            aria-invalid={Boolean(errors.leadId)}
-            className={inputClass(Boolean(errors.leadId))}
-          >
-            <option value="">Not assigned yet</option>
-            {people.map((person) => (
-              <option key={person.id} value={person.id}>
-                {person.name}
-              </option>
-            ))}
-          </select>
+            ariaInvalid={Boolean(errors.leadId)}
+            triggerClassName={inputClass(Boolean(errors.leadId))}
+            options={[
+              { value: "", label: "Not assigned yet" },
+              ...people.map((person) => ({
+                value: person.id,
+                label: person.name,
+              })),
+            ]}
+          />
         </Field>
 
         <div className="grid grid-cols-2 gap-4">
           <Field name="startsOn" label="Start date" error={errors.startsOn}>
-            <input
+            <FormDatePicker
               id="startsOn"
               name="startsOn"
-              type="date"
               defaultValue={values.startsOn}
-              aria-invalid={Boolean(errors.startsOn)}
-              className={inputClass(Boolean(errors.startsOn))}
+              ariaInvalid={Boolean(errors.startsOn)}
+              triggerClassName={inputClass(Boolean(errors.startsOn))}
             />
           </Field>
           <Field name="dueOn" label="Due date" error={errors.dueOn}>
-            <input
+            <FormDatePicker
               id="dueOn"
               name="dueOn"
-              type="date"
               defaultValue={values.dueOn}
-              aria-invalid={Boolean(errors.dueOn)}
-              className={inputClass(Boolean(errors.dueOn))}
+              ariaInvalid={Boolean(errors.dueOn)}
+              triggerClassName={inputClass(Boolean(errors.dueOn))}
             />
           </Field>
         </div>
@@ -214,15 +213,20 @@ export function ProjectForm({
               label="Currency"
               error={errors.valueCurrency}
             >
-              <select
+              <FormSelect
                 id="valueCurrency"
                 name="valueCurrency"
                 defaultValue={values.valueCurrency || "USD"}
-                className={darkInputClass(Boolean(errors.valueCurrency))}
-              >
-                <option value="USD">USD</option>
-                <option value="PKR">PKR</option>
-              </select>
+                ariaInvalid={Boolean(errors.valueCurrency)}
+                triggerClassName={cn(
+                  darkInputClass(Boolean(errors.valueCurrency)),
+                  "[&>svg]:text-white/45",
+                )}
+                options={[
+                  { value: "USD", label: "USD" },
+                  { value: "PKR", label: "PKR" },
+                ]}
+              />
             </DarkField>
             <DarkField
               name="exchangeRate"
@@ -244,13 +248,15 @@ export function ProjectForm({
               label="Booked on"
               error={errors.bookedOn}
             >
-              <input
+              <FormDatePicker
                 id="bookedOn"
                 name="bookedOn"
-                type="date"
                 defaultValue={values.bookedOn}
-                aria-invalid={Boolean(errors.bookedOn)}
-                className={darkInputClass(Boolean(errors.bookedOn))}
+                ariaInvalid={Boolean(errors.bookedOn)}
+                triggerClassName={cn(
+                  darkInputClass(Boolean(errors.bookedOn)),
+                  "data-[empty=true]:text-white/35 [&_svg]:text-white/70",
+                )}
               />
             </DarkField>
           </div>

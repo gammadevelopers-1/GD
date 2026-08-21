@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { EmptyState } from "@/components/admin/empty-state";
+import { Progress } from "@/components/ui/progress";
 import type { PortfolioProject } from "@/data/portfolio";
 import type { AppRole } from "@/data/auth";
 import {
@@ -264,15 +265,15 @@ function ProjectCard({
               {project.progress}%
             </span>
           </div>
-          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-black/[0.06]">
-            <div
-              className={cn(
-                "h-full rounded-full transition-all duration-500",
-                TONE_BAR[delivery.tone],
-              )}
-              style={{ width: `${project.progress}%` }}
-            />
-          </div>
+          <Progress
+            value={project.progress}
+            aria-label={`${project.name} progress`}
+            className="mt-2 h-1.5 bg-black/[0.06]"
+            indicatorClassName={cn(
+              "rounded-full transition-transform duration-500",
+              TONE_BAR[delivery.tone],
+            )}
+          />
         </div>
 
         <div className="mt-4 flex items-center justify-between gap-3 border-t border-black/[0.055] pt-3.5">
@@ -433,12 +434,12 @@ function ProjectRow({
 
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <div className="h-1.5 w-full max-w-24 overflow-hidden rounded-full bg-black/[0.06]">
-            <div
-              className={cn("h-full rounded-full", TONE_BAR[delivery.tone])}
-              style={{ width: `${project.progress}%` }}
-            />
-          </div>
+          <Progress
+            value={project.progress}
+            aria-label={`${project.name} progress`}
+            className="h-1.5 w-full max-w-24 bg-black/[0.06]"
+            indicatorClassName={cn("rounded-full", TONE_BAR[delivery.tone])}
+          />
           <span className="font-mono text-[11px] text-black/45">
             {project.progress}%
           </span>
