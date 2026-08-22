@@ -30,10 +30,10 @@ export function ProjectTabs({ publicId }: { publicId: string }) {
             value={tab}
             asChild
             className={cn(
-              "group relative h-auto flex-none shrink-0 rounded-none border-0 px-3.5 py-3.5 text-[13px] font-medium transition duration-200 after:hidden focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none sm:px-4",
+              "group relative h-auto flex-none shrink-0 rounded-none border-0 px-3.5 py-3.5 text-[13px] font-medium transition duration-200 after:hidden hover:text-white focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none dark:hover:text-white sm:px-4",
               activeTab === tab
                 ? "bg-white/[0.03] text-white"
-                : "text-white/35 hover:bg-white/[0.05] hover:text-white",
+                : "text-white/35 hover:bg-white/[0.05]",
             )}
           >
             <Link

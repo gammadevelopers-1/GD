@@ -96,7 +96,7 @@ export default async function ProfilePage() {
                   {profile.projects.map((project) => (
                     <li key={project.id}>
                       <Link
-                        href={`/projects/${project.id}`}
+                        href={`/projects/${project.publicId}`}
                         className="flex items-center gap-3 rounded-xl border border-black/[0.07] bg-white px-3.5 py-2.5 transition duration-150 hover:translate-x-0.75 hover:border-[#2fe85c]/50 focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
                       >
                         <span className="grid size-7.5 shrink-0 place-items-center rounded-lg bg-[#2fe85c]/12 font-mono text-[11px] font-semibold text-[#08743d]">

@@ -39,7 +39,12 @@ export type MyProfile = {
   notifyWeeklySummary: boolean;
   employment: MyEmployment | null;
   documents: MyDocument[];
-  projects: Array<{ id: string; name: string; responsibility: string | null }>;
+  projects: Array<{
+    id: string;
+    publicId: string;
+    name: string;
+    responsibility: string | null;
+  }>;
 };
 
 const DOCUMENTS_BUCKET = "app-private-documents";
@@ -90,7 +95,7 @@ export const getMyProfile = cache(
           .order("created_at", { ascending: false }),
         supabase
           .from("app_project_members")
-          .select("responsibility, app_projects(id, name)")
+          .select("responsibility, app_projects(id, public_id, name)")
           .eq("profile_id", viewer.id)
           .is("archived_at", null),
       ]);
@@ -167,12 +172,14 @@ export const getMyProfile = cache(
       projects: (membershipResult.data ?? []).flatMap((row) => {
         const project = row.app_projects as unknown as {
           id: string;
+          public_id: string;
           name: string;
         } | null;
         if (!project) return [];
         return [
           {
             id: String(project.id),
+            publicId: String(project.public_id),
             name: String(project.name),
             responsibility: row.responsibility
               ? String(row.responsibility)

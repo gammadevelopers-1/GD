@@ -218,7 +218,7 @@ function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
           pathname === item.href || pathname.startsWith(`${item.href}/`)
         }
         tooltip={item.label}
-        className="gap-3 px-3 text-[13.5px] font-medium transition-colors duration-150 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0! data-active:bg-[#2fe85c]/10 data-active:font-semibold data-active:text-[#2fe85c] [&_svg]:size-[18px]"
+        className="gap-3 px-3 text-[13.5px] font-medium transition-colors duration-150 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0! data-active:bg-[#2fe85c]/10 data-active:font-semibold data-active:text-[#2fe85c] data-active:hover:bg-[#2fe85c]/16 data-active:hover:text-[#2fe85c] [&_svg]:size-[18px]"
       >
         <Link href={item.href}>
           <item.icon />

@@ -8,7 +8,6 @@ import { PageHeading } from "@/components/admin/page-heading";
 import { requireRole } from "@/data/auth";
 import { getTeamPerson } from "@/data/team";
 import { buildInviteEmail } from "@/lib/team/invite-email";
-import { ROLE_LABELS } from "@/lib/team/records";
 import { isUuid } from "@/lib/projects/validation";
 import { PANEL } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
@@ -68,7 +67,7 @@ export default async function TeamPersonPage({
                 {person.projects.map((project) => (
                   <li key={project.id}>
                     <Link
-                      href={`/projects/${project.id}`}
+                      href={`/projects/${project.publicId}`}
                       className="flex items-center justify-between gap-3 rounded-xl border border-black/[0.07] bg-white px-3.5 py-2.5 transition hover:border-black/[0.14]"
                     >
                       <span className="min-w-0 truncate text-[13px] font-medium text-black/80">

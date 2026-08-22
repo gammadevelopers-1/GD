@@ -49,7 +49,7 @@
   --color-sidebar-foreground: rgba(255, 255, 255, 0.72);
   --color-sidebar-primary: #2fe85c;
   --color-sidebar-primary-foreground: #101512;
-  --color-sidebar-accent: rgba(255, 255, 255, 0.06);
+  --color-sidebar-accent: rgba(255, 255, 255, 0.1);
   --color-sidebar-accent-foreground: #ffffff;
   --color-sidebar-border: rgba(255, 255, 255, 0.07);
   --color-sidebar-ring: rgba(47, 232, 92, 0.45);

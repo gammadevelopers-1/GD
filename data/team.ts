@@ -48,7 +48,12 @@ export type TeamDocument = {
 export type TeamPerson = TeamMember & {
   employment: TeamEmployment;
   documents: TeamDocument[];
-  projects: Array<{ id: string; name: string; responsibility: string | null }>;
+  projects: Array<{
+    id: string;
+    publicId: string;
+    name: string;
+    responsibility: string | null;
+  }>;
   deleteBlocker: string | null;
 };
 
@@ -159,7 +164,7 @@ export const getTeamPerson = cache(
           .order("created_at", { ascending: false }),
         supabase
           .from("app_project_members")
-          .select("project_id, responsibility, app_projects(id, name)")
+          .select("project_id, responsibility, app_projects(id, public_id, name)")
           .eq("profile_id", profileId)
           .is("archived_at", null),
         supabase.rpc("app_team_member_deletable", { target: profileId }),
@@ -225,12 +230,14 @@ export const getTeamPerson = cache(
       projects: (membershipResult.data ?? []).flatMap((row) => {
         const project = row.app_projects as unknown as {
           id: string;
+          public_id: string;
           name: string;
         } | null;
         if (!project) return [];
         return [
           {
             id: String(project.id),
+            publicId: String(project.public_id),
             name: String(project.name),
             responsibility: row.responsibility
               ? String(row.responsibility)
