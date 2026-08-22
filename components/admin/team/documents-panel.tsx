@@ -59,7 +59,7 @@ export function DocumentsPanel({
 
   return (
     <section className={cn(PANEL, "p-5")}>
-      <h2 className="font-mono text-[9px] tracking-[0.16em] text-black/35 uppercase">
+      <h2 className="font-mono text-[9px] tracking-[0.16em] text-black/55 uppercase">
         Documents
       </h2>
 
@@ -70,12 +70,12 @@ export function DocumentsPanel({
               key={document.id}
               className="flex flex-wrap items-center gap-3 rounded-xl border border-black/[0.07] bg-white px-3.5 py-2.5"
             >
-              <FileText className="size-4 shrink-0 text-black/35" />
+              <FileText className="size-4 shrink-0 text-black/55" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[13px] font-medium text-black/80">
                   {document.fileName}
                 </p>
-                <p className="text-[11px] text-black/45">
+                <p className="text-[11px] text-black/60">
                   {TYPE_LABELS[document.documentType] ?? document.documentType}
                   {document.sizeBytes
                     ? ` · ${formatSize(document.sizeBytes)}`

@@ -31,7 +31,7 @@ export function AccountsPanel({
 }) {
   return (
     <section className={cn(PANEL, "p-5")}>
-      <h2 className="font-mono text-[9px] tracking-[0.16em] text-black/35 uppercase">
+      <h2 className="font-mono text-[9px] tracking-[0.16em] text-black/55 uppercase">
         Portal access
       </h2>
 
@@ -46,7 +46,7 @@ export function AccountsPanel({
           ))}
         </ul>
       ) : (
-        <p className="mt-4 text-[12px] text-black/40">
+        <p className="mt-4 text-[12px] text-black/55">
           Nobody has been invited to this client&rsquo;s projects yet.
         </p>
       )}
@@ -78,8 +78,8 @@ function AccountRow({
           <p className="truncate text-[13px] font-medium text-black/80">
             {account.fullName}
           </p>
-          <p className="truncate text-[11px] text-black/45">{account.email}</p>
-          <p className="mt-1 truncate text-[11px] text-black/35">
+          <p className="truncate text-[11px] text-black/60">{account.email}</p>
+          <p className="mt-1 truncate text-[11px] text-black/55">
             {account.projects.map((project) => project.name).join(", ")}
           </p>
         </div>
@@ -137,7 +137,7 @@ function AccountRow({
       </div>
 
       {account.deleteBlocker ? (
-        <p className="mt-2 text-[11px] text-black/40">
+        <p className="mt-2 text-[11px] text-black/55">
           Cannot be deleted permanently — {account.deleteBlocker}.
         </p>
       ) : null}
@@ -202,7 +202,7 @@ function AccountRow({
 function Pair({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline gap-1.5">
-      <dt className="text-black/40">{label}</dt>
+      <dt className="text-black/55">{label}</dt>
       <dd className="text-black/70">{value}</dd>
     </div>
   );

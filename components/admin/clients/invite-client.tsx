@@ -56,7 +56,7 @@ export function InviteClient({
           <DialogTitle className="text-[15px] tracking-[-0.025em]">
             Invite to this project
           </DialogTitle>
-          <DialogDescription className="text-[12px] text-black/45">
+          <DialogDescription className="text-[12px] text-black/60">
             Anyone already signed in is sent straight to the project. Everyone
             else sets a password first.
           </DialogDescription>
@@ -88,7 +88,7 @@ export function InviteClient({
                     <span className="block truncate text-[13px] font-medium text-black/80">
                       {account.fullName}
                     </span>
-                    <span className="block truncate text-[11px] text-black/45">
+                    <span className="block truncate text-[11px] text-black/60">
                       {account.email}
                     </span>
                   </span>
@@ -124,12 +124,12 @@ export function InviteClient({
                     <span className="block truncate text-[13px] font-medium text-black/80">
                       {contact.fullName}
                       {contact.jobTitle ? (
-                        <span className="ml-2 text-[11px] font-normal text-black/40">
+                        <span className="ml-2 text-[11px] font-normal text-black/55">
                           {contact.jobTitle}
                         </span>
                       ) : null}
                     </span>
-                    <span className="block truncate text-[11px] text-black/45">
+                    <span className="block truncate text-[11px] text-black/60">
                       {contact.email}
                     </span>
                   </span>
@@ -226,7 +226,7 @@ export function InviteClient({
 
           {state.link ? (
             <div className="flex flex-wrap items-center gap-2 rounded-lg bg-white px-3 py-2">
-              <span className="w-12 shrink-0 text-[11.5px] text-black/45">
+              <span className="w-12 shrink-0 text-[11.5px] text-black/60">
                 Link
               </span>
               <span className="min-w-0 flex-1 truncate text-[12.5px] text-black/80">

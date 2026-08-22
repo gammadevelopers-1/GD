@@ -93,7 +93,7 @@ export function MemberFields({
                     <span className="block text-[13px] font-medium text-black/80">
                       {ROLE_LABELS[role]}
                     </span>
-                    <span className="mt-0.5 block text-[11px] leading-4 text-black/45">
+                    <span className="mt-0.5 block text-[11px] leading-4 text-black/60">
                       {ROLE_DESCRIPTIONS[role]}
                     </span>
                   </span>
@@ -197,7 +197,7 @@ function Group({
 }) {
   return (
     <section>
-      <h3 className="font-mono text-[9px] tracking-[0.16em] text-black/35 uppercase">
+      <h3 className="font-mono text-[9px] tracking-[0.16em] text-black/55 uppercase">
         {title}
       </h3>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">{children}</div>

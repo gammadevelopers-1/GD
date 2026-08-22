@@ -39,8 +39,10 @@ export function Modal({
         showCloseButton={false}
         overlayClassName="bg-black/35 backdrop-blur-none supports-backdrop-filter:backdrop-blur-none"
         className={cn(
-          "w-[calc(100vw-2rem)] gap-0 rounded-[20px] border border-black/[0.08] bg-[#f8f8f3] p-0 text-black shadow-[0_30px_80px_rgba(20,23,26,0.22)] ring-0",
-          size === "lg" ? "sm:max-w-3xl" : "sm:max-w-lg",
+          "gap-0 overflow-hidden rounded-[20px] border border-black/[0.08] bg-[#f8f8f3] p-0 text-black shadow-[0_30px_80px_rgba(20,23,26,0.22)] ring-0",
+          size === "lg"
+            ? "w-[min(calc(100vw-2rem),48rem)] max-w-[min(calc(100vw-2rem),48rem)]"
+            : "w-[min(calc(100vw-2rem),32rem)] max-w-[min(calc(100vw-2rem),32rem)]",
         )}
       >
         <div className="flex max-h-[85vh] flex-col">
@@ -69,7 +71,7 @@ export function Modal({
               </button>
             </DialogClose>
           </DialogHeader>
-          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+          <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-5 py-4">
             {children}
           </div>
         </div>

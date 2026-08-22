@@ -344,8 +344,8 @@ export async function sendInvite(
     return {
       ...formError(
         result.reason === "not-configured"
-          ? "Email is not configured, so nothing was sent. Send this link yourself."
-          : "That email could not be sent. Send this link yourself.",
+          ? "Email is not configured (RESEND_API_KEY and NOTIFICATIONS_FROM), so nothing was sent. Copy the link below and send it yourself."
+          : `The email service refused it (${result.detail ?? "no detail"}). Copy the link below and send it yourself.`,
       ),
       link,
     };

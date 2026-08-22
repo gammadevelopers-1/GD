@@ -19,7 +19,7 @@ export function CompanyPanel({ client }: { client: ClientRecord }) {
   return (
     <section className={cn(PANEL, "p-5")}>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-mono text-[9px] tracking-[0.16em] text-black/35 uppercase">
+        <h2 className="font-mono text-[9px] tracking-[0.16em] text-black/55 uppercase">
           Company
         </h2>
 

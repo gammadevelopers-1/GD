@@ -359,7 +359,7 @@ async function sendProjectInvite(
   origin: string,
 ): Promise<
   | { ok: true; returning: boolean }
-  | { ok: false; message: string; link?: string }
+  | { ok: false; message: string; detail: string; link?: string }
 > {
   const supabase = await createClient();
 
@@ -387,13 +387,26 @@ async function sendProjectInvite(
     });
 
     if (!result.sent) {
-      return { ok: false, message: recipient.email };
+      return {
+        ok: false,
+        message: recipient.email,
+        detail:
+          result.reason === "not-configured"
+            ? "email is not configured"
+            : `the email service refused it (${result.detail ?? "no detail"})`,
+      };
     }
     return { ok: true, returning: true };
   }
 
   const token = await generatePasswordToken(recipient.email);
-  if (!token.ok) return { ok: false, message: recipient.email };
+  if (!token.ok) {
+    return {
+      ok: false,
+      message: recipient.email,
+      detail: `no set-password link could be made (${token.message})`,
+    };
+  }
 
   const link = `${origin}/set-password?token=${encodeURIComponent(token.token)}&email=${encodeURIComponent(recipient.email)}&id=${recipient.id}&kind=client`;
 
@@ -414,7 +427,17 @@ async function sendProjectInvite(
     body: withInviteLink(override?.body || draft.body, link),
   });
 
-  if (!result.sent) return { ok: false, message: recipient.email, link };
+  if (!result.sent) {
+    return {
+      ok: false,
+      message: recipient.email,
+      detail:
+        result.reason === "not-configured"
+          ? "email is not configured"
+          : `the email service refused it (${result.detail ?? "no detail"})`,
+      link,
+    };
+  }
 
   await supabase
     .from("app_client_users")
@@ -466,6 +489,7 @@ export async function inviteClientToProject(
         }
       : null;
 
+  const reasons = new Set<string>();
   let sent = 0;
   let returning = 0;
   const failed: string[] = [];
@@ -551,6 +575,7 @@ export async function inviteClientToProject(
       if (outcome.returning) returning += 1;
     } else {
       failed.push(outcome.message);
+      reasons.add(outcome.detail);
       if (outcome.link) fallbackLink = outcome.link;
     }
   }
@@ -558,9 +583,12 @@ export async function inviteClientToProject(
   refresh(isUuid(clientId) ? clientId : undefined);
 
   if (!sent) {
+    const why = reasons.size ? ` — ${[...reasons].join("; ")}` : "";
     return {
       ...formError(
-        `Nothing was sent to ${failed.join(", ")}. Send the link yourself.`,
+        `Nothing was sent to ${failed.join(", ")}${why}.${
+          fallbackLink ? " Copy the link below and send it yourself." : ""
+        }`,
       ),
       link: fallbackLink,
     };
@@ -571,7 +599,11 @@ export async function inviteClientToProject(
     returning
       ? `${returning} already had a password and were sent a sign-in link`
       : null,
-    failed.length ? `${failed.join(", ")} failed` : null,
+    failed.length
+      ? `${failed.join(", ")} failed${
+          reasons.size ? ` — ${[...reasons].join("; ")}` : ""
+        }`
+      : null,
   ].filter(Boolean);
 
   return failed.length

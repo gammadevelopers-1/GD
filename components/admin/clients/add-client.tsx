@@ -50,7 +50,7 @@ export function AddClient() {
           <DialogTitle className="text-[15px] tracking-[-0.025em]">
             Add a client
           </DialogTitle>
-          <DialogDescription className="text-[12px] text-black/45">
+          <DialogDescription className="text-[12px] text-black/60">
             The company and the people you speak to there.
           </DialogDescription>
         </DialogHeader>
@@ -80,7 +80,11 @@ export function AddClient() {
 
           <label className="block space-y-1.5">
             <span className="text-[12px] text-black/55">Notes</span>
-            <textarea name="notes" rows={2} className={cn(INPUT, "resize-y py-2")} />
+            <textarea
+              name="notes"
+              rows={2}
+              className={cn(INPUT, "resize-y py-2")}
+            />
           </label>
 
           <fieldset className="space-y-3">
@@ -92,8 +96,10 @@ export function AddClient() {
                 className="rounded-xl border border-black/[0.09] bg-white p-3.5"
               >
                 <div className="mb-2 flex items-center justify-between gap-3">
-                  <span className="text-[11px] text-black/40">
-                    {position === 0 ? "Primary contact" : `Contact ${position + 1}`}
+                  <span className="text-[11px] text-black/55">
+                    {position === 0
+                      ? "Primary contact"
+                      : `Contact ${position + 1}`}
                   </span>
                   {rows.length > 1 ? (
                     <button

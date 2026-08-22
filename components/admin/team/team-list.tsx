@@ -52,7 +52,7 @@ export function TeamList({ members }: { members: TeamMember[] }) {
                       <span className="block truncate text-[13.5px] font-semibold tracking-[-0.02em]">
                         {member.fullName}
                       </span>
-                      <span className="block truncate text-[11.5px] text-black/45">
+                      <span className="block truncate text-[11.5px] text-black/60">
                         {member.jobTitle ?? member.email ?? "No job title"}
                       </span>
                     </span>
@@ -71,7 +71,7 @@ export function TeamList({ members }: { members: TeamMember[] }) {
                   <Link
                     href={`/team/${member.id}`}
                     aria-label={`Open ${member.fullName}`}
-                    className="grid size-7 place-items-center rounded-lg text-black/30 transition hover:bg-black/[0.05] hover:text-black"
+                    className="grid size-7 place-items-center rounded-lg text-black/55 transition hover:bg-black/[0.05] hover:text-black"
                   >
                     <ChevronRight className="size-4" />
                   </Link>
@@ -96,7 +96,7 @@ export function TeamList({ members }: { members: TeamMember[] }) {
                   <p className="truncate text-[14px] font-semibold tracking-[-0.02em]">
                     {member.fullName}
                   </p>
-                  <p className="truncate text-[11.5px] text-black/45">
+                  <p className="truncate text-[11.5px] text-black/60">
                     {member.jobTitle ?? member.email ?? "No job title"}
                   </p>
                 </div>
@@ -105,7 +105,7 @@ export function TeamList({ members }: { members: TeamMember[] }) {
             </div>
             <dl className="mt-4 flex gap-6">
               <div>
-                <dt className="font-mono text-[9px] tracking-[0.14em] text-black/35 uppercase">
+                <dt className="font-mono text-[9px] tracking-[0.14em] text-black/55 uppercase">
                   Role
                 </dt>
                 <dd className="mt-1 text-[12.5px] text-black/70">
@@ -113,7 +113,7 @@ export function TeamList({ members }: { members: TeamMember[] }) {
                 </dd>
               </div>
               <div>
-                <dt className="font-mono text-[9px] tracking-[0.14em] text-black/35 uppercase">
+                <dt className="font-mono text-[9px] tracking-[0.14em] text-black/55 uppercase">
                   Projects
                 </dt>
                 <dd className="mt-1 font-mono text-[12.5px] text-black/70">
@@ -156,7 +156,7 @@ function Avatar({ name, dimmed }: { name: string; dimmed?: boolean }) {
 
 function Th({ children }: { children: React.ReactNode }) {
   return (
-    <th className="px-4 py-2.5 font-mono text-[9px] font-medium tracking-[0.14em] text-black/35 uppercase">
+    <th className="px-4 py-2.5 font-mono text-[9px] font-medium tracking-[0.14em] text-black/55 uppercase">
       {children}
     </th>
   );

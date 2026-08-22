@@ -37,7 +37,7 @@ export function ClientList({ clients }: { clients: ClientCompany[] }) {
             <CardContent className="px-5 pt-5">
               <div className="flex items-start justify-between gap-3">
                 <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-black/[0.045]">
-                  <Building2 className="size-4 text-black/45" />
+                  <Building2 className="size-4 text-black/60" />
                 </span>
 
                 <div className="flex flex-wrap items-center justify-end gap-1.5">
@@ -62,7 +62,7 @@ export function ClientList({ clients }: { clients: ClientCompany[] }) {
                       {INVITE_LABELS[client.inviteState]}
                     </Badge>
                   )}
-                  <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-black/[0.035] text-black/25 transition-colors duration-300 group-hover:bg-[#2fe85c]/15 group-hover:text-[#08743d]">
+                  <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-black/[0.035] text-black/55 transition-colors duration-300 group-hover:bg-[#2fe85c]/15 group-hover:text-[#08743d]">
                     <ArrowUpRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </span>
                 </div>
@@ -111,15 +111,15 @@ function Detail({
 }) {
   return (
     <div className="flex min-w-0 items-center gap-2">
-      <Icon className="size-3.5 shrink-0 text-black/25" />
+      <Icon className="size-3.5 shrink-0 text-black/55" />
       <span
         className={cn(
           "min-w-0 truncate text-[12px]",
-          muted ? "text-black/30" : "text-black/60",
+          muted ? "text-black/55" : "text-black/60",
         )}
       >
         {value}
-        {hint ? <span className="ml-1.5 text-black/35">· {hint}</span> : null}
+        {hint ? <span className="ml-1.5 text-black/55">· {hint}</span> : null}
       </span>
     </div>
   );
@@ -128,7 +128,7 @@ function Detail({
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="font-mono text-[8px] tracking-wider text-black/30 uppercase">
+      <p className="font-mono text-[8px] tracking-wider text-black/55 uppercase">
         {label}
       </p>
       <p className="mt-1 text-xs font-medium">{value}</p>

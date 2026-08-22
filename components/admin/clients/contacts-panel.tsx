@@ -36,7 +36,7 @@ export function ContactsPanel({
   return (
     <section className={cn(PANEL, "p-5")}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-mono text-[9px] tracking-[0.16em] text-black/35 uppercase">
+        <h2 className="font-mono text-[9px] tracking-[0.16em] text-black/55 uppercase">
           Contacts
         </h2>
         <ContactDialog clientId={clientId} />
@@ -58,7 +58,7 @@ export function ContactsPanel({
                     </span>
                   ) : null}
                 </p>
-                <p className="truncate text-[11px] text-black/45">
+                <p className="truncate text-[11px] text-black/60">
                   {[contact.jobTitle, contact.email, contact.phone]
                     .filter(Boolean)
                     .join(" · ") || "No details recorded"}
@@ -71,7 +71,7 @@ export function ContactsPanel({
           ))}
         </ul>
       ) : (
-        <p className="mt-4 text-[12px] text-black/40">No contacts yet.</p>
+        <p className="mt-4 text-[12px] text-black/55">No contacts yet.</p>
       )}
     </section>
   );

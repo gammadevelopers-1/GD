@@ -41,7 +41,7 @@ export function AccountPanel({
   return (
     <section className={cn(PANEL, "p-5")}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-mono text-[9px] tracking-[0.16em] text-black/35 uppercase">
+        <h2 className="font-mono text-[9px] tracking-[0.16em] text-black/55 uppercase">
           Account
         </h2>
         <StateBadge state={person.state} />
@@ -115,7 +115,7 @@ export function AccountPanel({
       </div>
 
       {!isSelf && person.deleteBlocker ? (
-        <p className="mt-3 text-[11.5px] text-black/40">
+        <p className="mt-3 text-[11.5px] text-black/55">
           Cannot be deleted permanently — {person.deleteBlocker}.
         </p>
       ) : null}
@@ -199,7 +199,7 @@ function stamp(value: string | null) {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <dt className="text-[11.5px] text-black/45">{label}</dt>
+      <dt className="text-[11.5px] text-black/60">{label}</dt>
       <dd className="min-w-0 truncate text-[12.5px] text-black/75">{value}</dd>
     </div>
   );
