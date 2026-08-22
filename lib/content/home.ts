@@ -298,8 +298,8 @@ export const bookAudit = {
       "A written summary — yours to keep, no strings",
     ],
     host: {
-      initials: "AR",
-      name: "Ahmad Raza",
+      initials: "AB",
+      name: "Abu Bakar",
       role: "Co-founder · leads the audit",
     },
   },
