@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronDown, LogOut, Settings, UserRound } from "lucide-react";
+import { LogOut, Settings, UserRound } from "lucide-react";
 import { logout } from "@/app/(auth)/login/actions";
 import {
   DropdownMenu,
@@ -32,20 +32,14 @@ export function AccountMenu({
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="group flex items-center gap-2.5 rounded-xl border border-black/[0.07] bg-white/55 p-1.5 pr-2.5 transition hover:border-black/[0.14] hover:bg-white/80 focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none data-[state=open]:border-black/[0.14] data-[state=open]:bg-white"
+          aria-label={`${shown} — account menu`}
+          className="cursor-pointer rounded-xl transition duration-200 hover:-translate-y-px focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
         >
-          <Face initials={viewer.initials} url={avatarUrl} className="size-7" />
-
-          <span className="hidden min-w-0 text-left leading-none sm:block">
-            <span className="block max-w-32 truncate text-[11.5px] font-semibold">
-              {shown}
-            </span>
-            <span className="mt-1 block text-[9px] text-black/40">
-              {ROLE_LABELS[viewer.role]}
-            </span>
-          </span>
-
-          <ChevronDown className="size-3.5 shrink-0 text-black/30 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+          <Face
+            initials={viewer.initials}
+            url={avatarUrl}
+            className="size-9.5 rounded-xl text-[11.5px]"
+          />
         </button>
       </DropdownMenuTrigger>
 
@@ -59,6 +53,9 @@ export function AccountMenu({
           <div className="min-w-0">
             <p className="truncate text-[13px] font-semibold">{shown}</p>
             <p className="truncate text-[11px] text-black/45">{viewer.email}</p>
+            <p className="mt-0.5 font-mono text-[9px] tracking-[0.14em] text-black/35 uppercase">
+              {ROLE_LABELS[viewer.role]}
+            </p>
             {alsoKnownAs ? (
               <p className="mt-0.5 truncate font-mono text-[10px] text-black/35">
                 {alsoKnownAs}

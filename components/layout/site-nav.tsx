@@ -2,13 +2,17 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
-import { navLinks, site } from "@/lib/content/site";
+import { navLinks, servicesMenu, site } from "@/lib/content/site";
+import { cn } from "@/lib/utils";
 
 export function SiteNav() {
   const nav = useRef<HTMLElement>(null);
   const solid = useRef<HTMLDivElement>(null);
+  const [services, setServices] = useState(false);
+  const closeTimer = useRef<number>(0);
 
   useGSAP(() => {
     gsap.set(solid.current, { opacity: 1 });
@@ -32,6 +36,15 @@ export function SiteNav() {
       delay: 0.1,
     });
   });
+
+  function openServices() {
+    window.clearTimeout(closeTimer.current);
+    setServices(true);
+  }
+
+  function closeServices() {
+    closeTimer.current = window.setTimeout(() => setServices(false), 120);
+  }
 
   return (
     <header
@@ -80,7 +93,58 @@ export function SiteNav() {
         </Link>
 
         <div className="hidden items-center justify-center rounded-full border border-black/[0.055] bg-white/38 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] md:flex">
-          {navLinks.map((link) => (
+          <NavLink href={navLinks[0].href}>{navLinks[0].label}</NavLink>
+
+          <div
+            className="relative"
+            onMouseEnter={openServices}
+            onMouseLeave={closeServices}
+          >
+            <button
+              type="button"
+              aria-expanded={services}
+              onClick={() => setServices((v) => !v)}
+              className={cn(
+                "hover:text-foreground inline-flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-[12.5px] font-medium tracking-[-0.01em] transition-colors focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none",
+                services ? "text-foreground" : "text-muted-foreground",
+              )}
+            >
+              Services
+              <ChevronDown
+                className={cn(
+                  "size-3 transition-transform duration-300",
+                  services && "rotate-180",
+                )}
+              />
+            </button>
+
+            <div
+              className={cn(
+                "border-border absolute top-[calc(100%+14px)] left-1/2 grid w-[600px] max-w-[92vw] -translate-x-1/2 grid-cols-2 gap-1.5 rounded-[20px] border bg-white p-3.5 shadow-[0_30px_70px_rgba(20,23,26,0.16)] transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
+                services
+                  ? "translate-y-0 opacity-100"
+                  : "pointer-events-none invisible translate-y-2 opacity-0",
+              )}
+            >
+              {servicesMenu.map((item) => (
+                <Link
+                  key={item.title}
+                  href={item.href}
+                  onClick={() => setServices(false)}
+                  className="rounded-[14px] px-4 py-3.5 transition-colors duration-200 hover:bg-[rgba(47,232,92,0.06)] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none"
+                >
+                  <span className="text-foreground block text-sm font-semibold">
+                    {item.title}
+                  </span>
+                  <span className="text-muted-foreground mt-1 block text-[12.5px] leading-[1.5]">
+                    {item.body}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {navLinks.slice(1).map((link) => (
             <NavLink key={link.href} href={link.href}>
               {link.label}
             </NavLink>
@@ -89,9 +153,15 @@ export function SiteNav() {
 
         <div className="flex items-center justify-end gap-2">
           <Link
+            href="/contact"
+            className="text-muted-foreground hover:text-foreground hidden rounded-full px-3 py-2 text-[13px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none sm:inline-flex"
+          >
+            Contact
+          </Link>
+          <Link
             href={site.calendly}
             data-button-fill
-            className="button-fill-fx nav-cta bg-brand relative inline-flex h-10 items-center overflow-hidden rounded-full px-4 text-[13px] font-semibold text-[#101512] shadow-[0_5px_18px_rgba(47,232,92,0.22)] transition-all hover:-translate-y-px hover:shadow-[0_8px_24px_rgba(47,232,92,0.34)] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none md:px-[19px] md:text-sm"
+            className="button-fill-fx marketing-primary-button nav-cta relative inline-flex h-10 items-center overflow-hidden rounded-full px-4 md:px-[19px]"
           >
             <span className="button-fill-fx__label">Book a call</span>
           </Link>

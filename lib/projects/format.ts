@@ -38,6 +38,20 @@ export function initials(name: string) {
     .toUpperCase();
 }
 
+export function timeAgo(value: string) {
+  const seconds = Math.max(0, (Date.now() - new Date(value).getTime()) / 1000);
+  if (seconds < 60) return "now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 5) return `${weeks}w`;
+  return formatDateShort(new Date(value).toISOString().slice(0, 10));
+}
+
 export function daysUntil(date: string) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);

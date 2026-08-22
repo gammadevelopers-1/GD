@@ -25,8 +25,9 @@ const MESSY_END_PROGRESS = 0.31;
 const SOLUTION_START_PROGRESS = 0.79;
 const FLAW_FADE_IN_END = 0.035;
 const CARD_GAP = 14;
-const CONTENT_SAFETY_GAP = 18;
-const CONTENT_FADE_DISTANCE = 56;
+const CONTENT_LEFT_SAFETY_GAP = 42;
+const CONTENT_RIGHT_SAFETY_GAP = 18;
+const CONTENT_FADE_DISTANCE = 72;
 const SOLUTION_ZONE_START = 0.88;
 const BASE_DOT_LINE_INDICES = [0, 1, 2, 3, 4, 5, 6, 7] as const;
 
@@ -214,8 +215,8 @@ export function LineField() {
       if (!element) return fallbackBoundary();
       const rect = element.getBoundingClientRect();
       return {
-        left: rect.left - canvasRect.left - CONTENT_SAFETY_GAP,
-        right: rect.right - canvasRect.left + CONTENT_SAFETY_GAP,
+        left: rect.left - canvasRect.left - CONTENT_LEFT_SAFETY_GAP,
+        right: rect.right - canvasRect.left + CONTENT_RIGHT_SAFETY_GAP,
       };
     }
 
@@ -617,10 +618,16 @@ export function LineField() {
         const flawFadeIn = smooth(
           clamp((dotProgress + 0.005) / (FLAW_FADE_IN_END + 0.005), 0, 1),
         );
+        const flawCardRight = flawCardX + notification.offsetWidth;
+        const flawFadeStart = boundary.left - CONTENT_FADE_DISTANCE;
         const flawBoundaryOpacity =
           1 -
           smooth(
-            clamp((flawCardX - boundary.left) / CONTENT_FADE_DISTANCE, 0, 1),
+            clamp(
+              (flawCardRight - flawFadeStart) / CONTENT_FADE_DISTANCE,
+              0,
+              1,
+            ),
           );
         const flawOpacity = flawFadeIn * flawBoundaryOpacity;
         const solutionCardLeft = dx + CARD_GAP;

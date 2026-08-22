@@ -71,6 +71,10 @@ export async function addProjectMember(
   }
 
   await recordTeamEvent(supabase, projectId, "project.member_added", profileId);
+  await supabase.rpc("app_notify_project_member", {
+    target_project_id: projectId,
+    target_profile_id: profileId,
+  });
   refresh();
   return formSuccess("Added to the project. They can see it now.");
 }
@@ -185,5 +189,12 @@ export async function setProjectLead(formData: FormData) {
     action_name: "project.lead_changed",
     event_metadata: { profile_id: leadId },
   });
+
+  if (leadId) {
+    await supabase.rpc("app_notify_project_lead", {
+      target_project_id: projectId,
+      target_profile_id: leadId,
+    });
+  }
   refresh();
 }

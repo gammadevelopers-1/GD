@@ -1,0 +1,82 @@
+"use client";
+
+import { useState, type FormEvent } from "react";
+import { contact } from "@/lib/content/home";
+
+const FIELD =
+  "h-12 rounded-xl border border-black/14 bg-[#fbfbf8] px-3.75 text-[15px] outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#2fe85c] focus:shadow-[0_0_0_3px_rgba(47,232,92,0.16)]";
+const LABEL =
+  "text-muted-foreground flex flex-col gap-1.75 text-[13px] font-medium";
+
+export function ContactForm() {
+  const [message, setMessage] = useState("");
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(contact.success);
+  }
+
+  return (
+    <form
+      onSubmit={onSubmit}
+      className="border-border rounded-[24px] border bg-white p-6 shadow-[0_30px_70px_-34px_rgba(16,24,40,0.34)] sm:p-9.5"
+    >
+      <div className="grid gap-4.5 sm:grid-cols-2">
+        <label className={LABEL}>
+          Full name
+          <input required placeholder="Sara Malik" className={FIELD} />
+        </label>
+        <label className={LABEL}>
+          Work email
+          <input
+            required
+            type="email"
+            placeholder="you@company.com"
+            className={FIELD}
+          />
+        </label>
+        <label className={LABEL}>
+          Company
+          <input placeholder="Cortek" className={FIELD} />
+        </label>
+        <label className={LABEL}>
+          Team size
+          <select className={`${FIELD} text-foreground`} defaultValue="1–10">
+            {contact.teamSizes.map((size) => (
+              <option key={size}>{size}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <label className={`${LABEL} mt-4.5`}>
+        What’s the messiest part of your day?
+        <textarea
+          rows={5}
+          placeholder="Leads arrive on WhatsApp and get missed. We retype every booking into two systems..."
+          className="resize-y rounded-xl border border-black/14 bg-[#fbfbf8] px-3.75 py-3.25 text-[15px] leading-[1.55] outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#2fe85c] focus:shadow-[0_0_0_3px_rgba(47,232,92,0.16)]"
+        />
+      </label>
+
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3.5">
+        <p className="max-w-[34ch] text-xs text-black/40">
+          {contact.disclaimer}
+        </p>
+        <button
+          type="submit"
+          data-button-fill
+          className="button-fill-fx bg-brand inline-flex h-13 cursor-pointer items-center overflow-hidden rounded-full px-7.5 text-[15px] font-semibold text-[#101512] shadow-[0_12px_32px_rgba(47,232,92,0.34)] transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(47,232,92,0.46)] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none"
+        >
+          <span className="button-fill-fx__label">{contact.cta}</span>
+        </button>
+      </div>
+
+      <p
+        aria-live="polite"
+        className="text-gd-light-emerald mt-4 min-h-5 text-[13.5px] font-medium"
+      >
+        {message}
+      </p>
+    </form>
+  );
+}

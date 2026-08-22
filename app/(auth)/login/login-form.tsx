@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { ArrowRight, LoaderCircle } from "lucide-react";
+import { PasswordInput } from "@/components/ui/password-input";
 import { login, type LoginState } from "./actions";
 
 const initialState: LoginState = {};
@@ -29,12 +30,12 @@ export function LoginForm({ next = "/dashboard" }: { next?: string }) {
 
       <label className="block space-y-2">
         <span className="text-[13px] font-medium text-white/70">Password</span>
-        <input
+        <PasswordInput
           name="password"
-          type="password"
           autoComplete="current-password"
           placeholder="Your password"
           className="h-12 w-full rounded-xl border border-white/10 bg-white/[0.055] px-4 text-[15px] text-white transition outline-none placeholder:text-white/25 focus:border-[#2fe85c]/60 focus:ring-4 focus:ring-[#2fe85c]/10"
+          toggleClassName="text-white/40 hover:text-white focus-visible:ring-[#2fe85c]/45"
           required
         />
       </label>

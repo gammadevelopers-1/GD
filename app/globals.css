@@ -131,16 +131,6 @@
   }
 }
 
-@keyframes surface-scan {
-  0% {
-    transform: translateX(-20vw) skewX(-18deg);
-  }
-
-  100% {
-    transform: translateX(120vw) skewX(-18deg);
-  }
-}
-
 @keyframes hero-aurora-left {
   0%,
   100% {
@@ -221,6 +211,17 @@
   }
 }
 
+@keyframes sticky-cta-nudge {
+  0%,
+  100% {
+    translate: -4px 0;
+  }
+
+  50% {
+    translate: 4px 0;
+  }
+}
+
 :root {
   color-scheme: light;
 
@@ -272,6 +273,78 @@ select {
 
 p {
   text-wrap: pretty;
+}
+
+/* Marketing primitives keep the home page's rhythm and brand actions aligned. */
+.marketing-container {
+  width: 100%;
+  max-width: 77.5rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+.marketing-section {
+  padding-block: clamp(5.75rem, 7.5vw, 7rem);
+}
+
+.marketing-section-copy {
+  max-width: 62ch;
+  color: var(--muted-foreground);
+  font-size: clamp(0.9375rem, 0.9rem + 0.18vw, 1rem);
+  line-height: 1.65;
+}
+
+.marketing-section-copy--dark {
+  color: #a8aea5;
+}
+
+.marketing-primary-button {
+  background-color: var(--color-gd-primary);
+  color: #101512;
+  font-family: var(--font-general-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.9375rem;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  box-shadow:
+    0 12px 30px -14px rgba(47, 232, 92, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42);
+  transition:
+    color 300ms ease,
+    background-color 300ms ease,
+    box-shadow 300ms ease,
+    transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.marketing-primary-button:hover:not(:disabled) {
+  box-shadow:
+    0 18px 40px -15px rgba(47, 232, 92, 0.82),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  transform: translateY(-2px);
+}
+
+.marketing-primary-button:active:not(:disabled) {
+  box-shadow:
+    0 8px 22px -13px rgba(47, 232, 92, 0.68),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(0);
+}
+
+.marketing-primary-button:focus-visible {
+  outline: 3px solid rgba(47, 232, 92, 0.42);
+  outline-offset: 3px;
+}
+
+.marketing-primary-button:disabled,
+.marketing-primary-button[aria-disabled="true"] {
+  cursor: default;
+  opacity: 0.52;
+}
+
+@media (min-width: 48rem) {
+  .marketing-container {
+    padding-inline: 2.25rem;
+  }
 }
 
 .route-error-grid {
@@ -991,23 +1064,6 @@ p {
   );
 }
 
-.marquee-surface::after {
-  position: absolute;
-  inset-block: 0;
-  left: 0;
-  width: 12vw;
-  min-width: 110px;
-  content: "";
-  pointer-events: none;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(47, 232, 92, 0.09),
-    transparent
-  );
-  animation: surface-scan 8s linear infinite;
-}
-
 .hero-aurora {
   filter: blur(76px);
   opacity: 0.46;
@@ -1097,6 +1153,20 @@ p {
 @media (prefers-reduced-motion: reduce) {
   .edge-lit::after {
     transition-duration: 1ms;
+  }
+}
+
+.button-fill-fx.sticky-business-cta {
+  position: fixed;
+}
+
+.sticky-cta-nudge {
+  animation: sticky-cta-nudge 1.15s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticky-cta-nudge {
+    animation: none;
   }
 }
 

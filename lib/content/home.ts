@@ -12,160 +12,304 @@ export const hero = {
   cta: "Analyze my workflow",
 } as const;
 
-export const flow = {
-  eyebrow: "The flow",
-  title: "One path, from the moment work arrives.",
-  steps: [
+export const marquee = {
+  label: "Trusted by teams that already run",
+} as const;
+
+export const method = {
+  eyebrow: "How we work",
+  title: "From messy workflow to agents in production.",
+  body: "We don’t sell a platform you have to learn. We audit how you work, build agents into the tools you already use, and keep them running — every decision logged and auditable.",
+  console: {
+    title: "gamma-agent  //  mapping your pipeline",
+    stages: [
+      { key: "audit", label: "Audit" },
+      { key: "build", label: "Build" },
+      { key: "run", label: "Run" },
+    ],
+    tasks: [
+      {
+        stage: "audit",
+        fill: 1,
+        card: { title: "Map your workflow", meta: "User task" },
+        log: "> audit · mapping your workflow…",
+        done: "✓ 22 steps mapped",
+      },
+      {
+        stage: "build",
+        fill: 0.34,
+        card: { title: "Connect your tools", meta: "Agent task" },
+        log: "> build · connecting your tools…",
+        done: "✓ 6 apps linked",
+      },
+      {
+        stage: "build",
+        fill: 0.67,
+        card: { title: "Design the pipeline", meta: "User task" },
+        log: "> build · designing the pipeline…",
+        done: "✓ approved by you",
+      },
+      {
+        stage: "build",
+        fill: 1,
+        card: { title: "Ship first agent", meta: "Agent · approval" },
+        log: "> build · shipping first agent…",
+        done: "✓ live in production",
+      },
+      {
+        stage: "run",
+        fill: 0.34,
+        card: { title: "Route & action", meta: "Agent task" },
+        log: "> run · routing work…",
+        done: "✓ auto-assigned",
+      },
+      {
+        stage: "run",
+        fill: 0.67,
+        card: { title: "Log every step", meta: "Agent task" },
+        log: "> run · logging every step…",
+        done: "✓ audit trail written",
+      },
+      {
+        stage: "run",
+        fill: 1,
+        card: { title: "Train your team", meta: "User task" },
+        log: "> run · training your team…",
+        done: "✓ handover complete",
+      },
+    ],
+  },
+  phases: [
     {
-      key: "IN",
       num: "01",
-      title: "Arrives",
-      body: "Email, form, call or WhatsApp. Every channel, one queue.",
+      icon: "search",
+      title: "Audit",
+      when: "Week 1",
+      body: "We map how work actually flows today — every tool, handoff and bottleneck — and score where AI pays off first. No slideware, just the real picture.",
+      points: [
+        "Workflow map & time-sink audit",
+        "Prioritised roadmap with ROI",
+      ],
     },
     {
-      key: "READ",
       num: "02",
-      title: "Understood",
-      body: "The agent reads it properly, not by keyword.",
+      icon: "build",
+      title: "Build",
+      when: "Weeks 2–6",
+      body: "We ship the first agent into your real stack — wired to the tools you already pay for, with human approval on anything that matters. Working software, not a demo.",
+      points: ["Agent live in your stack", "Human-in-the-loop approvals"],
     },
     {
-      key: "SORT",
       num: "03",
-      title: "Routed",
-      body: "Priority, owner and next step decided automatically.",
-    },
-    {
-      key: "DO",
-      num: "04",
-      title: "Actioned",
-      body: "Records updated, replies sent, invoices raised.",
-    },
-    {
-      key: "LOG",
-      num: "05",
-      title: "Recorded",
-      body: "Every step logged, so you can audit any decision.",
+      icon: "run",
+      title: "Run",
+      when: "Ongoing",
+      body: "We keep it running and improving — every decision logged and auditable, uptime we stand behind, and a retained team that keeps shipping after launch.",
+      points: [
+        "Full audit trail on every action",
+        "Retained team & 99.98% uptime",
+      ],
     },
   ],
 } as const;
 
-export const capabilities = {
-  eyebrow: "What we build",
-  title: "Systems that hold, after we leave.",
-  items: [
+export const outcomes = {
+  eyebrow: "What our clients gain",
+  title: "What changes after we ship.",
+  body: "Measured across live engagements — not projections.",
+  stats: [
     {
-      title: "Production AI agents",
-      body: "Agents that own a real outcome inside a real workflow, with logs you can audit when something goes wrong.",
-      panel: {
-        label: "agent · intake",
-        rows: [
-          ["inbound received", "14:02"],
-          ["intent classified", "warm"],
-          ["record created", "crm"],
-          ["reply sent", "61s"],
-        ],
-        footer: "1,284 handled this month",
-      },
+      value: 20,
+      suffix: "+",
+      body: "Hours back every week per team — the manual data entry and routing, gone.",
+      label: "Time reclaimed weekly",
     },
     {
-      title: "Internal platforms",
-      body: "Dashboards, CRMs and admin tools that replace the spreadsheet everyone quietly depends on.",
-      panel: {
-        label: "internal dashboard",
-        rows: [
-          ["open projects", "7"],
-          ["unpaid invoices", "2"],
-          ["leads this week", "38"],
-          ["team capacity", "82%"],
-        ],
-        footer: "live across 4 sources",
-      },
+      value: 6,
+      unit: "weeks",
+      body: "From first audit to a working agent live in your stack.",
+      label: "Audit to live",
     },
     {
-      title: "Systems integration",
-      body: "Connecting the tools you already pay for, so nothing gets retyped between them.",
-      panel: {
-        label: "integrations",
-        rows: [
-          ["website form", "synced"],
-          ["accounting", "synced"],
-          ["inbox", "synced"],
-          ["calendar", "synced"],
-        ],
-        footer: "0 manual entries today",
-      },
+      value: 30,
+      suffix: "×",
+      body: "More records handled once an agent took over the manual queue.",
+      label: "Throughput lift",
     },
     {
-      title: "Ongoing engineering",
-      body: "A retained team that keeps shipping after launch, not a handover and a goodbye.",
-      panel: {
-        label: "retained engineering",
-        rows: [
-          ["tickets closed", "19"],
-          ["deploys this week", "6"],
-          ["uptime", "99.98%"],
-          ["first response", "< 2h"],
-        ],
-        footer: "shipping since launch",
-      },
+      value: 99.98,
+      decimals: 2,
+      suffix: "%",
+      body: "Uptime across every system we run — measured since launch.",
+      label: "Uptime, since launch",
     },
   ],
 } as const;
 
-export const proof = {
-  eyebrow: "Proof",
-  title: "Running right now.",
+export const work = {
+  eyebrow: "Case studies",
+  title: "Products we’ve shipped into production.",
+  body: "Live products, running with real clients today.",
+  filters: [
+    { key: "all", label: "All work" },
+    { key: "platforms", label: "Platforms & CRMs" },
+    { key: "agents", label: "AI agents" },
+    { key: "integrations", label: "Integrations" },
+  ],
   cases: [
     {
-      status: "In production",
-      title: "Five tools became one CRM",
-      body: "Lead intake, email, scheduling, invoicing and the client portal running as a single pipeline.",
-      meta: "Sports · education → Next.js, Supabase",
-      thumb: ["w6", "w8-accent", "w4"] as const,
+      category: "platforms",
+      thumb: "board",
+      sector: "Sports academy · Education",
+      title: "Five tools unified into one CRM",
+      body: "Lead intake, scheduling, invoicing and the client portal, running as one pipeline.",
+      tags: ["CRM", "Next.js", "6-week build"],
     },
     {
-      status: "In production",
-      title: "Approvals cut from hours to seconds",
-      body: "Live identity and licence checks dropped straight into the booking flow.",
-      meta: "Vehicle rental · US → AWS, Stripe Connect",
-      thumb: ["w4", "w6", "w8-accent"] as const,
-    },
-    {
-      status: "In production",
-      title: "10,000 CVs ranked without a recruiter",
+      category: "agents",
+      thumb: "ranking",
+      sector: "HR tech",
+      title: "CV ranking engine, no recruiter",
       body: "Semantic matching that reads the role and the person, not keyword overlap.",
-      meta: "HR tech → Lambda, DynamoDB, OpenAI API",
-      thumb: ["w8", "w4-accent", "w6"] as const,
+      tags: ["AI agent", "Semantic search", "HR-tech"],
+    },
+    {
+      category: "integrations",
+      thumb: "approval",
+      sector: "Vehicle rental · US",
+      title: "Instant approvals in the booking flow",
+      body: "Live identity and licence checks dropped straight into checkout.",
+      tags: ["KYC", "Stripe", "Fintech"],
+    },
+    {
+      category: "platforms",
+      thumb: "chart",
+      sector: "Retail chain",
+      title: "Live operations dashboard",
+      body: "One screen across four data sources — orders, stock, staff and revenue.",
+      tags: ["Dashboard", "Realtime", "Retail"],
+    },
+    {
+      category: "agents",
+      thumb: "route",
+      sector: "Logistics",
+      title: "Dispatch automation",
+      body: "An agent that reads every job and routes it to the right driver automatically.",
+      tags: ["AI agent", "Routing", "Logistics"],
+    },
+    {
+      category: "integrations",
+      thumb: "calendar",
+      sector: "Clinic network · Healthcare",
+      title: "Two booking systems, one calendar",
+      body: "Bookings stopped being retyped, giving the front desk a day back each week.",
+      tags: ["Integration", "Calendar sync", "Healthcare"],
     },
   ],
 } as const;
 
-export const faq = {
-  eyebrow: "Questions",
-  title: "Asked on every first call.",
+export const testimonials = {
+  eyebrow: "What people say",
+  title: "Loved by teams that\nalready run.",
+  listTitle: "Testimonies",
+  listBody: "Endless happy clients.",
   items: [
     {
-      q: "How long until something is actually running?",
-      a: "Six weeks is typical for a first agent in production. The audit itself takes half a day and you get the findings inside a week.",
+      name: "Sara Malik",
+      handle: "@saramalik",
+      role: "Ops Lead, Cortek",
+      initials: "SM",
+      quote:
+        "Our intake used to live in three inboxes. Now every lead lands in one queue, sorted before we even open it.",
     },
     {
-      q: "Our data is a mess. Is that a problem?",
-      a: "It's the normal starting point. Sorting out records is part of the work, not a prerequisite for it.",
+      name: "Bilal Ahmed",
+      handle: "@bilald360",
+      role: "Founder, D360",
+      initials: "BA",
+      quote:
+        "They replaced the spreadsheet the whole company secretly depended on. Six weeks later it was in production.",
     },
     {
-      q: "Do we need a technical team in-house?",
-      a: "No. We document everything and train whoever owns the process, then stay reachable after launch.",
+      name: "Dr. Ayesha Khan",
+      handle: "@drayeshak",
+      role: "Clinic Manager, Vidacure",
+      initials: "AK",
+      quote:
+        "Bookings no longer get retyped between two systems. That alone gave my front desk a day back every week.",
     },
     {
-      q: "Will our staff lose their jobs?",
-      a: "Every client so far has moved people onto work that was being neglected. We take the tasks nobody wanted.",
+      name: "Hamza Sheikh",
+      handle: "@hamzatap",
+      role: "Owner, Royal Tap",
+      initials: "HS",
+      quote:
+        "Approvals that used to take hours are instant now, and I can audit every decision the agent made.",
+    },
+  ],
+} as const;
+
+export const compliance = {
+  eyebrow: "Compliance & trust",
+  title: "Built to the rules your regulators already check.",
+  body: "We handle real business data, so governance isn’t an afterthought. Every agent action is logged and auditable, and our delivery is aligned to the standards below.",
+  note: "Row-level security, encrypted document storage, and full audit trails on every deployment.",
+  cta: "Request trust report",
+  standards: [
+    {
+      name: "SOC 2 Type II",
+      body: "Security, availability and confidentiality controls, independently audited.",
+    },
+    {
+      name: "ISO/IEC 27001",
+      body: "Information-security management applied across our delivery lifecycle.",
+    },
+    {
+      name: "GDPR",
+      body: "Lawful processing, data-subject rights and EU data handling by default.",
+    },
+    {
+      name: "PCI DSS",
+      body: "Cardholder data handled to Level 1 service-provider standards.",
+    },
+    {
+      name: "HIPAA",
+      body: "Safeguards for protected health data on healthcare engagements.",
+    },
+    {
+      name: "Pakistan PDPB",
+      body: "Aligned with the Personal Data Protection Bill and local residency.",
     },
   ],
 } as const;
 
 export const closing = {
-  eyebrow: "Start here",
-  title: "Everything lands here.",
-  body: "Thirty minutes. We look at how you work and tell you where the time is going. You keep the list either way.",
+  title: "Ready to see where the time goes?",
+  body: "A 30-minute AI audit — you keep the findings either way.",
   cta: "Book an AI audit",
+} as const;
+
+export const newsletter = {
+  title: "Newsletter",
+  body: "One useful email a month. No fluff.",
+  placeholder: "you@company.com",
+  success: "You’re in — watch your inbox for the next dispatch.",
+} as const;
+
+export const contact = {
+  eyebrow: "Talk to us",
+  title: "Let’s find what’s slowing you down.",
+  body: "Tell us a little about how you work today. We’ll reply within one business day — usually with a first thing worth automating.",
+  teamSizes: ["1–10", "11–50", "51–200", "200+"],
+  disclaimer:
+    "By sending this you agree to our privacy policy. We never share your details.",
+  cta: "Send message",
+  success:
+    "Thanks — your message is on its way. We’ll reply within one business day.",
+  aside: {
+    eyebrow: "Skip the form",
+    title: "Book a 30-min audit.",
+    body: "Grab a slot and we’ll walk through your workflow live.",
+    cta: "Open the calendar →",
+  },
 } as const;

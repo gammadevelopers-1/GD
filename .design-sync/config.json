@@ -191,5 +191,23 @@
     "WeekIdeaBoard": "  projectId: string;\n  weekId: string;\n  weekNumber: number;\n  initialDoc: unknown;\n  canEdit: boolean;\n  openTasks: number;\n  updatedAt: string | null;\n  updatedBy: string | null;\n  expanded: boolean;\n  workOpen: boolean;\n  onExpandedChange: (value: boolean) => void;\n  onOpenWork: () => void;\n  save: (weekId: string, doc: string) => Promise<{ status: \"idle\" | \"error\" | \"success\"; message: string | null; }>;\n  upload: (state: unknown, formData: FormData) => Promise<unknown>;\n  onDocChange?: (doc: unknown) => void;\n  workBoard?: React.ReactNode;\n  editorRef?: React.RefObject<unknown | null>;",
     "WeekPlan": "  projectId: string;\n  weeks: unknown[];\n  currentWeekId: string | null;\n  progress: number;\n  canPlan: boolean;\n  isOwner: boolean;\n  canWrite: boolean;\n  canManage: boolean;\n  canTick: boolean;\n  dismissedCarry: string[];\n  acceptCarry: ( cardId: string, targetWeekId: string, ) => Promise<{ status: \"idle\" | \"error\" | \"success\"; message: string | null; }>;\n  dismissCarry: ( cardId: string, targetWeekId: string, ) => Promise<{ status: \"idle\" | \"error\" | \"success\"; message: string | null; }>;\n  setComplete: (weekId: string, complete: boolean) => Promise<{ status: \"idle\" | \"error\" | \"success\"; message: string | null; }>;\n  addWeek: ( state: { status: \"idle\" | \"error\" | \"success\"; message: string | null; }, formData: FormData, ) => Promise<{ status: \"idle\" | \"error\" | \"success\"; message: string | null; } & { weekId?: string }>;\n  archiveWeek: (formData: FormData) => Promise<void>;\n  saveIdeaBoard: (weekId: string, doc: string) => Promise<{ status: \"idle\" | \"error\" | \"success\"; message: string | null; }>;\n  upload: (state: unknown, formData: FormData) => Promise<unknown>;\n  workActions: unknown;",
     "WeekWorkBoard": "  projectId: string;\n  weekId: string;\n  weekNumber: number;\n  tasks: unknown[];\n  canManage: boolean;\n  canTick: boolean;\n  hasNotes: boolean;\n  updatedAt: string | null;\n  updatedBy: string | null;\n  open: boolean;\n  onClose: () => void;\n  onTaskDone: (cardId: string, done: boolean) => void;\n  upload: unknown;\n  actions: unknown;"
+  },
+  "overrides": {
+    "PortfolioResults": {
+      "cardMode": "column",
+      "viewport": "1280x900"
+    },
+    "PortalOverview": {
+      "viewport": "900x1000"
+    },
+    "WeekPlan": {
+      "cardMode": "column"
+    },
+    "FlowSection": {
+      "cardMode": "column"
+    },
+    "EnvPanel": {
+      "cardMode": "column"
+    }
   }
 }

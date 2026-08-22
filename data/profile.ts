@@ -33,7 +33,7 @@ export type MyProfile = {
   jobTitle: string | null;
   phone: string | null;
   avatarUrl: string | null;
-  activatedAt: string | null;
+  bannerUrl: string | null;
   createdAt: string;
   notifyMilestones: boolean;
   notifyWeeklySummary: boolean;
@@ -44,6 +44,20 @@ export type MyProfile = {
 
 const DOCUMENTS_BUCKET = "app-private-documents";
 const AVATARS_BUCKET = "app-avatars";
+const BANNERS_BUCKET = "app-banners";
+
+
+async function signPicture(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  bucket: string,
+  path: unknown,
+): Promise<string | null> {
+  if (!path) return null;
+  const { data } = await supabase.storage
+    .from(bucket)
+    .createSignedUrl(String(path), 60 * 60);
+  return data?.signedUrl ?? null;
+}
 
 export const getMyProfile = cache(
   async (viewer: Viewer): Promise<MyProfile | null> => {
@@ -52,7 +66,7 @@ export const getMyProfile = cache(
     const { data: profile } = await supabase
       .from("app_profiles")
       .select(
-        "id, full_name, display_name, email, role, job_title, phone, avatar_path, activated_at, created_at, notify_milestones, notify_weekly_summary",
+        "id, full_name, display_name, email, role, job_title, phone, avatar_path, banner_path, created_at, notify_milestones, notify_weekly_summary",
       )
       .eq("id", viewer.id)
       .maybeSingle();
@@ -97,13 +111,10 @@ export const getMyProfile = cache(
       }
     }
 
-    let avatarUrl: string | null = null;
-    if (profile.avatar_path) {
-      const { data } = await supabase.storage
-        .from(AVATARS_BUCKET)
-        .createSignedUrl(String(profile.avatar_path), 60 * 60);
-      avatarUrl = data?.signedUrl ?? null;
-    }
+    const [avatarUrl, bannerUrl] = await Promise.all([
+      signPicture(supabase, AVATARS_BUCKET, profile.avatar_path),
+      signPicture(supabase, BANNERS_BUCKET, profile.banner_path),
+    ]);
 
     const employment = employmentResult.data;
 
@@ -116,7 +127,7 @@ export const getMyProfile = cache(
       jobTitle: profile.job_title ? String(profile.job_title) : null,
       phone: profile.phone ? String(profile.phone) : null,
       avatarUrl,
-      activatedAt: profile.activated_at ? String(profile.activated_at) : null,
+      bannerUrl,
       createdAt: String(profile.created_at),
       notifyMilestones: profile.notify_milestones !== false,
       notifyWeeklySummary: profile.notify_weekly_summary !== false,

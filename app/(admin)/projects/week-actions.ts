@@ -145,14 +145,26 @@ export async function saveTask(input: {
 
     if (input.cardId) {
       if (!isUuid(input.cardId)) return formError("That task was not found.");
+      const reassigning = input.assignedTo !== undefined;
+      let previousAssignee: string | null = null;
+
+      if (reassigning) {
+        const { data: existing } = await supabase
+          .from("app_milestone_cards")
+          .select("assigned_to")
+          .eq("id", input.cardId)
+          .maybeSingle();
+        previousAssignee = existing?.assigned_to
+          ? String(existing.assigned_to)
+          : null;
+      }
+
       const { error } = await supabase
         .from("app_milestone_cards")
         .update({
           title,
           doc,
-          ...(input.assignedTo === undefined
-            ? {}
-            : { assigned_to: input.assignedTo }),
+          ...(reassigning ? { assigned_to: input.assignedTo } : {}),
         })
         .eq("id", input.cardId);
 
@@ -160,6 +172,13 @@ export async function saveTask(input: {
         console.error("saveTask update failed", error);
         return formError(deniedOr(error, "The task could not be saved."));
       }
+
+      if (input.assignedTo && input.assignedTo !== previousAssignee) {
+        await supabase.rpc("app_notify_task_assigned", {
+          target_card_id: input.cardId,
+        });
+      }
+
       refresh();
       return formSuccess("Saved.");
     }
@@ -183,6 +202,12 @@ export async function saveTask(input: {
     if (error || !data) {
       console.error("saveTask insert failed", error);
       return formError(deniedOr(error, "The task could not be added."));
+    }
+
+    if (input.assignedTo) {
+      await supabase.rpc("app_notify_task_assigned", {
+        target_card_id: String(data.id),
+      });
     }
 
     refresh();

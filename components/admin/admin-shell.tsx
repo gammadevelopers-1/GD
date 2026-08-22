@@ -15,6 +15,7 @@ import {
 import { Mark } from "@/components/layout/mark";
 import { logout } from "@/app/(auth)/login/actions";
 import { AccountMenu } from "@/components/admin/account-menu";
+import { NotificationBell } from "@/components/admin/notification-bell";
 import {
   Sidebar,
   SidebarContent,
@@ -28,18 +29,22 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarRail,
+  SidebarSeparator,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import type { AppRole, Viewer } from "@/data/auth";
+import type { Inbox } from "@/data/notifications";
 
-const navigation: Array<{
+type NavItem = {
   label: string;
   href: string;
   icon: typeof CircleGauge;
   roles: AppRole[];
   inProgress?: boolean;
-}> = [
+};
+
+const workspaceNav: NavItem[] = [
   {
     label: "Overview",
     href: "/dashboard",
@@ -71,6 +76,9 @@ const navigation: Array<{
     roles: ["owner"],
     inProgress: true,
   },
+];
+
+const accountNav: NavItem[] = [
   {
     label: "Profile",
     href: "/profile",
@@ -88,16 +96,19 @@ const navigation: Array<{
 export function AdminShell({
   viewer,
   avatarUrl,
+  inbox,
   defaultSidebarOpen,
   children,
 }: {
   viewer: Viewer;
   avatarUrl: string | null;
+  inbox: Inbox;
   defaultSidebarOpen: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const items = navigation.filter((item) => item.roles.includes(viewer.role));
+  const allowed = (items: NavItem[]) =>
+    items.filter((item) => item.roles.includes(viewer.role));
 
   return (
     <TooltipProvider>
@@ -110,7 +121,7 @@ export function AdminShell({
           collapsible="icon"
           className="group-data-[collapsible=icon]:[&_[data-sidebar=sidebar]]:overflow-hidden"
         >
-          <SidebarHeader className="group-data-[collapsible=icon]:items-center">
+          <SidebarHeader className="group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:p-1">
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
@@ -131,42 +142,30 @@ export function AdminShell({
           </SidebarHeader>
 
           <SidebarContent>
-            <SidebarGroup>
+            <SidebarGroup className="group-data-[collapsible=icon]:p-1">
               <SidebarGroupContent>
                 <SidebarMenu className="gap-1.5">
-                  {items.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton
-                        asChild
-                        size="lg"
-                        isActive={
-                          pathname === item.href ||
-                          pathname.startsWith(`${item.href}/`)
-                        }
-                        tooltip={item.label}
-                        className="gap-3 px-3 text-[13.5px] font-medium group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0! data-active:bg-[#2fe85c]/10 data-active:font-semibold data-active:text-[#2fe85c] [&_svg]:size-[18px]"
-                      >
-                        <Link href={item.href}>
-                          <item.icon />
-                          <span className="group-data-[collapsible=icon]:hidden">
-                            {item.label}
-                          </span>
-                          {item.inProgress ? (
-                            <span
-                              title="In progress"
-                              className="ml-auto size-1.5 rounded-full bg-[#2fe85c]/40 group-data-[collapsible=icon]:hidden"
-                            />
-                          ) : null}
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
+                  {allowed(workspaceNav).map((item) => (
+                    <NavLink key={item.href} item={item} pathname={pathname} />
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarSeparator className="mx-3 my-1 h-px group-data-[collapsible=icon]:mx-1" />
+
+            <SidebarGroup className="pt-0 group-data-[collapsible=icon]:p-1">
+              <SidebarGroupContent>
+                <SidebarMenu className="gap-1.5">
+                  {allowed(accountNav).map((item) => (
+                    <NavLink key={item.href} item={item} pathname={pathname} />
                   ))}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
 
-          <SidebarFooter>
+          <SidebarFooter className="group-data-[collapsible=icon]:p-1">
             <SidebarMenu>
               <SidebarMenuItem>
                 <form action={logout}>
@@ -194,6 +193,7 @@ export function AdminShell({
               <SidebarTrigger className="-ml-1 text-black/60 hover:text-black" />
 
               <div className="ml-auto flex items-center gap-2">
+                <NotificationBell inbox={inbox} />
                 <AccountMenu viewer={viewer} avatarUrl={avatarUrl} />
               </div>
             </div>
@@ -205,5 +205,34 @@ export function AdminShell({
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
+  );
+}
+
+function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        asChild
+        size="lg"
+        isActive={
+          pathname === item.href || pathname.startsWith(`${item.href}/`)
+        }
+        tooltip={item.label}
+        className="gap-3 px-3 text-[13.5px] font-medium transition-colors duration-150 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0! data-active:bg-[#2fe85c]/10 data-active:font-semibold data-active:text-[#2fe85c] [&_svg]:size-[18px]"
+      >
+        <Link href={item.href}>
+          <item.icon />
+          <span className="group-data-[collapsible=icon]:hidden">
+            {item.label}
+          </span>
+          {item.inProgress ? (
+            <span
+              title="In progress"
+              className="ml-auto size-1.5 rounded-full bg-[#2fe85c]/40 group-data-[collapsible=icon]:hidden"
+            />
+          ) : null}
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
   );
 }

@@ -110,7 +110,7 @@ export function AuditForm() {
             type="submit"
             disabled={busy}
             data-button-fill
-            className="button-fill-fx bg-brand h-11 w-full shrink-0 cursor-pointer rounded-full px-6 text-sm font-medium text-[#14171a] transition-all hover:not-disabled:-translate-y-px hover:not-disabled:shadow-[0_8px_22px_rgba(47,232,92,0.34)] disabled:cursor-default disabled:opacity-50 sm:w-auto"
+            className="button-fill-fx marketing-primary-button h-11 w-full shrink-0 cursor-pointer rounded-full px-6 sm:w-auto"
           >
             <span className="button-fill-fx__label">
               {busy ? "Analyzing…" : hero.cta}

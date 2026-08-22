@@ -76,6 +76,10 @@ export async function addMilestoneWeek(
     );
   }
 
+  await supabase.rpc("app_notify_week_planned", {
+    target_week_id: String(data.id),
+  });
+
   refresh();
   return {
     ...formSuccess(`Week ${fields.weekNumber} planned.`),

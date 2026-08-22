@@ -73,6 +73,83 @@ exists because the converter's package shape assumes a published package.
   (`discovery` `building` `review` `live` `retainer` `paused` `closed`).
 - No code comments anywhere in this repo, previews included.
 
+## Capture harness patch (REQUIRED — re-apply after every re-sync)
+
+`package-capture.mjs` pins a fixed clock and never scrolls, so GSAP `ScrollTrigger`
+effects never fire. Every component that wraps its content in `<Reveal>` (the
+marketing sections especially) then captures at `opacity: 0` and looks empty.
+
+The fix is to capture with reduced motion emulated, which makes `useReducedMotion()`
+return true so `Reveal` and every other GSAP effect bails early and renders its
+content statically — the repo's own intended reduced-motion behaviour, not a hack:
+
+```
+python3 - <<'EOF'
+import pathlib
+p = pathlib.Path('.ds-sync/package-capture.mjs')
+s = p.read_text()
+s = s.replace(
+  "const page = await browser.newPage({ viewport: { width: 900, height: 700 } });",
+  "const page = await browser.newPage({ viewport: { width: 900, height: 700 }, reducedMotion: 'reduce' });")
+p.write_text(s)
+EOF
+```
+
+`.ds-sync/` is re-copied from the skill on every re-sync, so this patch is lost each
+time and MUST be re-applied before capturing. It cannot live in
+`.design-sync/overrides/` — that mechanism only covers `lib/*.mjs`.
+
+## Authoring gotchas learned in the preview campaign
+
+- **Arbitrary Tailwind values must already exist in the shipped stylesheet.**
+  Capture serves `ds-bundle/_ds_bundle.css`, which only `package-build.mjs`
+  regenerates. Recompiling into `.design-sync/.cache/compiled.css` does not reach
+  it, and `preview-rebuild.mjs` never rewrites it. So a preview using a brand-new
+  arbitrary class (`h-[420px]`, `inset-x-[30%]`) gets no rule at all — and when the
+  element's children are all `position: absolute`, the parent's auto height
+  collapses to 0 and the card screenshots blank white. Before using an arbitrary
+  value in a preview, grep `_ds_bundle.css` for the escaped class. Orchestrator
+  rebuilds pick new classes up via `@source ./previews`; agents mid-wave cannot.
+- **Every `hero/*` component except `HeroProvider`/`HeroSection` needs context.**
+  `AuditForm` and friends read `useHero()` and throw outside `<HeroProvider>`.
+  Compose them inside their provider — that is the only true render.
+- **Two different document shapes in the projects surface.** `BoardSurface` and
+  `IdeaEditor` take real Tiptap JSON (`{type:"doc",content:[…]}`); `BlockEditor`
+  and `BlockView` take the app's lighter `Block[]`. They are not interchangeable.
+- **Compound `projects/*` fixtures need the real source types.** `MilestoneWeek`,
+  `MilestoneCard` (`data/project-detail.ts`) and `CardStatus`
+  (`lib/projects/board.ts`) flatten to `unknown` in `dtsPropsFor`; read the source
+  to build realistic fixtures rather than guessing.
+
+  The failure is SILENT — a missing class is a no-op, not an error. It caused a
+  real overlap bug in the campaign: `mt-24` was absent from the shipped stylesheet,
+  so HeroCopy's title, lead, and CTA stacked on top of each other. Authoring agents
+  should put wrapper *geometry* in an inline `style` rather than risk it; the
+  orchestrator's rebuild compiles preview classes properly via `@source ./previews`.
+
+## Optional cardMode polish (not defects)
+
+At the 700px capture viewport, `FlowSection`'s 5th step and `EnvPanel`'s last
+upload row crop. The content is complete; only the screenshot is cut. If it ever
+matters, give them `cfg.overrides.<Name>: {"cardMode": "column"}`.
+
+## States that are genuinely not statically renderable
+
+Documented so a future run does not treat them as failures to chase:
+
+- `AuthForm` error banner — error comes from `useActionState` after a real submit;
+  initial state is always empty. Its cell shows the clean form.
+- `BlockEditor` add-menu grid — only opens on click.
+- `FormDatePicker` / `FormSelect` open popover — not prop-controllable.
+- `LoaderVisual` `leaving` — `.site-loader-leaving` sets `opacity: 0` as its resting
+  end state, so it screenshots blank by design. Replaced with a second progress value.
+
+## Source findings (real bugs, not sync artifacts)
+
+- `components/admin/projects/block-editor.tsx`: the callout-tone `FormSelect`
+  trigger is fixed at `w-[104px]`, which clips the option label "Important" to
+  "Importan". Pre-existing; left untouched by the sync.
+
 ## Known render warns
 
 - `[RENDER_BLANK]` on components whose floor card is genuinely tiny is expected

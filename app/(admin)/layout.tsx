@@ -2,6 +2,7 @@ import { connection } from "next/server";
 import { cookies } from "next/headers";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { requireViewer } from "@/data/auth";
+import { getMyNotifications } from "@/data/notifications";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AdminLayout({
@@ -22,10 +23,13 @@ export default async function AdminLayout({
     avatarUrl = data?.signedUrl ?? null;
   }
 
+  const inbox = await getMyNotifications(viewer);
+
   return (
     <AdminShell
       viewer={viewer}
       avatarUrl={avatarUrl}
+      inbox={inbox}
       defaultSidebarOpen={defaultSidebarOpen}
     >
       {children}

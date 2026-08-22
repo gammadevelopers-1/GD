@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireViewer } from "@/data/auth";
 import { createClient } from "@/lib/supabase/server";
 import { PASSWORD_MIN } from "@/lib/team/records";
+import { isUuid } from "@/lib/projects/validation";
 import {
   type SimpleFormState,
   formError,
@@ -59,4 +60,15 @@ export async function signOutEverywhere() {
   const supabase = await createClient();
   await supabase.auth.signOut({ scope: "global" });
   redirect("/login?reason=signed-out");
+}
+
+export async function revokeSession(formData: FormData) {
+  await requireViewer();
+  const sessionId = String(formData.get("sessionId") ?? "");
+  if (!isUuid(sessionId)) return;
+
+  const supabase = await createClient();
+  await supabase.rpc("app_revoke_my_session", { target_session_id: sessionId });
+
+  revalidatePath("/settings");
 }

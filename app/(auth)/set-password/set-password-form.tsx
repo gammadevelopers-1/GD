@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import { LinkSpentNotice } from "@/components/auth/link-spent-notice";
+import { PasswordInput } from "@/components/ui/password-input";
 import { PASSWORD_MIN } from "@/lib/team/records";
 import { setPassword, type SetPasswordState } from "./actions";
 
@@ -10,6 +11,8 @@ const initialState: SetPasswordState = {};
 
 const FIELD =
   "h-12 w-full rounded-xl border border-white/10 bg-white/[0.055] px-4 text-[15px] text-white transition outline-none placeholder:text-white/25 focus:border-[#2fe85c]/60 focus:ring-4 focus:ring-[#2fe85c]/10 disabled:cursor-not-allowed disabled:opacity-40";
+
+const TOGGLE = "text-white/40 hover:text-white focus-visible:ring-[#2fe85c]/45";
 
 export function SetPasswordForm({
   token,
@@ -66,13 +69,13 @@ export function SetPasswordForm({
         <span className="text-[13px] font-medium text-white/70">
           Set password
         </span>
-        <input
+        <PasswordInput
           name="password"
-          type="password"
           autoComplete="new-password"
           minLength={PASSWORD_MIN}
           placeholder={`At least ${PASSWORD_MIN} characters`}
           className={FIELD}
+          toggleClassName={TOGGLE}
           value={password}
           onChange={(event) => setPasswordValue(event.target.value)}
           onBlur={() => setTouched((was) => ({ ...was, password: true }))}
@@ -92,13 +95,13 @@ export function SetPasswordForm({
         <span className="text-[13px] font-medium text-white/70">
           Confirm password
         </span>
-        <input
+        <PasswordInput
           name="confirmation"
-          type="password"
           autoComplete="new-password"
           minLength={PASSWORD_MIN}
           placeholder="Type it again"
           className={FIELD}
+          toggleClassName={TOGGLE}
           value={confirmation}
           onChange={(event) => setConfirmation(event.target.value)}
           onBlur={() => setTouched((was) => ({ ...was, confirmation: true }))}
