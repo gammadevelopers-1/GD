@@ -401,6 +401,11 @@ function DeviceIcon({ kind }: { kind: MySession["device"]["kind"] }) {
   return <Monitor className="size-4" />;
 }
 
+function since(value: string) {
+  const span = timeAgo(value);
+  return span === "now" ? "just now" : `${span} ago`;
+}
+
 function SessionRow({ session }: { session: MySession }) {
   const [ending, startEnding] = useTransition();
 
@@ -438,8 +443,8 @@ function SessionRow({ session }: { session: MySession }) {
         </p>
         <p className="mt-0.5 font-mono text-[11px] text-black/42 tabular-nums">
           {session.ip ?? "Address not recorded"} · signed in{" "}
-          {timeAgo(session.createdAt)} ago
-          {session.current ? null : ` · active ${timeAgo(session.lastSeenAt)} ago`}
+          {since(session.createdAt)}
+          {session.current ? null : ` · active ${since(session.lastSeenAt)}`}
         </p>
       </div>
 

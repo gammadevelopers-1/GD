@@ -12,7 +12,7 @@ const BROWSERS: Array<[RegExp, string]> = [
   [/\bVivaldi\//, "Vivaldi"],
   [/\bFirefox\/|\bFxiOS\//, "Firefox"],
   [/\bCriOS\//, "Chrome"],
-  [/\bChrome\//, "Chrome"],
+  [/Chrom(e|ium)\//, "Chrome"],
   [/\bSafari\//, "Safari"],
 ];
 

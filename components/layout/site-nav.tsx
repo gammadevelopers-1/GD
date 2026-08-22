@@ -68,16 +68,16 @@ export function SiteNav() {
         <Link
           href="#"
           aria-label={`${site.name} home`}
-          className="group/logo relative block h-9 w-[46px] overflow-hidden rounded-lg transition-[width,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black/[0.025] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none md:hover:w-[152px] md:focus-visible:w-[152px]"
+          className="group/logo relative block h-10 w-14 overflow-hidden rounded-lg transition-[width,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black/[0.025] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none md:hover:w-[158px] md:focus-visible:w-[158px]"
         >
           <span className="absolute inset-0 transition-all duration-300 ease-out group-hover/logo:-translate-x-2 group-hover/logo:scale-95 group-hover/logo:opacity-0 group-focus-visible/logo:-translate-x-2 group-focus-visible/logo:scale-95 group-focus-visible/logo:opacity-0 max-md:group-hover/logo:translate-x-0 max-md:group-hover/logo:scale-100 max-md:group-hover/logo:opacity-100">
             <Image
               src="/logo.png"
               alt=""
-              width={102}
-              height={76}
+              width={108}
+              height={80}
               priority
-              className="absolute top-[-24px] left-[-27px] h-auto max-w-none"
+              className="absolute top-[-20px] left-[-26px] h-[80px] w-[108px] max-w-none"
             />
           </span>
           <span className="absolute inset-0 translate-x-3 opacity-0 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/logo:translate-x-0 group-hover/logo:opacity-100 group-focus-visible/logo:translate-x-0 group-focus-visible/logo:opacity-100 max-md:group-hover/logo:translate-x-3 max-md:group-hover/logo:opacity-0">
@@ -87,12 +87,12 @@ export function SiteNav() {
               width={213}
               height={137}
               priority
-              className="absolute top-[-55px] left-[-34px] h-auto max-w-none"
+              className="absolute top-[-48px] left-[-30px] h-[137px] w-[213px] max-w-none"
             />
           </span>
         </Link>
 
-        <div className="hidden items-center justify-center rounded-full border border-black/[0.055] bg-white/38 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] md:flex">
+        <div className="hidden items-center justify-center rounded-full bg-white/38 p-1 md:flex">
           <NavLink href={navLinks[0].href}>{navLinks[0].label}</NavLink>
 
           <div

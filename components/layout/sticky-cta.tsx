@@ -30,25 +30,19 @@ export function StickyCta() {
         )}
       >
         <span className="font-display text-[clamp(28px,5vw,52px)] font-bold tracking-[-0.045em] text-[#eafff0]">
-          Let’s talk →
+          Let’s talk
         </span>
       </div>
 
       <Link
         href="/contact"
         onClick={handleClick}
-        aria-label="Let’s talk business"
+        aria-label="Let’s talk"
         data-button-fill
-        className="button-fill-fx marketing-primary-button sticky-business-cta fixed top-1/2 right-0 z-[55] hidden min-h-[224px] w-[76px] -translate-y-1/2 grid-cols-[1fr_22px] items-center overflow-hidden rounded-l-[20px] px-3 py-6 lg:grid"
+        className="button-fill-fx marketing-primary-button sticky-business-cta fixed top-1/2 right-0 z-[55] hidden h-[136px] w-[52px] -translate-y-1/2 items-center justify-center overflow-hidden rounded-l-[16px] px-2 py-3 lg:flex"
       >
         <span className="button-fill-fx__label rotate-180 justify-self-center [text-orientation:sideways] [writing-mode:vertical-rl]">
-          Let’s Talk Business
-        </span>
-        <span
-          aria-hidden
-          className="sticky-cta-nudge relative z-[1] justify-self-center font-mono text-xl leading-none font-bold"
-        >
-          &lt;
+          Let’s Talk
         </span>
       </Link>
     </>

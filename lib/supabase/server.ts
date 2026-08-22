@@ -13,10 +13,18 @@ export async function createClient() {
     headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     headerList.get("x-real-ip")?.trim() ??
     "";
+  const userAgent = headerList.get("user-agent")?.trim() ?? "";
+
+  const forwarded: Record<string, string> = {};
+  if (clientIp) {
+    forwarded["x-gamma-client-ip"] = clientIp;
+    forwarded["x-forwarded-for"] = clientIp;
+  }
+  if (userAgent) forwarded["user-agent"] = userAgent;
 
   return createServerClient(url, publishableKey, {
     cookieOptions: AUTH_COOKIE_OPTIONS,
-    global: clientIp ? { headers: { "x-gamma-client-ip": clientIp } } : {},
+    global: Object.keys(forwarded).length ? { headers: forwarded } : {},
     cookies: {
       getAll() {
         return cookieStore.getAll();

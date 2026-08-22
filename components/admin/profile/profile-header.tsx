@@ -64,7 +64,7 @@ export function ProfileHeader({
     <div className="overflow-hidden rounded-[22px] border border-black/[0.07] bg-[#f8f8f3]">
       <Cover url={bannerUrl} />
 
-      <div className="-mt-11 flex flex-wrap items-end gap-5 px-5 pb-6 sm:px-7">
+      <div className="-mt-8 flex flex-wrap items-end gap-5 px-5 pb-6 sm:px-7">
         <Portrait url={avatarUrl} initials={initials} />
 
         <div className="min-w-0 flex-1 pb-1">
@@ -72,13 +72,7 @@ export function ProfileHeader({
             <h1 className="font-display text-[26px] leading-none font-semibold tracking-[-0.04em]">
               {name}
             </h1>
-            <Badge
-              variant="outline"
-              className={cn("gap-1.5 rounded-full font-semibold", TONE_SOFT.ok)}
-            >
-              <span className="size-1.5 rounded-full bg-[#16a34a]" />
-              Active
-            </Badge>
+           
             <Badge
               variant="outline"
               className={cn("rounded-full font-semibold", TONE_SOFT.muted)}
@@ -310,10 +304,7 @@ function Portrait({
           )}
         </span>
 
-        <span
-          aria-hidden
-          className="absolute right-1 bottom-1 size-4.5 rounded-full border-[3px] border-[#f8f8f3] bg-[#16a34a]"
-        />
+       
       </button>
 
       {state.status === "error" && state.message ? (
