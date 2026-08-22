@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { Viewer } from "@/data/auth";
 import type { ProjectStatus } from "@/lib/projects/status";
@@ -48,263 +49,120 @@ export type DashboardData = {
   };
 };
 
-type RawProject = {
+type SummaryProject = {
   id: string;
   public_id: string;
   name: string;
   status: ProjectStatus;
   due_on: string | null;
-  client_id: string;
-  lead_id: string | null;
+  client_name: string | null;
+  lead_name: string | null;
+  progress: number;
+  has_weeks: boolean;
 };
 
-type RawInvoice = {
-  amount: number;
-  currency: "PKR" | "USD";
-  exchange_rate_to_pkr: number;
-  status: "draft" | "sent" | "paid" | "overdue" | "void";
-  paid_at: string | null;
+type SummaryMoney = {
+  revenue_pkr: number;
+  revenue_usd: number;
+  revenue_pkr_previous: number;
+  unpaid_pkr: number;
+  unpaid_usd: number;
+  unpaid_count: number;
+  overdue_count: number;
+  overdue_pkr: number;
 };
 
-export async function getDashboardData(viewer: Viewer): Promise<DashboardData> {
+type Summary = {
+  projects: SummaryProject[];
+  overdue_cards: number;
+  shipped_current: number;
+  shipped_previous: number;
+  delivery: Array<{ back: number; done: number }>;
+  financials: SummaryMoney | null;
+};
+
+const EMPTY: DashboardData = {
+  projects: [],
+  activeCount: 0,
+  dueSoonCount: 0,
+  overdueMilestones: 0,
+  shipped: { current: 0, previous: 0 },
+  delivery: [],
+  planlessCount: 0,
+  financials: null,
+};
+
+export const getDashboardData = cache(async function getDashboardData(
+  viewer: Viewer,
+): Promise<DashboardData> {
   const supabase = await createClient();
+  const { data, error } = await supabase.rpc("app_dashboard_summary");
+
+  if (error || !data) return EMPTY;
+
+  const summary = data as Summary;
   const now = new Date();
   const soon = new Date(now);
   soon.setDate(soon.getDate() + 14);
-  const monthStart = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    1,
-  ).toISOString();
-  const previousMonthStart = new Date(
-    now.getFullYear(),
-    now.getMonth() - 1,
-    1,
-  ).toISOString();
 
-  const [projectsResult, clientsResult, profilesResult, weeksResult] =
-    await Promise.all([
-      supabase
-        .from("app_projects")
-        .select("id, public_id, name, status, due_on, client_id, lead_id")
-        .is("archived_at", null)
-        .not("status", "in", '("paused","closed")')
-        .order("due_on", { ascending: true, nullsFirst: false }),
-      supabase.from("app_clients").select("id, name").is("archived_at", null),
-      supabase
-        .from("app_profiles")
-        .select("id, full_name")
-        .eq("is_active", true)
-        .is("archived_at", null),
-      supabase
-        .from("app_milestone_weeks")
-        .select("id, project_id, due_on")
-        .is("archived_at", null)
-        .lt("due_on", now.toISOString().slice(0, 10)),
-    ]);
-
-  const rawProjects = (projectsResult.data ?? []) as RawProject[];
-  const clientNames = new Map(
-    (clientsResult.data ?? []).map((client) => [
-      String(client.id),
-      String(client.name),
-    ]),
-  );
-  const profileNames = new Map(
-    (profilesResult.data ?? []).map((profile) => [
-      String(profile.id),
-      String(profile.full_name),
-    ]),
-  );
-
-  const weekIds = (weeksResult.data ?? []).map((week) => String(week.id));
-  let overdueMilestones = 0;
-  let itemRows: Array<{ milestone_week_id: string; status: string }> = [];
-
-  if (weekIds.length) {
-    const { data } = await supabase
-      .from("app_milestone_cards")
-      .select("milestone_week_id, status")
-      .in("milestone_week_id", weekIds)
-      .is("archived_at", null)
-      .neq("status", "completed");
-    itemRows = (data ?? []) as typeof itemRows;
-    overdueMilestones = itemRows.length;
-  }
-
-  const openByProject = new Map<string, number>();
-  const totalByProject = new Map<string, number>();
-  const projectIds = rawProjects.map((project) => project.id);
-  const projectsWithWeeks = new Set<string>();
-
-  if (projectIds.length) {
-    const { data: allWeeks } = await supabase
-      .from("app_milestone_weeks")
-      .select("id, project_id")
-      .in("project_id", projectIds)
-      .is("archived_at", null);
-    const weekProject = new Map(
-      (allWeeks ?? []).map((week) => [
-        String(week.id),
-        String(week.project_id),
-      ]),
-    );
-    for (const projectId of weekProject.values()) {
-      projectsWithWeeks.add(projectId);
-    }
-    const allWeekIds = [...weekProject.keys()];
-
-    if (allWeekIds.length) {
-      const { data: allItems } = await supabase
-        .from("app_milestone_cards")
-        .select("milestone_week_id, status")
-        .in("milestone_week_id", allWeekIds)
-        .is("archived_at", null);
-
-      for (const item of allItems ?? []) {
-        const projectId = weekProject.get(String(item.milestone_week_id));
-        if (!projectId) continue;
-        totalByProject.set(projectId, (totalByProject.get(projectId) ?? 0) + 1);
-        if (String(item.status) !== "completed") {
-          openByProject.set(projectId, (openByProject.get(projectId) ?? 0) + 1);
-        }
-      }
-    }
-  }
-
-  const projects = rawProjects.map((project) => {
-    const total = totalByProject.get(project.id) ?? 0;
-    const open = openByProject.get(project.id) ?? 0;
-    return {
-      id: project.id,
-      publicId: project.public_id,
-      name: project.name,
-      client: clientNames.get(project.client_id) ?? "Client",
+  const projects: DashboardProject[] = (summary.projects ?? []).map(
+    (project) => ({
+      id: String(project.id),
+      publicId: String(project.public_id),
+      name: String(project.name),
+      client: project.client_name ? String(project.client_name) : "Client",
       status: project.status,
       dueOn: project.due_on,
-      lead: project.lead_id
-        ? (profileNames.get(project.lead_id) ?? "Unassigned")
-        : "Unassigned",
-      progress: total ? Math.round(((total - open) / total) * 100) : 0,
-    };
-  });
+      lead: project.lead_name ? String(project.lead_name) : "Unassigned",
+      progress: Number(project.progress ?? 0),
+    }),
+  );
 
-  const dayMs = 24 * 60 * 60 * 1000;
-  const weekAgo = new Date(now.getTime() - 7 * dayMs);
-  const fortnightAgo = new Date(now.getTime() - 14 * dayMs);
-
-  const { data: completedRows } = await supabase
-    .from("app_milestone_cards")
-    .select("completed_at")
-    .eq("status", "completed")
-    .not("completed_at", "is", null)
-    .gte("completed_at", new Date(now.getTime() - 42 * dayMs).toISOString())
-    .is("archived_at", null);
-
-  const completions = (completedRows ?? [])
-    .map((row) => new Date(String(row.completed_at)).getTime())
-    .filter((value) => Number.isFinite(value));
-
-  const shipped: Trend = {
-    current: completions.filter((at) => at >= weekAgo.getTime()).length,
-    previous: completions.filter(
-      (at) => at >= fortnightAgo.getTime() && at < weekAgo.getTime(),
-    ).length,
-  };
-
-  const delivery: DeliveryWeek[] = [];
-  for (let back = 5; back >= 0; back -= 1) {
-    const end = new Date(now.getTime() - back * 7 * dayMs);
-    const start = new Date(end.getTime() - 7 * dayMs);
-    const done = completions.filter(
-      (at) => at >= start.getTime() && at < end.getTime(),
-    ).length;
-    delivery.push({
-      label: back === 0 ? "Now" : `-${back}w`,
-      done,
-      total: done,
-    });
-  }
+  const delivery: DeliveryWeek[] = (summary.delivery ?? [])
+    .slice()
+    .sort((a, b) => b.back - a.back)
+    .map((week) => ({
+      label: week.back === 0 ? "Now" : `-${week.back}w`,
+      done: Number(week.done ?? 0),
+      total: 0,
+    }));
 
   const peak = Math.max(1, ...delivery.map((week) => week.done));
   for (const week of delivery) week.total = peak;
 
-  let financials: DashboardData["financials"] = null;
-
-  if (viewer.role === "owner" || viewer.role === "finance") {
-    const { data } = await supabase
-      .from("app_invoices")
-      .select("amount, currency, exchange_rate_to_pkr, status, paid_at")
-      .is("archived_at", null)
-      .neq("status", "void");
-    const invoices = (data ?? []) as RawInvoice[];
-
-    const totals = invoices.reduce(
-      (result, invoice) => {
-        const pkr =
-          invoice.currency === "PKR"
-            ? Number(invoice.amount)
-            : Number(invoice.amount) * Number(invoice.exchange_rate_to_pkr);
-        const usd =
-          invoice.currency === "USD"
-            ? Number(invoice.amount)
-            : Number(invoice.amount) / Number(invoice.exchange_rate_to_pkr);
-        const paidThisMonth =
-          invoice.status === "paid" &&
-          invoice.paid_at &&
-          invoice.paid_at >= monthStart;
-        const paidLastMonth =
-          invoice.status === "paid" &&
-          invoice.paid_at &&
-          invoice.paid_at >= previousMonthStart &&
-          invoice.paid_at < monthStart;
-        const unpaid =
-          invoice.status === "sent" || invoice.status === "overdue";
-
-        if (paidThisMonth) {
-          result.revenuePkr += pkr;
-          result.revenueUsd += usd;
-        }
-        if (paidLastMonth) {
-          result.revenuePkrPrevious += pkr;
-        }
-        if (unpaid) {
-          result.unpaidPkr += pkr;
-          result.unpaidUsd += usd;
-          result.unpaidCount += 1;
-        }
-        if (invoice.status === "overdue") {
-          result.overdueCount += 1;
-          result.overduePkr += pkr;
-        }
-        return result;
-      },
-      {
-        revenuePkr: 0,
-        revenueUsd: 0,
-        revenuePkrPrevious: 0,
-        overdueCount: 0,
-        overduePkr: 0,
-        unpaidPkr: 0,
-        unpaidUsd: 0,
-        unpaidCount: 0,
-      },
-    );
-    financials = totals;
-  }
+  const money = summary.financials;
 
   return {
     projects,
-    shipped,
-    delivery,
-    planlessCount: projectIds.filter((id) => !projectsWithWeeks.has(id)).length,
     activeCount: projects.length,
     dueSoonCount: projects.filter((project) => {
       if (!project.dueOn) return false;
       const date = new Date(`${project.dueOn}T00:00:00`);
       return date >= now && date <= soon;
     }).length,
-    overdueMilestones,
-    financials,
+    overdueMilestones: Number(summary.overdue_cards ?? 0),
+    shipped: {
+      current: Number(summary.shipped_current ?? 0),
+      previous: Number(summary.shipped_previous ?? 0),
+    },
+    delivery,
+    planlessCount: (summary.projects ?? []).filter(
+      (project) => !project.has_weeks,
+    ).length,
+    financials:
+      viewer.role === "owner" || viewer.role === "finance"
+        ? money
+          ? {
+              revenuePkr: Number(money.revenue_pkr ?? 0),
+              revenueUsd: Number(money.revenue_usd ?? 0),
+              revenuePkrPrevious: Number(money.revenue_pkr_previous ?? 0),
+              unpaidPkr: Number(money.unpaid_pkr ?? 0),
+              unpaidUsd: Number(money.unpaid_usd ?? 0),
+              unpaidCount: Number(money.unpaid_count ?? 0),
+              overdueCount: Number(money.overdue_count ?? 0),
+              overduePkr: Number(money.overdue_pkr ?? 0),
+            }
+          : null
+        : null,
   };
-}
+});

@@ -51,7 +51,6 @@ const DOCUMENTS_BUCKET = "app-private-documents";
 const AVATARS_BUCKET = "app-avatars";
 const BANNERS_BUCKET = "app-banners";
 
-
 async function signPicture(
   supabase: Awaited<ReturnType<typeof createClient>>,
   bucket: string,
@@ -68,58 +67,60 @@ export const getMyProfile = cache(
   async (viewer: Viewer): Promise<MyProfile | null> => {
     const supabase = await createClient();
 
-    const { data: profile } = await supabase
-      .from("app_profiles")
-      .select(
-        "id, full_name, display_name, email, role, job_title, phone, avatar_path, banner_path, created_at, notify_milestones, notify_weekly_summary",
-      )
-      .eq("id", viewer.id)
-      .maybeSingle();
+    const [
+      { data: profile },
+      employmentResult,
+      documentsResult,
+      membershipResult,
+    ] = await Promise.all([
+      supabase
+        .from("app_profiles")
+        .select(
+          "id, full_name, display_name, email, role, job_title, phone, avatar_path, banner_path, created_at, notify_milestones, notify_weekly_summary",
+        )
+        .eq("id", viewer.id)
+        .maybeSingle(),
+      supabase
+        .from("app_employment_private")
+        .select(
+          "employment_type, start_date, salary_amount, salary_currency, cnic, bank_account_title, bank_account_number, bank_name",
+        )
+        .eq("profile_id", viewer.id)
+        .maybeSingle(),
+      supabase
+        .from("app_documents")
+        .select("id, document_type, file_name, storage_path, created_at")
+        .eq("profile_id", viewer.id)
+        .is("archived_at", null)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("app_project_members")
+        .select("responsibility, app_projects(id, public_id, name)")
+        .eq("profile_id", viewer.id)
+        .is("archived_at", null),
+    ]);
 
     if (!profile) return null;
-
-    const [employmentResult, documentsResult, membershipResult] =
-      await Promise.all([
-        supabase
-          .from("app_employment_private")
-          .select(
-            "employment_type, start_date, salary_amount, salary_currency, cnic, bank_account_title, bank_account_number, bank_name",
-          )
-          .eq("profile_id", viewer.id)
-          .maybeSingle(),
-        supabase
-          .from("app_documents")
-          .select("id, document_type, file_name, storage_path, created_at")
-          .eq("profile_id", viewer.id)
-          .is("archived_at", null)
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("app_project_members")
-          .select("responsibility, app_projects(id, public_id, name)")
-          .eq("profile_id", viewer.id)
-          .is("archived_at", null),
-      ]);
 
     const documentRows = documentsResult.data ?? [];
     const signed = new Map<string, string>();
 
-    if (documentRows.length) {
-      const { data } = await supabase.storage
-        .from(DOCUMENTS_BUCKET)
-        .createSignedUrls(
-          documentRows.map((row) => String(row.storage_path)),
-          60 * 10,
-        );
-      for (const entry of data ?? []) {
-        if (entry.path && entry.signedUrl)
-          signed.set(entry.path, entry.signedUrl);
-      }
-    }
-
-    const [avatarUrl, bannerUrl] = await Promise.all([
+    const [documentUrls, avatarUrl, bannerUrl] = await Promise.all([
+      documentRows.length
+        ? supabase.storage
+            .from(DOCUMENTS_BUCKET)
+            .createSignedUrls(
+              documentRows.map((row) => String(row.storage_path)),
+              60 * 10,
+            )
+        : Promise.resolve({ data: [] }),
       signPicture(supabase, AVATARS_BUCKET, profile.avatar_path),
       signPicture(supabase, BANNERS_BUCKET, profile.banner_path),
     ]);
+
+    for (const entry of documentUrls.data ?? []) {
+      if (entry.path && entry.signedUrl) signed.set(entry.path, entry.signedUrl);
+    }
 
     const employment = employmentResult.data;
 

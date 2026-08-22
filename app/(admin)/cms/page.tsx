@@ -1,13 +1,14 @@
+import { Suspense } from "react";
 import { FilePenLine } from "lucide-react";
 import { ComingSoon } from "@/components/admin/coming-soon";
 import { EmptyState } from "@/components/admin/empty-state";
 import { PageHeading } from "@/components/admin/page-heading";
+import { PanelSkeleton } from "@/components/admin/skeletons";
 import { requireRole } from "@/data/auth";
 import { getCmsPages } from "@/data/resources";
 
 export default async function CmsPage() {
   await requireRole(["owner"]);
-  const pages = await getCmsPages();
   return (
     <div className="mx-auto max-w-[1480px]">
       <PageHeading title="CMS" />
@@ -17,6 +18,18 @@ export default async function CmsPage() {
         items={["Content editor", "Live preview", "Publishing", "Revisions"]}
       />
       <div className="mt-6">
+        <Suspense fallback={<PanelSkeleton lines={5} />}>
+          <CmsPageList />
+        </Suspense>
+      </div>
+    </div>
+  );
+}
+
+async function CmsPageList() {
+  const pages = await getCmsPages();
+  return (
+    <>
         {pages.length ? (
           <div className="overflow-hidden rounded-[20px] border border-black/[0.07] bg-[#f8f8f3]">
             {pages.map((page) => (
@@ -43,7 +56,6 @@ export default async function CmsPage() {
             description="The marketing site remains code-driven until the authoring workflow is ready."
           />
         )}
-      </div>
-    </div>
+    </>
   );
 }

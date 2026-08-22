@@ -4,6 +4,26 @@ export const FOCUS_RING =
 export const FOCUS_RING_DARK =
   "focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none";
 
+export const TEXT_BODY = "text-foreground";
+
+export const TEXT_META = "text-black/60";
+
+export const TEXT_QUIET = "text-black/55";
+
+export const ICON_QUIET = "text-black/45";
+
+export const TEXT_DARK_BODY = "text-white";
+
+export const TEXT_DARK_META = "text-white/80";
+
+export const TEXT_DARK_QUIET = "text-white/65";
+
+export const ICON_DARK_QUIET = "text-white/45";
+
+export const LABEL_MONO = `font-mono text-[10px] tracking-[0.16em] uppercase ${TEXT_QUIET}`;
+
+export const LABEL_MONO_DARK = `font-mono text-[10px] tracking-[0.16em] uppercase ${TEXT_DARK_QUIET}`;
+
 export const PANEL =
   "rounded-[20px] border border-black/[0.07] bg-[#f8f8f3] transition-colors duration-200";
 

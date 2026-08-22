@@ -45,7 +45,7 @@ export function StatusControl({
         }))}
       />
       {pending ? (
-        <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-white/45">
+        <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-white/65">
           <Loader2 className="size-3.5 animate-spin" />
         </span>
       ) : null}

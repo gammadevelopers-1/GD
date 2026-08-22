@@ -1,21 +1,34 @@
+import { Suspense } from "react";
 import { Building2 } from "lucide-react";
 import { AddClient } from "@/components/admin/clients/add-client";
 import { ClientList } from "@/components/admin/clients/client-list";
 import { EmptyState } from "@/components/admin/empty-state";
 import { PageHeading } from "@/components/admin/page-heading";
-import { requireRole } from "@/data/auth";
+import { CardGridSkeleton } from "@/components/admin/skeletons";
+import { requireRole, type Viewer } from "@/data/auth";
 import { getClientCompanies } from "@/data/clients";
 
 export default async function ClientsPage() {
   const viewer = await requireRole(["owner"]);
-  const clients = await getClientCompanies(viewer);
-  const live = clients.filter((client) => !client.archivedAt);
-  const archived = clients.filter((client) => client.archivedAt);
 
   return (
     <div className="mx-auto max-w-[1480px]">
       <PageHeading title="Clients" action={<AddClient />} />
 
+      <Suspense fallback={<CardGridSkeleton count={6} height="h-36" />}>
+        <ClientDirectory viewer={viewer} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function ClientDirectory({ viewer }: { viewer: Viewer }) {
+  const clients = await getClientCompanies(viewer);
+  const live = clients.filter((client) => !client.archivedAt);
+  const archived = clients.filter((client) => client.archivedAt);
+
+  return (
+    <>
       {clients.length ? (
         <div className="space-y-8">
           <ClientList clients={live} />
@@ -36,6 +49,6 @@ export default async function ClientsPage() {
           description="Add the first company, then invite them to a project from its page."
         />
       )}
-    </div>
+    </>
   );
 }

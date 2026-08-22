@@ -67,7 +67,13 @@ export const getClientCompanies = cache(
     if (viewer.role !== "owner") return [];
 
     const supabase = await createClient();
-    const [clientsResult, projectsResult, contactsResult] = await Promise.all([
+    const [
+      clientsResult,
+      projectsResult,
+      contactsResult,
+      grantsResult,
+      accountsResult,
+    ] = await Promise.all([
       supabase
         .from("app_clients")
         .select("id, name, website, notes, archived_at")
@@ -80,9 +86,20 @@ export const getClientCompanies = cache(
         .from("app_client_contacts")
         .select("client_id, full_name, email, is_primary")
         .is("archived_at", null),
+      supabase
+        .from("app_project_client_access")
+        .select("project_id, client_user_id")
+        .is("revoked_at", null),
+      supabase
+        .from("app_client_users")
+        .select("id, activated_at, archived_at"),
     ]);
 
-    const inviteStates = await inviteStatesByClient(projectsResult.data ?? []);
+    const inviteStates = inviteStatesByClient(
+      projectsResult.data ?? [],
+      grantsResult.data ?? [],
+      accountsResult.data ?? [],
+    );
 
     return (clientsResult.data ?? []).map((client) => {
       const projects = (projectsResult.data ?? []).filter(
@@ -112,36 +129,21 @@ export const getClientCompanies = cache(
   },
 );
 
-async function inviteStatesByClient(
+function inviteStatesByClient(
   projects: Array<{ id: unknown; client_id: unknown }>,
-): Promise<Map<string, ClientInviteStatus>> {
+  grants: Array<{ project_id: unknown; client_user_id: unknown }>,
+  people: Array<{ id: unknown; activated_at: unknown; archived_at: unknown }>,
+): Map<string, ClientInviteStatus> {
   const states = new Map<string, ClientInviteStatus>();
   const owned = projects.filter((project) => project.client_id);
   if (!owned.length) return states;
 
-  const supabase = await createClient();
-  const { data: grants } = await supabase
-    .from("app_project_client_access")
-    .select("project_id, client_user_id")
-    .in(
-      "project_id",
-      owned.map((project) => String(project.id)),
-    )
-    .is("revoked_at", null);
-
-  const rows = grants ?? [];
+  const ownedIds = new Set(owned.map((project) => String(project.id)));
+  const rows = grants.filter((row) => ownedIds.has(String(row.project_id)));
   if (!rows.length) return states;
 
-  const { data: people } = await supabase
-    .from("app_client_users")
-    .select("id, activated_at, archived_at")
-    .in(
-      "id",
-      rows.map((row) => String(row.client_user_id)),
-    );
-
   const byAccount = new Map(
-    (people ?? []).map((person) => [String(person.id), person]),
+    people.map((person) => [String(person.id), person]),
   );
   const clientByProject = new Map(
     owned.map((project) => [String(project.id), String(project.client_id)]),
@@ -343,51 +345,62 @@ export const getProjectInviteContext = cache(
 
     const supabase = await createClient();
 
-    const { data: project } = await supabase
-      .from("app_projects")
-      .select("id, client_id")
-      .eq("id", projectId)
-      .maybeSingle();
-
-    const { data: grants } = await supabase
-      .from("app_project_client_access")
-      .select("client_user_id")
-      .eq("project_id", projectId)
-      .is("revoked_at", null);
+    const [{ data: project }, { data: grants }] = await Promise.all([
+      supabase
+        .from("app_projects")
+        .select(
+          "id, client_id, client:app_clients(contacts:app_client_contacts(id, full_name, email, job_title, is_primary, archived_at))",
+        )
+        .eq("id", projectId)
+        .maybeSingle(),
+      supabase
+        .from("app_project_client_access")
+        .select("client_user_id")
+        .eq("project_id", projectId)
+        .is("revoked_at", null),
+    ]);
 
     const grantedIds = (grants ?? []).map((row) => String(row.client_user_id));
-
-    const { data: people } = grantedIds.length
-      ? await supabase
-          .from("app_client_users")
-          .select("id, full_name, email, invited_at, activated_at, archived_at")
-          .in("id", grantedIds)
-      : { data: [] };
 
     let suggestion: ProjectInviteContext["suggestion"] = null;
     let contacts: InviteContact[] = [];
 
-    if (project?.client_id) {
-      const { data: rows } = await supabase
-        .from("app_client_contacts")
-        .select("id, full_name, email, job_title, is_primary")
-        .eq("client_id", String(project.client_id))
-        .is("archived_at", null)
-        .not("email", "is", null)
-        .order("is_primary", { ascending: false })
-        .order("full_name");
+    const embedded = (project?.client as unknown as {
+      contacts?: Array<{
+        id: string;
+        full_name: string;
+        email: string | null;
+        job_title: string | null;
+        is_primary: boolean;
+        archived_at: string | null;
+      }>;
+    } | null) ?? null;
 
-      const addresses = (rows ?? [])
-        .map((row) => String(row.email).toLowerCase())
-        .filter(Boolean);
+    const rows = (embedded?.contacts ?? [])
+      .filter((row) => !row.archived_at && row.email)
+      .sort(
+        (a, b) =>
+          Number(b.is_primary) - Number(a.is_primary) ||
+          String(a.full_name).localeCompare(String(b.full_name)),
+      );
 
-      const { data: accounts } = addresses.length
-        ? await supabase
+    const addresses = rows
+      .map((row) => String(row.email).toLowerCase())
+      .filter(Boolean);
+
+    const [{ data: people }, { data: accounts }] = await Promise.all([
+      grantedIds.length
+        ? supabase
             .from("app_client_users")
-            .select("id, email")
-            .in("email", addresses)
-        : { data: [] };
+            .select("id, full_name, email, invited_at, activated_at, archived_at")
+            .in("id", grantedIds)
+        : Promise.resolve({ data: [] }),
+      addresses.length
+        ? supabase.from("app_client_users").select("id, email").in("email", addresses)
+        : Promise.resolve({ data: [] }),
+    ]);
 
+    if (project?.client_id) {
       const accountByEmail = new Map(
         (accounts ?? []).map((account) => [
           String(account.email).toLowerCase(),

@@ -89,7 +89,7 @@ function GrantRow({
       <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
         <span
           aria-hidden
-          className="grid size-8 shrink-0 place-items-center rounded-full bg-black/[0.05] text-[11px] font-semibold text-black/45"
+          className="grid size-8 shrink-0 place-items-center rounded-full bg-black/[0.05] text-[11px] font-semibold text-black/60"
         >
           {initials(grant.name)}
         </span>
@@ -98,7 +98,7 @@ function GrantRow({
           <p className="truncate text-[13px] font-medium text-black/80">
             {grant.name}
           </p>
-          <p className="truncate text-[11.5px] text-black/40">{grant.email}</p>
+          <p className="truncate text-[11.5px] text-black/55">{grant.email}</p>
         </div>
 
         <Activity grant={grant} />
@@ -205,7 +205,7 @@ function Activity({ grant }: { grant: ClientGrant }) {
           : undefined
       }
       suppressHydrationWarning
-      className="shrink-0 text-[11.5px] whitespace-nowrap text-black/40"
+      className="shrink-0 text-[11.5px] whitespace-nowrap text-black/55"
     >
       {seen ? `Opened ${seen}` : "Signed in, not opened since"}
     </span>

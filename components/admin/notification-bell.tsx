@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import {
   Bell,
@@ -31,12 +31,24 @@ const ICONS: Record<NotificationKind, typeof Bell> = {
 export function NotificationBell({ inbox }: { inbox: Inbox }) {
   const [open, setOpen] = useState(false);
   const [, startReading] = useTransition();
+  const [readHere, setReadHere] = useState<string[]>([]);
+
+  const shown = useMemo(() => {
+    const marked = new Set(readHere);
+    const items = inbox.items.map((item) =>
+      item.read || marked.has(item.id) ? { ...item, read: true } : item,
+    );
+    return { items, unread: items.filter((item) => !item.read).length };
+  }, [inbox, readHere]);
 
   function readAll() {
+    const ids = inbox.items.map((item) => item.id);
+    setReadHere((current) => [...new Set([...current, ...ids])]);
     startReading(() => markNotificationsRead());
   }
 
   function readOne(id: string) {
+    setReadHere((current) => [...new Set([...current, id])]);
     startReading(() => markNotificationsRead([id]));
   }
 
@@ -46,16 +58,16 @@ export function NotificationBell({ inbox }: { inbox: Inbox }) {
         <button
           type="button"
           aria-label={
-            inbox.unread
-              ? `Notifications, ${inbox.unread} unread`
+            shown.unread
+              ? `Notifications, ${shown.unread} unread`
               : "Notifications"
           }
           className="relative grid size-9.5 cursor-pointer place-items-center rounded-xl border border-black/[0.07] bg-white/55 text-black/55 transition duration-200 hover:border-black/[0.14] hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none data-[state=open]:border-black/[0.14] data-[state=open]:bg-white"
         >
           <Bell className="size-4.5" strokeWidth={1.6} />
-          {inbox.unread ? (
+          {shown.unread ? (
             <span className="absolute top-1.5 right-1.5 grid min-w-3.5 place-items-center rounded-full bg-[#16a34a] px-1 font-mono text-[8px] leading-3.5 font-semibold text-white tabular-nums">
-              {inbox.unread > 9 ? "9+" : inbox.unread}
+              {shown.unread > 9 ? "9+" : shown.unread}
             </span>
           ) : null}
         </button>
@@ -66,7 +78,7 @@ export function NotificationBell({ inbox }: { inbox: Inbox }) {
           <span className="font-mono text-[9px] tracking-[0.16em] text-black/35 uppercase">
             Notifications
           </span>
-          {inbox.unread ? (
+          {shown.unread ? (
             <button
               type="button"
               onClick={readAll}
@@ -77,9 +89,9 @@ export function NotificationBell({ inbox }: { inbox: Inbox }) {
           ) : null}
         </div>
 
-        {inbox.items.length ? (
+        {shown.items.length ? (
           <ul className="max-h-96 overflow-y-auto py-1">
-            {inbox.items.map((item) => {
+            {shown.items.map((item) => {
               const Icon = ICONS[item.kind] ?? Bell;
               const row = (
                 <>

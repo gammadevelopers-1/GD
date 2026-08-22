@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import {
   ArrowUpRight,
@@ -10,6 +11,7 @@ import {
   ReceiptText,
 } from "lucide-react";
 import { PageHeading } from "@/components/admin/page-heading";
+import { DashboardBodySkeleton } from "@/components/admin/dashboard-skeleton";
 import { KpiCard } from "@/components/admin/kpi-card";
 import { DeliveryPulse } from "@/components/admin/delivery-pulse";
 import { Progress } from "@/components/ui/progress";
@@ -34,18 +36,8 @@ const statusStyles = PROJECT_STATUS_TONE;
 
 export default async function DashboardPage() {
   const viewer = await requireViewer();
-  const data = await getDashboardData(viewer);
-  return <DashboardView viewer={viewer} data={data} />;
-}
-
-function DashboardView({
-  viewer,
-  data,
-}: {
-  viewer: Viewer;
-  data: DashboardData;
-}) {
   const firstName = viewer.fullName.split(" ")[0];
+  const money = viewer.role === "owner" || viewer.role === "finance";
 
   return (
     <div className="mx-auto max-w-[1480px]">
@@ -65,6 +57,27 @@ function DashboardView({
         }
       />
 
+      <Suspense fallback={<DashboardBodySkeleton money={money} />}>
+        <DashboardBody viewer={viewer} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function DashboardBody({ viewer }: { viewer: Viewer }) {
+  const data = await getDashboardData(viewer);
+  return <DashboardView viewer={viewer} data={data} />;
+}
+
+function DashboardView({
+  viewer,
+  data,
+}: {
+  viewer: Viewer;
+  data: DashboardData;
+}) {
+  return (
+    <>
       <section
         aria-label="Needs attention"
         className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
@@ -185,7 +198,7 @@ function DashboardView({
           <EmptyProjects owner={viewer.role === "owner"} />
         )}
       </section>
-    </div>
+    </>
   );
 }
 

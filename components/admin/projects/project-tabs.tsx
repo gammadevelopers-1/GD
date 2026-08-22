@@ -30,10 +30,11 @@ export function ProjectTabs({ publicId }: { publicId: string }) {
             value={tab}
             asChild
             className={cn(
-              "group relative h-auto flex-none shrink-0 rounded-none border-0 px-3.5 py-3.5 text-[13px] font-medium transition duration-200 after:hidden hover:text-white focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none dark:hover:text-white sm:px-4",
+              "group relative h-auto flex-none shrink-0 rounded-none border-0 px-4 py-3.5 text-[13.5px] tracking-[-0.01em] transition duration-200 after:hidden hover:bg-white/12 hover:text-white focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-[#2fe85c]/60 focus-visible:outline-none sm:px-5 dark:hover:bg-white/12 dark:hover:text-white",
+              "data-active:bg-white/12 data-active:font-semibold data-active:text-white dark:data-active:bg-white/12 dark:data-active:text-white",
               activeTab === tab
-                ? "bg-white/[0.03] text-white"
-                : "text-white/35 hover:bg-white/[0.05]",
+                ? "bg-white/12 font-semibold text-white"
+                : "font-medium text-gray-200",
             )}
           >
             <Link
@@ -45,10 +46,10 @@ export function ProjectTabs({ publicId }: { publicId: string }) {
               <span
                 aria-hidden
                 className={cn(
-                  "absolute inset-x-3.5 bottom-0 h-0.5 rounded-full bg-[#2fe85c] transition-all duration-200 sm:inset-x-4",
+                  "absolute inset-x-4 bottom-0 h-[2.5px] rounded-full bg-[#2fe85c] transition-all duration-200 sm:inset-x-5",
                   activeTab === tab
-                    ? "opacity-100 shadow-[0_0_14px_rgba(47,232,92,0.65)]"
-                    : "scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-40",
+                    ? "opacity-100 shadow-[0_0_16px_rgba(47,232,92,0.7)]"
+                    : "scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100 group-hover:shadow-[0_0_12px_rgba(47,232,92,0.5)]",
                 )}
               />
             </Link>

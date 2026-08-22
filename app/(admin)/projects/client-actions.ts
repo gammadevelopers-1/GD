@@ -1,7 +1,10 @@
 "use server";
 
-import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
+import {
+  linkBaseMessage,
+  resolveLinkBase,
+} from "@/lib/invites/base-url";
 import { requireRole } from "@/data/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -33,19 +36,6 @@ function refresh() {
   revalidatePath("/projects/[projectId]", "layout");
 }
 
-async function portalUrl(publicId: string) {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(
-    /\/$/,
-    "",
-  );
-  if (configured) return `${configured}/portal/${publicId}`;
-
-  const headerList = await headers();
-  const host = headerList.get("host") ?? "";
-  const scheme = host.startsWith("localhost") ? "http" : "https";
-  return `${scheme}://${host}/portal/${publicId}`;
-}
-
 export async function shareWithClient(
   _state: ShareState,
   formData: FormData,
@@ -69,6 +59,9 @@ export async function shareWithClient(
       "SUPABASE_SECRET_KEY is not set, so client accounts cannot be created yet.",
     );
   }
+
+  const base = await resolveLinkBase();
+  if (!base.ok) return formError(linkBaseMessage(base.reason));
 
   const supabase = await createClient();
   const password = generatePassword();
@@ -162,7 +155,7 @@ export async function shareWithClient(
       name: fullName,
       email,
       password,
-      url: await portalUrl(publicId),
+      url: `${base.origin}/portal/${publicId}`,
     },
   };
 }
@@ -180,6 +173,9 @@ export async function regenerateClientPassword(
   if (!adminConfigured()) {
     return formError("SUPABASE_SECRET_KEY is not set.");
   }
+
+  const base = await resolveLinkBase();
+  if (!base.ok) return formError(linkBaseMessage(base.reason));
 
   const supabase = await createClient();
   const { data: account } = await supabase
@@ -208,7 +204,7 @@ export async function regenerateClientPassword(
       name: String(account.full_name ?? ""),
       email: String(account.email),
       password,
-      url: await portalUrl(publicId),
+      url: `${base.origin}/portal/${publicId}`,
     },
   };
 }

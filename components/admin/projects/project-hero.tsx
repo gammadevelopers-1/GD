@@ -45,10 +45,10 @@ export function ProjectHeroCompact({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5 sm:px-6">
-      <span className="shrink-0 text-[11px] text-white/40">
+      <span className="shrink-0 text-[11px] text-white/65">
         {project.clientName ?? "No client yet"}
       </span>
-      <span aria-hidden className="shrink-0 text-white/20">
+      <span aria-hidden className="shrink-0 text-white/45">
         /
       </span>
       <h1 className="font-display min-w-0 flex-1 truncate text-[15px] font-semibold tracking-[-0.03em]">
@@ -104,7 +104,7 @@ export function ProjectHeroFull({
         <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[11px] text-white/40">
+              <span className="text-[11px] text-white/65">
                 {project.clientName ?? "No client yet"}
               </span>
               {project.isArchived ? (
@@ -117,7 +117,7 @@ export function ProjectHeroFull({
               {project.name}
             </h1>
             {project.description ? (
-              <p className="mt-2 max-w-2xl text-[13px] leading-5 text-white/45">
+              <p className="mt-2 max-w-2xl text-[13px] leading-5 text-white/80">
                 {project.description}
               </p>
             ) : null}
@@ -169,12 +169,12 @@ export function HeaderMeta({
 }) {
   return (
     <div className="min-w-0 rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5 transition duration-300 hover:-translate-y-0.5 hover:border-[#2fe85c]/30 hover:bg-white/[0.06]">
-      <p className="text-[10px] text-white/28">{label}</p>
+      <p className="text-[10px] text-white/65">{label}</p>
       <p className="mt-1.5 truncate text-[12px] font-medium text-white/75">
         {value}
       </p>
       {note ? (
-        <p className="mt-0.5 truncate text-[10px] text-white/35">{note}</p>
+        <p className="mt-0.5 truncate text-[10px] text-white/65">{note}</p>
       ) : null}
     </div>
   );

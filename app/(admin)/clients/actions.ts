@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/data/auth";
-import { baseUrl } from "@/lib/invites/base-url";
+import { linkBaseMessage, resolveLinkBase } from "@/lib/invites/base-url";
 import { createClient } from "@/lib/supabase/server";
 import {
   adminConfigured,
@@ -356,6 +356,7 @@ async function sendProjectInvite(
   project: { name: string },
   invitedBy: string,
   override: { subject: string; body: string } | null,
+  origin: string,
 ): Promise<
   | { ok: true; returning: boolean }
   | { ok: false; message: string; link?: string }
@@ -381,7 +382,7 @@ async function sendProjectInvite(
       subject: override?.subject || draft.subject,
       body: withSignInLink(
         override?.body || draft.body,
-        `${await baseUrl()}/portal/sign-in`,
+        `${origin}/portal/sign-in`,
       ),
     });
 
@@ -394,7 +395,7 @@ async function sendProjectInvite(
   const token = await generatePasswordToken(recipient.email);
   if (!token.ok) return { ok: false, message: recipient.email };
 
-  const link = `${await baseUrl()}/set-password?token=${encodeURIComponent(token.token)}&email=${encodeURIComponent(recipient.email)}&id=${recipient.id}&kind=client`;
+  const link = `${origin}/set-password?token=${encodeURIComponent(token.token)}&email=${encodeURIComponent(recipient.email)}&id=${recipient.id}&kind=client`;
 
   await supabase
     .from("app_client_users")
@@ -443,6 +444,9 @@ export async function inviteClientToProject(
   const recipients = readRecipients(formData);
   if (!recipients.length)
     return formError("Choose at least one person to invite.");
+
+  const base = await resolveLinkBase();
+  if (!base.ok) return formError(linkBaseMessage(base.reason));
 
   const supabase = await createClient();
 
@@ -539,6 +543,7 @@ export async function inviteClientToProject(
       { name: String(project.name) },
       viewer.fullName,
       override,
+      base.origin,
     );
 
     if (outcome.ok) {

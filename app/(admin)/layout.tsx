@@ -1,35 +1,23 @@
-import { connection } from "next/server";
 import { cookies } from "next/headers";
 import { AdminShell } from "@/components/admin/admin-shell";
+import { ShellAccount, ShellBell } from "@/components/admin/shell-header";
 import { requireViewer } from "@/data/auth";
-import { getMyNotifications } from "@/data/notifications";
-import { createClient } from "@/lib/supabase/server";
 
 export default async function AdminLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  await connection();
-  const viewer = await requireViewer();
-  const cookieStore = await cookies();
+  const [viewer, cookieStore] = await Promise.all([
+    requireViewer(),
+    cookies(),
+  ]);
   const defaultSidebarOpen =
     cookieStore.get("sidebar_state")?.value !== "false";
-
-  let avatarUrl: string | null = null;
-  if (viewer.avatarPath) {
-    const supabase = await createClient();
-    const { data } = await supabase.storage
-      .from("app-avatars")
-      .createSignedUrl(viewer.avatarPath, 60 * 60);
-    avatarUrl = data?.signedUrl ?? null;
-  }
-
-  const inbox = await getMyNotifications(viewer);
 
   return (
     <AdminShell
       viewer={viewer}
-      avatarUrl={avatarUrl}
-      inbox={inbox}
+      bell={<ShellBell viewer={viewer} />}
+      account={<ShellAccount viewer={viewer} />}
       defaultSidebarOpen={defaultSidebarOpen}
     >
       {children}

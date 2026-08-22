@@ -190,7 +190,7 @@ function Swatches({
               onClear();
               setOpen(false);
             }}
-            className="mt-2 w-full rounded-md px-2 py-1 text-[11px] font-medium text-black/50 transition hover:bg-black/[0.05] hover:text-black"
+            className="mt-2 w-full rounded-md px-2 py-1 text-[11px] font-medium text-black/60 transition hover:bg-black/[0.05] hover:text-black"
           >
             None
           </button>
@@ -568,7 +568,7 @@ export function IdeaEditor({
       </div>
 
       {editable ? (
-        <div className="flex justify-end border-t border-black/[0.06] px-4 py-1.5 text-[10px] text-black/35">
+        <div className="flex justify-end border-t border-black/[0.06] px-4 py-1.5 text-[10px] text-black/55">
           {editor.storage.characterCount.words()} words
         </div>
       ) : null}

@@ -157,7 +157,7 @@ function AttachmentView({ node, deleteNode, editor }: NodeViewProps) {
 function Placeholder() {
   return (
     <div className="grid h-40 place-items-center">
-      <Loader2 className="size-4 animate-spin text-black/25" />
+      <Loader2 className="size-4 animate-spin text-black/55" />
     </div>
   );
 }
@@ -179,13 +179,13 @@ function FileBar({
 
   return (
     <div className="flex items-center gap-3 px-3.5 py-3">
-      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-black/[0.05] text-black/45">
+      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-black/[0.05] text-black/60">
         <FileText className="size-4" />
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-[13px] font-medium">{name}</span>
         {detail ? (
-          <span className="block text-[11px] text-black/40">{detail}</span>
+          <span className="block text-[11px] text-black/55">{detail}</span>
         ) : null}
       </span>
       <a
@@ -195,7 +195,7 @@ function FileBar({
         aria-disabled={!url}
         title="Open"
         className={cn(
-          "grid size-8 shrink-0 place-items-center rounded-lg text-black/45 transition hover:bg-black/[0.06] hover:text-black",
+          "grid size-8 shrink-0 place-items-center rounded-lg text-black/60 transition hover:bg-black/[0.06] hover:text-black",
           !url && "pointer-events-none opacity-40",
         )}
       >

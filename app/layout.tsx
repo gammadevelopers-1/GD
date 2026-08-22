@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { ButtonFillEffects } from "@/components/common/button-fill-effects";
 import "./globals.css";
+import { configuredOrigin } from "@/lib/site/origin";
 
 const generalSans = localFont({
   src: [
@@ -29,9 +30,7 @@ const syne = localFont({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000",
-  ),
+  metadataBase: new URL(configuredOrigin() ?? "http://localhost:3000"),
   title: {
     default: "Gamma Developers — AI agents that actually ship",
     template: "%s · Gamma Developers",

@@ -9,6 +9,7 @@ import {
   ExternalLink,
   Loader2,
   Pencil,
+  Plus,
   X,
 } from "lucide-react";
 import {
@@ -29,6 +30,7 @@ import {
   PANEL,
 } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export type TechnicalDetails = TechnicalValues & {
   updatedBy: string | null;
@@ -82,7 +84,8 @@ const ROWS: Row[] = [
     field: "stackNotes",
     label: "Stack notes",
     kind: "notes",
-    placeholder: "Frameworks, services and anything load-bearing about the build.",
+    placeholder:
+      "Frameworks, services and anything load-bearing about the build.",
   },
   {
     field: "onboardingNotes",
@@ -127,14 +130,15 @@ export function TechnicalPanel({
           Working links
         </h2>
         {editable ? (
-          <button
-            type="button"
+          <Button
+            variant="outline"
+            size="lg"
             onClick={() => setEditing(true)}
-            className={cn(BUTTON_SECONDARY, "h-9 text-xs")}
+            className="bg-white text-xs text-black/75 shadow-sm"
           >
-            <Pencil className="size-3.5" />
+            <Pencil data-icon="inline-start" className="size-3.5" />
             Edit
-          </button>
+          </Button>
         ) : null}
       </header>
 
@@ -151,19 +155,19 @@ export function TechnicalPanel({
       </dl>
 
       {details?.updatedAt ? (
-        <p className="mt-6 text-[11px] text-black/35">
+        <p className="mt-6 text-[11px] text-black/55">
           Last saved {formatDate(details.updatedAt.slice(0, 10))}
           {details.updatedBy ? ` by ${details.updatedBy}` : ""}.
         </p>
       ) : null}
 
       {isArchived ? (
-        <p className="mt-4 text-[12px] text-black/45">
+        <p className="mt-4 text-[12px] text-black/60">
           This project is archived, so these are read-only.
         </p>
       ) : null}
       {!canEdit ? (
-        <p className="mt-4 text-[12px] text-black/45">
+        <p className="mt-4 text-[12px] text-black/60">
           Only people assigned to this project can edit these.
         </p>
       ) : null}
@@ -185,37 +189,36 @@ function ValueRow({
   const href = row.kind === "link" && value ? toHref(value) : null;
 
   return (
-    <div className="grid gap-1 py-4 sm:grid-cols-[220px_1fr] sm:gap-6 sm:py-3.5">
-      <dt className="pt-px text-[13px] text-black/45">{row.label}</dt>
+    <div className="grid gap-2 py-4 sm:grid-cols-[220px_1fr] sm:items-start sm:gap-6 sm:py-3.5">
+      <dt className="text-[13px] font-medium text-black/60">{row.label}</dt>
       <dd className="min-w-0">
         {!value ? (
           canEdit ? (
-            <button
-              type="button"
+            <Button
+              variant="outline"
+              size="sm"
               onClick={onAdd}
-              className={cn(
-                "rounded text-[13px] text-black/35 transition hover:text-[#08743d]",
-                FOCUS_RING,
-              )}
+              className="border-dashed bg-white text-[12px] text-black/65 hover:border-[#16a34a]/40 hover:bg-[#16a34a]/[0.06] hover:text-[#08743d]"
             >
+              <Plus data-icon="inline-start" className="size-3.5" />
               Add
-            </button>
+            </Button>
           ) : (
-            <span className="text-[13px] text-black/25">Not added</span>
+            <span className="text-[13px] text-black/55">Not added</span>
           )
         ) : href ? (
-          <div className="group flex min-w-0 items-center gap-2">
+          <div className="group flex min-w-0 items-center gap-2 rounded-lg border border-transparent py-0.5 transition hover:border-black/[0.06] hover:bg-white">
             <a
               href={href}
               target="_blank"
               rel="noreferrer noopener"
               className={cn(
-                "flex min-w-0 items-center gap-1.5 rounded text-[13px] font-medium text-[#08743d] hover:underline",
+                "flex min-w-0 items-center gap-2 rounded px-1 text-[13px] font-semibold text-[#08743d] hover:underline",
                 FOCUS_RING,
               )}
             >
               <span className="truncate">{linkLabel(value)}</span>
-              <ExternalLink className="size-3 shrink-0 opacity-55" />
+              <ExternalLink className="size-3.5 shrink-0" />
             </a>
             <CopyButton value={href} label={row.label} />
           </div>
@@ -240,8 +243,9 @@ function CopyButton({ value, label }: { value: string; label: string }) {
   const [copied, setCopied] = useState(false);
 
   return (
-    <button
-      type="button"
+    <Button
+      variant="outline"
+      size="icon-sm"
       aria-label={`Copy ${label}`}
       onClick={async () => {
         try {
@@ -252,17 +256,14 @@ function CopyButton({ value, label }: { value: string; label: string }) {
           setCopied(false);
         }
       }}
-      className={cn(
-        "grid size-6 shrink-0 place-items-center rounded-md text-black/25 opacity-100 transition duration-150 hover:bg-black/[0.05] hover:text-black active:scale-95 sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100",
-        FOCUS_RING,
-      )}
+      className="shrink-0 bg-white text-black/60 shadow-sm hover:border-black/20 hover:text-black"
     >
       {copied ? (
         <Check className="size-3 text-[#08743d]" />
       ) : (
         <Copy className="size-3" />
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -387,7 +388,7 @@ function TechnicalForm({
 }
 
 function Optional() {
-  return <span className="text-black/30">(optional)</span>;
+  return <span className="text-black/55">(optional)</span>;
 }
 
 function FieldError({

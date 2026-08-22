@@ -2,20 +2,31 @@ import "server-only";
 
 import { headers } from "next/headers";
 
-export async function baseUrl() {
-  const override = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "");
-  if (override) return override;
+import {
+  type LinkBase,
+  type LinkBaseFailure,
+  decideLinkBase,
+} from "@/lib/site/origin";
 
+export type { LinkBase, LinkBaseFailure };
+
+export async function resolveLinkBase(): Promise<LinkBase> {
   const headerList = await headers();
-  const host = headerList.get("host")?.trim();
+  const forwarded = headerList.get("x-forwarded-host")?.split(",")[0]?.trim();
 
-  if (host) {
-    const local = host.startsWith("localhost") || host.startsWith("127.0.0.1");
-    return `${local ? "http" : "https"}://${host}`;
-  }
+  return decideLinkBase({
+    host: forwarded || headerList.get("host")?.trim() || null,
+    proto: headerList.get("x-forwarded-proto")?.split(",")[0]?.trim() ?? null,
+    siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
+    allowedHosts: process.env.APP_ALLOWED_HOSTS,
+    vercelProductionUrl: process.env.VERCEL_PROJECT_PRODUCTION_URL,
+    vercelBranchUrl: process.env.VERCEL_BRANCH_URL,
+    deployed: Boolean(process.env.VERCEL?.trim()),
+  });
+}
 
-  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
-  if (vercel) return `https://${vercel.replace(/\/$/, "")}`;
-
-  return "";
+export function linkBaseMessage(reason: LinkBaseFailure) {
+  return reason === "untrusted-host"
+    ? "That link could not be built: this address is not in APP_ALLOWED_HOSTS, so nothing was sent."
+    : "That link could not be built: set NEXT_PUBLIC_SITE_URL or APP_ALLOWED_HOSTS, so nothing was sent.";
 }

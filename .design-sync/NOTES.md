@@ -116,6 +116,24 @@ time and MUST be re-applied before capturing. It cannot live in
 - **Two different document shapes in the projects surface.** `BoardSurface` and
   `IdeaEditor` take real Tiptap JSON (`{type:"doc",content:[…]}`); `BlockEditor`
   and `BlockView` take the app's lighter `Block[]`. They are not interchangeable.
+- **Dark-pill components need a `.panel-dark` ancestor to be visible at all.**
+  `ShareProject`'s trigger (`bg-white/[0.08] text-white`) and `PortalTabs`'
+  `TabsList` (`text-white/35`) have no background of their own — they are meant to
+  sit inside a dark header block. On the default light preview background they are
+  invisible, which reads as "renders BLANK". Wrap them the way the app does
+  (`PortalHero` / the `panel-dark` project header), not in a neutral box.
+- **`position: absolute` roots need a fixed-height relative wrapper.**
+  `SuggestionsPanel` is `absolute inset-y-0 right-0`; without
+  `style={{height: 560}} className="relative overflow-hidden …"` it collapses to
+  zero height. `WeekWorkBoard.tsx` is the precedent to copy. `SidebarProvider` is
+  the exception — its `min-h-svh` already supplies height for the fixed rail.
+- **Below `lg` (1024px) the 900px capture width changes what renders.**
+  `PortfolioResults`' real `<table>` is `hidden lg:block`, so at 900px the table
+  story silently renders the grid fallback — the fix is
+  `cfg.overrides.PortfolioResults.viewport`, not a story rewrite. `PortalCard`
+  likewise shows only its mobile column, matching real responsive behaviour.
+  Per-story shots are `fullPage:false` at a fixed viewport, so anything below the
+  fold is never captured — height problems are a `viewport` override, not trimming.
 - **Compound `projects/*` fixtures need the real source types.** `MilestoneWeek`,
   `MilestoneCard` (`data/project-detail.ts`) and `CardStatus`
   (`lib/projects/board.ts`) flatten to `unknown` in `dtsPropsFor`; read the source
@@ -129,8 +147,8 @@ time and MUST be re-applied before capturing. It cannot live in
 
 ## Optional cardMode polish (not defects)
 
-At the 700px capture viewport, `FlowSection`'s 5th step and `EnvPanel`'s last
-upload row crop. The content is complete; only the screenshot is cut. If it ever
+At the 700px capture viewport, `EnvPanel`'s last upload row, `WeekPlan`'s
+`OwnerWithOpenWeek` cell (its embedded Tiptap editor), and `SiteFooter` crop. The content is complete; only the screenshot is cut. If it ever
 matters, give them `cfg.overrides.<Name>: {"cardMode": "column"}`.
 
 ## States that are genuinely not statically renderable
@@ -143,17 +161,62 @@ Documented so a future run does not treat them as failures to chase:
 - `FormDatePicker` / `FormSelect` open popover — not prop-controllable.
 - `LoaderVisual` `leaving` — `.site-loader-leaving` sets `opacity: 0` as its resting
   end state, so it screenshots blank by design. Replaced with a second progress value.
+- `SiteLoader` — takes **zero props**; its whole state machine is real wall-clock
+  timers (850ms → +140ms → +520ms → `stage: "hidden"`, which returns `null`).
+  `page.clock.setFixedTime` pins `Date`, it does not pause real timers, and
+  `package-capture.mjs`'s `goto` + `settle()` (fonts + image decode) already burns
+  more than the ~1.5s hide sequence — so every capture lands after the component has
+  unmounted itself. Unlike `LoaderVisual` there is no prop to freeze a stage on.
+  Not authorable: it ships the floor card until the source gains a dev-only stage
+  override, or capture screenshots immediately post-mount instead of after `settle()`.
 
 ## Source findings (real bugs, not sync artifacts)
 
 - `components/admin/projects/block-editor.tsx`: the callout-tone `FormSelect`
   trigger is fixed at `w-[104px]`, which clips the option label "Important" to
   "Importan". Pre-existing; left untouched by the sync.
+- `components/ui/tabs.tsx`: the `orientation` prop is **dead**. It is destructured
+  and written only as a static `data-orientation` attribute — never forwarded to
+  `TabsPrimitive.Root`. Radix derives its own `data-orientation` from its internal
+  context (default `horizontal`), so `orientation="vertical"` has no visible effect;
+  an authored vertical story rendered identically to the horizontal one. Zero real
+  callers (`grep -rn "orientation=" components app`). Fix by forwarding it to the
+  primitive, or delete the prop.
+- `components/projects/share-project.tsx` (`ShareProject`) has **no callers** left
+  in `app/` or `components/` — apparently superseded by `ShareContainers`. Its
+  preview fixtures were built from its own prop contract, not a real call site.
 
 ## Known render warns
 
 - `[RENDER_BLANK]` on components whose floor card is genuinely tiny is expected
   until a preview is authored — it is not a failure.
+
+## `public/` assets are not served during capture
+
+`SiteNav` renders `next/image` against `/logo.png` and `/full-logo.png` — absolute
+`public/` paths. `public/` is not copied into `ds-bundle`, so those requests 404 in
+the capture browser and the logo mark screenshots blank. The nav shell itself (pill
+links, `Book a call` CTA, blur/border chrome) is fully styled and correct.
+
+This is build wiring, not a preview defect — no prop or fixture substitutes an asset
+the component fetches by hardcoded absolute path. `SiteNav` is the **only** affected
+component (`grep -rn 'src="/' components/` finds nothing else; `CASE_THUMBS` are
+inline SVG components, not image files). Left as-is deliberately: faking it locally
+would make the card look better than the real render in claude.ai/design, which
+would 404 the same paths. A real fix means hosting those two files with the design
+system or inlining the mark as SVG.
+
+## Target project (changed 2026-08-22)
+
+Syncs to **"GD website & Dashboard"** (`d149a8c6-ae55-4d66-9e3f-525c4e1662fd`) — the
+user's personal default design system, and the project the design agent reaches for
+by default.
+
+Before this run the config pinned **"Design System"** (`fd526e33-8a80-4872-8bea-9156a499d85b`,
+the *org* default), which is where every earlier sync uploaded. That project still holds
+a full but now-stale copy (100 components, missing the new home-page sections and still
+carrying the five deleted ones). It is safe to delete once the new target is confirmed
+good; nothing in this repo references it any more.
 
 ## Re-sync risks
 

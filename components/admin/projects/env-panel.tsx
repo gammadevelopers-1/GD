@@ -299,14 +299,14 @@ function GroupCard({
         >
           <ChevronRight
             className={cn(
-              "size-4 shrink-0 text-black/30 transition-transform duration-200",
+              "size-4 shrink-0 text-black/55 transition-transform duration-200",
               open && "rotate-90",
             )}
           />
           <span className="truncate text-[14px] font-semibold tracking-[-0.02em]">
             {group.name}
           </span>
-          <span className="shrink-0 text-[12px] text-black/35">
+          <span className="shrink-0 text-[12px] text-black/55">
             {variables.length}
           </span>
         </button>
@@ -380,7 +380,7 @@ function GroupCard({
             />
           ))}
           {!variables.length ? (
-            <li className="px-4 py-5 text-[12px] text-black/35">
+            <li className="px-4 py-5 text-[12px] text-black/55">
               No variables in this group.
             </li>
           ) : null}
@@ -441,7 +441,7 @@ function VariableRow({
             {variable.name}
           </code>
           {variable.description ? (
-            <p className="mt-0.5 truncate text-[11.5px] text-black/40">
+            <p className="mt-0.5 truncate text-[11.5px] text-black/55">
               {variable.description}
             </p>
           ) : null}
@@ -451,7 +451,7 @@ function VariableRow({
           {isOwner && variable.grants.length ? (
             <span
               title={`Shared with ${variable.grants.length} ${variable.grants.length === 1 ? "person" : "people"}`}
-              className="mr-1 inline-flex shrink-0 items-center gap-1 text-[11px] text-black/35"
+              className="mr-1 inline-flex shrink-0 items-center gap-1 text-[11px] text-black/55"
             >
               <Users className="size-3" />
               {variable.grants.length}
@@ -475,7 +475,7 @@ function VariableRow({
               {copying === "done" ? "Copied" : "Copy value"}
             </button>
           ) : (
-            <span className="px-2 text-[11px] text-black/30">
+            <span className="px-2 text-[11px] text-black/55">
               No access to the value
             </span>
           )}
@@ -492,6 +492,7 @@ function VariableRow({
                 {mayCopy ? (
                   <DropdownMenuItem onSelect={() => void onCopy()}>
                     <Copy />
+                    Copy value
                   </DropdownMenuItem>
                 ) : null}
                 {isOwner ? (
@@ -584,7 +585,7 @@ function EditVariableDialog({
         <input type="hidden" name="credentialId" value={variable.id} />
 
         <label className="block space-y-1.5">
-          <span className="text-[12px] text-black/50">Key</span>
+          <span className="text-[12px] text-black/60">Key</span>
           <input
             name="key"
             defaultValue={variable.name}
@@ -595,8 +596,8 @@ function EditVariableDialog({
         </label>
 
         <label className="block space-y-1.5">
-          <span className="text-[12px] text-black/50">
-            New value <span className="text-black/30">(optional)</span>
+          <span className="text-[12px] text-black/60">
+            New value <span className="text-black/55">(optional)</span>
           </span>
           <span className="relative block">
             <input
@@ -612,7 +613,7 @@ function EditVariableDialog({
               onClick={() => setReveal((value) => !value)}
               aria-label={reveal ? "Hide value" : "Show value"}
               className={cn(
-                "absolute top-1/2 right-2 -translate-y-1/2 rounded p-1 text-black/30 transition hover:text-black/70",
+                "absolute top-1/2 right-2 -translate-y-1/2 rounded p-1 text-black/55 transition hover:text-black/70",
                 FOCUS_RING,
               )}
             >
@@ -626,8 +627,8 @@ function EditVariableDialog({
         </label>
 
         <label className="block space-y-1.5">
-          <span className="text-[12px] text-black/50">
-            Note <span className="text-black/30">(optional)</span>
+          <span className="text-[12px] text-black/60">
+            Note <span className="text-black/55">(optional)</span>
           </span>
           <input
             name="note"
@@ -699,7 +700,7 @@ function ShareDialog({
         <input type="hidden" name="access" value={access} />
 
         <label className="block space-y-1.5">
-          <span className="text-[12px] text-black/50">Person</span>
+          <span className="text-[12px] text-black/60">Person</span>
           <FormSelect
             name="profileId"
             required
@@ -718,14 +719,14 @@ function ShareDialog({
             ]}
           />
           {!available.length ? (
-            <span className="text-[11.5px] text-black/40">
+            <span className="text-[11.5px] text-black/55">
               Everyone on this project already has access.
             </span>
           ) : null}
         </label>
 
         <fieldset className="space-y-1.5">
-          <legend className="text-[12px] text-black/50">Access</legend>
+          <legend className="text-[12px] text-black/60">Access</legend>
           <div className="space-y-1.5">
             {CREDENTIAL_ACCESS.map((level) => (
               <label
@@ -748,7 +749,7 @@ function ShareDialog({
                   <span className="block text-[13px] font-medium">
                     {ACCESS_LABEL[level]}
                   </span>
-                  <span className="block text-[11.5px] text-black/45">
+                  <span className="block text-[11.5px] text-black/60">
                     {ACCESS_HINT[level]}
                   </span>
                 </span>
@@ -772,7 +773,7 @@ function ShareDialog({
       </form>
 
       <div className="mt-5 border-t border-black/[0.07] pt-4">
-        <h3 className="text-[12px] font-semibold text-black/50">
+        <h3 className="text-[12px] font-semibold text-black/60">
           Who has access
         </h3>
         {variable.grants.length ? (
@@ -788,7 +789,7 @@ function ShareDialog({
             ))}
           </ul>
         ) : (
-          <p className="mt-2 text-[12px] text-black/35">
+          <p className="mt-2 text-[12px] text-black/55">
             Nobody yet. Only owners can reach it.
           </p>
         )}
@@ -1069,7 +1070,7 @@ function EnvFiles({
           />
         ))}
         {!files.length ? (
-          <li className="text-[12px] text-black/35">No files stored.</li>
+          <li className="text-[12px] text-black/55">No files stored.</li>
         ) : null}
       </ul>
 
@@ -1108,7 +1109,7 @@ function EnvFiles({
             Store
           </button>
         </div>
-        <p className="text-[11.5px] text-black/40">
+        <p className="text-[11.5px] text-black/55">
           A whole file is every secret at once, so it stays owner only and
           cannot be shared per variable.
         </p>
@@ -1142,7 +1143,7 @@ function EnvFileRow({
       <code className="min-w-0 flex-1 truncate font-mono text-[12px]">
         {file.fileName}
       </code>
-      <span className="shrink-0 text-[10.5px] text-black/35">
+      <span className="shrink-0 text-[10.5px] text-black/55">
         {Math.max(1, Math.round(file.byteSize / 1024))} KB ·{" "}
         {formatDate(file.createdAt.slice(0, 10))}
       </span>
@@ -1204,7 +1205,7 @@ function EnvFileRow({
 
 function EmptyLine({ text, action }: { text: string; action: string | null }) {
   return (
-    <p className="text-[12.5px] text-black/40">
+    <p className="text-[12.5px] text-black/55">
       {text}
       {action ? ` ${action}` : ""}
     </p>

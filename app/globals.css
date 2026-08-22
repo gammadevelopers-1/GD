@@ -260,6 +260,17 @@ select {
   font: inherit;
 }
 
+button:not(:disabled):not([aria-disabled="true"]),
+[role="button"]:not([aria-disabled="true"]),
+summary {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid #16a34a;
+  outline-offset: 2px;
+}
+
 p {
   text-wrap: pretty;
 }

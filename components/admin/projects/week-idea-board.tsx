@@ -102,18 +102,32 @@ export function WeekIdeaBoard({
     return () => window.removeEventListener("keydown", onKey);
   }, [expanded, workOpen, onExpandedChange]);
 
+  useEffect(() => {
+    if (!expanded) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [expanded]);
+
   return (
     <div
       role={expanded ? "dialog" : undefined}
       aria-label={expanded ? `Week ${weekNumber} idea board` : undefined}
       aria-modal={expanded || undefined}
       className={cn(
-        "relative flex flex-col overflow-hidden border border-black/[0.07] bg-white",
-        expanded ? "fixed inset-0 z-50 rounded-none" : "min-h-128 rounded-xl",
+        "relative isolate flex flex-col overflow-hidden border border-black/[0.07] bg-white",
+        expanded
+          ? "fixed inset-0 z-50 rounded-none"
+          : "h-[clamp(32rem,68dvh,44rem)] rounded-xl",
       )}
     >
-      <div className="flex shrink-0 items-center gap-2 border-b border-black/[0.07] bg-[#f1f1ea] px-3 py-1.5">
-        <span className="font-mono text-[10px] tracking-[0.14em] text-black/35 uppercase">
+      <div
+        inert={workOpen || undefined}
+        className="flex shrink-0 items-center gap-2 border-b border-black/[0.07] bg-[#f1f1ea] px-3 py-1.5"
+      >
+        <span className="font-mono text-[10px] tracking-[0.14em] text-black/55 uppercase">
           Idea Board
         </span>
 
@@ -137,7 +151,7 @@ export function WeekIdeaBoard({
           onClick={() => onExpandedChange(!expanded)}
           title={expanded ? "Close full screen" : "Open full screen"}
           aria-label={expanded ? "Close full screen" : "Open full screen"}
-          className="ml-auto grid size-7 place-items-center rounded-lg text-black/45 transition hover:bg-black/6 hover:text-black"
+          className="ml-auto grid size-7 place-items-center rounded-lg text-black/60 transition hover:bg-black/6 hover:text-black"
         >
           {expanded ? (
             <Minimize2 className="size-3.5" />
@@ -148,6 +162,7 @@ export function WeekIdeaBoard({
       </div>
 
       <div
+        inert={workOpen || undefined}
         className="flex min-h-0 flex-1 flex-col"
         onDrop={attach.onDrop}
         onDragOver={attach.onDragOver}
@@ -168,6 +183,7 @@ export function WeekIdeaBoard({
 
       <button
         type="button"
+        inert={workOpen || undefined}
         onClick={onOpenWork}
         title="Open the Work Board"
         className="group absolute top-1/2 right-0 z-10 flex -translate-y-1/2 items-center gap-2 rounded-l-xl bg-[#15181b] py-4 pr-2 pl-2 text-white shadow-[0_10px_30px_rgba(20,23,26,0.2)] transition hover:pr-3 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/60 focus-visible:outline-none"
@@ -201,7 +217,7 @@ function SaveState({
 }) {
   if (!canEdit) {
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] text-black/40">
+      <span className="inline-flex items-center gap-1 text-[10px] text-black/55">
         <Lock className="size-2.5" />
         View only
       </span>
@@ -224,7 +240,7 @@ function SaveState({
   }
   if (state.status === "saving") {
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] text-black/40">
+      <span className="inline-flex items-center gap-1 text-[10px] text-black/55">
         <Loader2 className="size-2.5 animate-spin" />
         Saving
       </span>
@@ -232,7 +248,7 @@ function SaveState({
   }
   if (state.status === "saved") {
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] text-black/40">
+      <span className="inline-flex items-center gap-1 text-[10px] text-black/55">
         <Check className="size-2.5 text-[#0f7a37]" />
         Saved
       </span>
@@ -253,7 +269,7 @@ export function LastEdit({
   return (
     <span
       title={new Date(updatedAt).toLocaleString()}
-      className="inline-flex min-w-0 items-center gap-1 text-[10px] text-black/40"
+      className="inline-flex min-w-0 items-center gap-1 text-[10px] text-black/55"
     >
       <PenLine className="size-2.5 shrink-0" />
       <span className="truncate">

@@ -1,5 +1,5 @@
 {
-  "projectId": "fd526e33-8a80-4872-8bea-9156a499d85b",
+  "projectId": "d149a8c6-ae55-4d66-9e3f-525c4e1662fd",
   "pkg": "gd-website",
   "globalName": "GDWebsite",
   "shape": "package",
@@ -15,6 +15,7 @@
     "AuditForm": "components/sections/hero/audit-form.tsx",
     "AuditHistory": "components/admin/projects/audit-history.tsx",
     "AuthForm": "components/portal/auth-form.tsx",
+    "Avatar": "components/ui/avatar.tsx",
     "Badge": "components/ui/badge.tsx",
     "BannerControl": "components/admin/projects/banner-control.tsx",
     "BannerCropper": "components/admin/projects/banner-cropper.tsx",
@@ -22,10 +23,11 @@
     "BlockView": "components/admin/projects/block-view.tsx",
     "BoardSurface": "components/admin/projects/board-surface.tsx",
     "BoardsPanel": "components/admin/projects/boards-panel.tsx",
+    "BookAuditSection": "components/sections/book-audit-section.tsx",
     "Button": "components/ui/button.tsx",
     "ButtonFillEffects": "components/common/button-fill-effects.tsx",
+    "CASE_THUMBS": null,
     "Calendar": "components/ui/calendar.tsx",
-    "CapabilitiesSection": "components/sections/capabilities-section.tsx",
     "Card": "components/ui/card.tsx",
     "CardGridSkeleton": "components/admin/skeletons.tsx",
     "ClientAccessPanel": "components/admin/projects/client-access.tsx",
@@ -33,16 +35,18 @@
     "ClientStateBadge": "components/admin/clients/client-state.tsx",
     "ComingSoon": "components/admin/coming-soon.tsx",
     "CompanyForm": "components/admin/clients/company-form.tsx",
+    "ComplianceSection": "components/sections/compliance-section.tsx",
+    "ContactForm": "components/sections/contact/contact-form.tsx",
     "CopyButton": "components/admin/projects/issued-access.tsx",
+    "CountUp": "components/common/count-up.tsx",
     "DeliveryPulse": "components/admin/delivery-pulse.tsx",
     "Dialog": "components/ui/dialog.tsx",
     "DocView": "components/portal/doc-view.tsx",
     "DropdownMenu": "components/ui/dropdown-menu.tsx",
     "EmptyState": "components/admin/empty-state.tsx",
     "EnvPanel": "components/admin/projects/env-panel.tsx",
-    "FaqSection": "components/sections/faq-section.tsx",
-    "FlowSection": "components/sections/flow-section.tsx",
-    "FooterArcs": "components/layout/footer-arcs.tsx",
+    "FlowConsole": "components/sections/flow-console.tsx",
+    "FooterGlow": "components/layout/footer-glow.tsx",
     "FormDatePicker": "components/common/form-date-picker.tsx",
     "FormSelect": "components/common/form-select.tsx",
     "HeroAuditCta": "components/sections/hero/hero-audit-cta.tsx",
@@ -54,6 +58,7 @@
     "Input": "components/ui/input.tsx",
     "Issued": "components/admin/projects/issued-access.tsx",
     "KpiCard": "components/admin/kpi-card.tsx",
+    "Label": "components/ui/label.tsx",
     "LineField": "components/sections/hero/line-field.tsx",
     "LinkSpentNotice": "components/auth/link-spent-notice.tsx",
     "LoaderVisual": "components/common/loader-visual.tsx",
@@ -61,9 +66,12 @@
     "Mark": "components/layout/mark.tsx",
     "MemberFields": "components/admin/team/member-fields.tsx",
     "Modal": "components/admin/projects/modal.tsx",
+    "NewsletterForm": "components/layout/newsletter-form.tsx",
+    "OutcomesSection": "components/sections/outcomes-section.tsx",
     "PageHeading": "components/admin/page-heading.tsx",
     "PageHeadingSkeleton": "components/admin/skeletons.tsx",
     "PanelSkeleton": "components/admin/skeletons.tsx",
+    "PasswordInput": "components/ui/password-input.tsx",
     "Popover": "components/ui/popover.tsx",
     "PortalCard": "components/portal/portal-card.tsx",
     "PortalMilestone": "components/portal/portal-milestone.tsx",
@@ -73,15 +81,16 @@
     "PortalTeam": "components/portal/portal-team.tsx",
     "PortfolioResults": "components/admin/projects/portfolio-results.tsx",
     "PortfolioSkeleton": "components/admin/projects/portfolio-skeleton.tsx",
+    "ProcessSection": "components/sections/process-section.tsx",
     "Progress": "components/ui/progress.tsx",
     "ProjectForm": "components/admin/projects/project-form.tsx",
     "ProjectFormSkeleton": "components/admin/projects/project-form-skeleton.tsx",
     "ProjectSwitcher": "components/portal/project-switcher.tsx",
     "ProjectWorkspace": "components/admin/projects/project-workspace.tsx",
-    "ProofSection": "components/sections/proof-section.tsx",
     "Reveal": "components/common/reveal.tsx",
     "RichEditor": "components/admin/projects/rich-editor.tsx",
     "RouteErrorState": "components/errors/route-error-state.tsx",
+    "SOCIAL_ICONS": null,
     "ScrollProgress": "components/layout/scroll-progress.tsx",
     "SectionHeading": "components/common/section-heading.tsx",
     "Select": "components/ui/select.tsx",
@@ -98,16 +107,20 @@
     "StateBadge": "components/admin/team/team-list.tsx",
     "StatusControl": "components/admin/projects/status-control.tsx",
     "SuggestionsPanel": "components/admin/projects/suggestions-panel.tsx",
+    "Switch": "components/ui/switch.tsx",
     "Tabs": "components/ui/tabs.tsx",
     "TeamList": "components/admin/team/team-list.tsx",
     "TeamPanel": "components/admin/projects/team-panel.tsx",
     "TechnicalPanel": "components/admin/projects/technical-panel.tsx",
+    "TestimonialsSection": "components/sections/testimonials-section.tsx",
     "Tooltip": "components/ui/tooltip.tsx",
     "WeekCarryOver": "components/admin/projects/week-carry-over.tsx",
     "WeekIdeaBoard": "components/admin/projects/week-idea-board.tsx",
     "WeekPlan": "components/admin/projects/week-plan.tsx",
     "WeekWorkBoard": "components/admin/projects/week-work-board.tsx",
-    "WorkspaceSkeleton": "components/admin/projects/workspace-skeleton.tsx"
+    "WorkSection": "components/sections/work-section.tsx",
+    "WorkspaceSkeleton": "components/admin/projects/workspace-skeleton.tsx",
+    "useAttachment": null
   },
   "dtsPropsFor": {
     "Accordion": "  children?: React.ReactNode;\n  className?: string;\n  [htmlProp: string]: unknown;",
@@ -198,16 +211,93 @@
       "viewport": "1280x900"
     },
     "PortalOverview": {
-      "viewport": "900x1000"
+      "viewport": "900x1000",
+      "cardMode": "column"
     },
     "WeekPlan": {
       "cardMode": "column"
     },
-    "FlowSection": {
-      "cardMode": "column"
-    },
     "EnvPanel": {
       "cardMode": "column"
+    },
+    "PortfolioSkeleton": {
+      "cardMode": "column",
+      "viewport": "1280x900"
+    },
+    "PageHeadingSkeleton": {
+      "cardMode": "column"
+    },
+    "Tabs": {
+      "cardMode": "column"
+    },
+    "AuditHistory": {
+      "cardMode": "column"
+    },
+    "ProjectForm": {
+      "cardMode": "column"
+    },
+    "ProjectWorkspace": {
+      "cardMode": "column"
+    },
+    "RichEditor": {
+      "cardMode": "column"
+    },
+    "ShareProject": {
+      "cardMode": "column"
+    },
+    "TeamPanel": {
+      "cardMode": "column"
+    },
+    "TechnicalPanel": {
+      "cardMode": "column"
+    },
+    "Dialog": {
+      "cardMode": "single",
+      "primaryStory": "FormDialog"
+    },
+    "DropdownMenu": {
+      "cardMode": "single",
+      "primaryStory": "Open"
+    },
+    "Popover": {
+      "cardMode": "single",
+      "primaryStory": "Open"
+    },
+    "Select": {
+      "cardMode": "single",
+      "primaryStory": "Open"
+    },
+    "Sheet": {
+      "cardMode": "single",
+      "primaryStory": "FilterPanel"
+    },
+    "Sidebar": {
+      "cardMode": "single",
+      "primaryStory": "Expanded"
+    },
+    "Tooltip": {
+      "cardMode": "single",
+      "primaryStory": "OpenAbove"
+    },
+    "ScrollProgress": {
+      "cardMode": "single",
+      "primaryStory": "OnPage"
+    },
+    "SiteNav": {
+      "cardMode": "single",
+      "primaryStory": "Default"
+    },
+    "BannerCropper": {
+      "cardMode": "single",
+      "primaryStory": "Default"
+    },
+    "Modal": {
+      "cardMode": "single",
+      "primaryStory": "Default"
+    },
+    "ShareContainers": {
+      "cardMode": "single",
+      "primaryStory": "Default"
     }
   }
 }

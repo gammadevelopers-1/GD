@@ -4,6 +4,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies, headers } from "next/headers";
 import { getSupabaseConfig } from "@/lib/supabase/config";
 import { AUTH_COOKIE_OPTIONS } from "@/lib/supabase/cookies";
+import { createTimedFetch } from "@/lib/perf/timing";
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -22,9 +23,14 @@ export async function createClient() {
   }
   if (userAgent) forwarded["user-agent"] = userAgent;
 
+  const timedFetch = createTimedFetch();
+
   return createServerClient(url, publishableKey, {
     cookieOptions: AUTH_COOKIE_OPTIONS,
-    global: Object.keys(forwarded).length ? { headers: forwarded } : {},
+    global: {
+      ...(Object.keys(forwarded).length ? { headers: forwarded } : {}),
+      ...(timedFetch ? { fetch: timedFetch } : {}),
+    },
     cookies: {
       getAll() {
         return cookieStore.getAll();

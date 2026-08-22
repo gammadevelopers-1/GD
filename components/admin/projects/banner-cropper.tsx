@@ -212,13 +212,13 @@ export function BannerCropper({
             />
           ) : (
             <div className="grid size-full place-items-center">
-              <Loader2 className="size-5 animate-spin text-white/40" />
+              <Loader2 className="size-5 animate-spin text-white/70" />
             </div>
           )}
         </div>
 
         <div className="mt-4 flex items-center gap-3">
-          <ZoomIn className="size-4 shrink-0 text-black/35" />
+          <ZoomIn className="size-4 shrink-0 text-black/55" />
           <input
             type="range"
             min={1}

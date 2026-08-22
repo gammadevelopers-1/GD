@@ -29,6 +29,21 @@ run("Lint and types", "npm", ["run", "check"]);
 run("Production build", "npm", ["run", "build"]);
 run("Database policy tests, every role", "npm", ["run", "test:db"]);
 run("Direct API tests, every role", "npm", ["run", "test:api"]);
+run("Invite and portal link origins", "npm", ["run", "test:links"]);
+
+const hasLinkBase = Boolean(
+  process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+    process.env.APP_ALLOWED_HOSTS?.trim() ||
+    process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim(),
+);
+if (hasLinkBase) {
+  results.push("  ok    Invite and portal links have a trusted origin");
+} else {
+  failures += 1;
+  results.push(
+    "  FAIL  Invite and portal links have a trusted origin — set NEXT_PUBLIC_SITE_URL or APP_ALLOWED_HOSTS",
+  );
+}
 
 const hasKeys = Boolean(
   process.env.CREDENTIAL_ENCRYPTION_KEYS?.trim() ||

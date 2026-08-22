@@ -141,7 +141,7 @@ export function WeekPlan({
         </span>
 
         {weeks.length ? (
-          <span className="font-mono text-[11px] text-black/45">
+          <span className="font-mono text-[11px] text-black/60">
             {closed}/{weeks.length} closed · {progress}%
           </span>
         ) : null}
@@ -153,7 +153,7 @@ export function WeekPlan({
         ) : null}
 
         {pending ? (
-          <Loader2 className="size-3 animate-spin text-black/30" />
+          <Loader2 className="size-3 animate-spin text-black/55" />
         ) : null}
 
         {isOwner ? (
@@ -197,7 +197,7 @@ export function WeekPlan({
           ))}
         </div>
       ) : (
-        <p className="px-4 pt-4 pb-4 text-[12px] text-black/40 sm:px-6 sm:pb-5">
+        <p className="px-4 pt-4 pb-4 text-[12px] text-black/55 sm:px-6 sm:pb-5">
           {isOwner ? "No weeks yet. Add the first one." : "No weeks yet."}
         </p>
       )}
@@ -316,20 +316,20 @@ function WeekRow({
             aria-hidden
             className={cn(
               "size-4 shrink-0 transition-transform duration-200 motion-reduce:transition-none",
-              open ? "rotate-90 text-black/55" : "text-black/30",
+              open ? "rotate-90 text-black/55" : "text-black/55",
             )}
           />
 
           <span
             className={cn(
               "font-display shrink-0 text-[15px] font-semibold tracking-[-0.02em]",
-              complete ? "text-black/40" : "text-black/85",
+              complete ? "text-black/55" : "text-black/85",
             )}
           >
             Week {week.number}
           </span>
 
-          <span className="hidden shrink-0 text-[12px] text-black/45 sm:inline">
+          <span className="hidden shrink-0 text-[12px] text-black/60 sm:inline">
             {week.startsOn ? `${formatDate(week.startsOn)} – ` : "due "}
             {formatDate(week.dueOn)}
           </span>
@@ -363,7 +363,7 @@ function WeekRow({
                 ? TONE_SOFT.warning
                 : week.workCards.length
                   ? "text-[#0b5f2c]"
-                  : "text-black/35",
+                  : "text-black/55",
             )}
           >
             {undone
@@ -382,7 +382,7 @@ function WeekRow({
             className={cn(
               "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-semibold transition disabled:opacity-60",
               complete
-                ? "border border-black/[0.12] text-black/50 hover:border-black/30 hover:text-black"
+                ? "border border-black/[0.12] text-black/60 hover:border-black/30 hover:text-black"
                 : "bg-[#15181b] text-[#2fe85c] hover:bg-black",
             )}
           >
@@ -413,7 +413,7 @@ function WeekRow({
               type="submit"
               aria-label={`Delete week ${week.number}`}
               title="Delete week"
-              className="grid size-7 shrink-0 place-items-center rounded-lg text-black/30 transition hover:bg-black/[0.06] hover:text-red-600"
+              className="grid size-7 shrink-0 place-items-center rounded-lg text-black/55 transition hover:bg-black/[0.06] hover:text-red-600"
             >
               <Trash2 className="size-3.5" />
             </button>
@@ -575,7 +575,7 @@ function AddWeek({
           <p className="text-[11px] font-semibold">
             Week {nextWeekNumber(weeks)}
           </p>
-          <label className="mt-2 block text-[10px] text-black/45">
+          <label className="mt-2 block text-[10px] text-black/60">
             Starts
             <FormDatePicker
               name="startsOn"
@@ -583,7 +583,7 @@ function AddWeek({
               triggerClassName="mt-1 h-auto w-full rounded-lg border border-black/[0.12] px-2 py-1 text-[11px] outline-none focus-visible:border-black/35 focus-visible:ring-0"
             />
           </label>
-          <label className="mt-2 block text-[10px] text-black/45">
+          <label className="mt-2 block text-[10px] text-black/60">
             Due
             <FormDatePicker
               name="dueOn"
@@ -609,7 +609,7 @@ function AddWeek({
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="inline-flex h-7 items-center rounded-lg px-2 text-[11px] font-medium text-black/45 transition hover:text-black"
+              className="inline-flex h-7 items-center rounded-lg px-2 text-[11px] font-medium text-black/60 transition hover:text-black"
             >
               Cancel
             </button>

@@ -13,7 +13,8 @@
     "test:api": "node scripts/project-api-check.mjs",
     "seed:demo": "node scripts/seed-demo.mjs",
     "release:check": "node scripts/release-check.mjs",
-    "credential:key": "node scripts/credential-key.mjs"
+    "credential:key": "node scripts/credential-key.mjs",
+    "test:links": "node scripts/link-base-check.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

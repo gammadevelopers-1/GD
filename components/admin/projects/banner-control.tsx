@@ -129,7 +129,7 @@ export function BannerControl({
               disabled={removing}
               aria-label="Remove banner"
               title="Remove banner"
-              className="grid size-9 place-items-center rounded-full bg-white/[0.08] text-white/60 transition duration-200 hover:bg-white/[0.16] hover:text-white focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none active:scale-[0.97] disabled:opacity-60"
+              className="grid size-9 place-items-center rounded-full bg-white/[0.08] text-white/80 transition duration-200 hover:bg-white/[0.16] hover:text-white focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none active:scale-[0.97] disabled:opacity-60"
             >
               <Trash2 className="size-3.5" />
             </button>

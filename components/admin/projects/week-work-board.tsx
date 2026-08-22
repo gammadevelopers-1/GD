@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   Check,
+  FilePlus2,
   FileText,
   Loader2,
   Plus,
@@ -28,6 +29,13 @@ import type { SimpleFormState } from "@/lib/projects/form-state";
 import type { MilestoneCard } from "@/data/project-detail";
 import { formatDate } from "@/lib/projects/format";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export type ProposedTask = {
   title: string;
@@ -97,6 +105,14 @@ export function WeekWorkBoard({
   const [proposals, setProposals] = useState<ProposedTask[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, startBusy] = useTransition();
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.activeElement as HTMLElement | null;
+    closeRef.current?.focus();
+    return () => previous?.focus?.();
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -143,17 +159,18 @@ export function WeekWorkBoard({
       >
         <header className="flex shrink-0 items-center gap-2 bg-[#15181b] px-3 py-2 text-white">
           <button
+            ref={closeRef}
             type="button"
             onClick={onClose}
             aria-label="Close work board"
-            className="grid size-7 place-items-center rounded-lg text-white/55 transition hover:bg-white/10 hover:text-white"
+            className="grid size-7 place-items-center rounded-lg text-white/65 transition hover:bg-white/10 hover:text-white"
           >
             <X className="size-4" />
           </button>
           <span className="font-mono text-[10px] tracking-[0.14em] text-[#2fe85c] uppercase">
             Work Board
           </span>
-          <span className="ml-auto min-w-0 truncate text-right text-[10px] text-white/45">
+          <span className="ml-auto min-w-0 truncate text-right text-[10px] text-white/65">
             {updatedAt
               ? `${updatedBy ? `${updatedBy} · ` : ""}${formatDate(updatedAt.slice(0, 10))}`
               : `Week ${weekNumber}`}
@@ -181,7 +198,7 @@ export function WeekWorkBoard({
               Organize with AI
             </button>
             {!hasNotes ? (
-              <span className="text-[10px] text-black/35">
+              <span className="text-[10px] text-black/55">
                 Nothing on the idea board yet.
               </span>
             ) : null}
@@ -222,7 +239,7 @@ export function WeekWorkBoard({
               ))}
             </ul>
           ) : (
-            <p className="px-1 py-8 text-center text-[12px] text-black/35">
+            <p className="px-1 py-8 text-center text-[12px] text-black/55">
               No tasks yet.
             </p>
           )}
@@ -247,6 +264,7 @@ export function WeekWorkBoard({
           projectId={projectId}
           weekId={weekId}
           task={editing === "new" ? null : editing}
+          editable={canManage}
           upload={upload}
           onClose={() => setEditing(null)}
           save={actions.saveTask}
@@ -303,12 +321,23 @@ function TaskRow({
   return (
     <li
       className={cn(
-        "group flex items-center gap-2.5 rounded-lg border border-transparent px-2 py-2 transition",
+        "group relative flex cursor-pointer items-center gap-2.5 rounded-xl border px-2.5 py-2 transition duration-150",
         failed
           ? "border-red-200 bg-red-50"
-          : "hover:border-black/[0.07] hover:bg-black/[0.02]",
+          : "border-black/[0.07] bg-white focus-within:border-black/20 focus-within:shadow-[0_5px_14px_rgba(20,23,26,0.05)] hover:border-black/20 hover:bg-[#f8faf7] hover:shadow-[0_5px_14px_rgba(20,23,26,0.05)]",
       )}
     >
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-label={`${canManage ? "Edit" : "View"} details for ${task.title}`}
+        className="absolute inset-0 z-0 cursor-pointer rounded-xl focus-visible:ring-2 focus-visible:ring-[#16a34a]/45 focus-visible:ring-offset-1 focus-visible:outline-none"
+      >
+        <span className="sr-only">
+          {canManage ? "Edit" : "View"} details for {task.title}
+        </span>
+      </button>
+
       <button
         type="button"
         onClick={toggle}
@@ -317,7 +346,7 @@ function TaskRow({
         aria-checked={done}
         aria-label={done ? `Untick ${task.title}` : `Tick ${task.title}`}
         className={cn(
-          "grid size-4 shrink-0 place-items-center rounded border transition disabled:opacity-40",
+          "relative z-10 grid size-5 shrink-0 cursor-pointer place-items-center rounded-md border bg-white transition focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none disabled:cursor-default disabled:opacity-40",
           done
             ? "border-[#16a34a] bg-[#16a34a] text-white"
             : "border-black/20 hover:border-black/45",
@@ -326,28 +355,36 @@ function TaskRow({
         {done ? <Check className="size-3" /> : null}
       </button>
 
-      <button
-        type="button"
-        onClick={onOpen}
-        disabled={!canManage}
+      <span
+        aria-hidden
         className={cn(
-          "min-w-0 flex-1 truncate text-left text-[12.5px] transition",
-          done ? "text-black/35 line-through" : "text-black/80",
-          canManage && "hover:text-black",
+          "pointer-events-none relative z-10 min-w-0 flex-1 truncate py-0.5 text-left text-[12.5px] font-medium transition",
+          done ? "text-black/55 line-through" : "text-black/80",
+          "group-hover:text-black",
         )}
       >
         {task.title}
-      </button>
+      </span>
 
-      {hasDetail ? (
-        <span
-          title="Has notes"
-          aria-label="Has notes"
-          className="shrink-0 text-black/25"
-        >
-          <FileText className="size-3.5" />
-        </span>
-      ) : null}
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-hidden
+        onClick={onOpen}
+        title={hasDetail ? "Open task details" : "Add task details"}
+        className={cn(
+          "relative z-10 grid size-8 shrink-0 cursor-pointer place-items-center rounded-lg border shadow-sm transition duration-150 active:scale-95",
+          hasDetail
+            ? "border-[#16a34a]/35 bg-[#16a34a]/10 text-[#0b5f2c] hover:border-[#16a34a]/60 hover:bg-[#16a34a]/20 group-hover:border-[#16a34a]/45"
+            : "border-dashed border-black/30 bg-white text-black/60 hover:border-black/55 hover:bg-black/[0.04] hover:text-black group-hover:border-black/40",
+        )}
+      >
+        {hasDetail ? (
+          <FileText className="size-4" />
+        ) : (
+          <FilePlus2 className="size-4" />
+        )}
+      </button>
 
       {failed ? (
         <span role="alert" className="shrink-0 text-[9px] text-red-600">
@@ -425,6 +462,7 @@ function TaskEditor({
   projectId,
   weekId,
   task,
+  editable,
   upload,
   onClose,
   save,
@@ -432,6 +470,7 @@ function TaskEditor({
   projectId: string;
   weekId: string;
   task: MilestoneCard | null;
+  editable: boolean;
   upload: UploadAction;
   onClose: () => void;
   save: WorkBoardActions["saveTask"];
@@ -445,16 +484,8 @@ function TaskEditor({
     projectId,
     upload,
     editorRef: editor,
-    canEdit: true,
+    canEdit: editable,
   });
-
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
 
   function submit() {
     const title = firstLine(doc.current);
@@ -477,28 +508,36 @@ function TaskEditor({
     });
   }
 
+  const title = task ? (editable ? "Edit task" : "Task details") : "New task";
+
   return (
-    <div className="fixed inset-0 z-60 grid place-items-center bg-black/30 p-3">
-      <div
-        role="dialog"
-        aria-label={task ? "Edit task" : "New task"}
-        className="flex h-[min(80vh,640px)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-black/[0.09] bg-white shadow-lg"
+    <Dialog open onOpenChange={(nextOpen) => !nextOpen && onClose()}>
+      <DialogContent
+        showCloseButton={false}
+        overlayClassName="z-60 bg-black/35 supports-backdrop-filter:backdrop-blur-[2px]"
+        className="z-60 flex h-[min(84dvh,680px)] w-[calc(100%-1.5rem)] max-w-2xl flex-col gap-0 overflow-hidden rounded-2xl border border-white/10 bg-white p-0 shadow-[0_28px_80px_rgba(0,0,0,0.28)]"
       >
-        <div className="flex shrink-0 items-center gap-2 border-b border-black/[0.07] bg-[#f8f8f3] px-3 py-2">
-          <button
-            type="button"
+        <div className="flex shrink-0 items-center gap-2 bg-[#15181b] px-3 py-2 text-white">
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onClose}
             aria-label="Close"
-            className="grid size-7 place-items-center rounded-lg text-black/45 transition hover:bg-black/[0.06] hover:text-black"
+            className="text-white/70 hover:bg-white/10 hover:text-white focus-visible:ring-[#2fe85c]/55"
           >
             <ArrowLeft className="size-4" />
-          </button>
-          <span className="font-mono text-[10px] tracking-[0.14em] text-black/35 uppercase">
-            {task ? "Edit task" : "New task"}
-          </span>
+          </Button>
+          <DialogTitle className="font-mono text-[10px] font-semibold tracking-[0.14em] text-[#2fe85c] uppercase">
+            {title}
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            {editable
+              ? "Edit the task title and rich text details."
+              : "View the task rich text details."}
+          </DialogDescription>
 
           {attach.error ? (
-            <span role="alert" className="ml-auto text-[11px] text-red-600">
+            <span role="alert" className="ml-auto text-[11px] text-red-300">
               {attach.error}
             </span>
           ) : null}
@@ -508,44 +547,55 @@ function TaskEditor({
 
         <div
           className="flex min-h-0 flex-1 flex-col"
-          onDrop={attach.onDrop}
-          onDragOver={attach.onDragOver}
+          onDrop={editable ? attach.onDrop : undefined}
+          onDragOver={editable ? attach.onDragOver : undefined}
         >
           <IdeaEditor
             ref={editor}
             initialDoc={initial}
-            editable
+            editable={editable}
             placeholder="First line is the task. Everything under it is the detail."
             onChange={(next) => {
               doc.current = next as IdeaDoc;
             }}
-            onAttach={attach.open}
+            onAttach={editable ? attach.open : undefined}
             attaching={attach.uploading}
           />
         </div>
 
-        <div className="flex shrink-0 items-center gap-2 border-t border-black/[0.07] px-3 py-2">
+        <div className="flex shrink-0 items-center gap-2 border-t border-black/[0.08] bg-[#fbfbf7] px-3 py-2">
           {error ? (
             <span role="alert" className="text-[11px] text-red-600">
               {error}
             </span>
           ) : (
-            <span className="text-[10px] text-black/35">
-              The first line becomes the task title.
+            <span className="text-[10px] text-black/60">
+              {editable
+                ? "The first line becomes the task title."
+                : "Task detail is view only."}
             </span>
           )}
-          <button
-            type="button"
-            onClick={submit}
-            disabled={pending}
-            className="ml-auto inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#15181b] px-3 text-[11px] font-semibold text-white transition hover:bg-black disabled:opacity-50"
-          >
-            {pending ? <Loader2 className="size-3 animate-spin" /> : null}
-            Save
-          </button>
+          {editable ? (
+            <Button
+              onClick={submit}
+              disabled={pending}
+              className="ml-auto text-[11px]"
+            >
+              {pending ? <Loader2 className="size-3 animate-spin" /> : null}
+              Save changes
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="ml-auto text-[11px]"
+            >
+              Close
+            </Button>
+          )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -621,14 +671,14 @@ function ProposalReview({
         <div className="flex shrink-0 items-center gap-2 border-b border-black/[0.07] px-3 py-2">
           <Sparkles className="size-3.5 text-[#08743d]" />
           <span className="text-[12px] font-semibold">Suggested tasks</span>
-          <span className="font-mono text-[10px] text-black/35">
+          <span className="font-mono text-[10px] text-black/55">
             {chosen.length} of {rows.length}
           </span>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="ml-auto grid size-7 place-items-center rounded-lg text-black/45 transition hover:bg-black/[0.06] hover:text-black"
+            className="ml-auto grid size-7 place-items-center rounded-lg text-black/60 transition hover:bg-black/[0.06] hover:text-black"
           >
             <X className="size-4" />
           </button>
@@ -672,18 +722,18 @@ function ProposalReview({
                     className="w-full rounded border border-transparent bg-transparent px-1 py-0.5 text-[12px] text-black/80 outline-none hover:border-black/[0.09] focus:border-black/30 focus:bg-white"
                   />
                   {row.existingTitle ? (
-                    <p className="px-1 text-[11px] leading-4 text-black/40">
+                    <p className="px-1 text-[11px] leading-4 text-black/55">
                       was{" "}
                       <span className="line-through">{row.existingTitle}</span>
                     </p>
                   ) : null}
                   {row.detail ? (
-                    <p className="px-1 text-[11px] leading-4 text-black/45">
+                    <p className="px-1 text-[11px] leading-4 text-black/60">
                       {row.detail}
                     </p>
                   ) : null}
                   {row.references.length ? (
-                    <p className="px-1 text-[10px] leading-4 text-black/35">
+                    <p className="px-1 text-[10px] leading-4 text-black/55">
                       refs: {row.references.join(", ")}
                     </p>
                   ) : null}
@@ -713,7 +763,7 @@ function ProposalReview({
           <button
             type="button"
             onClick={onClose}
-            className="ml-auto inline-flex h-8 items-center rounded-lg px-2.5 text-[11px] font-medium text-black/50 transition hover:text-black"
+            className="ml-auto inline-flex h-8 items-center rounded-lg px-2.5 text-[11px] font-medium text-black/60 transition hover:text-black"
           >
             Cancel
           </button>

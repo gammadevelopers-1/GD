@@ -32,7 +32,7 @@ export function ProjectShell({
       <Link
         href="/projects"
         prefetch
-        className="mb-4 inline-flex items-center gap-2 text-xs font-medium text-black/42 transition hover:text-black"
+        className="mb-4 inline-flex items-center gap-2 text-xs font-medium text-black/55 transition hover:text-black"
       >
         <ArrowLeft className="size-3.5" /> All projects
       </Link>

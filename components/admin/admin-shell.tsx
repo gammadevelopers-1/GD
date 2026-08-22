@@ -14,8 +14,6 @@ import {
 } from "lucide-react";
 import { Mark } from "@/components/layout/mark";
 import { logout } from "@/app/(auth)/login/actions";
-import { AccountMenu } from "@/components/admin/account-menu";
-import { NotificationBell } from "@/components/admin/notification-bell";
 import {
   Sidebar,
   SidebarContent,
@@ -34,7 +32,6 @@ import {
 } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import type { AppRole, Viewer } from "@/data/auth";
-import type { Inbox } from "@/data/notifications";
 
 type NavItem = {
   label: string;
@@ -95,14 +92,14 @@ const accountNav: NavItem[] = [
 
 export function AdminShell({
   viewer,
-  avatarUrl,
-  inbox,
+  bell,
+  account,
   defaultSidebarOpen,
   children,
 }: {
   viewer: Viewer;
-  avatarUrl: string | null;
-  inbox: Inbox;
+  bell: React.ReactNode;
+  account: React.ReactNode;
   defaultSidebarOpen: boolean;
   children: React.ReactNode;
 }) {
@@ -193,8 +190,8 @@ export function AdminShell({
               <SidebarTrigger className="-ml-1 text-black/60 hover:text-black" />
 
               <div className="ml-auto flex items-center gap-2">
-                <NotificationBell inbox={inbox} />
-                <AccountMenu viewer={viewer} avatarUrl={avatarUrl} />
+                {bell}
+                {account}
               </div>
             </div>
           </header>

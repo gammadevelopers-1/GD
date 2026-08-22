@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/data/auth";
-import { baseUrl } from "@/lib/invites/base-url";
+import { linkBaseMessage, resolveLinkBase } from "@/lib/invites/base-url";
 import { createClient } from "@/lib/supabase/server";
 import {
   adminConfigured,
@@ -321,10 +321,13 @@ export async function sendInvite(
   }
 
   const email = String(profile.email);
+  const base = await resolveLinkBase();
+  if (!base.ok) return formError(linkBaseMessage(base.reason));
+
   const token = await generatePasswordToken(email);
   if (!token.ok) return formError(token.message);
 
-  const link = `${await baseUrl()}/set-password?token=${encodeURIComponent(token.token)}&email=${encodeURIComponent(email)}&id=${profileId}`;
+  const link = `${base.origin}/set-password?token=${encodeURIComponent(token.token)}&email=${encodeURIComponent(email)}&id=${profileId}`;
 
   await supabase
     .from("app_profiles")

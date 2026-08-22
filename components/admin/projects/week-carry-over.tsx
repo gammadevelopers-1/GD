@@ -70,7 +70,7 @@ export function WeekCarryOver({
                     await dismiss(item.cardId, weekId);
                   })
                 }
-                className="grid size-6 shrink-0 place-items-center rounded-md text-black/35 transition hover:bg-black/[0.06] hover:text-black disabled:opacity-60"
+                className="grid size-6 shrink-0 place-items-center rounded-md text-black/55 transition hover:bg-black/[0.06] hover:text-black disabled:opacity-60"
               >
                 <X className="size-3" />
               </button>

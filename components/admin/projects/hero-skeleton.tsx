@@ -1,7 +1,7 @@
 export function MetaSkeleton({ label }: { label: string }) {
   return (
     <div className="min-w-0 rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5">
-      <p className="text-[10px] text-white/28">{label}</p>
+      <p className="text-[10px] text-white/65">{label}</p>
       <span className="mt-2 block h-2.5 w-20 animate-pulse rounded bg-white/[0.09]" />
     </div>
   );
@@ -12,7 +12,7 @@ export function HeroSkeleton({ compact = false }: { compact?: boolean }) {
     return (
       <div className="flex items-center gap-3 px-4 py-2.5 sm:px-6" aria-busy>
         <span className="block h-2.5 w-20 animate-pulse rounded bg-white/[0.07]" />
-        <span aria-hidden className="text-white/20">
+        <span aria-hidden className="text-white/45">
           /
         </span>
         <span className="block h-3 w-48 animate-pulse rounded bg-white/[0.11]" />

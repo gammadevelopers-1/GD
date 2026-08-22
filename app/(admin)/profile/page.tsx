@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ExternalLink, FileText } from "lucide-react";
@@ -7,7 +8,8 @@ import {
 } from "@/components/admin/profile/profile-header";
 import { ProfileEditor } from "@/components/admin/profile/profile-editor";
 import { Card, CardContent } from "@/components/ui/card";
-import { requireViewer } from "@/data/auth";
+import { PanelSkeleton } from "@/components/admin/skeletons";
+import { requireViewer, type Viewer } from "@/data/auth";
 import { getMyProfile, type MyProfile } from "@/data/profile";
 import { EMPLOYMENT_LABELS, ROLE_LABELS } from "@/lib/team/records";
 import { formatDate, formatMoney, initials } from "@/lib/projects/format";
@@ -48,6 +50,25 @@ function buildStats(profile: MyProfile): ProfileStat[] {
 
 export default async function ProfilePage() {
   const viewer = await requireViewer();
+
+  return (
+    <Suspense fallback={<ProfileSkeleton />}>
+      <ProfileBody viewer={viewer} />
+    </Suspense>
+  );
+}
+
+function ProfileSkeleton() {
+  return (
+    <div className="mx-auto max-w-[1140px] space-y-4" aria-busy role="status">
+      <span className="sr-only">Loading profile</span>
+      <PanelSkeleton lines={4} />
+      <PanelSkeleton lines={6} />
+    </div>
+  );
+}
+
+async function ProfileBody({ viewer }: { viewer: Viewer }) {
   const profile = await getMyProfile(viewer);
   if (!profile) notFound();
 

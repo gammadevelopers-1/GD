@@ -182,7 +182,7 @@ export function ImportDialog({
                 : "border-black/12 bg-white/40",
             )}
           >
-            <FileUp className="mx-auto size-5 text-black/25" />
+            <FileUp className="mx-auto size-5 text-black/55" />
             <p className="mt-3 text-[13px] text-black/55">
               Drop a .env file here
             </p>
@@ -227,7 +227,7 @@ export function ImportDialog({
             </button>
           </div>
 
-          {note ? <p className="text-[12px] text-black/50">{note}</p> : null}
+          {note ? <p className="text-[12px] text-black/60">{note}</p> : null}
         </div>
       ) : (
         <form action={formAction} className="space-y-4">
@@ -241,7 +241,7 @@ export function ImportDialog({
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-[13px] text-black/60">{summary}</p>
-            <label className="flex items-center gap-2 text-[12px] text-black/45">
+            <label className="flex items-center gap-2 text-[12px] text-black/60">
               Group
               <FormSelect
                 value={groupId}
@@ -278,7 +278,7 @@ export function ImportDialog({
                     <code
                       className={cn(
                         "min-w-0 flex-1 truncate font-mono text-[12px]",
-                        draft.include ? "text-black/75" : "text-black/30",
+                        draft.include ? "text-black/75" : "text-black/55",
                         badKey && "text-red-700",
                       )}
                     >
@@ -305,7 +305,7 @@ export function ImportDialog({
                           reveal === index ? "Hide value" : "Show value"
                         }
                         className={cn(
-                          "absolute top-1/2 right-1.5 -translate-y-1/2 rounded p-1 text-black/30 transition hover:text-black/70",
+                          "absolute top-1/2 right-1.5 -translate-y-1/2 rounded p-1 text-black/55 transition hover:text-black/70",
                           FOCUS_RING,
                         )}
                       >
@@ -342,7 +342,7 @@ export function ImportDialog({
                           className={cn(
                             "px-2 py-0.5 font-medium transition",
                             draft.replace
-                              ? "text-black/45 hover:bg-black/[0.04]"
+                              ? "text-black/60 hover:bg-black/[0.04]"
                               : "bg-black/[0.06] text-black",
                           )}
                         >
@@ -355,7 +355,7 @@ export function ImportDialog({
                             "px-2 py-0.5 font-medium transition",
                             draft.replace
                               ? "bg-black/[0.06] text-black"
-                              : "text-black/45 hover:bg-black/[0.04]",
+                              : "text-black/60 hover:bg-black/[0.04]",
                           )}
                         >
                           Replace
@@ -368,7 +368,7 @@ export function ImportDialog({
             })}
           </ul>
 
-          {note ? <p className="text-[12px] text-black/50">{note}</p> : null}
+          {note ? <p className="text-[12px] text-black/60">{note}</p> : null}
           <Feedback state={state} />
 
           <div className="flex flex-wrap items-center justify-end gap-2 border-t border-black/[0.07] pt-3">
@@ -448,7 +448,7 @@ export function ManualDialog({
         <input type="hidden" name="groupId" value={groupId} />
         <input type="hidden" name="rows" value={serialise(drafts, conflicts)} />
 
-        <label className="flex items-center gap-2 text-[12px] text-black/45">
+        <label className="flex items-center gap-2 text-[12px] text-black/60">
           Group
           <FormSelect
             value={groupId}
@@ -473,7 +473,7 @@ export function ManualDialog({
               >
                 <div className="grid gap-2 sm:grid-cols-2">
                   <label className="block space-y-1">
-                    <span className="text-[11px] text-black/45">Key</span>
+                    <span className="text-[11px] text-black/60">Key</span>
                     <input
                       value={draft.key}
                       onChange={(event) =>
@@ -491,7 +491,7 @@ export function ManualDialog({
                     />
                   </label>
                   <label className="block space-y-1">
-                    <span className="text-[11px] text-black/45">Value</span>
+                    <span className="text-[11px] text-black/60">Value</span>
                     <span className="relative block">
                       <input
                         value={draft.value}
@@ -512,7 +512,7 @@ export function ManualDialog({
                           reveal === index ? "Hide value" : "Show value"
                         }
                         className={cn(
-                          "absolute top-1/2 right-2 -translate-y-1/2 rounded p-1 text-black/30 transition hover:text-black/70",
+                          "absolute top-1/2 right-2 -translate-y-1/2 rounded p-1 text-black/55 transition hover:text-black/70",
                           FOCUS_RING,
                         )}
                       >
@@ -527,8 +527,8 @@ export function ManualDialog({
                 </div>
 
                 <label className="block space-y-1">
-                  <span className="text-[11px] text-black/45">
-                    Note <span className="text-black/30">(optional)</span>
+                  <span className="text-[11px] text-black/60">
+                    Note <span className="text-black/55">(optional)</span>
                   </span>
                   <input
                     value={draft.note}

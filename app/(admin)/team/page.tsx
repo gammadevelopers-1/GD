@@ -1,23 +1,36 @@
+import { Suspense } from "react";
 import { UsersRound } from "lucide-react";
 import { EmptyState } from "@/components/admin/empty-state";
 import { PageHeading } from "@/components/admin/page-heading";
 import { AddMember } from "@/components/admin/team/add-member";
 import { TeamList } from "@/components/admin/team/team-list";
-import { requireRole } from "@/data/auth";
+import { CardGridSkeleton } from "@/components/admin/skeletons";
+import { requireRole, type Viewer } from "@/data/auth";
 import { getTeamDirectory } from "@/data/team";
 
 export const metadata = { title: "Team" };
 
 export default async function TeamPage() {
   const viewer = await requireRole(["owner"]);
-  const members = await getTeamDirectory(viewer);
-  const active = members.filter((member) => member.state !== "archived");
-  const archived = members.filter((member) => member.state === "archived");
 
   return (
     <div className="mx-auto max-w-[1480px]">
       <PageHeading title="Team" action={<AddMember />} />
 
+      <Suspense fallback={<CardGridSkeleton count={6} height="h-40" />}>
+        <TeamDirectory viewer={viewer} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function TeamDirectory({ viewer }: { viewer: Viewer }) {
+  const members = await getTeamDirectory(viewer);
+  const active = members.filter((member) => member.state !== "archived");
+  const archived = members.filter((member) => member.state === "archived");
+
+  return (
+    <>
       {active.length ? (
         <TeamList members={active} />
       ) : (
@@ -38,6 +51,6 @@ export default async function TeamPage() {
           </div>
         </section>
       ) : null}
-    </div>
+    </>
   );
 }

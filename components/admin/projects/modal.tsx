@@ -50,7 +50,7 @@ export function Modal({
                 {title}
               </DialogTitle>
               {description ? (
-                <DialogDescription className="mt-1 text-[12px] leading-5 text-black/45">
+                <DialogDescription className="mt-1 text-[12px] leading-5 text-black/60">
                   {description}
                 </DialogDescription>
               ) : (
@@ -128,7 +128,7 @@ export function ConfirmAction({
         type="button"
         onClick={() => setAsking(false)}
         className={cn(
-          "rounded-lg px-2 py-1 text-[11px] font-medium text-black/45 transition hover:text-black",
+          "rounded-lg px-2 py-1 text-[11px] font-medium text-black/60 transition hover:text-black",
           FOCUS_RING,
         )}
       >

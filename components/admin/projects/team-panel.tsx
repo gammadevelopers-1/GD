@@ -61,7 +61,7 @@ export function TeamPanel({
         <div className="mb-5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <span className="grid size-8 place-items-center rounded-lg bg-black/[0.045]">
-              <UserRound className="size-4 text-black/45" />
+              <UserRound className="size-4 text-black/60" />
             </span>
             <h2 className="text-[15px] font-semibold tracking-[-0.025em]">
               On this project
@@ -83,7 +83,7 @@ export function TeamPanel({
             ))}
           </ul>
         ) : (
-          <p className="rounded-xl border border-dashed border-black/10 px-4 py-6 text-center text-sm text-black/42">
+          <p className="rounded-xl border border-dashed border-black/10 px-4 py-6 text-center text-sm text-black/55">
             Nobody is assigned yet. Assigning someone is what gives them access
             to this project.
           </p>
@@ -101,7 +101,7 @@ export function TeamPanel({
           <h2 className="text-[15px] font-semibold tracking-[-0.025em]">
             Who can see this project
           </h2>
-          <p className="mt-2.5 text-sm leading-6 text-black/45">
+          <p className="mt-2.5 text-sm leading-6 text-black/60">
             Only the people listed here, plus the owners. An owner adds and
             removes people — ask one if somebody is missing.
           </p>
@@ -231,7 +231,7 @@ function MemberRow({
                 <p
                   className={cn(
                     "truncate text-[11px]",
-                    member.responsibility ? "text-black/45" : "text-black/30",
+                    member.responsibility ? "text-black/60" : "text-black/55",
                   )}
                 >
                   {member.responsibility ?? "No role set"}
@@ -305,7 +305,7 @@ function AddMemberPanel({
     <section className={cn(PANEL, "h-fit p-5")}>
       <div className="mb-4 flex items-center gap-2.5">
         <span className="grid size-8 place-items-center rounded-lg bg-black/[0.045]">
-          <UserPlus className="size-4 text-black/45" />
+          <UserPlus className="size-4 text-black/60" />
         </span>
         <h2 className="text-[15px] font-semibold tracking-[-0.025em]">
           Add someone
@@ -335,7 +335,7 @@ function AddMemberPanel({
           <label className="block space-y-1.5">
             <span className="text-xs font-medium text-black/55">
               What are they doing on it?{" "}
-              <span className="font-normal text-black/30">(optional)</span>
+              <span className="font-normal text-black/55">(optional)</span>
             </span>
             <input
               name="responsibility"
@@ -354,7 +354,7 @@ function AddMemberPanel({
           </button>
         </form>
       ) : (
-        <p className="rounded-xl border border-dashed border-black/10 px-4 py-5 text-center text-[13px] text-black/42">
+        <p className="rounded-xl border border-dashed border-black/10 px-4 py-5 text-center text-[13px] text-black/55">
           Everyone active is already on this project.
         </p>
       )}
