@@ -11,6 +11,7 @@ export type LinkBaseInput = {
   allowedHosts?: string;
   vercelProductionUrl?: string;
   vercelBranchUrl?: string;
+  vercelDeploymentUrl?: string;
   deployed?: boolean;
 };
 
@@ -51,12 +52,22 @@ function hostnameOf(host: string) {
     : (host.split(":")[0] ?? host);
 }
 
+function isLocalHost(host: string) {
+  return LOCAL_HOSTNAMES.has(hostnameOf(host));
+}
+
+export function isLocalOrigin(origin: string | null) {
+  const host = hostOfOrigin(origin);
+  return host ? isLocalHost(host) : false;
+}
+
 function allowlistOf(input: LinkBaseInput) {
   const hosts = new Set<string>();
   const sources = [
     ...(input.allowedHosts ?? "").split(","),
     input.vercelProductionUrl ?? "",
     input.vercelBranchUrl ?? "",
+    input.vercelDeploymentUrl ?? "",
   ];
 
   for (const entry of sources) {
@@ -68,20 +79,23 @@ function allowlistOf(input: LinkBaseInput) {
 }
 
 export function decideLinkBase(input: LinkBaseInput): LinkBase {
+  const deployed = Boolean(input.deployed);
   const configured = normaliseOrigin(input.siteUrl);
-  if (configured) return { ok: true, origin: configured };
+  if (configured && !(deployed && isLocalOrigin(configured))) {
+    return { ok: true, origin: configured };
+  }
 
   const allowed = allowlistOf(input);
   const host = input.host ? input.host.trim().toLowerCase() : null;
 
   if (host) {
-    const hostname = hostnameOf(host);
-    const local = LOCAL_HOSTNAMES.has(hostname);
+    const local = isLocalHost(host);
     const proto = input.proto?.trim().toLowerCase();
     const scheme =
       proto === "http" || proto === "https" ? proto : local ? "http" : "https";
+    const trusted = allowed.has(host) || (!deployed && local);
 
-    if (allowed.has(host) || (!input.deployed && local)) {
+    if (trusted) {
       const origin = normaliseOrigin(`${scheme}://${host}`);
       if (origin) return { ok: true, origin };
     }
@@ -89,15 +103,25 @@ export function decideLinkBase(input: LinkBaseInput): LinkBase {
     if (allowed.size > 0) return { ok: false, reason: "untrusted-host" };
   }
 
-  const fallback = normaliseOrigin(input.vercelProductionUrl);
-  if (fallback) return { ok: true, origin: fallback };
+  const fallback =
+    normaliseOrigin(input.vercelProductionUrl) ??
+    normaliseOrigin(input.vercelBranchUrl) ??
+    normaliseOrigin(input.vercelDeploymentUrl);
+  if (fallback && !isLocalOrigin(fallback)) {
+    return { ok: true, origin: fallback };
+  }
+  if (deployed && allowed.size === 0) return { ok: false, reason: "unconfigured" };
 
   return { ok: false, reason: host ? "untrusted-host" : "unconfigured" };
 }
 
 export function configuredOrigin(): string | null {
+  const deployed = Boolean(process.env.VERCEL?.trim());
+  const configured = normaliseOrigin(process.env.NEXT_PUBLIC_SITE_URL);
+  if (configured && !(deployed && isLocalOrigin(configured))) return configured;
+
   return (
-    normaliseOrigin(process.env.NEXT_PUBLIC_SITE_URL) ??
-    normaliseOrigin(process.env.VERCEL_PROJECT_PRODUCTION_URL)
+    normaliseOrigin(process.env.VERCEL_PROJECT_PRODUCTION_URL) ??
+    normaliseOrigin(process.env.VERCEL_URL)
   );
 }

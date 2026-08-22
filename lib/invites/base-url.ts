@@ -21,6 +21,7 @@ export async function resolveLinkBase(): Promise<LinkBase> {
     allowedHosts: process.env.APP_ALLOWED_HOSTS,
     vercelProductionUrl: process.env.VERCEL_PROJECT_PRODUCTION_URL,
     vercelBranchUrl: process.env.VERCEL_BRANCH_URL,
+    vercelDeploymentUrl: process.env.VERCEL_URL,
     deployed: Boolean(process.env.VERCEL?.trim()),
   });
 }

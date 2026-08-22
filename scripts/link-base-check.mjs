@@ -80,5 +80,38 @@ check("bare host gets https", normaliseOrigin("gd.com"), "https://gd.com");
 check("query rejected", normaliseOrigin("https://gd.com/?a=1"), null);
 check("whitespace rejected", normaliseOrigin("https://gd .com"), null);
 
+console.log("\n8. A stale localhost site url never reaches a deployed inbox");
+check("localhost site url ignored, request host used",
+  decideLinkBase({ host: "gammadevelopers.com", proto: "https", siteUrl: "http://localhost:3000", vercelProductionUrl: "gammadevelopers.com", deployed: true }),
+  { ok: true, origin: "https://gammadevelopers.com" });
+check("localhost site url ignored, vercel url used when no host",
+  decideLinkBase({ host: null, siteUrl: "http://localhost:3000", vercelProductionUrl: "gd.vercel.app", deployed: true }),
+  { ok: true, origin: "https://gd.vercel.app" });
+check("localhost site url still honoured off a deployment",
+  decideLinkBase({ host: "localhost:3000", siteUrl: "http://localhost:3000" }),
+  { ok: true, origin: "http://localhost:3000" });
+
+console.log("\n9. A deployed request host is never trusted on its own");
+check("deployed host with no allowlist refused, not echoed back",
+  decideLinkBase({ host: "gammadevelopers.com", proto: "https", deployed: true }),
+  { ok: false, reason: "unconfigured" });
+check("deployed forged host with no allowlist refused",
+  decideLinkBase({ host: "evil.example", proto: "https", deployed: true }),
+  { ok: false, reason: "unconfigured" });
+check("deployed localhost host still refused",
+  decideLinkBase({ host: "localhost:3000", deployed: true }),
+  { ok: false, reason: "unconfigured" });
+check("deployed host trusted once the platform url matches",
+  decideLinkBase({ host: "gammadevelopers.com", proto: "https", vercelProductionUrl: "gammadevelopers.com", deployed: true }),
+  { ok: true, origin: "https://gammadevelopers.com" });
+
+console.log("\n10. Preview deployments");
+check("vercel deployment url allowed",
+  decideLinkBase({ host: "gd-git-feat.vercel.app", proto: "https", vercelProductionUrl: "gammadevelopers.com", vercelDeploymentUrl: "gd-git-feat.vercel.app", deployed: true }),
+  { ok: true, origin: "https://gd-git-feat.vercel.app" });
+check("forged host on a preview still refused",
+  decideLinkBase({ host: "evil.example", vercelDeploymentUrl: "gd-git-feat.vercel.app", deployed: true }),
+  { ok: false, reason: "untrusted-host" });
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
