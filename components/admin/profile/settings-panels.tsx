@@ -9,10 +9,13 @@ import {
   LogOut,
   Monitor,
   ShieldCheck,
+  Smartphone,
+  Tablet,
   UserRound,
 } from "lucide-react";
 import {
   changeMyPassword,
+  revokeSession,
   saveMyNotifications,
   signOutEverywhere,
 } from "@/app/(admin)/settings/actions";
@@ -25,9 +28,11 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { MyProfile } from "@/data/profile";
+import type { MySession } from "@/data/sessions";
+import { describeDevice } from "@/lib/sessions/user-agent";
 import { IDLE_FORM } from "@/lib/projects/form-state";
 import { PASSWORD_MIN, ROLE_LABELS } from "@/lib/team/records";
-import { formatDate } from "@/lib/projects/format";
+import { formatDate, timeAgo } from "@/lib/projects/format";
 import {
   BUTTON_PRIMARY,
   BUTTON_SECONDARY,
@@ -93,7 +98,13 @@ function Panel({
   );
 }
 
-export function SettingsWorkspace({ profile }: { profile: MyProfile }) {
+export function SettingsWorkspace({
+  profile,
+  sessions,
+}: {
+  profile: MyProfile;
+  sessions: MySession[];
+}) {
   return (
     <Tabs orientation="vertical" defaultValue="account" className="gap-6">
       <div className="shrink-0 sm:w-52">
@@ -128,7 +139,7 @@ export function SettingsWorkspace({ profile }: { profile: MyProfile }) {
           <NotificationsPanel profile={profile} />
         </TabsContent>
         <TabsContent value="sessions" className="max-w-[680px]">
-          <SessionsPanel />
+          <SessionsPanel sessions={sessions} />
         </TabsContent>
       </div>
     </Tabs>
@@ -384,32 +395,101 @@ function NotificationsPanel({ profile }: { profile: MyProfile }) {
   );
 }
 
-function SessionsPanel() {
-  const [leaving, startLeaving] = useTransition();
+function DeviceIcon({ kind }: { kind: MySession["device"]["kind"] }) {
+  if (kind === "mobile") return <Smartphone className="size-4" />;
+  if (kind === "tablet") return <Tablet className="size-4" />;
+  return <Monitor className="size-4" />;
+}
+
+function SessionRow({ session }: { session: MySession }) {
+  const [ending, startEnding] = useTransition();
 
   return (
-    <Panel title="Active sessions">
-      <div className="flex items-center gap-3 rounded-xl border border-black/[0.07] bg-white px-3.5 py-3">
-        <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#2fe85c]/12 text-[#08743d]">
-          <Monitor className="size-4" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="flex items-center gap-2 text-[13px] font-semibold text-black/85">
-            This browser
+    <li
+      className={cn(
+        "flex items-center gap-3 rounded-xl border bg-white px-3.5 py-3 transition-colors duration-150",
+        session.current
+          ? "border-[#2fe85c]/45 bg-[#2fe85c]/[0.04]"
+          : "border-black/[0.07] hover:border-black/[0.14]",
+      )}
+    >
+      <span
+        className={cn(
+          "grid size-8 shrink-0 place-items-center rounded-lg",
+          session.current
+            ? "bg-[#2fe85c]/12 text-[#08743d]"
+            : "bg-black/[0.05] text-black/45",
+        )}
+      >
+        <DeviceIcon kind={session.device.kind} />
+      </span>
+
+      <div className="min-w-0 flex-1">
+        <p className="flex flex-wrap items-center gap-2 text-[13px] font-semibold text-black/85">
+          {describeDevice(session.device)}
+          {session.current ? (
             <Badge
               variant="outline"
               className={cn("rounded-full font-semibold", TONE_SOFT.ok)}
             >
-              Active now
+              This device
             </Badge>
-          </p>
-          <p className="mt-0.5 font-mono text-[11px] text-black/42">
-            Signing out everywhere ends this session too
-          </p>
-        </div>
+          ) : null}
+        </p>
+        <p className="mt-0.5 font-mono text-[11px] text-black/42 tabular-nums">
+          {session.ip ?? "Address not recorded"} · signed in{" "}
+          {timeAgo(session.createdAt)} ago
+          {session.current ? null : ` · active ${timeAgo(session.lastSeenAt)} ago`}
+        </p>
       </div>
 
-      <div className="mt-3.5">
+      {session.current ? null : (
+        <form
+          action={(formData) => startEnding(() => revokeSession(formData))}
+          className="shrink-0"
+        >
+          <input type="hidden" name="sessionId" value={session.id} />
+          <Button
+            type="submit"
+            variant="outline"
+            disabled={ending}
+            className={cn(
+              BUTTON_SECONDARY,
+              "h-8.5 px-3 text-xs hover:border-red-700/40 hover:text-red-700",
+            )}
+          >
+            {ending ? <Loader2 className="size-3.5 animate-spin" /> : null}
+            End
+          </Button>
+        </form>
+      )}
+    </li>
+  );
+}
+
+function SessionsPanel({ sessions }: { sessions: MySession[] }) {
+  const [leaving, startLeaving] = useTransition();
+
+  return (
+    <Panel title={`Active sessions · ${sessions.length}`}>
+      {sessions.length ? (
+        <ul className="space-y-2">
+          {sessions.map((session) => (
+            <SessionRow key={session.id} session={session} />
+          ))}
+        </ul>
+      ) : (
+        <p className="text-[12px] text-black/40">
+          No sessions on record for this account.
+        </p>
+      )}
+
+      <p className="mt-3 text-[11.5px] text-black/40">
+        Last-active time follows token refresh, roughly hourly, so it reads as
+        &ldquo;around then&rdquo; rather than to the minute.
+      </p>
+
+      <div className="mt-3.5 border-t border-black/[0.06] pt-3.5">
         <ConfirmAction
           label={
             <span className="inline-flex items-center gap-1.5">

@@ -3,6 +3,7 @@ import { PageHeading } from "@/components/admin/page-heading";
 import { SettingsWorkspace } from "@/components/admin/profile/settings-panels";
 import { requireViewer } from "@/data/auth";
 import { getMyProfile } from "@/data/profile";
+import { getMySessions } from "@/data/sessions";
 
 export const metadata = { title: "Settings · Internal platform" };
 
@@ -11,10 +12,12 @@ export default async function SettingsPage() {
   const profile = await getMyProfile(viewer);
   if (!profile) notFound();
 
+  const sessions = await getMySessions();
+
   return (
     <div className="mx-auto max-w-[1000px]">
       <PageHeading title="Settings" />
-      <SettingsWorkspace profile={profile} />
+      <SettingsWorkspace profile={profile} sessions={sessions} />
     </div>
   );
 }

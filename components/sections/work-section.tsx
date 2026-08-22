@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
@@ -7,7 +8,6 @@ import { Reveal } from "@/components/common/reveal";
 import { SectionHeading } from "@/components/common/section-heading";
 import { work } from "@/lib/content/home";
 import { cn } from "@/lib/utils";
-import { CASE_THUMBS } from "./case-thumbs";
 
 export function WorkSection() {
   const [filter, setFilter] = useState<string>("all");
@@ -49,18 +49,27 @@ export function WorkSection() {
 
         <div className="mt-8 grid gap-5.5 md:grid-cols-2 lg:grid-cols-3">
           {cases.map((item, i) => {
-            const Thumb = CASE_THUMBS[item.thumb];
             return (
               <Reveal key={item.title} delay={i * 0.05} className="h-full">
                 <Link
                   href="/contact"
                   className="card-surface card-lift group/case flex h-full flex-col overflow-hidden rounded-[20px] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none"
                 >
-                  <div className="relative h-38 overflow-hidden p-4 [background:radial-gradient(ellipse_70%_70%_at_72%_12%,rgba(47,232,92,0.14),transparent_66%),linear-gradient(160deg,#0d1013,#090c10)]">
+                  <div className="relative h-38 overflow-hidden bg-[#0d1013]">
+                    <Image
+                      src={item.image}
+                      alt={`${item.title} project preview`}
+                      fill
+                      sizes="(min-width: 1024px) 390px, (min-width: 768px) calc(50vw - 3rem), calc(100vw - 2.5rem)"
+                      className="object-cover object-center transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/case:scale-[1.04]"
+                    />
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-white/5"
+                    />
                     <span className="bg-brand absolute top-3 right-3 z-2 inline-flex items-center rounded-full px-2 py-1 font-mono text-[9.5px] tracking-[0.1em] text-[#101512] uppercase">
                       Live
                     </span>
-                    <Thumb />
                   </div>
 
                   <div className="flex flex-1 flex-col p-5.5">

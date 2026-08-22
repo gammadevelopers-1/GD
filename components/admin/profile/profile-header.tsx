@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState, useTransition } from "react";
+import { useActionState, useRef, useState, useTransition } from "react";
 import { Camera, Check, Copy, ImageUp, Loader2, SquarePen, Trash2 } from "lucide-react";
 import {
   removeMyBanner,
@@ -147,15 +147,24 @@ export function ProfileHeader({
   );
 }
 
+function usePicturePreview(url: string | null) {
+  const [preview, setPreview] = useState<string | null>(url);
+  const [settled, setSettled] = useState<string | null>(url);
+
+  if (url !== settled) {
+    setSettled(url);
+    setPreview(url);
+  }
+
+  return [preview, setPreview] as const;
+}
+
 function Cover({ url }: { url: string | null }) {
   const [state, action, pending] = useActionState(saveMyBanner, IDLE_FORM);
   const [removing, startRemoving] = useTransition();
   const form = useRef<HTMLFormElement>(null);
   const picker = useRef<HTMLInputElement>(null);
-  const [preview, setPreview] = useState<string | null>(url);
-
-  useEffect(() => setPreview(url), [url]);
-
+  const [preview, setPreview] = usePicturePreview(url);
   const busy = pending || removing;
 
   return (
@@ -250,9 +259,7 @@ function Portrait({
   const [state, action, pending] = useActionState(saveMyAvatar, IDLE_FORM);
   const form = useRef<HTMLFormElement>(null);
   const picker = useRef<HTMLInputElement>(null);
-  const [preview, setPreview] = useState<string | null>(url);
-
-  useEffect(() => setPreview(url), [url]);
+  const [preview, setPreview] = usePicturePreview(url);
 
   return (
     <div className="shrink-0">

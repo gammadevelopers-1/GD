@@ -159,7 +159,7 @@ export const work = {
   cases: [
     {
       category: "platforms",
-      thumb: "board",
+      image: "/case-study.jpg",
       sector: "Sports academy · Education",
       title: "Five tools unified into one CRM",
       body: "Lead intake, scheduling, invoicing and the client portal, running as one pipeline.",
@@ -167,7 +167,7 @@ export const work = {
     },
     {
       category: "agents",
-      thumb: "ranking",
+      image: "/case-study2.jpg",
       sector: "HR tech",
       title: "CV ranking engine, no recruiter",
       body: "Semantic matching that reads the role and the person, not keyword overlap.",
@@ -175,7 +175,7 @@ export const work = {
     },
     {
       category: "integrations",
-      thumb: "approval",
+      image: "/case-study.jpg",
       sector: "Vehicle rental · US",
       title: "Instant approvals in the booking flow",
       body: "Live identity and licence checks dropped straight into checkout.",
@@ -183,7 +183,7 @@ export const work = {
     },
     {
       category: "platforms",
-      thumb: "chart",
+      image: "/case-study2.jpg",
       sector: "Retail chain",
       title: "Live operations dashboard",
       body: "One screen across four data sources — orders, stock, staff and revenue.",
@@ -191,7 +191,7 @@ export const work = {
     },
     {
       category: "agents",
-      thumb: "route",
+      image: "/case-study.jpg",
       sector: "Logistics",
       title: "Dispatch automation",
       body: "An agent that reads every job and routes it to the right driver automatically.",
@@ -199,7 +199,7 @@ export const work = {
     },
     {
       category: "integrations",
-      thumb: "calendar",
+      image: "/case-study2.jpg",
       sector: "Clinic network · Healthcare",
       title: "Two booking systems, one calendar",
       body: "Bookings stopped being retyped, giving the front desk a day back each week.",

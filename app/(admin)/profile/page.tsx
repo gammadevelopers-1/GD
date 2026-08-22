@@ -68,6 +68,7 @@ export default async function ProfilePage() {
         subtitle={subtitle}
         email={profile.email}
         avatarUrl={profile.avatarUrl}
+        bannerUrl={profile.bannerUrl}
         initials={initials(name)}
         stats={buildStats(profile)}
       />
