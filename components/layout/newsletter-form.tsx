@@ -30,9 +30,22 @@ export function NewsletterForm() {
         <button
           type="submit"
           aria-label="Subscribe"
-          className="p-3 shrink-0 cursor-pointer place-items-center rounded-lg bg-[#2fe85c] text-[#0f1512] transition-transform duration-200 hover:-translate-y-px focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none"
+          className="grid size-8.5 shrink-0 cursor-pointer place-items-center rounded-lg bg-[#2fe85c] text-[#0f1512] transition-transform duration-200 hover:-translate-y-px focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none"
         >
-         Subscribe
+          <svg
+            aria-hidden
+            viewBox="0 0 20 16"
+            className="h-3.25 w-4"
+            fill="none"
+          >
+            <path
+              d="M2.5 8h14m-3.5-3.25L16.5 8 13 11.25"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
       </form>
       <p

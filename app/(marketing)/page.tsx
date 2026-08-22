@@ -2,6 +2,7 @@ import { ScrollProgress } from "@/components/layout/scroll-progress";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteNav } from "@/components/layout/site-nav";
 import { StickyCta } from "@/components/layout/sticky-cta";
+import { BookAuditSection } from "@/components/sections/book-audit-section";
 import { ComplianceSection } from "@/components/sections/compliance-section";
 import { HeroSection } from "@/components/sections/hero/hero-section";
 import { LogoMarquee } from "@/components/sections/logo-marquee";
@@ -24,6 +25,7 @@ export default function HomePage() {
         <WorkSection />
         <TestimonialsSection />
         <ComplianceSection />
+        <BookAuditSection />
       </main>
       <SiteFooter />
     </>

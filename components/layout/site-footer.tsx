@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { Reveal } from "@/components/common/reveal";
 import { Mark } from "@/components/layout/mark";
-import { closing, newsletter } from "@/lib/content/home";
+import { newsletter } from "@/lib/content/home";
 import {
   footerColumns,
   legalLinks,
@@ -37,31 +36,7 @@ export function SiteFooter() {
       <FooterGlow />
 
       <div className="relative z-2 mx-auto max-w-[1160px] px-5 md:px-6.5">
-        <Reveal className="flex flex-wrap items-center justify-between gap-5 border-b border-white/[0.09] pb-9">
-          <div>
-            <h2 className="font-display text-[clamp(22px,2.6vw,30px)] leading-[1.05] font-bold tracking-[-0.03em]">
-              {closing.title}
-            </h2>
-            <p className="mt-1 text-sm text-[#9aa096]">{closing.body}</p>
-          </div>
-          <Link
-            href={site.calendly}
-            className="marketing-primary-button inline-flex h-12.5 shrink-0 items-center gap-2.5 rounded-full px-6.5"
-          >
-            {closing.cta}
-            <svg aria-hidden viewBox="0 0 20 16" className="h-3.25 w-4" fill="none">
-              <path
-                d="M2.5 8h14m-3.5-3.25L16.5 8 13 11.25"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </Link>
-        </Reveal>
-
-        <div className="grid gap-9 pt-10 pb-9 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1.5fr]">
+        <div className="grid gap-9 pt-2 pb-9 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1.5fr]">
           <div>
             <div className="flex items-center gap-2.25">
               <Mark className="!size-6.5 !bg-[#eceae2] !text-[11px] !text-[#0f1512]" />

@@ -21,14 +21,7 @@ export function ComplianceSection() {
               {compliance.body}
             </p>
 
-            <div className="border-border mt-6.5 flex items-center gap-3 rounded-[14px] border bg-white p-4.5 shadow-[0_10px_28px_-16px_rgba(16,24,40,0.24)]">
-              <span className="text-brand grid size-9.5 shrink-0 place-items-center rounded-[10px] bg-[#101512]">
-                <ShieldCheck className="size-4.5" strokeWidth={1.5} />
-              </span>
-              <p className="text-muted-foreground text-[13px] leading-[1.5]">
-                {compliance.note}
-              </p>
-            </div>
+           1
 
             <Link
               href="/contact"

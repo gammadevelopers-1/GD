@@ -283,10 +283,56 @@ export const compliance = {
   ],
 } as const;
 
-export const closing = {
-  title: "Ready to see where the time goes?",
-  body: "A 30-minute AI audit — you keep the findings either way.",
-  cta: "Book an AI audit",
+export const bookAudit = {
+  eyebrow: "Book your audit",
+  title: "Grab a time.\nSee where the time goes.",
+  body: "Pick a slot below and we’ll walk your workflow live — 30 minutes, no prep, no pitch. You keep the findings either way.",
+  brief: {
+    org: "Gamma Developers",
+    kind: "AI Workflow Audit",
+    title: "30-minute call",
+    facts: ["30 min", "Google Meet", "PKT · GMT+5"],
+    promises: [
+      "A live look at where your team’s time actually goes",
+      "The first thing worth automating — and the ROI",
+      "A written summary — yours to keep, no strings",
+    ],
+    host: {
+      initials: "AR",
+      name: "Ahmad Raza",
+      role: "Co-founder · leads the audit",
+    },
+  },
+  picker: {
+    title: "Select a date & time",
+    prompt: "Pick a date to see times",
+    slots: [
+      "09:00",
+      "09:30",
+      "10:30",
+      "11:00",
+      "13:00",
+      "14:30",
+      "15:00",
+      "16:30",
+    ],
+  },
+  form: {
+    back: "Back",
+    summary: "30-min AI Workflow Audit · Google Meet",
+    name: { label: "Name", placeholder: "Sara Malik" },
+    email: { label: "Work email", placeholder: "you@company.com" },
+    note: {
+      label: "What’s the messiest part of your day?",
+      hint: "(optional)",
+      placeholder: "Leads arrive on WhatsApp and get missed…",
+    },
+    cta: "Confirm booking",
+  },
+  done: {
+    title: "You’re booked in.",
+    cta: "Pick a different time",
+  },
 } as const;
 
 export const newsletter = {
