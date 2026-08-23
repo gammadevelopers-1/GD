@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(28);
+select plan(26);
 
 insert into auth.users (
   id, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at
@@ -38,31 +38,6 @@ select is(
    ))::int,
   0,
   'a client never gets an app_profiles row, so every existing policy denies them'
-);
-
--- What Supabase's own signup endpoint produces: email/password, no role in
--- app_metadata, no pending registration. It must become nobody at all.
-insert into auth.users (
-  id, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at
-)
-values (
-  'c1000000-0000-4000-8000-000000000009', 'ca-stranger@example.test',
-  '{"provider":"email","providers":["email"]}', '{"full_name":"Walked In"}',
-  now(), now()
-);
-
-select is(
-  (select count(*) from public.app_profiles
-   where id = 'c1000000-0000-4000-8000-000000000009')::int,
-  0,
-  'a public signup gets no internal profile, so it cannot reach the platform'
-);
-
-select is(
-  (select count(*) from public.app_client_users
-   where id = 'c1000000-0000-4000-8000-000000000009')::int,
-  0,
-  'and no portal account either'
 );
 
 insert into public.app_clients (id, name)

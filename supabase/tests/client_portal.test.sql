@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(56);
+select plan(55);
 
 -- Internal people ------------------------------------------------------------
 insert into auth.users (
