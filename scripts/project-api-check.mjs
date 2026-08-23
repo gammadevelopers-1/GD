@@ -1099,6 +1099,48 @@ async function run() {
     `status ${anonPortal.status}`,
   );
 
+  const anonLimiterRead = await api("/rest/v1/rpc/app_client_signin_gate", {
+    key: PUBLISHABLE,
+    method: "POST",
+    body: { email_key: "anything@example.test", ip_key: "ip-anon" },
+  });
+  check(
+    "anonymous callers cannot ask the sign-in limiter about an address",
+    !anonLimiterRead.ok,
+    `status ${anonLimiterRead.status}`,
+  );
+
+  const anonLimiterReset = await api("/rest/v1/rpc/app_client_signin_record", {
+    key: PUBLISHABLE,
+    method: "POST",
+    body: {
+      email_key: "anything@example.test",
+      ip_key: "ip-anon",
+      succeeded: true,
+    },
+  });
+  check(
+    "anonymous callers cannot clear their own failed sign-in attempts",
+    !anonLimiterReset.ok,
+    `status ${anonLimiterReset.status}`,
+  );
+
+  const memberLimiterReset = await api("/rest/v1/rpc/app_client_signin_record", {
+    key: PUBLISHABLE,
+    token: memberToken,
+    method: "POST",
+    body: {
+      email_key: "anything@example.test",
+      ip_key: "ip-member",
+      succeeded: true,
+    },
+  });
+  check(
+    "a signed-in member cannot clear a client's failed sign-in attempts",
+    !memberLimiterReset.ok,
+    `status ${memberLimiterReset.status}`,
+  );
+
   const memberPreview = await api("/rest/v1/rpc/app_client_portal_preview", {
     key: PUBLISHABLE,
     token: memberToken,

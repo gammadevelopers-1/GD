@@ -13,12 +13,14 @@ import {
   BoardSurface,
   type UploadAction,
 } from "@/components/admin/projects/board-surface";
+import { Modal } from "@/components/admin/projects/modal";
 import { SuggestionsPanel } from "@/components/admin/projects/suggestions-panel";
 import { useBoardDoc } from "@/components/admin/projects/use-board-doc";
 import type { IdeaEditorHandle } from "@/components/admin/projects/idea-editor";
 import type { SimpleFormState } from "@/lib/projects/form-state";
 import type { IdeaDoc } from "@/lib/projects/idea-doc";
 import type { SuggestionGroup } from "@/lib/projects/suggestions";
+import { BUTTON_PRIMARY, BUTTON_SECONDARY } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 
 type Mode = "idea" | "work";
@@ -284,41 +286,40 @@ export function ProjectWorkspace({
                     {busy ? "Organising…" : organiseLabel}
                   </button>
 
-                  {confirming ? (
-                    <div
-                      role="dialog"
-                      aria-label="Organise the work board again"
-                      className="absolute top-full right-0 z-40 mt-2 w-64 rounded-xl border border-black/[0.09] bg-white p-3 shadow-[0_16px_40px_rgba(20,23,26,0.16)]"
-                    >
-                      <p className="text-[12px] leading-4 text-black/60">
-                        This board already has content. Replace it, or add the
-                        new plan underneath?
-                      </p>
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => void runOrganise("replace")}
-                          className="inline-flex h-7 items-center rounded-lg bg-[#15181b] px-2.5 text-[11px] font-semibold text-white transition hover:bg-black"
-                        >
-                          Replace
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => void runOrganise("append")}
-                          className="inline-flex h-7 items-center rounded-lg border border-black/[0.12] px-2.5 text-[11px] font-semibold text-black/70 transition hover:border-black/30 hover:text-black"
-                        >
-                          Append below
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setConfirming(false)}
-                          className="inline-flex h-7 items-center rounded-lg px-2 text-[11px] font-medium text-black/45 transition hover:text-black"
-                        >
-                          Cancel
-                        </button>
-                      </div>
+                  <Modal
+                    open={confirming}
+                    onClose={() => setConfirming(false)}
+                    title="Organise the work board"
+                  >
+                    <p className="text-[13px] leading-6 text-black/60">
+                      This board already has content. Replace it, or add the new
+                      plan underneath?
+                    </p>
+
+                    <div className="mt-5 flex flex-wrap justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setConfirming(false)}
+                        className={cn(BUTTON_SECONDARY, "h-9 px-3.5 text-xs")}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void runOrganise("append")}
+                        className={cn(BUTTON_SECONDARY, "h-9 px-3.5 text-xs")}
+                      >
+                        Append below
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void runOrganise("replace")}
+                        className={cn(BUTTON_PRIMARY, "h-9 px-3.5 text-xs")}
+                      >
+                        Replace
+                      </button>
                     </div>
-                  ) : null}
+                  </Modal>
                 </div>
               ) : null
             }

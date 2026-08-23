@@ -99,7 +99,7 @@ export function AccountPanel({
           />
         )}
 
-        {isSelf || person.deleteBlocker ? null : (
+        {isSelf ? null : (
           <button
             type="button"
             onClick={() => {
@@ -114,12 +114,6 @@ export function AccountPanel({
         )}
       </div>
 
-      {!isSelf && person.deleteBlocker ? (
-        <p className="mt-3 text-[11.5px] text-black/55">
-          Cannot be deleted permanently — {person.deleteBlocker}.
-        </p>
-      ) : null}
-
       <Modal
         open={confirming}
         onClose={() => setConfirming(false)}
@@ -127,11 +121,20 @@ export function AccountPanel({
       >
         <form action={removeAction} className="space-y-4">
           <input type="hidden" name="profileId" value={person.id} />
+          <input type="hidden" name="force" value="1" />
 
           <p className="text-[13px] leading-6 text-black/60">
             Their record, employment details, documents and sign-in are erased.
             This cannot be undone.
           </p>
+
+          {person.deleteBlocker ? (
+            <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[12px] leading-5 text-amber-900">
+              {person.deleteBlocker.charAt(0).toUpperCase() +
+                person.deleteBlocker.slice(1)}. That work stays on the platform
+              and moves to your name.
+            </p>
+          ) : null}
 
           <label className="block space-y-1.5">
             <span className="text-[12px] text-black/55">

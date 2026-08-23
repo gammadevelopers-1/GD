@@ -121,26 +121,18 @@ function AccountRow({
           }}
         />
 
-        {account.deleteBlocker ? null : (
-          <button
-            type="button"
-            onClick={() => {
-              setTyped("");
-              setConfirming(true);
-            }}
-            className={cn(BUTTON_DANGER, "h-8 px-2.5 text-xs")}
-          >
-            <Trash2 className="size-3.5" />
-            Delete
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => {
+            setTyped("");
+            setConfirming(true);
+          }}
+          className={cn(BUTTON_DANGER, "h-8 px-2.5 text-xs")}
+        >
+          <Trash2 className="size-3.5" />
+          Delete
+        </button>
       </div>
-
-      {account.deleteBlocker ? (
-        <p className="mt-2 text-[11px] text-black/55">
-          Cannot be deleted permanently — {account.deleteBlocker}.
-        </p>
-      ) : null}
 
       {removal.status === "error" && removal.message ? (
         <p role="alert" className="mt-2 text-[12px] text-red-700">
@@ -159,11 +151,20 @@ function AccountRow({
           <form action={removeAction} className="space-y-4">
             <input type="hidden" name="clientUserId" value={account.id} />
             <input type="hidden" name="clientId" value={clientId} />
+            <input type="hidden" name="force" value="1" />
 
             <p className="text-[13px] leading-6 text-black/60">
               Their portal account, every project they were invited to and their
               sign-in are erased. This cannot be undone.
             </p>
+
+            {account.deleteBlocker ? (
+              <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[12px] leading-5 text-amber-900">
+                {account.deleteBlocker.charAt(0).toUpperCase() +
+                  account.deleteBlocker.slice(1)}. What they wrote stays on the
+                project without their name on it.
+              </p>
+            ) : null}
 
             <label className="block space-y-1.5">
               <span className="text-[12px] text-black/55">

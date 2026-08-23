@@ -102,6 +102,7 @@ for (const account of ACCOUNTS) {
       email: account.email,
       password: PASSWORD,
       email_confirm: true,
+      app_metadata: { role: account.role },
       user_metadata: { full_name: account.name },
     }),
   });

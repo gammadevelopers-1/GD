@@ -37,7 +37,13 @@ import {
 } from "@/lib/projects/plan";
 import { formatDate } from "@/lib/projects/format";
 import { HIGHLIGHT_YELLOW } from "@/lib/projects/idea-doc";
-import { TONE_SOFT, TONE_SOLID } from "@/lib/admin-ui";
+import { Modal } from "@/components/admin/projects/modal";
+import {
+  BUTTON_DANGER,
+  BUTTON_SECONDARY,
+  TONE_SOFT,
+  TONE_SOLID,
+} from "@/lib/admin-ui";
 import type { SimpleFormState } from "@/lib/projects/form-state";
 import { cn } from "@/lib/utils";
 
@@ -95,6 +101,7 @@ export function WeekPlan({
   const [expandedBoard, setExpandedBoard] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [unfinished, setUnfinished] = useState<MilestoneWeek | null>(null);
 
   const remembered =
     stored && weeks.some((week) => week.id === stored) ? stored : currentWeekId;
@@ -123,12 +130,8 @@ export function WeekPlan({
   function complete(week: MilestoneWeek) {
     const undone = openTaskCount(week);
     if (!week.completedAt && undone) {
-      const ok = window.confirm(
-        `Week ${week.number} still has ${undone} unfinished ${
-          undone === 1 ? "task" : "tasks"
-        }. Mark it complete anyway?`,
-      );
-      if (!ok) return;
+      setUnfinished(week);
+      return;
     }
     run(() => setComplete(week.id, !week.completedAt));
   }
@@ -201,6 +204,45 @@ export function WeekPlan({
           {isOwner ? "No weeks yet. Add the first one." : "No weeks yet."}
         </p>
       )}
+
+      <Modal
+        open={Boolean(unfinished)}
+        onClose={() => setUnfinished(null)}
+        title={unfinished ? `Complete Week ${unfinished.number}` : "Complete"}
+      >
+        {unfinished ? (
+          <>
+            <p className="text-[13px] leading-6 text-black/60">
+              {`Week ${unfinished.number} still has ${openTaskCount(unfinished)} unfinished ${
+                openTaskCount(unfinished) === 1 ? "task" : "tasks"
+              }. Mark it complete anyway?`}
+            </p>
+
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setUnfinished(null)}
+                className={cn(BUTTON_SECONDARY, "h-9 px-3.5 text-xs")}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                autoFocus
+                onClick={() => {
+                  const week = unfinished;
+                  setUnfinished(null);
+                  run(() => setComplete(week.id, !week.completedAt));
+                }}
+                className={cn(BUTTON_DANGER, "h-9 px-3.5 text-xs")}
+              >
+                <Check className="size-3.5" />
+                Mark complete
+              </button>
+            </div>
+          </>
+        ) : null}
+      </Modal>
     </section>
   );
 }
@@ -272,6 +314,7 @@ function WeekRow({
   upload: (state: UploadResult, formData: FormData) => Promise<UploadResult>;
 }) {
   const [workOpen, setWorkOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const editorRef = useRef<IdeaEditorHandle>(null);
 
   const [doc, setDoc] = useState(week.ideaDoc);
@@ -394,30 +437,49 @@ function WeekRow({
         ) : null}
 
         {isOwner ? (
-          <form
-            action={archiveWeek}
-            onSubmit={(event) => {
-              if (
-                !window.confirm(
-                  `Delete Week ${week.number}? It will be archived and removed from this list.`,
-                )
-              ) {
-                event.preventDefault();
-              }
-            }}
-          >
-            <input type="hidden" name="projectId" value={projectId} />
-            <input type="hidden" name="weekId" value={week.id} />
-            <input type="hidden" name="archived" value="1" />
+          <>
             <button
-              type="submit"
+              type="button"
+              onClick={() => setDeleting(true)}
               aria-label={`Delete week ${week.number}`}
               title="Delete week"
               className="grid size-7 shrink-0 place-items-center rounded-lg text-black/55 transition hover:bg-black/[0.06] hover:text-red-600"
             >
               <Trash2 className="size-3.5" />
             </button>
-          </form>
+
+            <Modal
+              open={deleting}
+              onClose={() => setDeleting(false)}
+              title={`Delete Week ${week.number}`}
+            >
+              <p className="text-[13px] leading-6 text-black/60">
+                It is archived and removed from this list.
+              </p>
+
+              <div className="mt-5 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDeleting(false)}
+                  className={cn(BUTTON_SECONDARY, "h-9 px-3.5 text-xs")}
+                >
+                  Cancel
+                </button>
+                <form action={archiveWeek}>
+                  <input type="hidden" name="projectId" value={projectId} />
+                  <input type="hidden" name="weekId" value={week.id} />
+                  <input type="hidden" name="archived" value="1" />
+                  <button
+                    type="submit"
+                    className={cn(BUTTON_DANGER, "h-9 px-3.5 text-xs")}
+                  >
+                    <Trash2 className="size-3.5" />
+                    Delete week
+                  </button>
+                </form>
+              </div>
+            </Modal>
+          </>
         ) : null}
       </div>
 

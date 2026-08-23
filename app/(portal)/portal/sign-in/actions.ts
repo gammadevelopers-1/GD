@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { adminConfigured, adminRpc } from "@/lib/supabase/admin";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { hashIp } from "@/lib/audit/rate-limit";
 
@@ -14,11 +15,25 @@ async function clientIp() {
   return forwarded?.split(",")[0]?.trim() || "unknown";
 }
 
+async function recordAttempt(
+  email: string,
+  ipKey: string,
+  succeeded: boolean,
+) {
+  await adminRpc("app_client_signin_record", {
+    email_key: email,
+    ip_key: ipKey,
+    succeeded,
+  });
+}
+
 export async function signIn(
   _state: PortalAuthState,
   formData: FormData,
 ): Promise<PortalAuthState> {
-  if (!hasSupabaseConfig()) return { error: "Sign-in is not available yet." };
+  if (!hasSupabaseConfig() || !adminConfigured()) {
+    return { error: "Sign-in is not available yet." };
+  }
 
   const email = String(formData.get("email") ?? "")
     .trim()
@@ -32,14 +47,17 @@ export async function signIn(
   const supabase = await createClient();
   const ipKey = hashIp(await clientIp());
 
-  const { data: wait } = await supabase.rpc("app_client_signin_gate", {
+  const gate = await adminRpc("app_client_signin_gate", {
     email_key: email,
     ip_key: ipKey,
   });
 
-  if (Number(wait ?? 0) > 0) {
+  if (!gate.ok) return { error: "Sign-in is not available yet." };
+
+  const wait = Number(gate.data ?? 0);
+  if (wait > 0) {
     return {
-      error: `Too many attempts. Try again in ${Math.ceil(Number(wait) / 60)} minutes.`,
+      error: `Too many attempts. Try again in ${Math.ceil(wait / 60)} minutes.`,
     };
   }
 
@@ -49,11 +67,7 @@ export async function signIn(
   });
 
   if (error || !data.user) {
-    await supabase.rpc("app_client_signin_record", {
-      email_key: email,
-      ip_key: ipKey,
-      succeeded: false,
-    });
+    await recordAttempt(email, ipKey, false);
     return { error: "That email and password were not accepted." };
   }
 
@@ -66,19 +80,11 @@ export async function signIn(
 
   if (!account) {
     await supabase.auth.signOut();
-    await supabase.rpc("app_client_signin_record", {
-      email_key: email,
-      ip_key: ipKey,
-      succeeded: false,
-    });
+    await recordAttempt(email, ipKey, false);
     return { error: "That email and password were not accepted." };
   }
 
-  await supabase.rpc("app_client_signin_record", {
-    email_key: email,
-    ip_key: ipKey,
-    succeeded: true,
-  });
+  await recordAttempt(email, ipKey, true);
   await supabase.rpc("app_client_signed_in");
 
   redirect("/portal");

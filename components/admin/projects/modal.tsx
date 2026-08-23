@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { FOCUS_RING, ICON_BUTTON } from "@/lib/admin-ui";
+import { BUTTON_DANGER, BUTTON_SECONDARY, ICON_BUTTON } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 
 export function Modal({
@@ -97,8 +97,8 @@ export function ConfirmAction({
 }) {
   const [asking, setAsking] = useState(false);
 
-  if (!asking) {
-    return (
+  return (
+    <>
       <button
         type="button"
         onClick={() => setAsking(true)}
@@ -106,36 +106,37 @@ export function ConfirmAction({
       >
         {label}
       </button>
-    );
-  }
 
-  return (
-    <span className="flex flex-wrap items-center gap-2">
-      <span className="text-[12px] text-black/60">{question}</span>
-      <button
-        type="button"
-        disabled={pending}
-        onClick={() => {
-          setAsking(false);
-          onConfirm();
-        }}
-        className={cn(
-          "rounded-lg bg-red-600 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-red-700 disabled:opacity-60",
-          FOCUS_RING,
-        )}
+      <Modal
+        open={asking}
+        onClose={() => setAsking(false)}
+        title={confirmLabel}
       >
-        {confirmLabel}
-      </button>
-      <button
-        type="button"
-        onClick={() => setAsking(false)}
-        className={cn(
-          "rounded-lg px-2 py-1 text-[11px] font-medium text-black/60 transition hover:text-black",
-          FOCUS_RING,
-        )}
-      >
-        Cancel
-      </button>
-    </span>
+        <p className="text-[13px] leading-6 text-black/60">{question}</p>
+
+        <div className="mt-5 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setAsking(false)}
+            className={cn(BUTTON_SECONDARY, "h-9 px-3.5 text-xs")}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={pending}
+            autoFocus
+            onClick={() => {
+              setAsking(false);
+              onConfirm();
+            }}
+            className={cn(BUTTON_DANGER, "h-9 px-3.5 text-xs")}
+          >
+            {pending ? <Loader2 className="size-3.5 animate-spin" /> : null}
+            {confirmLabel}
+          </button>
+        </div>
+      </Modal>
+    </>
   );
 }

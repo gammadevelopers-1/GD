@@ -463,10 +463,12 @@ export async function deleteTeamMember(
     return formError("You cannot delete your own account.");
   }
 
+  const force = formData.get("force") === "1";
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("app_delete_team_member", {
-    target: profileId,
-  });
+  const { data, error } = await supabase.rpc(
+    force ? "app_force_delete_team_member" : "app_delete_team_member",
+    { target: profileId },
+  );
 
   if (error) return formError(error.message);
 

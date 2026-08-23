@@ -199,7 +199,9 @@ export async function getCredentialAudit(
       actorId: row.actor_id ? String(row.actor_id) : null,
       actor: row.actor_id
         ? (people.get(String(row.actor_id))?.name ?? "Unknown")
-        : "System",
+        : typeof metadata.deleted_actor === "string"
+          ? `${metadata.deleted_actor} (deleted)`
+          : "System",
       actorEmail: row.actor_id
         ? (people.get(String(row.actor_id))?.email ?? null)
         : null,

@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(53);
+select plan(56);
 
 -- Internal people ------------------------------------------------------------
 insert into auth.users (
@@ -482,6 +482,23 @@ where client_user_id = 'c0000000-0000-4000-8000-000000000003';
 reset role;
 set local role anon;
 
+select throws_ok(
+  $$select public.app_client_signin_gate('locktest@clientco.test', 'ip-a')$$,
+  '42501',
+  null,
+  'nobody signing in can ask the limiter about an address'
+);
+
+select throws_ok(
+  $$select public.app_client_signin_record('locktest@clientco.test', 'ip-a', true)$$,
+  '42501',
+  null,
+  'and nobody signing in can clear their own failed attempts'
+);
+
+reset role;
+set local role service_role;
+
 select is(
   (select public.app_client_signin_gate('locktest@clientco.test', 'ip-a')),
   0,
@@ -511,6 +528,9 @@ select is(
   0,
   'a success clears the failures for that address'
 );
+
+reset role;
+set local role anon;
 
 select throws_ok(
   $$select * from public.app_client_signin_attempts$$,

@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Archive, RotateCcw, X } from "lucide-react";
+import { Archive, RotateCcw } from "lucide-react";
+import { Modal } from "@/components/admin/projects/modal";
+import { BUTTON_DANGER, BUTTON_SECONDARY } from "@/lib/admin-ui";
+import { cn } from "@/lib/utils";
 
 export function ArchiveControl({
   projectId,
@@ -48,37 +51,45 @@ export function ArchiveControl({
         lose access immediately, and you can restore it at any time.
       </p>
 
-      {confirming ? (
-        <div className="mt-4 flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        onClick={() => setConfirming(true)}
+        className="mt-4 inline-flex h-10 items-center gap-2 rounded-xl border border-black/[0.12] bg-white px-4 text-xs font-semibold text-black/70 transition duration-200 hover:border-red-300 hover:bg-red-50/60 hover:text-red-700 focus-visible:ring-2 focus-visible:ring-red-400/40 focus-visible:outline-none active:scale-[0.98]"
+      >
+        <Archive className="size-3.5" />
+        Archive project
+      </button>
+
+      <Modal
+        open={confirming}
+        onClose={() => setConfirming(false)}
+        title="Archive project"
+      >
+        <p className="text-[13px] leading-6 text-black/60">
+          Every assigned member loses access immediately. You can restore the
+          project at any time.
+        </p>
+
+        <div className="mt-5 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setConfirming(false)}
+            className={cn(BUTTON_SECONDARY, "h-9 px-3.5 text-xs")}
+          >
+            Keep it
+          </button>
           <form action={archiveAction}>
             <input type="hidden" name="projectId" value={projectId} />
             <button
               type="submit"
-              className="inline-flex h-10 items-center gap-2 rounded-xl bg-red-600 px-4 text-xs font-semibold text-white transition duration-200 hover:bg-red-700 hover:shadow-[0_10px_24px_rgba(220,38,38,0.28)] focus-visible:ring-2 focus-visible:ring-red-500/50 focus-visible:outline-none active:scale-[0.98]"
+              className={cn(BUTTON_DANGER, "h-9 px-3.5 text-xs")}
             >
               <Archive className="size-3.5" />
-              Yes, archive it
+              Archive project
             </button>
           </form>
-          <button
-            type="button"
-            onClick={() => setConfirming(false)}
-            className="inline-flex h-10 items-center gap-1.5 rounded-xl px-3 text-xs font-medium text-black/50 transition duration-150 hover:bg-black/[0.045] hover:text-black focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
-          >
-            <X className="size-3.5" />
-            Keep it
-          </button>
         </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setConfirming(true)}
-          className="mt-4 inline-flex h-10 items-center gap-2 rounded-xl border border-black/[0.12] bg-white px-4 text-xs font-semibold text-black/70 transition duration-200 hover:border-red-300 hover:bg-red-50/60 hover:text-red-700 focus-visible:ring-2 focus-visible:ring-red-400/40 focus-visible:outline-none active:scale-[0.98]"
-        >
-          <Archive className="size-3.5" />
-          Archive project
-        </button>
-      )}
+      </Modal>
     </div>
   );
 }

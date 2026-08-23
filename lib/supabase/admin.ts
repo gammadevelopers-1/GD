@@ -53,6 +53,13 @@ async function call(
   }
 }
 
+export async function adminRpc(
+  fn: string,
+  args: Record<string, unknown>,
+): Promise<{ ok: true; data: unknown } | { ok: false; message: string }> {
+  return call(`/rest/v1/rpc/${fn}`, { method: "POST", body: args });
+}
+
 export async function createClientAuthUser(input: {
   email: string;
   fullName: string;

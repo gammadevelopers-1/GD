@@ -668,10 +668,12 @@ export async function deleteClientAccount(
   const clientId = String(formData.get("clientId") ?? "");
   if (!isUuid(clientUserId)) return formError("That client was not found.");
 
+  const force = formData.get("force") === "1";
   const supabase = await createClient();
-  const { error } = await supabase.rpc("app_delete_client_account", {
-    target: clientUserId,
-  });
+  const { error } = await supabase.rpc(
+    force ? "app_force_delete_client_account" : "app_delete_client_account",
+    { target: clientUserId },
+  );
 
   if (error) return formError(error.message);
 
