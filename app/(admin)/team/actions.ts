@@ -65,7 +65,7 @@ async function addressIsTaken(email: string) {
     supabase.from("app_profiles").select("id").eq("email", email).maybeSingle(),
     supabase
       .from("app_client_users")
-      .select("id")
+      .select("id, archived_at")
       .eq("email", email)
       .maybeSingle(),
     supabase
@@ -76,8 +76,15 @@ async function addressIsTaken(email: string) {
   ]);
 
   if (profile.data) return "Someone on the team already uses that address.";
-  if (clientUser.data || pendingClient.data) {
+
+  if (clientUser.data?.archived_at) {
+    return "That address belongs to an archived client account, which still holds the sign-in. Delete that account under its client to free the address.";
+  }
+  if (clientUser.data) {
     return "That address belongs to a client portal account, so it cannot also be a team account.";
+  }
+  if (pendingClient.data) {
+    return "A client portal invite is already in flight for that address. Finish or cancel it first.";
   }
   return null;
 }
