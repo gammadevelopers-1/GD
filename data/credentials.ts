@@ -29,20 +29,6 @@ export type ProjectCredential = {
   grants: CredentialGrant[];
 };
 
-export type CredentialAuditEntry = {
-  id: number;
-  credentialId: string | null;
-  credentialName: string;
-  action: string;
-  actorId: string | null;
-  actor: string;
-  actorEmail: string | null;
-  actorRole: string | null;
-  ip: string | null;
-  occurredAt: string;
-  detail: string | null;
-};
-
 export async function getProjectCredentials(
   projectId: string,
   viewer: Viewer,
@@ -132,89 +118,6 @@ export async function getProjectCredentials(
     };
   });
 }
-
-export async function getCredentialAudit(
-  credentials: ProjectCredential[],
-  viewer: Viewer,
-  limit = 250,
-): Promise<CredentialAuditEntry[]> {
-  if (viewer.role !== "owner" || !credentials.length) return [];
-
-  const supabase = await createClient();
-  const nameById = new Map(
-    credentials.map((credential) => [credential.id, credential.name]),
-  );
-
-  const { data, error } = await supabase
-    .from("app_audit_logs")
-    .select("id, actor_id, action, resource_id, metadata, occurred_at, ip")
-    .eq("resource_type", "credential")
-    .in("resource_id", [...nameById.keys()])
-    .order("occurred_at", { ascending: false })
-    .limit(limit);
-
-  if (error || !data?.length) return [];
-
-  const actorIds = new Set<string>();
-  const subjectIds = new Set<string>();
-  for (const row of data) {
-    if (row.actor_id) actorIds.add(String(row.actor_id));
-    const profileId = (row.metadata as Record<string, unknown> | null)
-      ?.profile_id;
-    if (typeof profileId === "string") subjectIds.add(profileId);
-  }
-
-  const people = await resolvePeople(supabase, [...actorIds, ...subjectIds]);
-  const names = new Map(
-    [...people].map(([id, person]) => [id, person.name] as const),
-  );
-
-  return data.map((row) => {
-    const metadata = (row.metadata ?? {}) as Record<string, unknown>;
-    const subject =
-      typeof metadata.profile_id === "string"
-        ? (names.get(metadata.profile_id) ?? "someone")
-        : null;
-
-    const parts: string[] = [];
-    if (subject) parts.push(subject);
-    if (typeof metadata.access === "string") parts.push(metadata.access);
-    if (metadata.reason === "removed_from_project") {
-      parts.push("removed from the project");
-    }
-    if (metadata.reason === "account_deactivated") {
-      parts.push("account deactivated");
-    }
-    if (typeof metadata.operation === "string") {
-      parts.push(`tried to ${metadata.operation}`);
-    }
-
-    return {
-      id: Number(row.id),
-      credentialId: row.resource_id ? String(row.resource_id) : null,
-      credentialName: row.resource_id
-        ? (nameById.get(String(row.resource_id)) ?? "Removed credential")
-        : "Unknown",
-      action: String(row.action),
-      actorId: row.actor_id ? String(row.actor_id) : null,
-      actor: row.actor_id
-        ? (people.get(String(row.actor_id))?.name ?? "Unknown")
-        : typeof metadata.deleted_actor === "string"
-          ? `${metadata.deleted_actor} (deleted)`
-          : "System",
-      actorEmail: row.actor_id
-        ? (people.get(String(row.actor_id))?.email ?? null)
-        : null,
-      actorRole: row.actor_id
-        ? (people.get(String(row.actor_id))?.role ?? null)
-        : null,
-      ip: row.ip ? String(row.ip) : null,
-      occurredAt: String(row.occurred_at),
-      detail: parts.length ? parts.join(" · ") : null,
-    };
-  });
-}
-
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
 type AuditPerson = { name: string; email: string | null; role: string | null };

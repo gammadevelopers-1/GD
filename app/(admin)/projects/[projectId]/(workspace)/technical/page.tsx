@@ -23,7 +23,8 @@ import {
   removeMyVariable,
   saveMyVariables,
 } from "../../../env-copy-actions";
-import { getCredentialAudit, getProjectCredentials } from "@/data/credentials";
+import { getProjectCredentials } from "@/data/credentials";
+import { getProjectAudit } from "@/data/project-audit";
 import { credentialsConfigured } from "@/lib/credentials/crypto";
 import {
   addProjectLink,
@@ -84,7 +85,7 @@ async function TechnicalSections({ publicId }: { publicId: string }) {
       getEnvFiles(project.id, viewer),
     ]);
 
-  const audit = isOwner ? await getCredentialAudit(credentials, viewer) : [];
+  const audit = isOwner ? await getProjectAudit(project.id, viewer) : [];
   const onThisProject =
     isOwner || members.some((member) => member.id === viewer.id);
 
