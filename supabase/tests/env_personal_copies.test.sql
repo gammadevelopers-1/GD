@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(24);
+select plan(26);
 
 insert into auth.users (
   id, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at
@@ -128,8 +128,22 @@ select throws_ok(
 
 select is(
   (select count(*)::int from public.app_env_merge_preview(
-     'c2000000-0000-4000-8000-000000000001')),
-  0, 'a member gets no compare rows even as project lead'
+     'c2000000-0000-4000-8000-000000000001')
+   where profile_id <> 'c0000000-0000-4000-8000-000000000003'),
+  0, 'a member sees no compare row belonging to anyone else, even as project lead'
+);
+
+select ok(
+  (select count(*)::int from public.app_env_merge_preview(
+     'c2000000-0000-4000-8000-000000000001')) > 0,
+  'a member does see their own copies, so they can read their own fingerprint'
+);
+
+select is(
+  (select count(*)::int from public.app_env_merge_preview(
+     'c2000000-0000-4000-8000-000000000001')
+   where copy_kind <> 'personal'),
+  0, 'a member sees no main row in the compare preview'
 );
 
 select throws_ok(
