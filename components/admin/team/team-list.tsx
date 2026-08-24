@@ -22,7 +22,7 @@ const STATE_TONES: Record<TeamAccountState, Tone> = {
 export function TeamList({ members }: { members: TeamMember[] }) {
   return (
     <>
-      <div className={cn(PANEL, "hidden overflow-hidden sm:block")}>
+      <div className={cn(PANEL, "hidden overflow-hidden md:block")}>
         <table className="w-full border-collapse text-left">
           <thead>
             <tr className="border-b border-black/[0.07]">
@@ -82,7 +82,7 @@ export function TeamList({ members }: { members: TeamMember[] }) {
         </table>
       </div>
 
-      <div className="grid gap-3 sm:hidden">
+      <div className="grid gap-3 md:hidden">
         {members.map((member) => (
           <Link
             key={member.id}
