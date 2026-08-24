@@ -18,20 +18,13 @@ import {
   isEnvKey,
   parseEnvBlob,
 } from "@/lib/projects/env";
-import {
-  BUTTON_GHOST,
-  BUTTON_PRIMARY,
-  BUTTON_SECONDARY,
-  FOCUS_RING,
-  ICON_BUTTON,
-  INPUT,
-  INPUT_SMALL,
-} from "@/lib/admin-ui";
+import { FOCUS_RING, INPUT, INPUT_SMALL } from "@/lib/admin-ui";
 import { Modal } from "@/components/admin/projects/modal";
 import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
 import { FormSelect } from "@/components/common/form-select";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 export type GroupOption = { id: string; name: string; keys: string[] };
 
@@ -187,13 +180,15 @@ export function ImportDialog({
             <p className="mt-3 text-[13px] text-black/55">
               Drop a .env file here
             </p>
-            <button
+            <Button
+              variant="admin-secondary"
+              size="none"
               type="button"
               onClick={() => fileInput.current?.click()}
-              className={cn(BUTTON_SECONDARY, "mt-3 h-9 text-xs")}
+              className="mt-3 h-9 text-xs"
             >
               Browse
-            </button>
+            </Button>
             <input
               ref={fileInput}
               type="file"
@@ -219,14 +214,16 @@ export function ImportDialog({
               variant="admin"
               className="mt-1.5 resize-y py-2.5 font-mono text-xs"
             />
-            <button
+            <Button
+              variant="admin-secondary"
+              size="none"
               type="button"
               disabled={!pasted.trim()}
               onClick={() => absorb(pasted, "the pasted text")}
-              className={cn(BUTTON_SECONDARY, "mt-2 h-9 text-xs")}
+              className="mt-2 h-9 text-xs"
             >
               Read it
-            </button>
+            </Button>
           </div>
 
           {note ? <p className="text-[12px] text-black/60">{note}</p> : null}
@@ -318,7 +315,9 @@ export function ImportDialog({
                         )}
                       </button>
                     </div>
-                    <button
+                    <Button
+                      variant="admin-icon"
+                      size="none"
                       type="button"
                       onClick={() =>
                         setDrafts((current) =>
@@ -326,10 +325,10 @@ export function ImportDialog({
                         )
                       }
                       aria-label={`Remove ${key || `row ${index + 1}`}`}
-                      className={cn(ICON_BUTTON, "shrink-0")}
+                      className="shrink-0"
                     >
                       <Trash2 className="size-3.5" />
-                    </button>
+                    </Button>
                   </div>
 
                   {clash && draft.include ? (
@@ -374,31 +373,37 @@ export function ImportDialog({
           <Feedback state={state} />
 
           <div className="flex flex-wrap items-center justify-end gap-2 border-t border-black/[0.07] pt-3">
-            <button
+            <Button
+              variant="admin-ghost"
+              size="none"
               type="button"
               onClick={() => {
                 setDrafts([]);
                 setNote(null);
               }}
-              className={cn(BUTTON_GHOST, "mr-auto h-9")}
+              className="mr-auto h-9"
             >
               Start over
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="admin-secondary"
+              size="none"
               type="button"
               onClick={onClose}
-              className={cn(BUTTON_SECONDARY, "h-9 text-xs")}
+              className="h-9 text-xs"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="admin-primary"
+              size="none"
               type="submit"
               disabled={pending || !chosen.length}
-              className={cn(BUTTON_PRIMARY, "h-9 text-xs")}
+              className="h-9 text-xs"
             >
               {pending ? <Loader2 className="size-3.5 animate-spin" /> : null}
               Save {chosen.length || ""}
-            </button>
+            </Button>
           </div>
         </form>
       )}
@@ -564,18 +569,20 @@ export function ManualDialog({
                     <span />
                   )}
                   {drafts.length > 1 ? (
-                    <button
+                    <Button
+                      variant="admin-ghost"
+                      size="none"
                       type="button"
                       onClick={() =>
                         setDrafts((current) =>
                           current.filter((_, i) => i !== index),
                         )
                       }
-                      className={cn(BUTTON_GHOST, "h-7")}
+                      className="h-7"
                     >
                       <Trash2 className="size-3" />
                       Remove
-                    </button>
+                    </Button>
                   ) : null}
                 </div>
               </div>
@@ -583,33 +590,39 @@ export function ManualDialog({
           })}
         </div>
 
-        <button
+        <Button
+          variant="admin-ghost"
+          size="none"
           type="button"
           onClick={() => setDrafts((current) => [...current, { ...EMPTY }])}
-          className={cn(BUTTON_GHOST, "h-9")}
+          className="h-9"
         >
           <Plus className="size-3.5" />
           Add another
-        </button>
+        </Button>
 
         <Feedback state={state} />
 
         <div className="flex flex-wrap items-center justify-end gap-2 border-t border-black/[0.07] pt-3">
-          <button
+          <Button
+            variant="admin-secondary"
+            size="none"
             type="button"
             onClick={onClose}
-            className={cn(BUTTON_SECONDARY, "h-9 text-xs")}
+            className="h-9 text-xs"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="admin-primary"
+            size="none"
             type="submit"
             disabled={pending || !filled.length}
-            className={cn(BUTTON_PRIMARY, "h-9 text-xs")}
+            className="h-9 text-xs"
           >
             {pending ? <Loader2 className="size-3.5 animate-spin" /> : null}
             Save
-          </button>
+          </Button>
         </div>
       </form>
     </Modal>

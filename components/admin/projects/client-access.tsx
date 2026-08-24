@@ -8,8 +8,9 @@ import { Issued } from "@/components/admin/projects/issued-access";
 import { ConfirmAction } from "@/components/admin/projects/modal";
 import { initials } from "@/lib/projects/format";
 import { absoluteTime, timeAgo } from "@/lib/portal/format";
-import { BUTTON_GHOST, FOCUS_RING, ICON_BUTTON_DANGER } from "@/lib/admin-ui";
+import { FOCUS_RING, ICON_BUTTON_DANGER } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const IDLE: ShareState = { status: "idle", message: null };
 
@@ -133,12 +134,14 @@ function GrantRow({
               value={grant.clientUserId}
             />
             <input type="hidden" name="publicId" value={publicId} />
-            <button
+            <Button
+              variant="admin-ghost"
+              size="none"
               type="submit"
               disabled={regenerating}
               onClick={() => setDismissed(false)}
               title="Issue a new password and invalidate the old one"
-              className={cn(BUTTON_GHOST, "h-7")}
+              className="h-7"
             >
               {regenerating ? (
                 <Loader2 className="size-3.5 animate-spin" />
@@ -146,7 +149,7 @@ function GrantRow({
                 <KeyRound className="size-3.5" />
               )}
               New password
-            </button>
+            </Button>
           </form>
 
           <ConfirmAction

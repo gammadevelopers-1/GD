@@ -22,13 +22,7 @@ import {
 } from "@/lib/projects/technical";
 import type { TechnicalFormState } from "@/lib/projects/technical";
 import { formatDate } from "@/lib/projects/format";
-import {
-  BUTTON_PRIMARY,
-  BUTTON_SECONDARY,
-  FOCUS_RING,
-  INPUT,
-  PANEL,
-} from "@/lib/admin-ui";
+import { FOCUS_RING, INPUT, PANEL } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -367,22 +361,26 @@ function TechnicalForm({
       ) : null}
 
       <div className="mt-6 flex flex-wrap gap-2">
-        <button
+        <Button
+          variant="admin-primary"
+          size="none"
           type="submit"
           disabled={pending}
-          className={cn(BUTTON_PRIMARY, "h-10")}
+          className="h-10"
         >
           {pending ? <Loader2 className="size-4 animate-spin" /> : null}
           Save
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="admin-secondary"
+          size="none"
           type="button"
           onClick={onDone}
-          className={cn(BUTTON_SECONDARY, "h-10")}
+          className="h-10"
         >
           <X className="size-3.5" />
           Cancel
-        </button>
+        </Button>
       </div>
     </form>
   );

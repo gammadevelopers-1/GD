@@ -10,8 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { BUTTON_DANGER, BUTTON_SECONDARY, ICON_BUTTON } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export function Modal({
   open,
@@ -62,13 +62,15 @@ export function Modal({
               )}
             </div>
             <DialogClose asChild>
-              <button
+              <Button
+                variant="admin-icon"
+                size="none"
                 type="button"
                 aria-label="Close"
-                className={cn(ICON_BUTTON, "shrink-0")}
+                className="shrink-0"
               >
                 <X className="size-4" />
-              </button>
+              </Button>
             </DialogClose>
           </DialogHeader>
           <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-5 py-4">
@@ -115,14 +117,18 @@ export function ConfirmAction({
         <p className="text-[13px] leading-6 text-black/60">{question}</p>
 
         <div className="mt-5 flex justify-end gap-2">
-          <button
+          <Button
+            variant="admin-secondary"
+            size="none"
             type="button"
             onClick={() => setAsking(false)}
-            className={cn(BUTTON_SECONDARY, "h-9 px-3.5 text-xs")}
+            className="h-9 px-3.5 text-xs"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="admin-danger"
+            size="none"
             type="button"
             disabled={pending}
             autoFocus
@@ -130,11 +136,11 @@ export function ConfirmAction({
               setAsking(false);
               onConfirm();
             }}
-            className={cn(BUTTON_DANGER, "h-9 px-3.5 text-xs")}
+            className="h-9 px-3.5 text-xs"
           >
             {pending ? <Loader2 className="size-3.5 animate-spin" /> : null}
             {confirmLabel}
-          </button>
+          </Button>
         </div>
       </Modal>
     </>

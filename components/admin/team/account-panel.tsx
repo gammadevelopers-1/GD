@@ -13,8 +13,9 @@ import { StateBadge } from "@/components/admin/team/team-list";
 import type { TeamPerson } from "@/data/team";
 import { formatDate } from "@/lib/projects/format";
 import { IDLE_FORM } from "@/lib/projects/form-state";
-import { BUTTON_DANGER, BUTTON_SECONDARY, INPUT, PANEL } from "@/lib/admin-ui";
+import { BUTTON_SECONDARY, INPUT, PANEL } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const CONFIRM_WORD = "confirm";
 
@@ -56,10 +57,12 @@ export function AccountPanel({
 
       <div className="mt-5 flex flex-wrap gap-2">
         {person.email && !archived ? (
-          <button
+          <Button
+            variant="admin-secondary"
+            size="none"
             type="button"
             onClick={() => setInviting(true)}
-            className={cn(BUTTON_SECONDARY, "h-9 text-xs")}
+            className="h-9 text-xs"
           >
             <Send className="size-3.5" />
             {person.activatedAt
@@ -67,7 +70,7 @@ export function AccountPanel({
               : person.invitedAt
                 ? "Send the invitation again"
                 : "Send invitation"}
-          </button>
+          </Button>
         ) : null}
 
         {isSelf ? null : (
@@ -100,17 +103,19 @@ export function AccountPanel({
         )}
 
         {isSelf ? null : (
-          <button
+          <Button
+            variant="admin-danger"
+            size="none"
             type="button"
             onClick={() => {
               setTyped("");
               setConfirming(true);
             }}
-            className={cn(BUTTON_DANGER, "h-9 px-3 text-xs")}
+            className="h-9 px-3 text-xs"
           >
             <Trash2 className="size-3.5" />
             Delete
-          </button>
+          </Button>
         )}
       </div>
 
@@ -159,11 +164,12 @@ export function AccountPanel({
             </p>
           ) : null}
 
-          <button
+          <Button
+            variant="admin-danger"
+            size="none"
             type="submit"
             disabled={!confirmed || removing}
             className={cn(
-              BUTTON_DANGER,
               "h-10 w-full text-sm transition-colors",
               "disabled:cursor-not-allowed",
               "disabled:border-red-200/80",
@@ -179,7 +185,7 @@ export function AccountPanel({
           >
             {removing ? <Loader2 className="size-4 animate-spin" /> : null}
             Delete permanently
-          </button>
+          </Button>
         </form>
       </Modal>
 

@@ -19,8 +19,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import type { ProjectInviteContext } from "@/data/clients";
-import { BUTTON_PRIMARY, BUTTON_SECONDARY, INPUT } from "@/lib/admin-ui";
+import { INPUT } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const IDLE: ClientInviteState = { status: "idle", message: null };
 
@@ -193,14 +194,16 @@ export function InviteClient({
               ) : null}
             </fieldset>
           ) : (
-            <button
+            <Button
+              variant="admin-secondary"
+              size="none"
               type="button"
               onClick={() => setAddingNew(true)}
-              className={cn(BUTTON_SECONDARY, "h-9 w-full text-xs")}
+              className="h-9 w-full text-xs"
             >
               <UserPlus className="size-3.5" />
               Invite someone else
-            </button>
+            </Button>
           )}
 
           <label className="flex items-start gap-3 rounded-xl border border-black/[0.09] bg-white px-3.5 py-3">
@@ -236,10 +239,12 @@ export function InviteClient({
             </div>
           ) : null}
 
-          <button
+          <Button
+            variant="admin-primary"
+            size="none"
             type="submit"
             disabled={pending}
-            className={cn(BUTTON_PRIMARY, "h-10 w-full")}
+            className="h-10 w-full"
           >
             {pending ? (
               <Loader2 className="size-4 animate-spin" />
@@ -247,7 +252,7 @@ export function InviteClient({
               <Send className="size-3.5" />
             )}
             Send invitations
-          </button>
+          </Button>
         </form>
       </DialogContent>
     </Dialog>

@@ -7,10 +7,7 @@ import { requireViewer } from "@/data/auth";
 export default async function AdminLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const [viewer, cookieStore] = await Promise.all([
-    requireViewer(),
-    cookies(),
-  ]);
+  const [viewer, cookieStore] = await Promise.all([requireViewer(), cookies()]);
   const defaultSidebarOpen =
     cookieStore.get("sidebar_state")?.value !== "false";
 

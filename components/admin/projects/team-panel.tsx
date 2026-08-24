@@ -17,16 +17,9 @@ import { ConfirmAction } from "@/components/admin/projects/modal";
 import { FormSelect } from "@/components/common/form-select";
 import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
 import { initials } from "@/lib/projects/format";
-import {
-  BUTTON_GHOST,
-  BUTTON_PRIMARY,
-  ICON_BUTTON,
-  ICON_BUTTON_DANGER,
-  INPUT,
-  INPUT_SMALL,
-  PANEL,
-} from "@/lib/admin-ui";
+import { ICON_BUTTON_DANGER, INPUT, INPUT_SMALL, PANEL } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 type Person = { id: string; name: string };
 type FormAction = (
@@ -196,34 +189,37 @@ function MemberRow({
                 aria-label={`What ${member.name} does on this project`}
                 className={cn(INPUT_SMALL, "h-9 min-w-0 flex-1")}
               />
-              <button
+              <Button
+                variant="admin-primary"
+                size="none"
                 type="submit"
                 disabled={pending}
-                className={cn(BUTTON_PRIMARY, "h-9 px-3 text-xs")}
+                className="h-9 px-3 text-xs"
               >
                 {pending ? <Loader2 className="size-3 animate-spin" /> : null}
                 Save
-              </button>
+              </Button>
               {member.responsibility ? (
-                <button
+                <Button
+                  variant="admin-ghost"
+                  size="none"
                   type="button"
                   onClick={clearResponsibility}
                   disabled={pending}
-                  className={cn(
-                    BUTTON_GHOST,
-                    "h-9 hover:bg-red-50 hover:text-red-700",
-                  )}
+                  className="h-9 hover:bg-red-50 hover:text-red-700"
                 >
                   Clear
-                </button>
+                </Button>
               ) : null}
-              <button
+              <Button
+                variant="admin-ghost"
+                size="none"
                 type="button"
                 onClick={() => setEditing(false)}
-                className={cn(BUTTON_GHOST, "h-9")}
+                className="h-9"
               >
                 Cancel
-              </button>
+              </Button>
             </form>
           ) : (
             <>
@@ -257,15 +253,16 @@ function MemberRow({
 
         {isOwner && !editing ? (
           <div className="flex shrink-0 items-center gap-1">
-            <button
+            <Button
+              variant="admin-icon"
+              size="none"
               type="button"
               onClick={() => setEditing(true)}
               aria-label={`Edit what ${member.name} does on this project`}
               title="Edit what they do"
-              className={ICON_BUTTON}
             >
               <Pencil className="size-3.5" />
-            </button>
+            </Button>
             <ConfirmAction
               label={<Trash2 className="size-3.5" />}
               confirmLabel="Delete"
@@ -344,14 +341,16 @@ function AddMemberPanel({
               className={cn(INPUT, "h-10")}
             />
           </label>
-          <button
+          <Button
+            variant="admin-primary"
+            size="none"
             type="submit"
             disabled={pending || !chosen}
-            className={cn(BUTTON_PRIMARY, "h-10 w-full")}
+            className="h-10 w-full"
           >
             {pending ? <Loader2 className="size-4 animate-spin" /> : null}
             Add to project
-          </button>
+          </Button>
         </form>
       ) : (
         <p className="rounded-xl border border-dashed border-black/10 px-4 py-5 text-center text-[13px] text-black/55">

@@ -6,8 +6,9 @@ import { Modal } from "@/components/admin/projects/modal";
 import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
 import { FormSelect } from "@/components/common/form-select";
 import { type SimpleFormState, IDLE_FORM } from "@/lib/projects/form-state";
-import { BUTTON_PRIMARY, INPUT } from "@/lib/admin-ui";
+import { INPUT } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export type ShareTarget = { id: string; name: string; count: number };
 
@@ -127,10 +128,12 @@ export function ShareContainers({
           </p>
         ) : null}
 
-        <button
+        <Button
+          variant="admin-primary"
+          size="none"
           type="submit"
           disabled={pending || !chosen.length}
-          className={cn(BUTTON_PRIMARY, "h-10 w-full")}
+          className="h-10 w-full"
         >
           {pending ? (
             <Loader2 className="size-4 animate-spin" />
@@ -138,7 +141,7 @@ export function ShareContainers({
             <Share2 className="size-3.5" />
           )}
           {total ? `Share ${total} variable${total === 1 ? "" : "s"}` : "Share"}
-        </button>
+        </Button>
       </form>
     </Modal>
   );

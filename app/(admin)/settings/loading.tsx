@@ -1,4 +1,7 @@
-import { PageHeadingSkeleton, PanelSkeleton } from "@/components/admin/skeletons";
+import {
+  PageHeadingSkeleton,
+  PanelSkeleton,
+} from "@/components/admin/skeletons";
 
 export default function SettingsLoading() {
   return (

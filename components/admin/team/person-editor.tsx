@@ -6,8 +6,9 @@ import { updateTeamMember } from "@/app/(admin)/team/actions";
 import { MemberFields } from "@/components/admin/team/member-fields";
 import type { TeamPerson } from "@/data/team";
 import { IDLE_TEAM_FORM } from "@/lib/team/records";
-import { BUTTON_PRIMARY, PANEL } from "@/lib/admin-ui";
+import { PANEL } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export function PersonEditor({ person }: { person: TeamPerson }) {
   const [state, action, pending] = useActionState(
@@ -51,14 +52,16 @@ export function PersonEditor({ person }: { person: TeamPerson }) {
       <MemberFields defaults={defaults} errors={state.fieldErrors} lockEmail />
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <button
+        <Button
+          variant="admin-primary"
+          size="none"
           type="submit"
           disabled={pending}
-          className={cn(BUTTON_PRIMARY, "h-10")}
+          className="h-10"
         >
           {pending ? <Loader2 className="size-4 animate-spin" /> : null}
           Save changes
-        </button>
+        </Button>
 
         {state.status === "success" && state.message && !edited ? (
           <span className="flex items-center gap-1.5 text-[12px] text-[#0b5f2c]">

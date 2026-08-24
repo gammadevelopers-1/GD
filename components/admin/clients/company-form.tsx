@@ -4,9 +4,10 @@ import { useActionState } from "react";
 import { AlertCircle, Check, Loader2 } from "lucide-react";
 import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
 import { type SimpleFormState, IDLE_FORM } from "@/lib/projects/form-state";
-import { BUTTON_PRIMARY, INPUT } from "@/lib/admin-ui";
+import { INPUT } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 export type CompanyAction = (
   state: SimpleFormState,
@@ -80,14 +81,16 @@ export function CompanyForm({
       ) : null}
 
       <div className="flex items-center gap-3">
-        <button
+        <Button
+          variant="admin-primary"
+          size="none"
           type="submit"
           disabled={pending}
-          className={cn(BUTTON_PRIMARY, "h-10")}
+          className="h-10"
         >
           {pending ? <Loader2 className="size-4 animate-spin" /> : null}
           {submitLabel}
-        </button>
+        </Button>
 
         {state.status === "success" && state.message && !onSaved ? (
           <span className="flex items-center gap-1.5 text-[12px] text-[#0b5f2c]">

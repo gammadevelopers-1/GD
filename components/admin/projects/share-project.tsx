@@ -5,8 +5,9 @@ import { AlertCircle, Loader2, Share2 } from "lucide-react";
 import type { ShareState } from "@/app/(admin)/projects/client-actions";
 import { Modal } from "@/components/admin/projects/modal";
 import { Issued } from "@/components/admin/projects/issued-access";
-import { BUTTON_PRIMARY, INPUT } from "@/lib/admin-ui";
+import { INPUT } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const IDLE: ShareState = { status: "idle", message: null };
 
@@ -103,14 +104,16 @@ export function ShareProject({
               </p>
             ) : null}
 
-            <button
+            <Button
+              variant="admin-primary"
+              size="none"
               type="submit"
               disabled={pending}
-              className={cn(BUTTON_PRIMARY, "h-10 w-full")}
+              className="h-10 w-full"
             >
               {pending ? <Loader2 className="size-4 animate-spin" /> : null}
               Create access
-            </button>
+            </Button>
 
             <p className="text-[11.5px] leading-5 text-black/40">
               A password is generated for them. It is shown to you once, on the

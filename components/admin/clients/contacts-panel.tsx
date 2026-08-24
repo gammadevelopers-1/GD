@@ -17,14 +17,9 @@ import {
 } from "@/components/ui/dialog";
 import type { ClientContact } from "@/data/clients";
 import { IDLE_FORM } from "@/lib/projects/form-state";
-import {
-  BUTTON_PRIMARY,
-  BUTTON_SECONDARY,
-  ICON_BUTTON_DANGER,
-  INPUT,
-  PANEL,
-} from "@/lib/admin-ui";
+import { ICON_BUTTON_DANGER, INPUT, PANEL } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export function ContactsPanel({
   clientId,
@@ -92,13 +87,11 @@ function ContactDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button
+        <Button
+          variant="admin-secondary"
+          size="none"
           type="button"
-          className={cn(
-            BUTTON_SECONDARY,
-            "h-8 px-2.5 text-xs",
-            !contact && "h-9 px-3",
-          )}
+          className={cn("h-8 px-2.5 text-xs", !contact && "h-9 px-3")}
         >
           {contact ? (
             "Edit"
@@ -108,7 +101,7 @@ function ContactDialog({
               Add contact
             </>
           )}
-        </button>
+        </Button>
       </DialogTrigger>
 
       <DialogContent className="border-black/[0.08] bg-[#f8f8f3] text-black sm:max-w-lg">
@@ -171,14 +164,16 @@ function ContactDialog({
             </p>
           ) : null}
 
-          <button
+          <Button
+            variant="admin-primary"
+            size="none"
             type="submit"
             disabled={pending}
-            className={cn(BUTTON_PRIMARY, "h-10 w-full")}
+            className="h-10 w-full"
           >
             {pending ? <Loader2 className="size-4 animate-spin" /> : null}
             {contact ? "Save contact" : "Add contact"}
-          </button>
+          </Button>
         </form>
       </DialogContent>
     </Dialog>

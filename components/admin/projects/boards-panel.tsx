@@ -35,15 +35,7 @@ import {
 } from "@/lib/projects/board";
 import { type SimpleFormState, IDLE_FORM } from "@/lib/projects/form-state";
 import { formatDate } from "@/lib/projects/format";
-import {
-  BUTTON_GHOST,
-  BUTTON_PRIMARY,
-  BUTTON_SECONDARY,
-  DASHED_ACTION,
-  FOCUS_RING,
-  ICON_BUTTON,
-  INPUT_SMALL,
-} from "@/lib/admin-ui";
+import { FOCUS_RING, INPUT_SMALL } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 import {
   BlockEditor,
@@ -62,6 +54,7 @@ import {
 import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
 import { FormDatePicker } from "@/components/common/form-date-picker";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 type FormAction = (
   state: SimpleFormState,
@@ -233,11 +226,13 @@ function WeekBoards({
             <form action={organiseAction}>
               <input type="hidden" name="projectId" value={projectId} />
               <input type="hidden" name="weekId" value={week.id} />
-              <button
+              <Button
+                variant="admin-ghost"
+                size="none"
                 type="submit"
                 disabled={organising}
                 title="Suggest an order for this week's ideas"
-                className={cn(BUTTON_GHOST, "h-8")}
+                className="h-8"
               >
                 {organising ? (
                   <Loader2 className="size-3.5 animate-spin" />
@@ -245,7 +240,7 @@ function WeekBoards({
                   <Sparkles className="size-3.5" />
                 )}
                 Suggest order
-              </button>
+              </Button>
             </form>
           ) : null}
           {isOwner ? (
@@ -253,13 +248,14 @@ function WeekBoards({
               <input type="hidden" name="projectId" value={projectId} />
               <input type="hidden" name="weekId" value={week.id} />
               <input type="hidden" name="archived" value="1" />
-              <button
+              <Button
+                variant="admin-icon"
+                size="none"
                 type="submit"
                 aria-label={`Archive week ${week.number}`}
-                className={ICON_BUTTON}
               >
                 <Archive className="size-3.5" />
-              </button>
+              </Button>
             </form>
           ) : null}
         </div>
@@ -573,32 +569,32 @@ export function CardRow({
 
         <div className="flex shrink-0 items-center gap-1">
           {canUpdateStatus ? (
-            <button
+            <Button
+              variant="admin-ghost"
+              size="none"
               type="button"
               onClick={() => move(QUICK_ACTION[status].target)}
               disabled={moving}
               title={`${QUICK_ACTION[status].label} this card`}
-              className={cn(
-                BUTTON_GHOST,
-                "h-7 px-2 text-[11px] disabled:opacity-50",
-              )}
+              className="h-7 px-2 text-[11px] disabled:opacity-50"
             >
               {moving ? <Loader2 className="size-3 animate-spin" /> : null}
               {QUICK_ACTION[status].label}
-            </button>
+            </Button>
           ) : null}
           {canManage ? (
-            <button
+            <Button
+              variant="admin-icon"
+              size="none"
               type="button"
               onClick={() => {
                 setOpen(true);
                 setEditing(true);
               }}
               aria-label={`Edit ${card.title}`}
-              className={ICON_BUTTON}
             >
               <Pencil className="size-3.5" />
-            </button>
+            </Button>
           ) : null}
         </div>
       </div>
@@ -774,12 +770,14 @@ function CardEditor({
       />
 
       <div className="flex flex-wrap items-center gap-2">
-        <button
+        <Button
+          variant="admin-ghost"
+          size="none"
           type="button"
           onClick={() => void draft()}
           disabled={drafting || !title.trim()}
           title="Draft steps and risks for this card"
-          className={cn(BUTTON_GHOST, "h-8 disabled:opacity-40")}
+          className="h-8 disabled:opacity-40"
         >
           {drafting ? (
             <Loader2 className="size-3.5 animate-spin" />
@@ -787,7 +785,7 @@ function CardEditor({
             <Sparkles className="size-3.5" />
           )}
           Draft with AI
-        </button>
+        </Button>
         {draftNote ? (
           <span className="text-[10px] text-black/45">{draftNote}</span>
         ) : null}
@@ -807,16 +805,18 @@ function CardEditor({
       />
 
       <div className="flex justify-end">
-        <button
+        <Button
+          variant="admin-secondary"
+          size="none"
           type="button"
           onClick={() => {
             flush();
             onClose();
           }}
-          className={cn(BUTTON_SECONDARY, "h-8 text-xs")}
+          className="h-8 text-xs"
         >
           Done
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -923,13 +923,15 @@ function StatusControls({
               className="mt-1 w-full resize-none py-2"
             />
           </div>
-          <button
+          <Button
+            variant="admin-secondary"
+            size="none"
             type="submit"
             disabled={moving}
-            className={cn(BUTTON_SECONDARY, "h-8 text-xs")}
+            className="h-8 text-xs"
           >
             Move to {CARD_STATUS_LABEL[reasonTarget].toLowerCase()}
-          </button>
+          </Button>
         </form>
       ) : null}
 
@@ -938,10 +940,12 @@ function StatusControls({
           <input type="hidden" name="projectId" value={projectId} />
           <input type="hidden" name="cardId" value={card.id} />
           <input type="hidden" name="weekId" value={nextWeek.id} />
-          <button
+          <Button
+            variant="admin-secondary"
+            size="none"
             type="submit"
             disabled={carrying}
-            className={cn(BUTTON_SECONDARY, "h-8 text-xs")}
+            className="h-8 text-xs"
           >
             {carrying ? (
               <Loader2 className="size-3.5 animate-spin" />
@@ -949,7 +953,7 @@ function StatusControls({
               <MoveRight className="size-3.5" />
             )}
             Carry into week {nextWeek.number}
-          </button>
+          </Button>
           <span className="text-[10px] text-black/35">
             Keeps the reason it slipped.
           </span>
@@ -982,14 +986,16 @@ export function AddCardForm({
 
   if (!open) {
     return (
-      <button
+      <Button
+        variant="admin-dashed"
+        size="none"
         type="button"
         onClick={() => setOpen(true)}
-        className={cn(DASHED_ACTION, "py-2.5 text-[11px]")}
+        className="py-2.5 text-[11px]"
       >
         <Plus className="size-3.5" />
         Add an idea
-      </button>
+      </Button>
     );
   }
 
@@ -1007,21 +1013,25 @@ export function AddCardForm({
         <p className="text-[11px] font-medium text-red-700">{state.message}</p>
       ) : null}
       <div className="flex justify-end gap-2">
-        <button
+        <Button
+          variant="admin-ghost"
+          size="none"
           type="button"
           onClick={() => setOpen(false)}
-          className={cn(BUTTON_GHOST, "h-8")}
+          className="h-8"
         >
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="admin-primary"
+          size="none"
           type="submit"
           disabled={pending}
-          className={cn(BUTTON_PRIMARY, "h-8 text-xs")}
+          className="h-8 text-xs"
         >
           {pending ? <Loader2 className="size-3.5 animate-spin" /> : null}
           Add
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -1041,14 +1051,15 @@ function AddWeekForm({
 
   if (!open) {
     return (
-      <button
+      <Button
+        variant="admin-dashed"
+        size="none"
         type="button"
         onClick={() => setOpen(true)}
-        className={DASHED_ACTION}
       >
         <CalendarPlus className="size-4" />
         Plan another week
-      </button>
+      </Button>
     );
   }
 
@@ -1089,21 +1100,25 @@ function AddWeekForm({
         <p className="text-[11px] font-medium text-red-700">{state.message}</p>
       ) : null}
       <div className="flex justify-end gap-2">
-        <button
+        <Button
+          variant="admin-ghost"
+          size="none"
           type="button"
           onClick={() => setOpen(false)}
-          className={cn(BUTTON_GHOST, "h-9")}
+          className="h-9"
         >
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="admin-primary"
+          size="none"
           type="submit"
           disabled={pending}
-          className={cn(BUTTON_PRIMARY, "h-9 text-xs")}
+          className="h-9 text-xs"
         >
           {pending ? <Loader2 className="size-4 animate-spin" /> : null}
           Add week
-        </button>
+        </Button>
       </div>
     </form>
   );

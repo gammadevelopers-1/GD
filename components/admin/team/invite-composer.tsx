@@ -10,9 +10,10 @@ import {
 import { CopyButton } from "@/components/admin/projects/issued-access";
 import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
 import { INVITE_LINK_HEADING } from "@/lib/invites/email";
-import { BUTTON_PRIMARY, BUTTON_SECONDARY, INPUT } from "@/lib/admin-ui";
+import { INPUT } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 const IDLE: InviteState = { status: "idle", message: null };
 
@@ -95,10 +96,12 @@ export function InviteComposer({
       ) : null}
 
       <div className="flex flex-wrap gap-2">
-        <button
+        <Button
+          variant="admin-primary"
+          size="none"
           type="submit"
           disabled={pending}
-          className={cn(BUTTON_PRIMARY, "h-10 flex-1")}
+          className="h-10 flex-1"
         >
           {pending ? (
             <Loader2 className="size-4 animate-spin" />
@@ -106,14 +109,16 @@ export function InviteComposer({
             <Send className="size-3.5" />
           )}
           Send invitation
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="admin-secondary"
+          size="none"
           type="button"
           onClick={onDone}
-          className={cn(BUTTON_SECONDARY, "h-10")}
+          className="h-10"
         >
           Later
-        </button>
+        </Button>
       </div>
     </form>
   );

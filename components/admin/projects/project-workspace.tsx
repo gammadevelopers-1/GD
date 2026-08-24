@@ -20,8 +20,8 @@ import type { IdeaEditorHandle } from "@/components/admin/projects/idea-editor";
 import type { SimpleFormState } from "@/lib/projects/form-state";
 import type { IdeaDoc } from "@/lib/projects/idea-doc";
 import type { SuggestionGroup } from "@/lib/projects/suggestions";
-import { BUTTON_PRIMARY, BUTTON_SECONDARY } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 type Mode = "idea" | "work";
 type OrganiseMode = "replace" | "append";
@@ -297,27 +297,33 @@ export function ProjectWorkspace({
                     </p>
 
                     <div className="mt-5 flex flex-wrap justify-end gap-2">
-                      <button
+                      <Button
+                        variant="admin-secondary"
+                        size="none"
                         type="button"
                         onClick={() => setConfirming(false)}
-                        className={cn(BUTTON_SECONDARY, "h-9 px-3.5 text-xs")}
+                        className="h-9 px-3.5 text-xs"
                       >
                         Cancel
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="admin-secondary"
+                        size="none"
                         type="button"
                         onClick={() => void runOrganise("append")}
-                        className={cn(BUTTON_SECONDARY, "h-9 px-3.5 text-xs")}
+                        className="h-9 px-3.5 text-xs"
                       >
                         Append below
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="admin-primary"
+                        size="none"
                         type="button"
                         onClick={() => void runOrganise("replace")}
-                        className={cn(BUTTON_PRIMARY, "h-9 px-3.5 text-xs")}
+                        className="h-9 px-3.5 text-xs"
                       >
                         Replace
-                      </button>
+                      </Button>
                     </div>
                   </Modal>
                 </div>

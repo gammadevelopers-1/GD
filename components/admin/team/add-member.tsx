@@ -10,8 +10,7 @@ import { Modal } from "@/components/admin/projects/modal";
 import { MemberFields } from "@/components/admin/team/member-fields";
 import { InviteComposer } from "@/components/admin/team/invite-composer";
 import { IDLE_TEAM_FORM } from "@/lib/team/records";
-import { BUTTON_PRIMARY } from "@/lib/admin-ui";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const IDLE: CreateTeamState = IDLE_TEAM_FORM;
 
@@ -30,17 +29,19 @@ export function AddMember() {
 
   return (
     <>
-      <button
+      <Button
+        variant="admin-primary"
+        size="none"
         type="button"
         onClick={() => {
           setStage("form");
           setOpen(true);
         }}
-        className={cn(BUTTON_PRIMARY, "h-10")}
+        className="h-10"
       >
         <UserPlus className="size-4" />
         Add team member
-      </button>
+      </Button>
 
       <Modal
         open={open}
@@ -67,14 +68,16 @@ export function AddMember() {
               </p>
             ) : null}
 
-            <button
+            <Button
+              variant="admin-primary"
+              size="none"
               type="submit"
               disabled={pending}
-              className={cn(BUTTON_PRIMARY, "h-10 w-full")}
+              className="h-10 w-full"
             >
               {pending ? <Loader2 className="size-4 animate-spin" /> : null}
               Create account
-            </button>
+            </Button>
           </form>
         )}
       </Modal>

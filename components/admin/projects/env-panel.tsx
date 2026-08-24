@@ -47,10 +47,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ENV_NOTE_MAX } from "@/lib/projects/env";
 import {
-  BUTTON_GHOST,
-  BUTTON_PRIMARY,
   BUTTON_SECONDARY,
-  DASHED_ACTION,
   FOCUS_RING,
   ICON_BUTTON,
   INPUT,
@@ -65,6 +62,7 @@ import {
 import { ConfirmAction, Modal } from "@/components/admin/projects/modal";
 import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 type FormAction = (
   state: SimpleFormState,
@@ -152,32 +150,38 @@ export function EnvPanel({
         </h2>
         {isOwner && options.length ? (
           <div className="flex flex-wrap gap-2">
-            <button
+            <Button
+              variant="admin-secondary"
+              size="none"
               type="button"
               onClick={() => openAdd("import")}
               disabled={!vaultReady}
-              className={cn(BUTTON_SECONDARY, "h-9 text-xs")}
+              className="h-9 text-xs"
             >
               <Upload className="size-3.5" />
               Upload .env
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="admin-secondary"
+              size="none"
               type="button"
               onClick={() => setSharing([])}
-              className={cn(BUTTON_SECONDARY, "h-9 text-xs")}
+              className="h-9 text-xs"
             >
               <Share2 className="size-3.5" />
               Share containers
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="admin-secondary"
+              size="none"
               type="button"
               onClick={() => openAdd("manual")}
               disabled={!vaultReady}
-              className={cn(BUTTON_SECONDARY, "h-9 text-xs")}
+              className="h-9 text-xs"
             >
               <Plus className="size-3.5" />
               Add variable
-            </button>
+            </Button>
           </div>
         ) : null}
       </header>
@@ -313,42 +317,48 @@ function GroupCard({
 
         {isOwner ? (
           <div className="flex shrink-0 flex-wrap items-center gap-1">
-            <button
+            <Button
+              variant="admin-ghost"
+              size="none"
               type="button"
               onClick={() => onAdd("manual")}
               disabled={!vaultReady}
-              className={cn(BUTTON_GHOST, "h-8 disabled:opacity-40")}
+              className="h-8 disabled:opacity-40"
             >
               <Plus className="size-3" />
               Add
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="admin-ghost"
+              size="none"
               type="button"
               onClick={() => onAdd("import")}
               disabled={!vaultReady}
-              className={cn(BUTTON_GHOST, "h-8 disabled:opacity-40")}
+              className="h-8 disabled:opacity-40"
             >
               <Upload className="size-3" />
               Upload
-            </button>
+            </Button>
             {variables.length ? (
-              <button
+              <Button
+                variant="admin-icon"
+                size="none"
                 type="button"
                 onClick={onShare}
                 aria-label={`Share everything in ${group.name}`}
-                className={ICON_BUTTON}
               >
                 <Share2 className="size-3.5" />
-              </button>
+              </Button>
             ) : null}
-            <button
+            <Button
+              variant="admin-icon"
+              size="none"
               type="button"
               onClick={() => setRenaming(true)}
               aria-label={`Rename ${group.name}`}
-              className={ICON_BUTTON}
             >
               <Pencil className="size-3.5" />
-            </button>
+            </Button>
             <DeleteGroupButton
               projectId={projectId}
               group={group}
@@ -459,11 +469,13 @@ function VariableRow({
           ) : null}
 
           {mayCopy ? (
-            <button
+            <Button
+              variant="admin-ghost"
+              size="none"
               type="button"
               onClick={onCopy}
               disabled={copying === "working"}
-              className={cn(BUTTON_GHOST, "h-8")}
+              className="h-8"
             >
               {copying === "working" ? (
                 <Loader2 className="size-3 animate-spin" />
@@ -473,7 +485,7 @@ function VariableRow({
                 <Copy className="size-3" />
               )}
               {copying === "done" ? "Copied" : "Copy value"}
-            </button>
+            </Button>
           ) : (
             <span className="px-2 text-[11px] text-black/55">
               No access to the value
@@ -642,21 +654,25 @@ function EditVariableDialog({
         <Feedback state={state} />
 
         <div className="flex justify-end gap-2 border-t border-black/[0.07] pt-3">
-          <button
+          <Button
+            variant="admin-secondary"
+            size="none"
             type="button"
             onClick={onClose}
-            className={cn(BUTTON_SECONDARY, "h-9 text-xs")}
+            className="h-9 text-xs"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="admin-primary"
+            size="none"
             type="submit"
             disabled={pending}
-            className={cn(BUTTON_PRIMARY, "h-9 text-xs")}
+            className="h-9 text-xs"
           >
             {pending ? <Loader2 className="size-3.5 animate-spin" /> : null}
             Save
-          </button>
+          </Button>
         </div>
       </form>
     </Modal>
@@ -761,14 +777,16 @@ function ShareDialog({
         <Feedback state={state} />
 
         <div className="flex justify-end gap-2">
-          <button
+          <Button
+            variant="admin-primary"
+            size="none"
             type="submit"
             disabled={pending || !available.length}
-            className={cn(BUTTON_PRIMARY, "h-9 text-xs")}
+            className="h-9 text-xs"
           >
             {pending ? <Loader2 className="size-3.5 animate-spin" /> : null}
             Share
-          </button>
+          </Button>
         </div>
       </form>
 
@@ -826,12 +844,14 @@ function GrantRow({
         <input type="hidden" name="projectId" value={projectId} />
         <input type="hidden" name="credentialId" value={credentialId} />
         <input type="hidden" name="profileId" value={grant.profileId} />
-        <button
+        <Button
+          variant="admin-ghost"
+          size="none"
           type="submit"
-          className={cn(BUTTON_GHOST, "h-7 hover:text-red-700")}
+          className="h-7 hover:text-red-700"
         >
           Remove
-        </button>
+        </Button>
       </form>
     </li>
   );
@@ -865,13 +885,15 @@ function DeleteVariableDialog({
         <Feedback state={state} />
 
         <div className="flex justify-end gap-2">
-          <button
+          <Button
+            variant="admin-secondary"
+            size="none"
             type="button"
             onClick={onClose}
-            className={cn(BUTTON_SECONDARY, "h-9")}
+            className="h-9"
           >
             Cancel
-          </button>
+          </Button>
           <button
             type="submit"
             disabled={pending}
@@ -951,21 +973,25 @@ function RenameGroupForm({
         aria-label="Group name"
         className={cn(INPUT_SMALL, "h-8 flex-1")}
       />
-      <button
+      <Button
+        variant="admin-secondary"
+        size="none"
         type="submit"
         disabled={pending}
-        className={cn(BUTTON_SECONDARY, "h-8 text-xs")}
+        className="h-8 text-xs"
       >
         {pending ? <Loader2 className="size-3 animate-spin" /> : null}
         Rename
-      </button>
-      <button
+      </Button>
+      <Button
+        variant="admin-ghost"
+        size="none"
         type="button"
         onClick={onDone}
-        className={cn(BUTTON_GHOST, "h-8")}
+        className="h-8"
       >
         Cancel
-      </button>
+      </Button>
       {state.status === "error" && state.message ? (
         <p role="alert" className="w-full text-[11.5px] text-red-700">
           {state.message}
@@ -989,14 +1015,16 @@ function NewGroupForm({
 
   if (!open) {
     return (
-      <button
+      <Button
+        variant="admin-dashed"
+        size="none"
         type="button"
         onClick={() => setOpen(true)}
-        className={cn(DASHED_ACTION, "py-3 text-[12px]")}
+        className="py-3 text-[12px]"
       >
         <Plus className="size-3.5" />
         New group
-      </button>
+      </Button>
     );
   }
 
@@ -1014,21 +1042,25 @@ function NewGroupForm({
         aria-label="Group name"
         className={cn(INPUT_SMALL, "h-9 flex-1")}
       />
-      <button
+      <Button
+        variant="admin-primary"
+        size="none"
         type="submit"
         disabled={pending}
-        className={cn(BUTTON_PRIMARY, "h-9 text-xs")}
+        className="h-9 text-xs"
       >
         {pending ? <Loader2 className="size-3.5 animate-spin" /> : null}
         Create
-      </button>
-      <button
+      </Button>
+      <Button
+        variant="admin-ghost"
+        size="none"
         type="button"
         onClick={() => setOpen(false)}
-        className={cn(BUTTON_GHOST, "h-9")}
+        className="h-9"
       >
         Cancel
-      </button>
+      </Button>
       {state.status === "error" && state.message ? (
         <p role="alert" className="w-full text-[11.5px] text-red-700">
           {state.message}
@@ -1096,10 +1128,12 @@ function EnvFiles({
               })),
             ]}
           />
-          <button
+          <Button
+            variant="admin-secondary"
+            size="none"
             type="submit"
             disabled={pending}
-            className={cn(BUTTON_SECONDARY, "h-9 text-xs")}
+            className="h-9 text-xs"
           >
             {pending ? (
               <Loader2 className="size-3.5 animate-spin" />
@@ -1107,7 +1141,7 @@ function EnvFiles({
               <Upload className="size-3.5" />
             )}
             Store
-          </button>
+          </Button>
         </div>
         <p className="text-[11.5px] text-black/55">
           A whole file is every secret at once, so it stays owner only and
@@ -1161,10 +1195,12 @@ function EnvFileRow({
       ) : (
         <form action={formAction} className="shrink-0">
           <input type="hidden" name="fileId" value={file.id} />
-          <button
+          <Button
+            variant="admin-ghost"
+            size="none"
             type="submit"
             disabled={pending}
-            className={cn(BUTTON_GHOST, "h-7")}
+            className="h-7"
           >
             {pending ? (
               <Loader2 className="size-3 animate-spin" />
@@ -1172,7 +1208,7 @@ function EnvFileRow({
               <Download className="size-3" />
             )}
             Get link
-          </button>
+          </Button>
         </form>
       )}
 

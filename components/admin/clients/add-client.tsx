@@ -13,14 +13,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { IDLE_FORM } from "@/lib/projects/form-state";
-import {
-  BUTTON_PRIMARY,
-  BUTTON_SECONDARY,
-  ICON_BUTTON,
-  INPUT,
-} from "@/lib/admin-ui";
+import { INPUT } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 const MAX_CONTACTS = 12;
 
@@ -40,10 +36,15 @@ export function AddClient() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button type="button" className={cn(BUTTON_PRIMARY, "h-10")}>
+        <Button
+          variant="admin-primary"
+          size="none"
+          type="button"
+          className="h-10"
+        >
           <Building2 className="size-4" />
           Add client
-        </button>
+        </Button>
       </DialogTrigger>
 
       <DialogContent className="max-h-[85vh] overflow-y-auto border-black/[0.08] bg-[#f8f8f3] text-black sm:max-w-2xl">
@@ -104,16 +105,17 @@ export function AddClient() {
                       : `Contact ${position + 1}`}
                   </span>
                   {rows.length > 1 ? (
-                    <button
+                    <Button
+                      variant="admin-icon"
+                      size="none"
                       type="button"
                       aria-label="Remove this contact"
                       onClick={() =>
                         setRows((was) => was.filter((value) => value !== row))
                       }
-                      className={ICON_BUTTON}
                     >
                       <X className="size-3.5" />
-                    </button>
+                    </Button>
                   ) : null}
                 </div>
 
@@ -131,16 +133,18 @@ export function AddClient() {
             ))}
 
             {rows.length < MAX_CONTACTS ? (
-              <button
+              <Button
+                variant="admin-secondary"
+                size="none"
                 type="button"
                 onClick={() =>
                   setRows((was) => [...was, (was[was.length - 1] ?? 0) + 1])
                 }
-                className={cn(BUTTON_SECONDARY, "h-9 w-full text-xs")}
+                className="h-9 w-full text-xs"
               >
                 <Plus className="size-3.5" />
                 Add another contact
-              </button>
+              </Button>
             ) : null}
           </fieldset>
 
@@ -154,14 +158,16 @@ export function AddClient() {
             </p>
           ) : null}
 
-          <button
+          <Button
+            variant="admin-primary"
+            size="none"
             type="submit"
             disabled={pending}
-            className={cn(BUTTON_PRIMARY, "h-10 w-full")}
+            className="h-10 w-full"
           >
             {pending ? <Loader2 className="size-4 animate-spin" /> : null}
             Add client
-          </button>
+          </Button>
         </form>
       </DialogContent>
     </Dialog>

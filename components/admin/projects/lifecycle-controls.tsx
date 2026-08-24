@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { Archive, RotateCcw } from "lucide-react";
 import { Modal } from "@/components/admin/projects/modal";
-import { BUTTON_DANGER, BUTTON_SECONDARY } from "@/lib/admin-ui";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export function ArchiveControl({
   projectId,
@@ -71,22 +70,26 @@ export function ArchiveControl({
         </p>
 
         <div className="mt-5 flex justify-end gap-2">
-          <button
+          <Button
+            variant="admin-secondary"
+            size="none"
             type="button"
             onClick={() => setConfirming(false)}
-            className={cn(BUTTON_SECONDARY, "h-9 px-3.5 text-xs")}
+            className="h-9 px-3.5 text-xs"
           >
             Keep it
-          </button>
+          </Button>
           <form action={archiveAction}>
             <input type="hidden" name="projectId" value={projectId} />
-            <button
+            <Button
+              variant="admin-danger"
+              size="none"
               type="submit"
-              className={cn(BUTTON_DANGER, "h-9 px-3.5 text-xs")}
+              className="h-9 px-3.5 text-xs"
             >
               <Archive className="size-3.5" />
               Archive project
-            </button>
+            </Button>
           </form>
         </div>
       </Modal>

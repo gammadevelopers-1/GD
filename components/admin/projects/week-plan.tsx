@@ -38,14 +38,10 @@ import {
 import { formatDate } from "@/lib/projects/format";
 import { HIGHLIGHT_YELLOW } from "@/lib/projects/idea-doc";
 import { Modal } from "@/components/admin/projects/modal";
-import {
-  BUTTON_DANGER,
-  BUTTON_SECONDARY,
-  TONE_SOFT,
-  TONE_SOLID,
-} from "@/lib/admin-ui";
+import { TONE_SOFT, TONE_SOLID } from "@/lib/admin-ui";
 import type { SimpleFormState } from "@/lib/projects/form-state";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export function WeekPlan({
   projectId,
@@ -219,14 +215,18 @@ export function WeekPlan({
             </p>
 
             <div className="mt-5 flex justify-end gap-2">
-              <button
+              <Button
+                variant="admin-secondary"
+                size="none"
                 type="button"
                 onClick={() => setUnfinished(null)}
-                className={cn(BUTTON_SECONDARY, "h-9 px-3.5 text-xs")}
+                className="h-9 px-3.5 text-xs"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="admin-danger"
+                size="none"
                 type="button"
                 autoFocus
                 onClick={() => {
@@ -234,11 +234,11 @@ export function WeekPlan({
                   setUnfinished(null);
                   run(() => setComplete(week.id, !week.completedAt));
                 }}
-                className={cn(BUTTON_DANGER, "h-9 px-3.5 text-xs")}
+                className="h-9 px-3.5 text-xs"
               >
                 <Check className="size-3.5" />
                 Mark complete
-              </button>
+              </Button>
             </div>
           </>
         ) : null}
@@ -458,24 +458,28 @@ function WeekRow({
               </p>
 
               <div className="mt-5 flex justify-end gap-2">
-                <button
+                <Button
+                  variant="admin-secondary"
+                  size="none"
                   type="button"
                   onClick={() => setDeleting(false)}
-                  className={cn(BUTTON_SECONDARY, "h-9 px-3.5 text-xs")}
+                  className="h-9 px-3.5 text-xs"
                 >
                   Cancel
-                </button>
+                </Button>
                 <form action={archiveWeek}>
                   <input type="hidden" name="projectId" value={projectId} />
                   <input type="hidden" name="weekId" value={week.id} />
                   <input type="hidden" name="archived" value="1" />
-                  <button
+                  <Button
+                    variant="admin-danger"
+                    size="none"
                     type="submit"
-                    className={cn(BUTTON_DANGER, "h-9 px-3.5 text-xs")}
+                    className="h-9 px-3.5 text-xs"
                   >
                     <Trash2 className="size-3.5" />
                     Delete week
-                  </button>
+                  </Button>
                 </form>
               </div>
             </Modal>

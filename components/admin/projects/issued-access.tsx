@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { Check, Copy } from "lucide-react";
 import type { IssuedAccess } from "@/app/(admin)/projects/client-actions";
-import { BUTTON_SECONDARY, FOCUS_RING } from "@/lib/admin-ui";
+import { FOCUS_RING } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export function Issued({
   issued,
@@ -28,13 +29,15 @@ export function Issued({
         <Field label="Password" value={issued.password} mono />
       </dl>
 
-      <button
+      <Button
+        variant="admin-secondary"
+        size="none"
         type="button"
         onClick={onClose}
-        className={cn(BUTTON_SECONDARY, "mt-3 h-8 text-xs")}
+        className="mt-3 h-8 text-xs"
       >
         I have copied these
-      </button>
+      </Button>
     </div>
   );
 }

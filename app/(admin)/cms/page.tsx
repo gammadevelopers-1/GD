@@ -30,32 +30,32 @@ async function CmsPageList() {
   const pages = await getCmsPages();
   return (
     <>
-        {pages.length ? (
-          <div className="overflow-hidden rounded-[20px] border border-black/[0.07] bg-[#f8f8f3]">
-            {pages.map((page) => (
-              <div
-                key={page.id}
-                className="flex items-center justify-between gap-4 border-b border-black/[0.055] px-5 py-4 last:border-0"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold">{page.title}</p>
-                  <p className="mt-1 truncate font-mono text-[9px] text-black/35">
-                    /{page.slug}
-                  </p>
-                </div>
-                <span className="shrink-0 rounded-full bg-black/[0.045] px-2.5 py-1 text-[9px] font-semibold text-black/45 capitalize">
-                  {page.status}
-                </span>
+      {pages.length ? (
+        <div className="overflow-hidden rounded-[20px] border border-black/[0.07] bg-[#f8f8f3]">
+          {pages.map((page) => (
+            <div
+              key={page.id}
+              className="flex items-center justify-between gap-4 border-b border-black/[0.055] px-5 py-4 last:border-0"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold">{page.title}</p>
+                <p className="mt-1 truncate font-mono text-[9px] text-black/35">
+                  /{page.slug}
+                </p>
               </div>
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            icon={FilePenLine}
-            title="No CMS pages yet"
-            description="The marketing site remains code-driven until the authoring workflow is ready."
-          />
-        )}
+              <span className="shrink-0 rounded-full bg-black/[0.045] px-2.5 py-1 text-[9px] font-semibold text-black/45 capitalize">
+                {page.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          icon={FilePenLine}
+          title="No CMS pages yet"
+          description="The marketing site remains code-driven until the authoring workflow is ready."
+        />
+      )}
     </>
   );
 }

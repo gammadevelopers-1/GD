@@ -23,14 +23,9 @@ import { ConfirmAction, Modal } from "@/components/admin/projects/modal";
 import { FormSelect } from "@/components/common/form-select";
 import type { TeamDocument } from "@/data/team";
 import { IDLE_FORM } from "@/lib/projects/form-state";
-import {
-  BUTTON_PRIMARY,
-  ICON_BUTTON_DANGER,
-  INPUT,
-  INPUT_SMALL,
-  PANEL,
-} from "@/lib/admin-ui";
+import { ICON_BUTTON_DANGER, INPUT, INPUT_SMALL, PANEL } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const TYPE_LABELS: Record<string, string> = {
   contract: "Contract",
@@ -132,10 +127,12 @@ export function DocumentsPanel({
           />
         </label>
 
-        <button
+        <Button
+          variant="admin-primary"
+          size="none"
           type="submit"
           disabled={pending}
-          className={cn(BUTTON_PRIMARY, "h-10")}
+          className="h-10"
         >
           {pending ? (
             <Loader2 className="size-4 animate-spin" />
@@ -143,7 +140,7 @@ export function DocumentsPanel({
             <Paperclip className="size-3.5" />
           )}
           Attach
-        </button>
+        </Button>
       </form>
 
       {state.status === "error" && state.message ? (

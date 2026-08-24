@@ -25,16 +25,11 @@ import {
   CALLOUT_LABEL,
   TEXT_MAX,
 } from "@/lib/projects/blocks";
-import {
-  BUTTON_GHOST,
-  FOCUS_RING,
-  ICON_BUTTON,
-  ICON_BUTTON_DANGER,
-  INPUT_SMALL,
-} from "@/lib/admin-ui";
+import { FOCUS_RING, INPUT_SMALL } from "@/lib/admin-ui";
 import { FormSelect } from "@/components/common/form-select";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 export type CredentialOption = { id: string; name: string };
 
@@ -280,32 +275,37 @@ export function BlockEditor({
             </div>
 
             <div className="flex shrink-0 items-center gap-0.5 opacity-100 transition-opacity sm:opacity-0 sm:group-focus-within/block:opacity-100 sm:group-hover/block:opacity-100">
-              <button
+              <Button
+                variant="admin-icon"
+                size="none"
                 type="button"
                 onClick={() => move(index, -1)}
                 disabled={index === 0}
                 aria-label="Move block up"
-                className={cn(ICON_BUTTON, "disabled:opacity-25")}
+                className="disabled:opacity-25"
               >
                 <ChevronUp className="size-3.5" />
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="admin-icon"
+                size="none"
                 type="button"
                 onClick={() => move(index, 1)}
                 disabled={index === blocks.length - 1}
                 aria-label="Move block down"
-                className={cn(ICON_BUTTON, "disabled:opacity-25")}
+                className="disabled:opacity-25"
               >
                 <ChevronDown className="size-3.5" />
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="admin-icon-danger"
+                size="none"
                 type="button"
                 onClick={() => remove(index)}
                 aria-label="Delete block"
-                className={ICON_BUTTON_DANGER}
               >
                 <Trash2 className="size-3.5" />
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -350,14 +350,16 @@ export function BlockEditor({
           ))}
         </div>
       ) : (
-        <button
+        <Button
+          variant="admin-ghost"
+          size="none"
           type="button"
           onClick={() => setAdding(true)}
-          className={cn(BUTTON_GHOST, "h-8 w-full justify-start px-2")}
+          className="h-8 w-full justify-start px-2"
         >
           <Plus className="size-3.5" />
           {addLabel ?? "Add a block"}
-        </button>
+        </Button>
       )}
 
       {!allowedTypes ? (
@@ -444,7 +446,9 @@ function BlockFields({
                 placeholder="List item"
                 className="text-[13px] text-black/75"
               />
-              <button
+              <Button
+                variant="admin-icon"
+                size="none"
                 type="button"
                 onClick={() =>
                   onChange({
@@ -453,20 +457,22 @@ function BlockFields({
                   })
                 }
                 aria-label="Remove list item"
-                className={cn(ICON_BUTTON, "mt-0.5 size-6")}
+                className="mt-0.5 size-6"
               >
                 <Trash2 className="size-3" />
-              </button>
+              </Button>
             </div>
           ))}
-          <button
+          <Button
+            variant="admin-ghost"
+            size="none"
             type="button"
             onClick={() => onChange({ ...block, items: [...block.items, ""] })}
-            className={cn(BUTTON_GHOST, "h-7 px-2")}
+            className="h-7 px-2"
           >
             <Plus className="size-3" />
             Item
-          </button>
+          </Button>
         </div>
       );
 

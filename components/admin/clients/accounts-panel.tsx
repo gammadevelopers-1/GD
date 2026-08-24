@@ -17,8 +17,9 @@ import {
 import type { ClientAccount } from "@/data/clients";
 import { formatDate } from "@/lib/projects/format";
 import { IDLE_FORM } from "@/lib/projects/form-state";
-import { BUTTON_DANGER, BUTTON_SECONDARY, INPUT, PANEL } from "@/lib/admin-ui";
+import { BUTTON_SECONDARY, INPUT, PANEL } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const CONFIRM_WORD = "confirm";
 
@@ -121,17 +122,19 @@ function AccountRow({
           }}
         />
 
-        <button
+        <Button
+          variant="admin-danger"
+          size="none"
           type="button"
           onClick={() => {
             setTyped("");
             setConfirming(true);
           }}
-          className={cn(BUTTON_DANGER, "h-8 px-2.5 text-xs")}
+          className="h-8 px-2.5 text-xs"
         >
           <Trash2 className="size-3.5" />
           Delete
-        </button>
+        </Button>
       </div>
 
       {removal.status === "error" && removal.message ? (
@@ -182,17 +185,18 @@ function AccountRow({
               />
             </label>
 
-            <button
+            <Button
+              variant="admin-danger"
+              size="none"
               type="submit"
               disabled={!confirmed || removing}
               className={cn(
-                BUTTON_DANGER,
                 "h-10 w-full text-sm disabled:cursor-not-allowed disabled:bg-red-50 disabled:text-red-300 disabled:opacity-100 disabled:shadow-none",
               )}
             >
               {removing ? <Loader2 className="size-4 animate-spin" /> : null}
               Delete permanently
-            </button>
+            </Button>
           </form>
         </DialogContent>
       </Dialog>
