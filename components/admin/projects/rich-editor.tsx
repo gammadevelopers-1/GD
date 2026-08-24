@@ -22,6 +22,7 @@ import {
 } from "@/lib/projects/rich-doc";
 import { FOCUS_RING } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export type RichEditorHandle = {
   appendBlocks: (blocks: Block[]) => void;
@@ -41,7 +42,9 @@ function ToolButton({
   children: React.ReactNode;
 }) {
   return (
-    <button
+    <Button
+      variant="bare"
+      size="none"
       type="button"
       onMouseDown={(event) => event.preventDefault()}
       onClick={onClick}
@@ -58,7 +61,7 @@ function ToolButton({
       )}
     >
       {children}
-    </button>
+    </Button>
   );
 }
 

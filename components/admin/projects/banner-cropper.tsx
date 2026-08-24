@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2, ZoomIn } from "lucide-react";
 import { BANNER_ASPECT, BANNER_OUTPUT_WIDTH } from "@/lib/projects/banner";
 import { BUTTON_PRIMARY, BUTTON_SECONDARY, FOCUS_RING } from "@/lib/admin-ui";
+import { Button } from "@/components/ui/button";
 
 const MAX_ZOOM = 4;
 
@@ -179,7 +180,9 @@ export function BannerCropper({
       aria-label="Crop banner"
       className="fixed inset-0 z-50 grid place-items-center p-4"
     >
-      <button
+      <Button
+        variant="bare"
+        size="none"
         aria-label="Cancel"
         onClick={onCancel}
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -233,15 +236,19 @@ export function BannerCropper({
         </div>
 
         <div className="mt-5 flex justify-end gap-2">
-          <button
+          <Button
+            variant="bare"
+            size="none"
             type="button"
             onClick={onCancel}
             disabled={busy}
             className={`${BUTTON_SECONDARY} h-10`}
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="bare"
+            size="none"
             type="button"
             onClick={save}
             disabled={busy || !image}
@@ -249,7 +256,7 @@ export function BannerCropper({
           >
             {busy ? <Loader2 className="size-4 animate-spin" /> : null}
             Save banner
-          </button>
+          </Button>
         </div>
       </div>
     </div>

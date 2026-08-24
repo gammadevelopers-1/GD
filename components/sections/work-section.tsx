@@ -8,6 +8,7 @@ import { Reveal } from "@/components/common/reveal";
 import { SectionHeading } from "@/components/common/section-heading";
 import { work } from "@/lib/content/home";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export function WorkSection() {
   const [filter, setFilter] = useState<string>("all");
@@ -29,7 +30,9 @@ export function WorkSection() {
         <Reveal delay={0.05} className="mt-7.5">
           <div className="flex flex-wrap gap-2.25">
             {work.filters.map((item) => (
-              <button
+              <Button
+                variant="bare"
+                size="none"
                 key={item.key}
                 type="button"
                 onClick={() => setFilter(item.key)}
@@ -42,7 +45,7 @@ export function WorkSection() {
                 )}
               >
                 {item.label}
-              </button>
+              </Button>
             ))}
           </div>
         </Reveal>

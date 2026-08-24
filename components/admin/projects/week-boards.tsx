@@ -21,6 +21,7 @@ import type { MilestoneWeek } from "@/data/project-detail";
 import type { CredentialOption } from "@/components/admin/projects/block-editor";
 import { IDLE_FORM } from "@/lib/projects/form-state";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export function WeekBoardArea({
   projectId,
@@ -98,7 +99,9 @@ export function WeekBoardArea({
         )}
       />
 
-      <button
+      <Button
+        variant="bare"
+        size="none"
         type="button"
         onClick={() => setShowWork(true)}
         title={`Open week ${week.number} work board`}
@@ -116,7 +119,7 @@ export function WeekBoardArea({
             {undone}
           </span>
         ) : null}
-      </button>
+      </Button>
 
       <div
         inert={!showWork}
@@ -126,7 +129,9 @@ export function WeekBoardArea({
         )}
       >
         <div className="flex shrink-0 items-center gap-2 border-b border-black/[0.07] px-3 py-2">
-          <button
+          <Button
+            variant="bare"
+            size="none"
             type="button"
             onClick={() => setShowWork(false)}
             title="Back to the idea board"
@@ -134,7 +139,7 @@ export function WeekBoardArea({
           >
             <ArrowLeft className="size-3" />
             <span className="hidden sm:inline">Idea Board</span>
-          </button>
+          </Button>
 
           <span className="font-mono text-[10px] tracking-[0.14em] text-black/35 uppercase">
             Week {week.number} work
@@ -144,7 +149,9 @@ export function WeekBoardArea({
             <form action={organiseAction} className="ml-auto">
               <input type="hidden" name="projectId" value={projectId} />
               <input type="hidden" name="weekId" value={week.id} />
-              <button
+              <Button
+                variant="bare"
+                size="none"
                 type="submit"
                 disabled={organising}
                 title="Let AI order this week's ideas"
@@ -156,7 +163,7 @@ export function WeekBoardArea({
                   <Sparkles className="size-3" />
                 )}
                 Organise with AI
-              </button>
+              </Button>
             </form>
           ) : null}
         </div>

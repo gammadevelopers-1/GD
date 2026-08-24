@@ -31,6 +31,7 @@ const buttonVariants = cva(
           "size-7 rounded-lg text-black/35 hover:bg-black/[0.05] hover:text-black active:scale-95 focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none",
         "admin-icon-danger":
           "size-7 rounded-lg text-black/35 hover:bg-red-50 hover:text-red-700 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none",
+        bare: "",
         "admin-dashed":
           "w-full gap-2 rounded-[20px] border border-dashed border-black/12 bg-white/40 px-4 py-4 text-xs font-semibold text-black/50 hover:border-[#2fe85c]/60 hover:bg-[#2fe85c]/[0.06] hover:text-[#08743d] active:scale-[0.995] focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none",
       },

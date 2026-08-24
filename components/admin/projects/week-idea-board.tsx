@@ -24,6 +24,7 @@ import {
   useAttachment,
 } from "@/components/admin/projects/use-attachment";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export type { UploadResult };
 
@@ -146,7 +147,9 @@ export function WeekIdeaBoard({
 
         {attach.input}
 
-        <button
+        <Button
+          variant="bare"
+          size="none"
           type="button"
           onClick={() => onExpandedChange(!expanded)}
           title={expanded ? "Close full screen" : "Open full screen"}
@@ -158,7 +161,7 @@ export function WeekIdeaBoard({
           ) : (
             <Maximize2 className="size-3.5" />
           )}
-        </button>
+        </Button>
       </div>
 
       <div
@@ -181,7 +184,9 @@ export function WeekIdeaBoard({
         />
       </div>
 
-      <button
+      <Button
+        variant="bare"
+        size="none"
         type="button"
         inert={workOpen || undefined}
         onClick={onOpenWork}
@@ -197,7 +202,7 @@ export function WeekIdeaBoard({
             {openTasks}
           </span>
         ) : null}
-      </button>
+      </Button>
 
       {workBoard}
     </div>
@@ -228,13 +233,15 @@ function SaveState({
       <span className="inline-flex items-center gap-1.5 text-[10px] text-red-600">
         <AlertTriangle className="size-3" />
         {state.message ?? "Not saved."}
-        <button
+        <Button
+          variant="bare"
+          size="none"
           type="button"
           onClick={state.flush}
           className="font-semibold underline underline-offset-2"
         >
           Retry
-        </button>
+        </Button>
       </span>
     );
   }

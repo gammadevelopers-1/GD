@@ -101,13 +101,15 @@ export function ConfirmAction({
 
   return (
     <>
-      <button
+      <Button
+        variant="bare"
+        size="none"
         type="button"
         onClick={() => setAsking(true)}
         className={className}
       >
         {label}
-      </button>
+      </Button>
 
       <Modal
         open={asking}

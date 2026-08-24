@@ -79,13 +79,15 @@ export function DocumentsPanel({
               </div>
 
               {document.url ? (
-                <button
+                <Button
+                  variant="bare"
+                  size="none"
                   type="button"
                   onClick={() => setPreview(document)}
                   className={cn(INPUT_SMALL, "h-7 cursor-pointer font-medium")}
                 >
                   Preview
-                </button>
+                </Button>
               ) : null}
 
               <RemoveDocument profileId={profileId} documentId={document.id} />

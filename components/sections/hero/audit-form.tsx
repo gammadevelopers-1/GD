@@ -6,6 +6,7 @@ import { hero } from "@/lib/content/home";
 import { useReducedMotion } from "@/lib/hooks/use-reduced-motion";
 import { useHero } from "./hero-provider";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export function AuditForm() {
   const { phase, status, runAudit } = useHero();
@@ -108,7 +109,9 @@ export function AuditForm() {
               className="text-foreground relative h-11 w-full border-0 bg-transparent text-[15.5px] outline-none disabled:opacity-60"
             />
           </div>
-          <button
+          <Button
+            variant="bare"
+            size="none"
             type="submit"
             disabled={busy}
             data-button-fill
@@ -117,7 +120,7 @@ export function AuditForm() {
             <span className="button-fill-fx__label">
               {busy ? "Analyzing…" : hero.cta}
             </span>
-          </button>
+          </Button>
         </div>
       </form>
 

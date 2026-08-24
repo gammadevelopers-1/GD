@@ -217,7 +217,9 @@ function Cover({ url }: { url: string | null }) {
         ) : null}
 
         {url ? (
-          <button
+          <Button
+            variant="bare"
+            size="none"
             type="button"
             disabled={busy}
             aria-label="Remove cover"
@@ -230,10 +232,12 @@ function Cover({ url }: { url: string | null }) {
             className="grid size-8.5 cursor-pointer place-items-center rounded-lg border border-white/20 bg-black/35 text-white/80 backdrop-blur-sm transition duration-200 hover:border-white/40 hover:bg-black/55 hover:text-white focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none disabled:opacity-50"
           >
             <Trash2 className="size-3.5" />
-          </button>
+          </Button>
         ) : null}
 
-        <button
+        <Button
+          variant="bare"
+          size="none"
           type="button"
           disabled={busy}
           onClick={() => picker.current?.click()}
@@ -245,7 +249,7 @@ function Cover({ url }: { url: string | null }) {
             <ImageUp className="size-3.5" />
           )}
           Edit cover
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -275,7 +279,9 @@ function Portrait({ url, initials }: { url: string | null; initials: string }) {
         />
       </form>
 
-      <button
+      <Button
+        variant="bare"
+        size="none"
         type="button"
         disabled={pending}
         onClick={() => picker.current?.click()}
@@ -305,7 +311,7 @@ function Portrait({ url, initials }: { url: string | null; initials: string }) {
             <Camera className="size-6" />
           )}
         </span>
-      </button>
+      </Button>
 
       {state.status === "error" && state.message ? (
         <p role="alert" className="mt-2 max-w-24 text-[11px] text-red-700">

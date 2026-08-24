@@ -329,7 +329,9 @@ export function BlockEditor({
       {adding ? (
         <div className="grid grid-cols-2 gap-1 rounded-xl border border-black/[0.08] bg-white p-1.5 sm:grid-cols-4">
           {menu.map((entry) => (
-            <button
+            <Button
+              variant="bare"
+              size="none"
               key={entry.type}
               type="button"
               onClick={() => add(entry.type)}
@@ -347,7 +349,7 @@ export function BlockEditor({
                   {entry.hint}
                 </span>
               </span>
-            </button>
+            </Button>
           ))}
         </div>
       ) : (

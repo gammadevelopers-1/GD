@@ -52,6 +52,7 @@ import { FormSelect } from "@/components/common/form-select";
 import { TEXT_COLORS, HIGHLIGHT_COLORS } from "@/lib/projects/idea-doc";
 import type { IdeaDoc } from "@/lib/projects/idea-doc";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export type IdeaEditorHandle = {
   insertAttachment: (attrs: {
@@ -87,7 +88,9 @@ function Tool({
   children: React.ReactNode;
 }) {
   return (
-    <button
+    <Button
+      variant="bare"
+      size="none"
       type="button"
       onMouseDown={(event) => event.preventDefault()}
       onClick={onClick}
@@ -103,7 +106,7 @@ function Tool({
       )}
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
@@ -140,7 +143,9 @@ function Swatches({
 
   return (
     <div ref={holder} className="relative shrink-0">
-      <button
+      <Button
+        variant="bare"
+        size="none"
         type="button"
         onMouseDown={(event) => event.preventDefault()}
         onClick={() => setOpen((value) => !value)}
@@ -162,13 +167,15 @@ function Swatches({
             style={{ background: active ?? "transparent" }}
           />
         </span>
-      </button>
+      </Button>
 
       {open ? (
         <div className="absolute top-full left-0 z-30 mt-1 w-40 rounded-xl border border-black/[0.09] bg-white p-2 shadow-[0_16px_40px_rgba(20,23,26,0.14)]">
           <div className="grid grid-cols-5 gap-1">
             {colors.map((color) => (
-              <button
+              <Button
+                variant="bare"
+                size="none"
                 key={color.value}
                 type="button"
                 onMouseDown={(event) => event.preventDefault()}
@@ -183,7 +190,9 @@ function Swatches({
               />
             ))}
           </div>
-          <button
+          <Button
+            variant="bare"
+            size="none"
             type="button"
             onMouseDown={(event) => event.preventDefault()}
             onClick={() => {
@@ -193,7 +202,7 @@ function Swatches({
             className="mt-2 w-full rounded-md px-2 py-1 text-[11px] font-medium text-black/60 transition hover:bg-black/[0.05] hover:text-black"
           >
             None
-          </button>
+          </Button>
         </div>
       ) : null}
     </div>

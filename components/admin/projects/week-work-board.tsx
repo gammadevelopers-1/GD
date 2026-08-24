@@ -159,7 +159,9 @@ export function WeekWorkBoard({
         )}
       >
         <header className="flex shrink-0 items-center gap-2 bg-[#15181b] px-3 py-2 text-white">
-          <button
+          <Button
+            variant="bare"
+            size="none"
             ref={closeRef}
             type="button"
             onClick={onClose}
@@ -167,7 +169,7 @@ export function WeekWorkBoard({
             className="grid size-7 place-items-center rounded-lg text-white/65 transition hover:bg-white/10 hover:text-white"
           >
             <X className="size-4" />
-          </button>
+          </Button>
           <span className="font-mono text-[10px] tracking-[0.14em] text-[#2fe85c] uppercase">
             Work Board
           </span>
@@ -180,7 +182,9 @@ export function WeekWorkBoard({
 
         {canManage ? (
           <div className="flex shrink-0 items-center gap-2 border-b border-black/[0.07] bg-[#f8f8f3] px-3 py-2">
-            <button
+            <Button
+              variant="bare"
+              size="none"
               type="button"
               onClick={suggest}
               disabled={busy || !hasNotes}
@@ -197,7 +201,7 @@ export function WeekWorkBoard({
                 <Sparkles className="size-3.5" />
               )}
               Organize with AI
-            </button>
+            </Button>
             {!hasNotes ? (
               <span className="text-[10px] text-black/55">
                 Nothing on the idea board yet.
@@ -213,13 +217,15 @@ export function WeekWorkBoard({
           >
             <AlertTriangle className="mt-0.5 size-3 shrink-0" />
             <span className="flex-1">{error}</span>
-            <button
+            <Button
+              variant="bare"
+              size="none"
               type="button"
               onClick={() => setError(null)}
               className="font-semibold underline underline-offset-2"
             >
               Dismiss
-            </button>
+            </Button>
           </p>
         ) : null}
 
@@ -248,14 +254,16 @@ export function WeekWorkBoard({
 
         {canManage ? (
           <div className="shrink-0 border-t border-black/[0.07] bg-[#f8f8f3] px-3 py-2">
-            <button
+            <Button
+              variant="bare"
+              size="none"
               type="button"
               onClick={() => setEditing("new")}
               className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-black/15 text-[11px] font-medium text-black/55 transition hover:border-black/30 hover:text-black"
             >
               <Plus className="size-3.5" />
               Add task
-            </button>
+            </Button>
           </div>
         ) : null}
       </aside>
@@ -328,7 +336,9 @@ function TaskRow({
           : "border-black/[0.07] bg-white focus-within:border-black/20 focus-within:shadow-[0_5px_14px_rgba(20,23,26,0.05)] hover:border-black/20 hover:bg-[#f8faf7] hover:shadow-[0_5px_14px_rgba(20,23,26,0.05)]",
       )}
     >
-      <button
+      <Button
+        variant="bare"
+        size="none"
         type="button"
         onClick={onOpen}
         aria-label={`${canManage ? "Edit" : "View"} details for ${task.title}`}
@@ -337,9 +347,11 @@ function TaskRow({
         <span className="sr-only">
           {canManage ? "Edit" : "View"} details for {task.title}
         </span>
-      </button>
+      </Button>
 
-      <button
+      <Button
+        variant="bare"
+        size="none"
         type="button"
         onClick={toggle}
         disabled={!canTick}
@@ -354,7 +366,7 @@ function TaskRow({
         )}
       >
         {done ? <Check className="size-3" /> : null}
-      </button>
+      </Button>
 
       <span
         aria-hidden
@@ -367,7 +379,9 @@ function TaskRow({
         {task.title}
       </span>
 
-      <button
+      <Button
+        variant="bare"
+        size="none"
         type="button"
         tabIndex={-1}
         aria-hidden
@@ -385,7 +399,7 @@ function TaskRow({
         ) : (
           <FilePlus2 className="size-4" />
         )}
-      </button>
+      </Button>
 
       {failed ? (
         <span role="alert" className="shrink-0 text-[9px] text-red-600">
@@ -675,14 +689,16 @@ function ProposalReview({
           <span className="font-mono text-[10px] text-black/55">
             {chosen.length} of {rows.length}
           </span>
-          <button
+          <Button
+            variant="bare"
+            size="none"
             type="button"
             onClick={onClose}
             aria-label="Close"
             className="ml-auto grid size-7 place-items-center rounded-lg text-black/60 transition hover:bg-black/[0.06] hover:text-black"
           >
             <X className="size-4" />
-          </button>
+          </Button>
         </div>
 
         <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto px-3 py-2.5">
@@ -697,7 +713,9 @@ function ProposalReview({
               )}
             >
               <div className="flex items-start gap-2">
-                <button
+                <Button
+                  variant="bare"
+                  size="none"
                   type="button"
                   role="checkbox"
                   aria-checked={row.keep}
@@ -711,7 +729,7 @@ function ProposalReview({
                   )}
                 >
                   {row.keep ? <Check className="size-3" /> : null}
-                </button>
+                </Button>
 
                 <div className="min-w-0 flex-1">
                   <Input
@@ -762,14 +780,18 @@ function ProposalReview({
               {error}
             </span>
           ) : null}
-          <button
+          <Button
+            variant="bare"
+            size="none"
             type="button"
             onClick={onClose}
             className="ml-auto inline-flex h-8 items-center rounded-lg px-2.5 text-[11px] font-medium text-black/60 transition hover:text-black"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="bare"
+            size="none"
             type="button"
             onClick={submit}
             disabled={pending || !chosen.length}
@@ -777,7 +799,7 @@ function ProposalReview({
           >
             {pending ? <Loader2 className="size-3 animate-spin" /> : null}
             Apply {chosen.length || ""}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

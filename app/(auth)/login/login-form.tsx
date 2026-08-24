@@ -5,6 +5,7 @@ import { ArrowRight, LoaderCircle } from "lucide-react";
 import { PasswordInput } from "@/components/ui/password-input";
 import { login, type LoginState } from "./actions";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const initialState: LoginState = {};
 
@@ -51,7 +52,9 @@ export function LoginForm({ next = "/dashboard" }: { next?: string }) {
         </p>
       ) : null}
 
-      <button
+      <Button
+        variant="bare"
+        size="none"
         type="submit"
         disabled={pending}
         data-button-fill
@@ -65,7 +68,7 @@ export function LoginForm({ next = "/dashboard" }: { next?: string }) {
             <ArrowRight className="relative size-4 transition-transform group-hover:translate-x-0.5" />
           </>
         )}
-      </button>
+      </Button>
     </form>
   );
 }

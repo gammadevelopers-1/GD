@@ -7,6 +7,7 @@ import { testimonials } from "@/lib/content/home";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { useReducedMotion } from "@/lib/hooks/use-reduced-motion";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const AVATARS = [
   "bg-[#2fe85c] text-[#0f1512]",
@@ -179,7 +180,9 @@ export function TestimonialsSection() {
 
             <div className="flex flex-col gap-2">
               {testimonials.items.map((item, i) => (
-                <button
+                <Button
+                  variant="bare"
+                  size="none"
                   key={item.name}
                   type="button"
                   onClick={() => setActive(i)}
@@ -213,7 +216,7 @@ export function TestimonialsSection() {
                       active === i ? "opacity-100" : "opacity-0",
                     )}
                   />
-                </button>
+                </Button>
               ))}
             </div>
           </Reveal>

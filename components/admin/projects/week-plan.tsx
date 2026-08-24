@@ -348,7 +348,9 @@ function WeekRow({
           open ? "bg-white" : "hover:bg-black/[0.02]",
         )}
       >
-        <button
+        <Button
+          variant="bare"
+          size="none"
           type="button"
           onClick={onToggle}
           aria-expanded={open}
@@ -415,10 +417,12 @@ function WeekRow({
                 ? "all done"
                 : "no tasks"}
           </span>
-        </button>
+        </Button>
 
         {canPlan ? (
-          <button
+          <Button
+            variant="bare"
+            size="none"
             type="button"
             onClick={onComplete}
             disabled={pending}
@@ -433,12 +437,14 @@ function WeekRow({
             <span className="hidden sm:inline">
               {complete ? "Reopen" : "Mark complete"}
             </span>
-          </button>
+          </Button>
         ) : null}
 
         {isOwner ? (
           <>
-            <button
+            <Button
+              variant="bare"
+              size="none"
               type="button"
               onClick={() => setDeleting(true)}
               aria-label={`Delete week ${week.number}`}
@@ -446,7 +452,7 @@ function WeekRow({
               className="grid size-7 shrink-0 place-items-center rounded-lg text-black/55 transition hover:bg-black/[0.06] hover:text-red-600"
             >
               <Trash2 className="size-3.5" />
-            </button>
+            </Button>
 
             <Modal
               open={deleting}
@@ -617,7 +623,9 @@ function AddWeek({
 
   return (
     <div className="relative ml-auto">
-      <button
+      <Button
+        variant="bare"
+        size="none"
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
@@ -625,7 +633,7 @@ function AddWeek({
       >
         <Plus className="size-3" />
         Add week
-      </button>
+      </Button>
 
       {open ? (
         <form
@@ -664,21 +672,25 @@ function AddWeek({
             </p>
           ) : null}
           <div className="mt-3 flex gap-1.5">
-            <button
+            <Button
+              variant="bare"
+              size="none"
               type="submit"
               disabled={pending}
               className="inline-flex h-7 items-center gap-1.5 rounded-lg bg-[#15181b] px-2.5 text-[11px] font-semibold text-white transition hover:bg-black disabled:opacity-60"
             >
               {pending ? <Loader2 className="size-3 animate-spin" /> : null}
               Add
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="bare"
+              size="none"
               type="button"
               onClick={() => setOpen(false)}
               className="inline-flex h-7 items-center rounded-lg px-2 text-[11px] font-medium text-black/60 transition hover:text-black"
             >
               Cancel
-            </button>
+            </Button>
           </div>
         </form>
       ) : null}

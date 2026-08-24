@@ -19,6 +19,7 @@ import {
 import type { Inbox, NotificationKind } from "@/data/notifications";
 import { timeAgo } from "@/lib/projects/format";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const ICONS: Record<NotificationKind, typeof Bell> = {
   env_access: KeyRound,
@@ -55,7 +56,9 @@ export function NotificationBell({ inbox }: { inbox: Inbox }) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button
+        <Button
+          variant="bare"
+          size="none"
           type="button"
           aria-label={
             shown.unread
@@ -70,7 +73,7 @@ export function NotificationBell({ inbox }: { inbox: Inbox }) {
               {shown.unread > 9 ? "9+" : shown.unread}
             </span>
           ) : null}
-        </button>
+        </Button>
       </PopoverTrigger>
 
       <PopoverContent align="end" sideOffset={8} className="w-88 p-0">
@@ -79,13 +82,15 @@ export function NotificationBell({ inbox }: { inbox: Inbox }) {
             Notifications
           </span>
           {shown.unread ? (
-            <button
+            <Button
+              variant="bare"
+              size="none"
               type="button"
               onClick={readAll}
               className="cursor-pointer rounded-md text-[11.5px] font-semibold text-[#08743d] transition-colors duration-150 hover:text-[#0b5f2c] focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
             >
               Mark all read
-            </button>
+            </Button>
           ) : null}
         </div>
 
@@ -152,13 +157,15 @@ export function NotificationBell({ inbox }: { inbox: Inbox }) {
                       {row}
                     </Link>
                   ) : (
-                    <button
+                    <Button
+                      variant="bare"
+                      size="none"
                       type="button"
                       onClick={() => readOne(item.id)}
                       className={cn(shared, "cursor-pointer")}
                     >
                       {row}
-                    </button>
+                    </Button>
                   )}
                 </li>
               );

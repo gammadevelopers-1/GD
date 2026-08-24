@@ -174,7 +174,9 @@ export function ProjectWorkspace({
             lead={<BoardName>Idea Board</BoardName>}
             actions={
               suggestions.length ? (
-                <button
+                <Button
+                  variant="bare"
+                  size="none"
                   type="button"
                   onClick={() => setShowSuggestions((value) => !value)}
                   aria-expanded={showSuggestions}
@@ -194,7 +196,7 @@ export function ProjectWorkspace({
                       0,
                     )}
                   </span>
-                </button>
+                </Button>
               ) : null
             }
           />
@@ -205,7 +207,9 @@ export function ProjectWorkspace({
             onClose={() => setShowSuggestions(false)}
           />
 
-          <button
+          <Button
+            variant="bare"
+            size="none"
             type="button"
             onClick={() => goTo("work")}
             title="Open the Work Board"
@@ -215,10 +219,12 @@ export function ProjectWorkspace({
             <span className="text-[11px] font-semibold tracking-[0.04em] [writing-mode:vertical-rl]">
               Work Board
             </span>
-          </button>
+          </Button>
         </div>
 
-        <button
+        <Button
+          variant="bare"
+          size="none"
           type="button"
           tabIndex={-1}
           aria-hidden
@@ -253,7 +259,9 @@ export function ProjectWorkspace({
             editorRef={workHandle}
             lead={
               <div className="flex min-w-0 items-center gap-2">
-                <button
+                <Button
+                  variant="bare"
+                  size="none"
                   type="button"
                   onClick={() => goTo("idea")}
                   title="Back to the Idea Board"
@@ -261,14 +269,16 @@ export function ProjectWorkspace({
                 >
                   <ArrowLeft className="size-3.5" />
                   <span className="hidden sm:inline">Idea Board</span>
-                </button>
+                </Button>
                 <BoardName>Work Board</BoardName>
               </div>
             }
             actions={
               canEdit && aiReady ? (
                 <div className="relative">
-                  <button
+                  <Button
+                    variant="bare"
+                    size="none"
                     type="button"
                     disabled={busy}
                     onClick={() =>
@@ -284,7 +294,7 @@ export function ProjectWorkspace({
                       <Wand2 className="size-3.5" />
                     )}
                     {busy ? "Organising…" : organiseLabel}
-                  </button>
+                  </Button>
 
                   <Modal
                     open={confirming}
@@ -338,13 +348,15 @@ export function ProjectWorkspace({
             >
               <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
               <span className="flex-1">{aiError}</span>
-              <button
+              <Button
+                variant="bare"
+                size="none"
                 type="button"
                 onClick={() => setAiError(null)}
                 className="font-semibold underline underline-offset-2"
               >
                 Dismiss
-              </button>
+              </Button>
             </div>
           ) : null}
         </div>

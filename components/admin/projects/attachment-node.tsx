@@ -10,6 +10,7 @@ import {
 import { Download, FileText, Loader2, Trash2 } from "lucide-react";
 import { formatBytes, mediaKind } from "@/lib/projects/idea-media";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const cache = new Map<string, string>();
 const waiting = new Map<string, Promise<string | null>>();
@@ -86,7 +87,9 @@ function AttachmentView({ node, deleteNode, editor }: NodeViewProps) {
       ref={holder}
     >
       {editable ? (
-        <button
+        <Button
+          variant="bare"
+          size="none"
           type="button"
           onClick={deleteNode}
           aria-label={`Remove ${name}`}
@@ -94,7 +97,7 @@ function AttachmentView({ node, deleteNode, editor }: NodeViewProps) {
           className="absolute top-2 right-2 z-10 grid size-7 place-items-center rounded-lg bg-black/60 text-white opacity-0 transition group-hover/idea:opacity-100 hover:bg-black/80 focus-visible:opacity-100"
         >
           <Trash2 className="size-3.5" />
-        </button>
+        </Button>
       ) : null}
 
       {kind === "image" && !failed ? (

@@ -293,7 +293,9 @@ function GroupCard({
   return (
     <div className="overflow-hidden rounded-2xl border border-black/[0.07] bg-white">
       <header className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
-        <button
+        <Button
+          variant="bare"
+          size="none"
           type="button"
           onClick={() => setOpen((value) => !value)}
           aria-expanded={open}
@@ -314,7 +316,7 @@ function GroupCard({
           <span className="shrink-0 text-[12px] text-black/55">
             {variables.length}
           </span>
-        </button>
+        </Button>
 
         {isOwner ? (
           <div className="flex shrink-0 flex-wrap items-center gap-1">
@@ -623,7 +625,9 @@ function EditVariableDialog({
               placeholder="Leave empty to keep the current value"
               className={cn("h-10 pr-10 font-mono text-xs")}
             />
-            <button
+            <Button
+              variant="bare"
+              size="none"
               type="button"
               onClick={() => setReveal((value) => !value)}
               aria-label={reveal ? "Hide value" : "Show value"}
@@ -637,7 +641,7 @@ function EditVariableDialog({
               ) : (
                 <Eye className="size-3.5" />
               )}
-            </button>
+            </Button>
           </span>
         </label>
 
@@ -898,7 +902,9 @@ function DeleteVariableDialog({
           >
             Cancel
           </Button>
-          <button
+          <Button
+            variant="bare"
+            size="none"
             type="submit"
             disabled={pending}
             className={cn(
@@ -908,7 +914,7 @@ function DeleteVariableDialog({
           >
             {pending ? <Loader2 className="size-4 animate-spin" /> : null}
             Delete
-          </button>
+          </Button>
         </div>
       </form>
     </Modal>

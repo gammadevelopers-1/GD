@@ -36,14 +36,16 @@ export function ShareProject({
 
   return (
     <>
-      <button
+      <Button
+        variant="bare"
+        size="none"
         type="button"
         onClick={() => setOpen(true)}
         className="inline-flex h-9 items-center gap-1.5 rounded-full bg-white/[0.08] px-3.5 text-xs font-semibold text-white transition duration-200 hover:bg-white/[0.16] hover:shadow-[0_8px_20px_rgba(0,0,0,0.25)] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none active:scale-[0.97]"
       >
         <Share2 className="size-3.5" />
         Share project
-      </button>
+      </Button>
 
       <Modal
         open={open}

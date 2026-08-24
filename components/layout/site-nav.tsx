@@ -7,6 +7,7 @@ import { ChevronDown } from "lucide-react";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { navLinks, servicesMenu, site } from "@/lib/content/site";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export function SiteNav() {
   const nav = useRef<HTMLElement>(null);
@@ -100,7 +101,9 @@ export function SiteNav() {
             onMouseEnter={openServices}
             onMouseLeave={closeServices}
           >
-            <button
+            <Button
+              variant="bare"
+              size="none"
               type="button"
               aria-expanded={services}
               onClick={() => setServices((v) => !v)}
@@ -116,7 +119,7 @@ export function SiteNav() {
                   services && "rotate-180",
                 )}
               />
-            </button>
+            </Button>
 
             <div
               className={cn(

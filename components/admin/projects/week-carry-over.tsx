@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { CornerDownRight, Loader2, X } from "lucide-react";
 import type { CarryOver } from "@/lib/projects/carry-over";
 import type { SimpleFormState } from "@/lib/projects/form-state";
+import { Button } from "@/components/ui/button";
 
 export function WeekCarryOver({
   items,
@@ -44,7 +45,9 @@ export function WeekCarryOver({
 
           {canManage ? (
             <>
-              <button
+              <Button
+                variant="bare"
+                size="none"
                 type="button"
                 disabled={pending}
                 onClick={() =>
@@ -60,8 +63,10 @@ export function WeekCarryOver({
                 ) : (
                   "Accept"
                 )}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="bare"
+                size="none"
                 type="button"
                 disabled={pending}
                 aria-label={`Dismiss ${item.title}`}
@@ -73,7 +78,7 @@ export function WeekCarryOver({
                 className="grid size-6 shrink-0 place-items-center rounded-md text-black/55 transition hover:bg-black/[0.06] hover:text-black disabled:opacity-60"
               >
                 <X className="size-3" />
-              </button>
+              </Button>
             </>
           ) : null}
         </li>

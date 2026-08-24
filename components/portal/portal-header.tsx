@@ -8,6 +8,7 @@ import type { Portal } from "@/lib/portal/types";
 import { PROJECT_STATUS_LABEL, isProjectStatus } from "@/lib/projects/status";
 import { bannerFitClass } from "@/lib/projects/banner";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export type PortalMeta = {
   label: string;
@@ -57,12 +58,14 @@ export function PortalTopBar({
               </div>
             </div>
             <form action={signOutClient}>
-              <button
+              <Button
+                variant="bare"
+                size="none"
                 type="submit"
                 className="rounded-xl px-2.5 py-2 text-[11.5px] font-medium text-black/45 transition hover:bg-white/60 hover:text-black focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none"
               >
                 Sign out
-              </button>
+              </Button>
             </form>
           </div>
         ) : preview ? (

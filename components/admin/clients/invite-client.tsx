@@ -43,13 +43,15 @@ export function InviteClient({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button
+        <Button
+          variant="bare"
+          size="none"
           type="button"
           className="inline-flex h-9 items-center gap-1.5 rounded-full bg-white/[0.08] px-3.5 text-xs font-semibold text-white transition duration-200 hover:bg-white/[0.16] hover:shadow-[0_8px_20px_rgba(0,0,0,0.25)] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none active:scale-[0.97]"
         >
           <UserPlus className="size-3.5" />
           Invite client
-        </button>
+        </Button>
       </DialogTrigger>
 
       <DialogContent className="max-h-[85vh] overflow-y-auto border-black/[0.08] bg-[#f8f8f3] text-black sm:max-w-lg">

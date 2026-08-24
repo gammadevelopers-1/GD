@@ -20,6 +20,7 @@ import {
 import { FormSelect } from "@/components/common/form-select";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -152,7 +153,9 @@ export function PortfolioFilters({
         {PROJECT_STATUSES.map((status) => {
           const active = query.statuses.includes(status);
           return (
-            <button
+            <Button
+              variant="bare"
+              size="none"
               key={status}
               type="button"
               aria-pressed={active}
@@ -165,12 +168,14 @@ export function PortfolioFilters({
               )}
             >
               {PROJECT_STATUS_LABEL[status]}
-            </button>
+            </Button>
           );
         })}
 
         {canSeeArchived ? (
-          <button
+          <Button
+            variant="bare"
+            size="none"
             type="button"
             aria-pressed={query.includeArchived}
             onClick={() =>
@@ -185,18 +190,20 @@ export function PortfolioFilters({
           >
             <Archive className="size-3" />
             Archived
-          </button>
+          </Button>
         ) : null}
 
         {filterCount ? (
-          <button
+          <Button
+            variant="bare"
+            size="none"
             type="button"
             onClick={reset}
             className="ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold text-black/50 underline-offset-4 transition hover:text-black hover:underline focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
           >
             <X className="size-3" />
             Reset {filterCount} filter{filterCount === 1 ? "" : "s"}
-          </button>
+          </Button>
         ) : null}
       </div>
     </section>
@@ -249,7 +256,9 @@ function ViewButton({
   onClick: () => void;
 }) {
   return (
-    <button
+    <Button
+      variant="bare"
+      size="none"
       type="button"
       onClick={onClick}
       title={label}
@@ -263,6 +272,6 @@ function ViewButton({
       )}
     >
       <Icon className="size-4" />
-    </button>
+    </Button>
   );
 }

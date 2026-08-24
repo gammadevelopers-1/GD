@@ -6,6 +6,7 @@ import type { SuggestionGroup } from "@/lib/projects/suggestions";
 import { CARD_STATUS_CHIP, CARD_STATUS_LABEL } from "@/lib/projects/board";
 import { formatDate } from "@/lib/projects/format";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export function SuggestionsPanel({
   groups,
@@ -36,14 +37,16 @@ export function SuggestionsPanel({
         <h2 className="text-[12px] font-semibold tracking-[-0.01em]">
           Unfinished work
         </h2>
-        <button
+        <Button
+          variant="bare"
+          size="none"
           type="button"
           onClick={onClose}
           aria-label="Close suggestions"
           className="ml-auto grid size-7 place-items-center rounded-lg text-black/40 transition hover:bg-black/[0.06] hover:text-black"
         >
           <X className="size-3.5" />
-        </button>
+        </Button>
       </div>
 
       <div className="p-4">
@@ -67,7 +70,9 @@ function Earlier({ groups }: { groups: SuggestionGroup[] }) {
 
   return (
     <>
-      <button
+      <Button
+        variant="bare"
+        size="none"
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
@@ -77,7 +82,7 @@ function Earlier({ groups }: { groups: SuggestionGroup[] }) {
           className={cn("size-3 transition", open && "rotate-180")}
         />
         Earlier weeks
-      </button>
+      </Button>
       {open
         ? groups.map((group) => (
             <div key={group.weekNumber} className="mt-3">
@@ -101,7 +106,9 @@ function SuggestionRow({ item }: { item: SuggestionGroup["items"][number] }) {
 
   return (
     <li>
-      <button
+      <Button
+        variant="bare"
+        size="none"
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
@@ -131,7 +138,7 @@ function SuggestionRow({ item }: { item: SuggestionGroup["items"][number] }) {
             </span>
           </span>
         ) : null}
-      </button>
+      </Button>
     </li>
   );
 }

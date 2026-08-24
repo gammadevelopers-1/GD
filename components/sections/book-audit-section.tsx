@@ -7,6 +7,7 @@ import { bookAudit } from "@/lib/content/home";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const MONTHS = [
   "January",
@@ -185,14 +186,16 @@ export function BookAuditSection() {
                       <div className="flex max-h-[230px] flex-col gap-2 overflow-auto">
                         {date
                           ? bookAudit.picker.slots.map((slot) => (
-                              <button
+                              <Button
+                                variant="bare"
+                                size="none"
                                 key={slot}
                                 type="button"
                                 onClick={() => pickTime(slot)}
                                 className="h-10 cursor-pointer rounded-[11px] border border-black/[0.12] bg-white text-[13.5px] font-semibold transition-all duration-150 hover:border-[#2fe85c] hover:text-[#0a7a45] focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
                               >
                                 {slot}
-                              </button>
+                              </Button>
                             ))
                           : null}
                       </div>
@@ -203,14 +206,16 @@ export function BookAuditSection() {
 
               {stage === "form" ? (
                 <form onSubmit={confirm} className="flex flex-col gap-3.5">
-                  <button
+                  <Button
+                    variant="bare"
+                    size="none"
                     type="button"
                     onClick={() => setStage("picker")}
                     className="inline-flex cursor-pointer items-center gap-1.5 self-start rounded-md text-[12.5px] font-semibold text-[#0a7a45] transition-colors hover:text-[#0b5f2c] focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
                   >
                     <ArrowLeft className="size-3.5" />
                     {bookAudit.form.back}
-                  </button>
+                  </Button>
 
                   <div className="flex items-center gap-2.5 rounded-[13px] border border-[rgba(47,232,92,0.28)] bg-[#f2f6f0] px-3.75 py-3.25">
                     <span className="grid size-8.5 shrink-0 place-items-center rounded-[10px] bg-[#0f1512] text-[#2fe85c]">
@@ -268,12 +273,14 @@ export function BookAuditSection() {
                     />
                   </label>
 
-                  <button
+                  <Button
+                    variant="bare"
+                    size="none"
                     type="submit"
                     className="marketing-primary-button h-12 cursor-pointer rounded-xl"
                   >
                     {bookAudit.form.cta}
-                  </button>
+                  </Button>
                 </form>
               ) : null}
 
@@ -289,13 +296,15 @@ export function BookAuditSection() {
                     Your {bookAudit.brief.kind} is set for {when}. A calendar
                     invite and Google Meet link are on their way to your inbox.
                   </p>
-                  <button
+                  <Button
+                    variant="bare"
+                    size="none"
                     type="button"
                     onClick={reset}
                     className="h-10.5 cursor-pointer rounded-[11px] border border-black/[0.12] bg-white px-5 text-[13px] font-semibold transition-all duration-150 hover:border-[#2fe85c] hover:text-[#0a7a45] focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
                   >
                     {bookAudit.done.cta}
-                  </button>
+                  </Button>
                 </div>
               ) : null}
             </div>
@@ -331,7 +340,9 @@ function DayCell({
   const open = day >= today && day.getDay() !== 0;
 
   return (
-    <button
+    <Button
+      variant="bare"
+      size="none"
       type="button"
       disabled={!open}
       onClick={onPick}
@@ -345,7 +356,7 @@ function DayCell({
       )}
     >
       {day.getDate()}
-    </button>
+    </Button>
   );
 }
 
@@ -361,7 +372,9 @@ function MonthStep({
   onClick: () => void;
 }) {
   return (
-    <button
+    <Button
+      variant="bare"
+      size="none"
       type="button"
       aria-label={label}
       disabled={disabled}
@@ -369,7 +382,7 @@ function MonthStep({
       className="grid size-7.5 cursor-pointer place-items-center rounded-[9px] border border-black/[0.1] bg-white text-[#4b5148] transition-all duration-150 hover:border-[#2fe85c] hover:text-[#0a7a45] focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none disabled:cursor-default disabled:opacity-35 disabled:hover:border-black/[0.1] disabled:hover:text-[#4b5148]"
     >
       <ArrowLeft className={cn("size-3.75", forward && "rotate-180")} />
-    </button>
+    </Button>
   );
 }
 

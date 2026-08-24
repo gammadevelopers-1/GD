@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { newsletter } from "@/lib/content/home";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export function NewsletterForm() {
   const [message, setMessage] = useState("");
@@ -29,7 +30,9 @@ export function NewsletterForm() {
             className="w-full border-0 bg-transparent text-[13.5px] text-[#eceae2] outline-none placeholder:text-[#6d736a]"
           />
         </label>
-        <button
+        <Button
+          variant="bare"
+          size="none"
           type="submit"
           aria-label="Subscribe"
           className="grid size-8.5 shrink-0 cursor-pointer place-items-center rounded-lg bg-[#2fe85c] text-[#0f1512] transition-transform duration-200 hover:-translate-y-px focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none"
@@ -48,7 +51,7 @@ export function NewsletterForm() {
               strokeLinejoin="round"
             />
           </svg>
-        </button>
+        </Button>
       </form>
       <p
         aria-live="polite"

@@ -12,6 +12,7 @@ import type { SimpleFormState } from "@/lib/projects/form-state";
 import { formatDate } from "@/lib/projects/format";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 
 export type MilestoneActions = {
   setDone: (
@@ -270,14 +271,16 @@ function WeekNotes({
           Notes
         </h4>
         {canEdit && !writing ? (
-          <button
+          <Button
+            variant="bare"
+            size="none"
             type="button"
             onClick={() => setWriting(true)}
             className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[11.5px] font-medium text-black/45 transition hover:bg-black/[0.045] hover:text-black focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none"
           >
             <PenLine className="size-3.5" />
             Write
-          </button>
+          </Button>
         ) : null}
       </div>
 

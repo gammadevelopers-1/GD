@@ -472,7 +472,9 @@ export function CardRow({
       )}
     >
       <div className="flex items-start gap-2 px-3 py-2.5">
-        <button
+        <Button
+          variant="bare"
+          size="none"
           type="button"
           onClick={() => setOpen((value) => !value)}
           aria-expanded={open}
@@ -488,10 +490,12 @@ export function CardRow({
               open && "rotate-90",
             )}
           />
-        </button>
+        </Button>
 
         <div className="min-w-0 flex-1">
-          <button
+          <Button
+            variant="bare"
+            size="none"
             type="button"
             onClick={() => setOpen((value) => !value)}
             className="flex w-full items-start gap-1.5 text-left"
@@ -513,7 +517,7 @@ export function CardRow({
             >
               {card.title}
             </span>
-          </button>
+          </Button>
 
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
             <span
@@ -859,7 +863,9 @@ function StatusControls({
       <div className="flex flex-wrap items-center gap-1.5">
         <span className="text-[10px] text-black/35">Move to</span>
         {NEXT_STATUSES[status].map((next) => (
-          <button
+          <Button
+            variant="bare"
+            size="none"
             key={next}
             type="button"
             disabled={moving}
@@ -881,7 +887,7 @@ function StatusControls({
             )}
           >
             {CARD_STATUS_LABEL[next]}
-          </button>
+          </Button>
         ))}
         {moving ? (
           <Loader2 className="size-3 animate-spin text-black/35" />

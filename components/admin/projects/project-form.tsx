@@ -17,6 +17,7 @@ import { FormDatePicker } from "@/components/common/form-date-picker";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 type Option = { id: string; name: string };
 
@@ -276,7 +277,9 @@ export function ProjectForm({
         >
           Cancel
         </Link>
-        <button
+        <Button
+          variant="bare"
+          size="none"
           type="submit"
           disabled={pending}
           data-button-fill
@@ -290,7 +293,7 @@ export function ProjectForm({
                 ? "Create project"
                 : "Save changes"}
           </span>
-        </button>
+        </Button>
       </div>
     </form>
   );

@@ -7,6 +7,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { PASSWORD_MIN } from "@/lib/team/records";
 import { setPassword, type SetPasswordState } from "./actions";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const initialState: SetPasswordState = {};
 
@@ -122,7 +123,9 @@ export function SetPasswordForm({
         </p>
       ) : null}
 
-      <button
+      <Button
+        variant="bare"
+        size="none"
         type="submit"
         disabled={pending || !valid}
         data-button-fill
@@ -136,7 +139,7 @@ export function SetPasswordForm({
             <ArrowRight className="relative size-4 transition-transform group-hover:translate-x-0.5" />
           </>
         )}
-      </button>
+      </Button>
     </form>
   );
 }

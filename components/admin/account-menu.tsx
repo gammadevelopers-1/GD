@@ -13,6 +13,7 @@ import {
 import { ROLE_LABELS } from "@/lib/team/records";
 import type { Viewer } from "@/data/auth";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export function AccountMenu({
   viewer,
@@ -30,7 +31,9 @@ export function AccountMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
+        <Button
+          variant="bare"
+          size="none"
           type="button"
           aria-label={`${shown} — account menu`}
           className="cursor-pointer rounded-xl transition duration-200 hover:-translate-y-px focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
@@ -40,7 +43,7 @@ export function AccountMenu({
             url={avatarUrl}
             className="size-9.5 rounded-xl text-[11.5px]"
           />
-        </button>
+        </Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-60">
@@ -84,13 +87,15 @@ export function AccountMenu({
 
         <DropdownMenuItem asChild>
           <form action={logout}>
-            <button
+            <Button
+              variant="bare"
+              size="none"
               type="submit"
               className="flex w-full cursor-default items-center gap-2.5 text-left"
             >
               <LogOut className="size-4" />
               Sign out
-            </button>
+            </Button>
           </form>
         </DropdownMenuItem>
       </DropdownMenuContent>

@@ -297,7 +297,9 @@ export function ImportDialog({
                         aria-label={`Value for ${key || `row ${index + 1}`}`}
                         className={cn("h-8 w-full pr-8 font-mono")}
                       />
-                      <button
+                      <Button
+                        variant="bare"
+                        size="none"
                         type="button"
                         onClick={() =>
                           setReveal(reveal === index ? null : index)
@@ -315,7 +317,7 @@ export function ImportDialog({
                         ) : (
                           <Eye className="size-3.5" />
                         )}
-                      </button>
+                      </Button>
                     </div>
                     <Button
                       variant="admin-icon"
@@ -339,7 +341,9 @@ export function ImportDialog({
                         Already in this group.
                       </span>
                       <span className="flex overflow-hidden rounded-lg border border-black/[0.09]">
-                        <button
+                        <Button
+                          variant="bare"
+                          size="none"
                           type="button"
                           onClick={() => update(index, { replace: false })}
                           className={cn(
@@ -350,8 +354,10 @@ export function ImportDialog({
                           )}
                         >
                           Skip
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="bare"
+                          size="none"
                           type="button"
                           onClick={() => update(index, { replace: true })}
                           className={cn(
@@ -362,7 +368,7 @@ export function ImportDialog({
                           )}
                         >
                           Replace
-                        </button>
+                        </Button>
                       </span>
                     </div>
                   ) : null}
@@ -513,7 +519,9 @@ export function ManualDialog({
                         spellCheck={false}
                         className={cn("h-9 pr-9 font-mono text-xs")}
                       />
-                      <button
+                      <Button
+                        variant="bare"
+                        size="none"
                         type="button"
                         onClick={() =>
                           setReveal(reveal === index ? null : index)
@@ -531,7 +539,7 @@ export function ManualDialog({
                         ) : (
                           <Eye className="size-3.5" />
                         )}
-                      </button>
+                      </Button>
                     </span>
                   </label>
                 </div>

@@ -71,7 +71,9 @@ export function CopyButton({ value, label }: { value: string; label: string }) {
   const [copied, setCopied] = useState(false);
 
   return (
-    <button
+    <Button
+      variant="bare"
+      size="none"
       type="button"
       aria-label={`Copy ${label}`}
       onClick={async () => {
@@ -93,6 +95,6 @@ export function CopyButton({ value, label }: { value: string; label: string }) {
       ) : (
         <Copy className="size-3.5" />
       )}
-    </button>
+    </Button>
   );
 }

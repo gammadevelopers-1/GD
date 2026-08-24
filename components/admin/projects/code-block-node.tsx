@@ -9,6 +9,7 @@ import {
   type NodeViewProps,
 } from "@tiptap/react";
 import { Check, Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 function CodeBlockView({ node }: NodeViewProps) {
   const [copied, setCopied] = useState(false);
@@ -25,7 +26,9 @@ function CodeBlockView({ node }: NodeViewProps) {
 
   return (
     <NodeViewWrapper className="group/code relative">
-      <button
+      <Button
+        variant="bare"
+        size="none"
         type="button"
         onClick={copy}
         contentEditable={false}
@@ -39,7 +42,7 @@ function CodeBlockView({ node }: NodeViewProps) {
           <Copy className="size-3" />
         )}
         {copied ? "Copied" : "Copy"}
-      </button>
+      </Button>
       <pre>
         <NodeViewContent<"code"> as="code" />
       </pre>

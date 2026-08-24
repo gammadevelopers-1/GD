@@ -9,6 +9,7 @@ import {
 import type { IdeaDoc } from "@/lib/projects/idea-doc";
 import type { AutosaveStatus } from "@/components/admin/projects/use-autosave";
 import { formatDate } from "@/lib/projects/format";
+import { Button } from "@/components/ui/button";
 import {
   type UploadAction,
   type UploadResult,
@@ -128,13 +129,15 @@ function SaveState({
       <span className="inline-flex items-center gap-2 text-[11px] text-red-600">
         <AlertTriangle className="size-3.5" />
         {message ?? "Not saved."}
-        <button
+        <Button
+          variant="bare"
+          size="none"
           type="button"
           onClick={onRetry}
           className="rounded font-semibold underline underline-offset-2"
         >
           Retry
-        </button>
+        </Button>
       </span>
     );
   }
