@@ -38,7 +38,7 @@ export function LoginForm({ next = "/dashboard" }: { next?: string }) {
           autoComplete="current-password"
           placeholder="Your password"
           className="focus:border-brand/60 focus:ring-brand/10 h-12 w-full rounded-xl border border-white/10 bg-white/[0.055] px-4 text-[15px] text-white transition outline-none placeholder:text-white/25 focus:ring-4"
-          toggleClassName="text-white/40 hover:text-white focus-visible:ring-brand/45"
+          tone="dark"
           required
         />
       </label>

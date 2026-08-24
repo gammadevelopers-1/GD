@@ -4,8 +4,6 @@ import { useActionState, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
   CheckCircle2,
-  Eye,
-  EyeOff,
   FileUp,
   Loader2,
   Plus,
@@ -26,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 
 export type GroupOption = { id: string; name: string; keys: string[] };
 
@@ -284,40 +283,24 @@ export function ImportDialog({
                     >
                       {key || "(no key)"}
                     </code>
-                    <div className="relative w-40 shrink-0 sm:w-56">
-                      <Input
+                    <div className="w-40 shrink-0 sm:w-56">
+                      <PasswordInput
                         variant="admin-sm"
+                        toggleSize="sm"
+                        revealNoun="value"
                         value={draft.value}
                         onChange={(event) =>
                           update(index, { value: event.target.value })
                         }
-                        type={reveal === index ? "text" : "password"}
+                        visible={reveal === index}
+                        onVisibleChange={(shown) =>
+                          setReveal(shown ? index : null)
+                        }
                         autoComplete="off"
                         spellCheck={false}
                         aria-label={`Value for ${key || `row ${index + 1}`}`}
-                        className={cn("h-8 w-full pr-8 font-mono")}
+                        className={cn("h-8 w-full font-mono")}
                       />
-                      <Button
-                        variant="bare"
-                        size="none"
-                        type="button"
-                        onClick={() =>
-                          setReveal(reveal === index ? null : index)
-                        }
-                        aria-label={
-                          reveal === index ? "Hide value" : "Show value"
-                        }
-                        className={cn(
-                          "absolute top-1/2 right-1.5 -translate-y-1/2 rounded p-1 text-black/55 transition hover:text-black/70",
-                          FOCUS_RING,
-                        )}
-                      >
-                        {reveal === index ? (
-                          <EyeOff className="size-3.5" />
-                        ) : (
-                          <Eye className="size-3.5" />
-                        )}
-                      </Button>
                     </div>
                     <Button
                       variant="admin-icon"
@@ -507,40 +490,22 @@ export function ManualDialog({
                   </label>
                   <label className="block space-y-1">
                     <span className="text-[11px] text-black/60">Value</span>
-                    <span className="relative block">
-                      <Input
-                        variant="admin"
-                        value={draft.value}
-                        onChange={(event) =>
-                          update(index, { value: event.target.value })
-                        }
-                        type={reveal === index ? "text" : "password"}
-                        autoComplete="off"
-                        spellCheck={false}
-                        className={cn("h-9 pr-9 font-mono text-xs")}
-                      />
-                      <Button
-                        variant="bare"
-                        size="none"
-                        type="button"
-                        onClick={() =>
-                          setReveal(reveal === index ? null : index)
-                        }
-                        aria-label={
-                          reveal === index ? "Hide value" : "Show value"
-                        }
-                        className={cn(
-                          "absolute top-1/2 right-2 -translate-y-1/2 rounded p-1 text-black/55 transition hover:text-black/70",
-                          FOCUS_RING,
-                        )}
-                      >
-                        {reveal === index ? (
-                          <EyeOff className="size-3.5" />
-                        ) : (
-                          <Eye className="size-3.5" />
-                        )}
-                      </Button>
-                    </span>
+                    <PasswordInput
+                      variant="admin"
+                      toggleSize="sm"
+                      revealNoun="value"
+                      value={draft.value}
+                      onChange={(event) =>
+                        update(index, { value: event.target.value })
+                      }
+                      visible={reveal === index}
+                      onVisibleChange={(shown) =>
+                        setReveal(shown ? index : null)
+                      }
+                      autoComplete="off"
+                      spellCheck={false}
+                      className={cn("h-9 font-mono text-xs")}
+                    />
                   </label>
                 </div>
 

@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import type { PortalAuthState } from "@/app/(portal)/portal/sign-in/actions";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
 
 const FIELD =
@@ -41,16 +42,28 @@ export function AuthForm({
           <span className="text-[13px] font-medium text-white/70">
             {field.label}
           </span>
-          <Input
-            variant="bare"
-            name={field.name}
-            type={field.type}
-            required
-            autoFocus={index === 0}
-            autoComplete={field.autoComplete}
-            placeholder={field.placeholder}
-            className={FIELD}
-          />
+          {field.type === "password" ? (
+            <PasswordInput
+              name={field.name}
+              tone="dark"
+              required
+              autoFocus={index === 0}
+              autoComplete={field.autoComplete}
+              placeholder={field.placeholder}
+              className={FIELD}
+            />
+          ) : (
+            <Input
+              variant="bare"
+              name={field.name}
+              type={field.type}
+              required
+              autoFocus={index === 0}
+              autoComplete={field.autoComplete}
+              placeholder={field.placeholder}
+              className={FIELD}
+            />
+          )}
         </label>
       ))}
 

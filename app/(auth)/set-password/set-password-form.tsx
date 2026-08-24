@@ -14,7 +14,6 @@ const initialState: SetPasswordState = {};
 const FIELD =
   "h-12 w-full rounded-xl border border-white/10 bg-white/[0.055] px-4 text-[15px] text-white transition outline-none placeholder:text-white/25 focus:border-brand/60 focus:ring-4 focus:ring-brand/10 disabled:cursor-not-allowed disabled:opacity-40";
 
-const TOGGLE = "text-white/40 hover:text-white focus-visible:ring-brand/45";
 
 export function SetPasswordForm({
   token,
@@ -78,7 +77,7 @@ export function SetPasswordForm({
           minLength={PASSWORD_MIN}
           placeholder={`At least ${PASSWORD_MIN} characters`}
           className={FIELD}
-          toggleClassName={TOGGLE}
+          tone="dark"
           value={password}
           onChange={(event) => setPasswordValue(event.target.value)}
           onBlur={() => setTouched((was) => ({ ...was, password: true }))}
@@ -104,7 +103,7 @@ export function SetPasswordForm({
           minLength={PASSWORD_MIN}
           placeholder="Type it again"
           className={FIELD}
-          toggleClassName={TOGGLE}
+          tone="dark"
           value={confirmation}
           onChange={(event) => setConfirmation(event.target.value)}
           onBlur={() => setTouched((was) => ({ ...was, confirmation: true }))}

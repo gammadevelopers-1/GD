@@ -243,7 +243,8 @@ Plus their compound parts — `CardHeader`/`CardContent`/`CardFooter`/
 the full `Sidebar*` family and `useSidebar`.
 
 `password-input` is a repo addition with no official equivalent: it composes
-`Input` with a visibility toggle.
+`Input` with a visibility toggle. See §5.3a — it is mandatory for every masked
+field.
 
 ### 5.2 Button
 
@@ -303,6 +304,29 @@ Variants: `default` (shadcn) · `admin` (the `INPUT` skin) · `admin-sm` (the
 
 Admin screens use `variant="admin"`. Marketing screens that carry their own
 field styling use `variant="bare"`.
+
+### 5.3a PasswordInput — every masked field
+
+`components/ui/password-input.tsx` is the only place a `type="password"` field
+is built. Nothing else in the app may hand-roll an eye toggle; there is no
+official shadcn equivalent, so this repo addition is the single source.
+
+Props beyond `Input`'s:
+
+| Prop | Use |
+| --- | --- |
+| `tone` | `light` (default) · `dark` for the sign-in and set-password panels |
+| `toggleSize` | `default` (w-10) · `sm` (w-8) for dense rows |
+| `visible` + `onVisibleChange` | Controlled reveal. Pass both when a list must show one row at a time |
+| `revealNoun` | The noun in the label — "Show password", "Show value" |
+
+Two things it guarantees that a hand-rolled toggle did not: the right padding
+that reserves the toggle's gutter is merged **after** the caller's `className`,
+so a caller's `px-*` cannot let text run under the icon; and the toggle is a
+real `<button type="button">` with `aria-pressed` and a stated label.
+
+Covers: admin login, set-password (team and client), profile → change password,
+portal sign-in, and both ENV secret-value fields.
 
 ### 5.4 Badge
 

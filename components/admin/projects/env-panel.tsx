@@ -8,8 +8,6 @@ import {
   ChevronRight,
   Copy,
   Download,
-  Eye,
-  EyeOff,
   Loader2,
   MoreHorizontal,
   Pencil,
@@ -64,6 +62,7 @@ import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-succ
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 
 type FormAction = (
   state: SimpleFormState,
@@ -615,34 +614,17 @@ function EditVariableDialog({
           <span className="text-[12px] text-black/60">
             New value <span className="text-black/55">(optional)</span>
           </span>
-          <span className="relative block">
-            <Input
-              variant="admin"
-              name="value"
-              type={reveal ? "text" : "password"}
-              autoComplete="off"
-              spellCheck={false}
-              placeholder="Leave empty to keep the current value"
-              className={cn("h-10 pr-10 font-mono text-xs")}
-            />
-            <Button
-              variant="bare"
-              size="none"
-              type="button"
-              onClick={() => setReveal((value) => !value)}
-              aria-label={reveal ? "Hide value" : "Show value"}
-              className={cn(
-                "absolute top-1/2 right-2 -translate-y-1/2 rounded p-1 text-black/55 transition hover:text-black/70",
-                FOCUS_RING,
-              )}
-            >
-              {reveal ? (
-                <EyeOff className="size-3.5" />
-              ) : (
-                <Eye className="size-3.5" />
-              )}
-            </Button>
-          </span>
+          <PasswordInput
+            variant="admin"
+            name="value"
+            revealNoun="value"
+            visible={reveal}
+            onVisibleChange={setReveal}
+            autoComplete="off"
+            spellCheck={false}
+            placeholder="Leave empty to keep the current value"
+            className={cn("h-10 font-mono text-xs")}
+          />
         </label>
 
         <label className="block space-y-1.5">
