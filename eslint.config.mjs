@@ -11,6 +11,9 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "supabase/.temp/**",
+    "ds-bundle/**",
+    ".design-sync/**",
+    ".ds-sync/**",
   ]),
 ]);
 export default eslintConfig;
