@@ -291,6 +291,11 @@ async function seed() {
   `);
 }
 
+// One psql -c, so this is one transaction: anything left behind fails the
+// app_profiles delete on app_audit_logs_actor_id_fkey and rolls back every
+// other delete with it, which then breaks `npm run test:db`. Clear the audit
+// by actor rather than by event type so a new kind of event cannot reintroduce
+// that.
 async function cleanup() {
   sql(`
     delete from public.app_milestone_cards
@@ -320,6 +325,8 @@ async function cleanup() {
     delete from public.app_employment_private
       where profile_id in ('${ID.owner}', '${ID.assigned}', '${ID.unassigned}', '${ID.finance}');
     delete from public.app_audit_logs where action = 'member.activated';
+    delete from public.app_audit_logs
+      where actor_id in ('${ID.owner}', '${ID.assigned}', '${ID.unassigned}', '${ID.finance}');
     delete from public.app_projects
       where id in ('${ID.projectAssigned}', '${ID.projectOwnerOnly}', '${ID.projectArchived}');
     delete from public.app_clients where id in ('${ID.clientA}', '${ID.clientB}');

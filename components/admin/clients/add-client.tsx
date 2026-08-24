@@ -42,6 +42,7 @@ export function AddClient() {
           type="button"
           data-button-fill
           className="h-10"
+          
         >
           <Plus className="size-4" />
           <span className="button-fill-fx__label">Add client</span>
