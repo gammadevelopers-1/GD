@@ -98,7 +98,7 @@ async function ProfileBody({ viewer }: { viewer: Viewer }) {
         <div className="space-y-4">
           <ProfileEditor profile={profile} />
 
-          <Card className="border-black/[0.07] bg-[#f8f8f3] py-0 shadow-none">
+          <Card className="bg-gd-panel border-black/[0.07] py-0 shadow-none">
             <CardContent className="p-5">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <h2 className="font-mono text-[9px] tracking-[0.16em] text-black/35 uppercase">
@@ -106,7 +106,7 @@ async function ProfileBody({ viewer }: { viewer: Viewer }) {
                 </h2>
                 <Link
                   href="/projects"
-                  className="rounded-md text-[12px] font-semibold text-[#08743d] transition-colors duration-150 hover:text-[#0b5f2c] focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
+                  className="text-gd-green-deep hover:text-gd-green-ink focus-visible:ring-gd-green/40 rounded-md text-[12px] font-semibold transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none"
                 >
                   View all
                 </Link>
@@ -118,9 +118,9 @@ async function ProfileBody({ viewer }: { viewer: Viewer }) {
                     <li key={project.id}>
                       <Link
                         href={`/projects/${project.publicId}`}
-                        className="flex items-center gap-3 rounded-xl border border-black/[0.07] bg-white px-3.5 py-2.5 transition duration-150 hover:translate-x-0.75 hover:border-[#2fe85c]/50 focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
+                        className="hover:border-brand/50 focus-visible:ring-gd-green/40 flex items-center gap-3 rounded-xl border border-black/[0.07] bg-white px-3.5 py-2.5 transition duration-150 hover:translate-x-0.75 focus-visible:ring-2 focus-visible:outline-none"
                       >
-                        <span className="grid size-7.5 shrink-0 place-items-center rounded-lg bg-[#2fe85c]/12 font-mono text-[11px] font-semibold text-[#08743d]">
+                        <span className="bg-brand/12 text-gd-green-deep grid size-7.5 shrink-0 place-items-center rounded-lg font-mono text-[11px] font-semibold">
                           {initials(project.name)}
                         </span>
                         <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-black/80">
@@ -144,7 +144,7 @@ async function ProfileBody({ viewer }: { viewer: Viewer }) {
           </Card>
         </div>
 
-        <Card className="border-black/[0.07] bg-[#f8f8f3] py-0 shadow-none">
+        <Card className="bg-gd-panel border-black/[0.07] py-0 shadow-none">
           <CardContent className="p-5">
             <h2 className="mb-4 font-mono text-[9px] tracking-[0.16em] text-black/35 uppercase">
               Your record
@@ -226,7 +226,7 @@ async function ProfileBody({ viewer }: { viewer: Viewer }) {
                           href={document.url}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex shrink-0 items-center gap-1.5 rounded-md text-[12px] font-semibold text-black/55 transition-colors duration-150 hover:text-[#08743d] focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
+                          className="hover:text-gd-green-deep focus-visible:ring-gd-green/40 inline-flex shrink-0 items-center gap-1.5 rounded-md text-[12px] font-semibold text-black/55 transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none"
                         >
                           Open
                           <ExternalLink className="size-3" />
@@ -250,7 +250,7 @@ async function ProfileBody({ viewer }: { viewer: Viewer }) {
 
 function Cell({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-white px-4 py-3 transition-colors duration-150 hover:bg-[#f8f8f3]">
+    <div className="hover:bg-gd-panel bg-white px-4 py-3 transition-colors duration-150">
       <dt className="text-[11px] text-black/42">{label}</dt>
       <dd className="mt-0.75 truncate text-[13px] font-medium text-black/80">
         {value}

@@ -17,7 +17,7 @@ export function ProfileEditor({ profile }: { profile: MyProfile }) {
   const [state, action, pending] = useActionState(saveMyProfile, IDLE_FORM);
 
   return (
-    <Card className="border-black/[0.07] bg-[#f8f8f3] py-0 shadow-none">
+    <Card className="bg-gd-panel border-black/[0.07] py-0 shadow-none">
       <CardContent className="p-5">
         <h2 className="mb-4 font-mono text-[9px] tracking-[0.16em] text-black/35 uppercase">
           Edit details
@@ -60,7 +60,7 @@ export function ProfileEditor({ profile }: { profile: MyProfile }) {
             </Button>
 
             {state.status === "success" && state.message ? (
-              <span className="flex items-center gap-1.5 text-[12px] text-[#0b5f2c]">
+              <span className="text-gd-green-ink flex items-center gap-1.5 text-[12px]">
                 <Check className="size-3.5" />
                 {state.message}
               </span>

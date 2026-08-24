@@ -85,6 +85,8 @@ Both accept `asChild` for composition and expose `buttonVariants` / `badgeVarian
 
 `FOCUS_RING` `FOCUS_RING_DARK` `PANEL` `CARD_HOVER` `ROW_HOVER` `ICON_BUTTON` `ICON_BUTTON_DANGER` `BUTTON_PRIMARY` `BUTTON_SECONDARY` `BUTTON_GHOST` `BUTTON_DANGER` `INPUT` `INPUT_SMALL` `REVEAL_ON_HOVER` `DASHED_ACTION` + the four `TONE_*` maps.
 
+The `BUTTON_*`, `ICON_BUTTON*` and `DASHED_ACTION` strings are also carried as `Button` variants (`admin-primary`, `admin-secondary`, `admin-ghost`, `admin-danger`, `admin-icon`, `admin-icon-danger`, `admin-dashed`), and `INPUT`/`INPUT_SMALL` as `Input`/`Textarea` variants (`admin`, `admin-sm`). Prefer the variant on a control; keep the constant for a non-control element that needs the same skin.
+
 Reach for these when a shadcn primitive doesn't fit the density, or when matching an existing admin screen. Compose with `cn()` from `@/lib/utils`.
 
 ### 3. Global classes in `app/globals.css`

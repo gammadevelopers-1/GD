@@ -483,7 +483,7 @@ function VariableRow({
               {copying === "working" ? (
                 <Loader2 className="size-3 animate-spin" />
               ) : copying === "done" ? (
-                <Check className="size-3 text-[#08743d]" />
+                <Check className="text-gd-green-deep size-3" />
               ) : (
                 <Copy className="size-3" />
               )}
@@ -758,7 +758,7 @@ function ShareDialog({
                 className={cn(
                   "flex cursor-pointer items-start gap-2.5 rounded-xl border px-3 py-2.5 transition",
                   access === level
-                    ? "border-[#16a34a]/40 bg-[#16a34a]/[0.06]"
+                    ? "border-gd-green/40 bg-gd-green/[0.06]"
                     : "border-black/[0.08] bg-white hover:border-black/20",
                 )}
               >
@@ -767,7 +767,7 @@ function ShareDialog({
                   name="accessChoice"
                   checked={access === level}
                   onChange={() => setAccess(level)}
-                  className={cn("mt-0.5 size-3.5 accent-[#16a34a]", FOCUS_RING)}
+                  className={cn("accent-gd-green mt-0.5 size-3.5", FOCUS_RING)}
                 />
                 <span className="min-w-0">
                   <span className="block text-[13px] font-medium">
@@ -1267,7 +1267,7 @@ function Feedback({ state }: { state: SimpleFormState }) {
       role={state.status === "error" ? "alert" : "status"}
       className={cn(
         "flex items-center gap-1.5 text-[12px] font-medium",
-        state.status === "success" ? "text-[#08743d]" : "text-red-700",
+        state.status === "success" ? "text-gd-green-deep" : "text-red-700",
       )}
     >
       {state.status === "success" ? (

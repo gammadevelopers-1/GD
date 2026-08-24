@@ -13,7 +13,7 @@ export default function DashboardLoading() {
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={index}
-            className="rounded-[20px] border border-black/[0.07] bg-[#f8f8f3] p-5"
+            className="bg-gd-panel rounded-[20px] border border-black/[0.07] p-5"
           >
             <Shimmer className="h-2 w-20" />
             <Shimmer className="mt-4 h-7 w-24 rounded-lg" />

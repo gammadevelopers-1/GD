@@ -32,7 +32,7 @@ export function PortalTeam({ team }: { team: PortalPerson[] }) {
                   className="size-10 shrink-0 rounded-full object-cover"
                 />
               ) : (
-                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#15181b] text-[11px] font-semibold text-[#2fe85c]">
+                <span className="bg-gd-panel-dark text-brand grid size-10 shrink-0 place-items-center rounded-full text-[11px] font-semibold">
                   {initials(person.name)}
                 </span>
               )}

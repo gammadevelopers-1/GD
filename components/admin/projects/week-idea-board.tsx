@@ -191,14 +191,14 @@ export function WeekIdeaBoard({
         inert={workOpen || undefined}
         onClick={onOpenWork}
         title="Open the Work Board"
-        className="group absolute top-1/2 right-0 z-10 flex -translate-y-1/2 items-center gap-2 rounded-l-xl bg-[#15181b] py-4 pr-2 pl-2 text-white shadow-[0_10px_30px_rgba(20,23,26,0.2)] transition hover:pr-3 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/60 focus-visible:outline-none"
+        className="group bg-gd-panel-dark focus-visible:ring-brand/60 absolute top-1/2 right-0 z-10 flex -translate-y-1/2 items-center gap-2 rounded-l-xl py-4 pr-2 pl-2 text-white shadow-[0_10px_30px_rgba(20,23,26,0.2)] transition hover:pr-3 focus-visible:ring-2 focus-visible:outline-none"
       >
-        <ChevronLeft className="size-3.5 shrink-0 text-[#2fe85c] transition group-hover:-translate-x-0.5" />
+        <ChevronLeft className="text-brand size-3.5 shrink-0 transition group-hover:-translate-x-0.5" />
         <span className="text-[11px] font-semibold tracking-[0.04em] [writing-mode:vertical-rl]">
           Work Board
         </span>
         {openTasks ? (
-          <span className="rounded-full bg-[#2fe85c]/20 px-1 py-0.5 font-mono text-[9px] text-[#2fe85c]">
+          <span className="bg-brand/20 text-brand rounded-full px-1 py-0.5 font-mono text-[9px]">
             {openTasks}
           </span>
         ) : null}
@@ -256,7 +256,7 @@ function SaveState({
   if (state.status === "saved") {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] text-black/55">
-        <Check className="size-2.5 text-[#0f7a37]" />
+        <Check className="text-gd-green-edge size-2.5" />
         Saved
       </span>
     );

@@ -65,7 +65,7 @@ export function ProjectForm({
           className={cn(
             "flex items-start gap-2.5 rounded-xl border px-4 py-3 text-sm",
             state.status === "success"
-              ? "border-[#2fe85c]/30 bg-[#2fe85c]/10 text-[#08743d]"
+              ? "border-brand/30 bg-brand/10 text-gd-green-deep"
               : "border-red-200 bg-red-50 text-red-700",
           )}
         >
@@ -189,10 +189,10 @@ export function ProjectForm({
           />
         </Field>
 
-        <div className="rounded-2xl border border-black/[0.08] bg-[#15181b] p-4 sm:col-span-2 sm:p-5">
+        <div className="bg-gd-panel-dark rounded-2xl border border-black/[0.08] p-4 sm:col-span-2 sm:p-5">
           <div className="flex items-center gap-2">
-            <Lock className="size-3.5 text-[#69ee88]" />
-            <p className="font-mono text-[9px] tracking-[0.14em] text-[#69ee88] uppercase">
+            <Lock className="text-gd-mint-bright size-3.5" />
+            <p className="text-gd-mint-bright font-mono text-[9px] tracking-[0.14em] uppercase">
               Owner only
             </p>
           </div>
@@ -273,7 +273,7 @@ export function ProjectForm({
       <div className="flex flex-col-reverse gap-3 border-t border-black/[0.06] pt-5 sm:flex-row sm:justify-end">
         <Link
           href={cancelHref}
-          className="inline-flex h-11 items-center justify-center rounded-xl px-4 text-sm font-medium text-black/45 transition duration-150 hover:bg-black/[0.045] hover:text-black/75 focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
+          className="focus-visible:ring-gd-green/40 inline-flex h-11 items-center justify-center rounded-xl px-4 text-sm font-medium text-black/45 transition duration-150 hover:bg-black/[0.045] hover:text-black/75 focus-visible:ring-2 focus-visible:outline-none"
         >
           Cancel
         </Link>
@@ -283,7 +283,7 @@ export function ProjectForm({
           type="submit"
           disabled={pending}
           data-button-fill
-          className="button-fill-fx button-fill-fx--lift inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#15181b] px-5 text-sm font-semibold text-white transition [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512] disabled:opacity-60"
+          className="button-fill-fx button-fill-fx--lift bg-gd-panel-dark inline-flex h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512] disabled:opacity-60"
         >
           {pending ? <Loader2 className="size-4 animate-spin" /> : null}
           <span className="button-fill-fx__label">
@@ -301,14 +301,14 @@ export function ProjectForm({
 
 function inputClass(hasError: boolean) {
   return cn(
-    "h-11 w-full rounded-xl border bg-white px-3 text-sm outline-none transition duration-150 hover:border-black/20 focus:border-[#16a34a] focus-visible:ring-2 focus-visible:ring-[#16a34a]/20",
+    "h-11 w-full rounded-xl border bg-white px-3 text-sm outline-none transition duration-150 hover:border-black/20 focus:border-gd-green focus-visible:ring-2 focus-visible:ring-gd-green/20",
     hasError ? "border-red-300 bg-red-50/40" : "border-black/[0.09]",
   );
 }
 
 function darkInputClass(hasError: boolean) {
   return cn(
-    "h-11 w-full rounded-xl border bg-white/[0.06] px-3 text-sm text-white outline-none transition duration-150 hover:border-white/25 focus:border-[#2fe85c]/60 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/20",
+    "h-11 w-full rounded-xl border bg-white/[0.06] px-3 text-sm text-white outline-none transition duration-150 hover:border-white/25 focus:border-brand/60 focus-visible:ring-2 focus-visible:ring-brand/20",
     hasError ? "border-red-400/60 bg-red-500/10" : "border-white/[0.09]",
   );
 }

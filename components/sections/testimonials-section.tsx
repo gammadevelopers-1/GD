@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 const AVATARS = [
-  "bg-[#2fe85c] text-[#0f1512]",
+  "bg-brand text-[#0f1512]",
   "bg-[#0a7a45] text-white",
   "bg-[#10b981] text-[#0f1512]",
   "bg-[#047857] text-white",
@@ -188,7 +188,7 @@ export function TestimonialsSection() {
                   onClick={() => setActive(i)}
                   aria-pressed={active === i}
                   className={cn(
-                    "flex cursor-pointer items-center gap-3.25 rounded-[14px] border px-3.75 py-3.25 text-left transition-all duration-250 hover:translate-x-1.25 hover:border-[rgba(47,232,92,0.45)] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none",
+                    "focus-visible:ring-brand/50 flex cursor-pointer items-center gap-3.25 rounded-[14px] border px-3.75 py-3.25 text-left transition-all duration-250 hover:translate-x-1.25 hover:border-[rgba(47,232,92,0.45)] focus-visible:ring-2 focus-visible:outline-none",
                     active === i
                       ? "border-[rgba(47,232,92,0.35)] bg-[rgba(47,232,92,0.10)]"
                       : "border-white/[0.08] bg-transparent",

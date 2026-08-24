@@ -106,16 +106,16 @@ export function WeekBoardArea({
         onClick={() => setShowWork(true)}
         title={`Open week ${week.number} work board`}
         className={cn(
-          "group absolute top-1/2 right-0 z-20 flex -translate-y-1/2 items-center gap-1.5 rounded-l-xl bg-[#15181b] py-3.5 pr-2 pl-1.5 text-white shadow-[0_10px_30px_rgba(20,23,26,0.18)] transition hover:pr-3 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/60 focus-visible:outline-none",
+          "group bg-gd-panel-dark focus-visible:ring-brand/60 absolute top-1/2 right-0 z-20 flex -translate-y-1/2 items-center gap-1.5 rounded-l-xl py-3.5 pr-2 pl-1.5 text-white shadow-[0_10px_30px_rgba(20,23,26,0.18)] transition hover:pr-3 focus-visible:ring-2 focus-visible:outline-none",
           showWork && "pointer-events-none opacity-0",
         )}
       >
-        <ChevronLeft className="size-3 shrink-0 text-[#2fe85c] transition group-hover:-translate-x-0.5" />
+        <ChevronLeft className="text-brand size-3 shrink-0 transition group-hover:-translate-x-0.5" />
         <span className="text-[10px] font-semibold tracking-[0.04em] [writing-mode:vertical-rl]">
           Work Board
         </span>
         {undone ? (
-          <span className="rounded-full bg-[#2fe85c]/20 px-1 py-0.5 font-mono text-[9px] text-[#2fe85c]">
+          <span className="bg-brand/20 text-brand rounded-full px-1 py-0.5 font-mono text-[9px]">
             {undone}
           </span>
         ) : null}
@@ -155,7 +155,7 @@ export function WeekBoardArea({
                 type="submit"
                 disabled={organising}
                 title="Let AI order this week's ideas"
-                className="inline-flex h-7 items-center gap-1.5 rounded-lg bg-[#15181b] px-2.5 text-[11px] font-semibold text-[#2fe85c] transition hover:bg-black disabled:opacity-60"
+                className="bg-gd-panel-dark text-brand inline-flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-semibold transition hover:bg-black disabled:opacity-60"
               >
                 {organising ? (
                   <Loader2 className="size-3 animate-spin" />
@@ -173,7 +173,7 @@ export function WeekBoardArea({
             className={cn(
               "flex shrink-0 items-center gap-1.5 border-b border-black/[0.06] px-3 py-1.5 text-[11px]",
               organise.status === "success"
-                ? "bg-[#2fe85c]/[0.06] text-[#08743d]"
+                ? "bg-brand/[0.06] text-gd-green-deep"
                 : "bg-red-50 text-red-700",
             )}
           >

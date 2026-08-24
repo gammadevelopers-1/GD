@@ -79,7 +79,7 @@ export function PortfolioResults({
           isOwner ? (
             <Link
               href="/projects/new"
-              className="inline-flex h-10 items-center gap-2 rounded-xl bg-[#15181b] px-4 text-xs font-semibold text-white transition hover:bg-black"
+              className="bg-gd-panel-dark inline-flex h-10 items-center gap-2 rounded-xl px-4 text-xs font-semibold text-white transition hover:bg-black"
             >
               <Plus className="size-3.5" />
               Create the first project
@@ -193,7 +193,7 @@ function ProjectCard({
   return (
     <Link
       href={`/projects/${project.publicId}`}
-      className="edge-lit card-surface card-lift group flex flex-col overflow-hidden rounded-2xl border border-black/[0.06] hover:border-[#2fe85c]/40 focus-visible:ring-2 focus-visible:ring-[#16a34a] focus-visible:outline-none"
+      className="edge-lit card-surface card-lift group hover:border-brand/40 focus-visible:ring-gd-green flex flex-col overflow-hidden rounded-2xl border border-black/[0.06] focus-visible:ring-2 focus-visible:outline-none"
     >
       <CardBanner project={project} />
 
@@ -218,12 +218,12 @@ function ProjectCard({
               </span>
             ) : null}
             {project.bannerUrl ? (
-              <h3 className="mt-1 truncate text-[17px] leading-tight font-semibold tracking-[-0.035em] transition-colors group-hover:text-[#08743d]">
+              <h3 className="group-hover:text-gd-green-deep mt-1 truncate text-[17px] leading-tight font-semibold tracking-[-0.035em] transition-colors">
                 {project.name}
               </h3>
             ) : null}
           </div>
-          <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-black/[0.035] text-black/25 transition-colors duration-300 group-hover:bg-[#2fe85c]/15 group-hover:text-[#08743d]">
+          <span className="group-hover:bg-brand/15 group-hover:text-gd-green-deep grid size-7 shrink-0 place-items-center rounded-lg bg-black/[0.035] text-black/25 transition-colors duration-300">
             <ArrowUpRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </span>
         </div>
@@ -333,7 +333,7 @@ function CardBanner({ project }: { project: PortfolioProject }) {
 
   return (
     <div className="panel-dark relative flex h-24 shrink-0 items-center justify-center overflow-hidden px-5">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#2fe85c]/40 to-transparent" />
+      <div className="via-brand/40 pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent" />
       <h3 className="font-display line-clamp-2 text-center text-[17px] leading-snug font-semibold tracking-[-0.035em] text-white">
         {project.name}
       </h3>
@@ -377,7 +377,7 @@ function ProjectRow({
     <Link
       href={`/projects/${project.publicId}`}
       className={cn(
-        "group grid items-center gap-4 px-5 py-3 transition-colors duration-200 hover:bg-[#2fe85c]/[0.05] focus-visible:ring-2 focus-visible:ring-[#16a34a] focus-visible:outline-none",
+        "group hover:bg-brand/[0.05] focus-visible:ring-gd-green grid items-center gap-4 px-5 py-3 transition-colors duration-200 focus-visible:ring-2 focus-visible:outline-none",
         isOwner
           ? "grid-cols-[minmax(0,2.4fr)_repeat(4,minmax(0,1fr))_minmax(0,0.9fr)]"
           : "grid-cols-[minmax(0,2.4fr)_repeat(4,minmax(0,1fr))]",
@@ -387,7 +387,7 @@ function ProjectRow({
         <RowBanner project={project} />
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <p className="truncate text-[13px] font-semibold tracking-[-0.02em] transition-colors group-hover:text-[#08743d]">
+            <p className="group-hover:text-gd-green-deep truncate text-[13px] font-semibold tracking-[-0.02em] transition-colors">
               {project.name}
             </p>
             {project.isArchived ? (
@@ -474,7 +474,7 @@ function Avatar({ name }: { name: string | null }) {
   }
 
   return (
-    <span className="grid size-6 shrink-0 place-items-center rounded-full bg-[#15181b] text-[9px] font-semibold text-[#2fe85c]">
+    <span className="bg-gd-panel-dark text-brand grid size-6 shrink-0 place-items-center rounded-full text-[9px] font-semibold">
       {initials(name)}
     </span>
   );
@@ -522,7 +522,7 @@ function Stat({
             ? "bg-red-500/10 text-red-600"
             : tone === "warning"
               ? "bg-amber-400/15 text-amber-600"
-              : "bg-[#2fe85c]/12 text-[#08743d]",
+              : "bg-brand/12 text-gd-green-deep",
         )}
       >
         <Icon className="size-[18px]" />

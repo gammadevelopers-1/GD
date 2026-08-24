@@ -10,7 +10,7 @@ const LABELS: Record<ClientAccountState, string> = {
 };
 
 const TONES: Record<ClientAccountState, string> = {
-  active: "border-[#0f7a37]/30 bg-[#16a34a]/14 text-[#0b5f2c]",
+  active: "border-gd-green-edge/30 bg-gd-green/14 text-gd-green-ink",
   invited: "border-blue-800/25 bg-blue-600/12 text-blue-900",
   created: "border-black/10 bg-black/[0.04] text-black/60",
   archived: "border-amber-700/30 bg-amber-500/20 text-amber-900",

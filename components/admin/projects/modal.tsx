@@ -39,7 +39,7 @@ export function Modal({
         showCloseButton={false}
         overlayClassName="bg-black/35 backdrop-blur-none supports-backdrop-filter:backdrop-blur-none"
         className={cn(
-          "gap-0 overflow-hidden rounded-[20px] border border-black/[0.08] bg-[#f8f8f3] p-0 text-black shadow-[0_30px_80px_rgba(20,23,26,0.22)] ring-0",
+          "bg-gd-panel gap-0 overflow-hidden rounded-[20px] border border-black/[0.08] p-0 text-black shadow-[0_30px_80px_rgba(20,23,26,0.22)] ring-0",
           size === "lg"
             ? "w-[min(calc(100vw-2rem),48rem)] max-w-[min(calc(100vw-2rem),48rem)]"
             : "w-[min(calc(100vw-2rem),32rem)] max-w-[min(calc(100vw-2rem),32rem)]",

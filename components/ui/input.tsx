@@ -11,9 +11,9 @@ const inputVariants = cva(
         default:
           "border-input file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 disabled:bg-input/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 h-8 rounded-lg border bg-transparent px-2.5 py-1 text-base transition-colors file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-3 aria-invalid:ring-3 md:text-sm",
         admin:
-          "rounded-xl border border-black/[0.09] bg-white px-3 text-sm transition duration-150 placeholder:text-black/30 hover:border-black/20 focus:border-[#16a34a] focus-visible:ring-2 focus-visible:ring-[#16a34a]/20",
+          "rounded-xl border border-black/[0.09] bg-white px-3 text-sm transition duration-150 placeholder:text-black/30 hover:border-black/20 focus:border-gd-green focus-visible:ring-2 focus-visible:ring-gd-green/20",
         "admin-sm":
-          "rounded-lg border border-black/[0.09] bg-white px-2.5 text-xs transition duration-150 placeholder:text-black/30 hover:border-black/20 focus:border-[#16a34a] focus-visible:ring-2 focus-visible:ring-[#16a34a]/20",
+          "rounded-lg border border-black/[0.09] bg-white px-2.5 text-xs transition duration-150 placeholder:text-black/30 hover:border-black/20 focus:border-gd-green focus-visible:ring-2 focus-visible:ring-gd-green/20",
         bare: "",
       },
     },

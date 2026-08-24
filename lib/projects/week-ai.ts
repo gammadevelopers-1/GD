@@ -17,8 +17,7 @@ export type ProposedTask = {
 };
 
 export type ProposalResult =
-  | { ok: true; tasks: ProposedTask[] }
-  | { ok: false; reason: string };
+  { ok: true; tasks: ProposedTask[] } | { ok: false; reason: string };
 
 export function weekAiConfigured() {
   return Boolean(process.env.OPENAI_API_KEY?.trim());
@@ -135,7 +134,9 @@ function similar(a: string, b: string) {
   if (left.includes(right) || right.includes(left)) return true;
 
   const leftWords = new Set(left.split(" ").filter((word) => word.length > 3));
-  const rightWords = new Set(right.split(" ").filter((word) => word.length > 3));
+  const rightWords = new Set(
+    right.split(" ").filter((word) => word.length > 3),
+  );
   if (!leftWords.size || !rightWords.size) return false;
 
   let shared = 0;
@@ -241,10 +242,7 @@ export async function proposeWeekTasks(
           .slice(0, 6)
       : [];
 
-    if (
-      !existingId &&
-      existing.some((task) => similar(task.title, title))
-    ) {
+    if (!existingId && existing.some((task) => similar(task.title, title))) {
       continue;
     }
 

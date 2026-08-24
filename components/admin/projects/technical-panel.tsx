@@ -194,7 +194,7 @@ function ValueRow({
               variant="outline"
               size="sm"
               onClick={onAdd}
-              className="border-dashed bg-white text-[12px] text-black/65 hover:border-[#16a34a]/40 hover:bg-[#16a34a]/[0.06] hover:text-[#08743d]"
+              className="hover:border-gd-green/40 hover:bg-gd-green/[0.06] hover:text-gd-green-deep border-dashed bg-white text-[12px] text-black/65"
             >
               <Plus data-icon="inline-start" className="size-3.5" />
               Add
@@ -209,7 +209,7 @@ function ValueRow({
               target="_blank"
               rel="noreferrer noopener"
               className={cn(
-                "flex min-w-0 items-center gap-2 rounded px-1 text-[13px] font-semibold text-[#08743d] hover:underline",
+                "text-gd-green-deep flex min-w-0 items-center gap-2 rounded px-1 text-[13px] font-semibold hover:underline",
                 FOCUS_RING,
               )}
             >
@@ -255,7 +255,7 @@ function CopyButton({ value, label }: { value: string; label: string }) {
       className="shrink-0 bg-white text-black/60 shadow-sm hover:border-black/20 hover:text-black"
     >
       {copied ? (
-        <Check className="size-3 text-[#08743d]" />
+        <Check className="text-gd-green-deep size-3" />
       ) : (
         <Copy className="size-3" />
       )}
@@ -348,7 +348,7 @@ function TechnicalForm({
         <p
           className={cn(
             "mt-4 flex items-start gap-1.5 text-[12px]",
-            state.status === "success" ? "text-[#08743d]" : "text-red-700",
+            state.status === "success" ? "text-gd-green-deep" : "text-red-700",
           )}
           role={state.status === "error" ? "alert" : "status"}
         >

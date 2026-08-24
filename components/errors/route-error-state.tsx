@@ -95,7 +95,7 @@ export function RouteErrorState({
                     size="none"
                     type="button"
                     onClick={reset}
-                    className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#2fe85c] px-6 text-sm font-semibold text-[#0d1510] shadow-[0_12px_34px_rgba(47,232,92,0.18)] transition duration-300 outline-none hover:shadow-[0_18px_42px_rgba(47,232,92,0.3)] focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b0e10] sm:w-auto"
+                    className="bg-brand inline-flex h-12 w-full items-center justify-center gap-2 rounded-full px-6 text-sm font-semibold text-[#0d1510] shadow-[0_12px_34px_rgba(47,232,92,0.18)] transition duration-300 outline-none hover:shadow-[0_18px_42px_rgba(47,232,92,0.3)] focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b0e10] sm:w-auto"
                   >
                     Try again
                   </Button>
@@ -103,7 +103,7 @@ export function RouteErrorState({
                 <Link
                   href={state.primaryHref}
                   data-button-fill
-                  className="button-fill-fx button-fill-fx--lift group relative inline-flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-full bg-[#2fe85c] px-6 text-sm font-semibold text-[#0d1510] shadow-[0_12px_34px_rgba(47,232,92,0.18)] transition duration-300 outline-none hover:shadow-[0_18px_42px_rgba(47,232,92,0.3)] focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b0e10] sm:w-auto"
+                  className="button-fill-fx button-fill-fx--lift group bg-brand relative inline-flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-full px-6 text-sm font-semibold text-[#0d1510] shadow-[0_12px_34px_rgba(47,232,92,0.18)] transition duration-300 outline-none hover:shadow-[0_18px_42px_rgba(47,232,92,0.3)] focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b0e10] sm:w-auto"
                 >
                   <span className="button-fill-fx__label">
                     {state.primaryLabel}
@@ -115,7 +115,7 @@ export function RouteErrorState({
                   <Link
                     href={state.secondaryHref}
                     data-button-fill
-                    className="button-fill-fx button-fill-fx--lift group inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-white/12 bg-white/[0.045] px-6 text-sm font-medium text-white/65 transition duration-300 outline-none [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512] hover:border-transparent focus-visible:ring-2 focus-visible:ring-[#2fe85c] focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b0e10] sm:w-auto"
+                    className="button-fill-fx button-fill-fx--lift group focus-visible:ring-brand inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-white/12 bg-white/[0.045] px-6 text-sm font-medium text-white/65 transition duration-300 outline-none [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512] hover:border-transparent focus-visible:ring-2 focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b0e10] sm:w-auto"
                   >
                     <span className="button-fill-fx__label">
                       {state.secondaryLabel}

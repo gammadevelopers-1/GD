@@ -114,7 +114,7 @@ function GrantRow({
             />
             <span
               aria-hidden
-              className="h-[18px] w-8 rounded-full bg-black/[0.13] transition-colors duration-200 peer-checked:bg-[#16a34a] peer-focus-visible:ring-2 peer-focus-visible:ring-[#16a34a]/30 peer-disabled:opacity-50"
+              className="peer-checked:bg-gd-green peer-focus-visible:ring-gd-green/30 h-[18px] w-8 rounded-full bg-black/[0.13] transition-colors duration-200 peer-focus-visible:ring-2 peer-disabled:opacity-50"
             />
             <span
               aria-hidden

@@ -1,8 +1,7 @@
 export type LinkBaseFailure = "unconfigured" | "untrusted-host";
 
 export type LinkBase =
-  | { ok: true; origin: string }
-  | { ok: false; reason: LinkBaseFailure };
+  { ok: true; origin: string } | { ok: false; reason: LinkBaseFailure };
 
 export type LinkBaseInput = {
   host: string | null;
@@ -110,7 +109,8 @@ export function decideLinkBase(input: LinkBaseInput): LinkBase {
   if (fallback && !isLocalOrigin(fallback)) {
     return { ok: true, origin: fallback };
   }
-  if (deployed && allowed.size === 0) return { ok: false, reason: "unconfigured" };
+  if (deployed && allowed.size === 0)
+    return { ok: false, reason: "unconfigured" };
 
   return { ok: false, reason: host ? "untrusted-host" : "unconfigured" };
 }

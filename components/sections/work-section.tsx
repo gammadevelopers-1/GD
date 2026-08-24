@@ -38,7 +38,7 @@ export function WorkSection() {
                 onClick={() => setFilter(item.key)}
                 aria-pressed={filter === item.key}
                 className={cn(
-                  "cursor-pointer rounded-full border px-4.25 py-2.25 text-[13px] font-semibold whitespace-nowrap transition-all duration-250 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none",
+                  "focus-visible:ring-brand/50 cursor-pointer rounded-full border px-4.25 py-2.25 text-[13px] font-semibold whitespace-nowrap transition-all duration-250 focus-visible:ring-2 focus-visible:outline-none",
                   filter === item.key
                     ? "border-[#14171a] bg-[#14171a] text-white"
                     : "text-muted-foreground border-black/12 bg-white hover:border-[rgba(47,232,92,0.6)] hover:text-[#059669]",
@@ -56,7 +56,7 @@ export function WorkSection() {
               <Reveal key={item.title} delay={i * 0.05} className="h-full">
                 <Link
                   href="/contact"
-                  className="card-surface card-lift group/case flex h-full flex-col overflow-hidden rounded-[20px] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none"
+                  className="card-surface card-lift group/case focus-visible:ring-brand/50 flex h-full flex-col overflow-hidden rounded-[20px] focus-visible:ring-2 focus-visible:outline-none"
                 >
                   <div className="relative h-38 overflow-hidden bg-[#0d1013]">
                     <Image

@@ -566,8 +566,8 @@ function BlockFields({
 
     case "credential":
       return (
-        <div className="flex items-center gap-2.5 rounded-xl border border-[#2fe85c]/30 bg-[#2fe85c]/[0.06] px-3 py-2.5">
-          <KeyRound className="size-4 shrink-0 text-[#08743d]" />
+        <div className="border-brand/30 bg-brand/[0.06] flex items-center gap-2.5 rounded-xl border px-3 py-2.5">
+          <KeyRound className="text-gd-green-deep size-4 shrink-0" />
           <FormSelect
             value={block.credentialId}
             onValueChange={(value) => {
@@ -610,7 +610,7 @@ function BlockFields({
 function calloutClass(tone: CalloutTone) {
   if (tone === "warn") return "border-amber-200 bg-amber-50 text-amber-900";
   if (tone === "key")
-    return "border-[#2fe85c]/35 bg-[#2fe85c]/[0.08] text-[#08743d]";
+    return "border-brand/35 bg-brand/[0.08] text-gd-green-deep";
   return "border-black/[0.08] bg-black/[0.025] text-black/70";
 }
 

@@ -47,7 +47,7 @@ export function AddClient() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-h-[85vh] overflow-y-auto border-black/[0.08] bg-[#f8f8f3] text-black sm:max-w-2xl">
+      <DialogContent className="bg-gd-panel max-h-[85vh] overflow-y-auto border-black/[0.08] text-black sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-[15px] tracking-[-0.025em]">
             Add a client

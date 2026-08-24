@@ -133,7 +133,7 @@ export function WeekPlan({
   }
 
   return (
-    <section className="flex flex-col rounded-[20px] border border-black/[0.07] bg-[#f8f8f3]">
+    <section className="bg-gd-panel flex flex-col rounded-[20px] border border-black/[0.07]">
       <div className="flex shrink-0 items-center gap-3 rounded-t-[20px] border-b border-black/[0.07] bg-[#eef0e9] px-4 py-3 sm:px-6">
         <span className="text-[11px] font-semibold tracking-[0.16em] text-black/55 uppercase">
           Weeks
@@ -407,7 +407,7 @@ function WeekRow({
               undone
                 ? TONE_SOFT.warning
                 : week.workCards.length
-                  ? "text-[#0b5f2c]"
+                  ? "text-gd-green-ink"
                   : "text-black/55",
             )}
           >
@@ -430,7 +430,7 @@ function WeekRow({
               "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-semibold transition disabled:opacity-60",
               complete
                 ? "border border-black/[0.12] text-black/60 hover:border-black/30 hover:text-black"
-                : "bg-[#15181b] text-[#2fe85c] hover:bg-black",
+                : "bg-gd-panel-dark text-brand hover:bg-black",
             )}
           >
             <Check className="size-3" />
@@ -498,7 +498,7 @@ function WeekRow({
           <div
             className={cn(
               "h-full transition-[width] duration-300 motion-reduce:transition-none",
-              undone ? "bg-[#2fe85c]" : "bg-[#16a34a]",
+              undone ? "bg-brand" : "bg-gd-green",
             )}
             style={{
               width: `${Math.round(((week.workCards.length - undone) / week.workCards.length) * 100)}%`,
@@ -677,7 +677,7 @@ function AddWeek({
               size="none"
               type="submit"
               disabled={pending}
-              className="inline-flex h-7 items-center gap-1.5 rounded-lg bg-[#15181b] px-2.5 text-[11px] font-semibold text-white transition hover:bg-black disabled:opacity-60"
+              className="bg-gd-panel-dark inline-flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-semibold text-white transition hover:bg-black disabled:opacity-60"
             >
               {pending ? <Loader2 className="size-3 animate-spin" /> : null}
               Add

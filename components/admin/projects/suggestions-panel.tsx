@@ -26,14 +26,14 @@ export function SuggestionsPanel({
       inert={!open}
       aria-label="Unfinished work"
       className={cn(
-        "absolute inset-y-0 right-0 z-30 w-full max-w-80 overflow-y-auto border-l border-black/[0.09] bg-[#f8f8f3] transition-transform duration-300 ease-out motion-reduce:transition-none",
+        "bg-gd-panel absolute inset-y-0 right-0 z-30 w-full max-w-80 overflow-y-auto border-l border-black/[0.09] transition-transform duration-300 ease-out motion-reduce:transition-none",
         open
           ? "translate-x-0 shadow-[-18px_0_40px_rgba(20,23,26,0.08)]"
           : "translate-x-full",
       )}
     >
-      <div className="sticky top-0 flex items-center gap-2 border-b border-black/[0.07] bg-[#f8f8f3] px-4 py-2.5">
-        <Sparkles className="size-3.5 text-[#08743d]" />
+      <div className="bg-gd-panel sticky top-0 flex items-center gap-2 border-b border-black/[0.07] px-4 py-2.5">
+        <Sparkles className="text-gd-green-deep size-3.5" />
         <h2 className="text-[12px] font-semibold tracking-[-0.01em]">
           Unfinished work
         </h2>

@@ -158,7 +158,7 @@ export function WeekWorkBoard({
           open ? "translate-x-0" : "pointer-events-none translate-x-full",
         )}
       >
-        <header className="flex shrink-0 items-center gap-2 bg-[#15181b] px-3 py-2 text-white">
+        <header className="bg-gd-panel-dark flex shrink-0 items-center gap-2 px-3 py-2 text-white">
           <Button
             variant="bare"
             size="none"
@@ -170,7 +170,7 @@ export function WeekWorkBoard({
           >
             <X className="size-4" />
           </Button>
-          <span className="font-mono text-[10px] tracking-[0.14em] text-[#2fe85c] uppercase">
+          <span className="text-brand font-mono text-[10px] tracking-[0.14em] uppercase">
             Work Board
           </span>
           <span className="ml-auto min-w-0 truncate text-right text-[10px] text-white/65">
@@ -181,7 +181,7 @@ export function WeekWorkBoard({
         </header>
 
         {canManage ? (
-          <div className="flex shrink-0 items-center gap-2 border-b border-black/[0.07] bg-[#f8f8f3] px-3 py-2">
+          <div className="bg-gd-panel flex shrink-0 items-center gap-2 border-b border-black/[0.07] px-3 py-2">
             <Button
               variant="bare"
               size="none"
@@ -193,7 +193,7 @@ export function WeekWorkBoard({
                   ? "Read the idea board and suggest tasks"
                   : "Write something on the idea board first"
               }
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#15181b] px-3 text-[11px] font-semibold text-[#2fe85c] transition hover:bg-black disabled:opacity-45"
+              className="bg-gd-panel-dark text-brand inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-[11px] font-semibold transition hover:bg-black disabled:opacity-45"
             >
               {busy ? (
                 <Loader2 className="size-3.5 animate-spin" />
@@ -253,7 +253,7 @@ export function WeekWorkBoard({
         </div>
 
         {canManage ? (
-          <div className="shrink-0 border-t border-black/[0.07] bg-[#f8f8f3] px-3 py-2">
+          <div className="bg-gd-panel shrink-0 border-t border-black/[0.07] px-3 py-2">
             <Button
               variant="bare"
               size="none"
@@ -342,7 +342,7 @@ function TaskRow({
         type="button"
         onClick={onOpen}
         aria-label={`${canManage ? "Edit" : "View"} details for ${task.title}`}
-        className="absolute inset-0 z-0 cursor-pointer rounded-xl focus-visible:ring-2 focus-visible:ring-[#16a34a]/45 focus-visible:ring-offset-1 focus-visible:outline-none"
+        className="focus-visible:ring-gd-green/45 absolute inset-0 z-0 cursor-pointer rounded-xl focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none"
       >
         <span className="sr-only">
           {canManage ? "Edit" : "View"} details for {task.title}
@@ -359,9 +359,9 @@ function TaskRow({
         aria-checked={done}
         aria-label={done ? `Untick ${task.title}` : `Tick ${task.title}`}
         className={cn(
-          "relative z-10 grid size-5 shrink-0 cursor-pointer place-items-center rounded-md border bg-white transition focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none disabled:cursor-default disabled:opacity-40",
+          "focus-visible:ring-gd-green/40 relative z-10 grid size-5 shrink-0 cursor-pointer place-items-center rounded-md border bg-white transition focus-visible:ring-2 focus-visible:outline-none disabled:cursor-default disabled:opacity-40",
           done
-            ? "border-[#16a34a] bg-[#16a34a] text-white"
+            ? "border-gd-green bg-gd-green text-white"
             : "border-black/20 hover:border-black/45",
         )}
       >
@@ -390,7 +390,7 @@ function TaskRow({
         className={cn(
           "relative z-10 grid size-8 shrink-0 cursor-pointer place-items-center rounded-lg border shadow-sm transition duration-150 active:scale-95",
           hasDetail
-            ? "border-[#16a34a]/35 bg-[#16a34a]/10 text-[#0b5f2c] group-hover:border-[#16a34a]/45 hover:border-[#16a34a]/60 hover:bg-[#16a34a]/20"
+            ? "border-gd-green/35 bg-gd-green/10 text-gd-green-ink group-hover:border-gd-green/45 hover:border-gd-green/60 hover:bg-gd-green/20"
             : "border-dashed border-black/30 bg-white text-black/60 group-hover:border-black/40 hover:border-black/55 hover:bg-black/[0.04] hover:text-black",
         )}
       >
@@ -532,17 +532,17 @@ function TaskEditor({
         overlayClassName="z-60 bg-black/35 supports-backdrop-filter:backdrop-blur-[2px]"
         className="z-60 flex h-[min(84dvh,680px)] w-[calc(100%-1.5rem)] max-w-2xl flex-col gap-0 overflow-hidden rounded-2xl border border-white/10 bg-white p-0 shadow-[0_28px_80px_rgba(0,0,0,0.28)]"
       >
-        <div className="flex shrink-0 items-center gap-2 bg-[#15181b] px-3 py-2 text-white">
+        <div className="bg-gd-panel-dark flex shrink-0 items-center gap-2 px-3 py-2 text-white">
           <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
             aria-label="Close"
-            className="text-white/70 hover:bg-white/10 hover:text-white focus-visible:ring-[#2fe85c]/55"
+            className="focus-visible:ring-brand/55 text-white/70 hover:bg-white/10 hover:text-white"
           >
             <ArrowLeft className="size-4" />
           </Button>
-          <DialogTitle className="font-mono text-[10px] font-semibold tracking-[0.14em] text-[#2fe85c] uppercase">
+          <DialogTitle className="text-brand font-mono text-[10px] font-semibold tracking-[0.14em] uppercase">
             {title}
           </DialogTitle>
           <DialogDescription className="sr-only">
@@ -684,7 +684,7 @@ function ProposalReview({
         className="flex h-[min(80vh,640px)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-black/[0.09] bg-white shadow-lg"
       >
         <div className="flex shrink-0 items-center gap-2 border-b border-black/[0.07] px-3 py-2">
-          <Sparkles className="size-3.5 text-[#08743d]" />
+          <Sparkles className="text-gd-green-deep size-3.5" />
           <span className="text-[12px] font-semibold">Suggested tasks</span>
           <span className="font-mono text-[10px] text-black/55">
             {chosen.length} of {rows.length}
@@ -724,7 +724,7 @@ function ProposalReview({
                   className={cn(
                     "mt-1 grid size-4 shrink-0 place-items-center rounded border transition",
                     row.keep
-                      ? "border-[#16a34a] bg-[#16a34a] text-white"
+                      ? "border-gd-green bg-gd-green text-white"
                       : "border-black/20 hover:border-black/45",
                   )}
                 >
@@ -764,7 +764,7 @@ function ProposalReview({
                     "shrink-0 rounded-full border px-1.5 py-0.5 text-[9px] font-semibold",
                     row.existingId
                       ? "border-amber-200 bg-amber-50 text-amber-700"
-                      : "border-[#2fe85c]/40 bg-[#2fe85c]/10 text-[#08743d]",
+                      : "border-brand/40 bg-brand/10 text-gd-green-deep",
                   )}
                 >
                   {row.existingId ? "Tidy" : "New"}
@@ -795,7 +795,7 @@ function ProposalReview({
             type="button"
             onClick={submit}
             disabled={pending || !chosen.length}
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#15181b] px-3 text-[11px] font-semibold text-white transition hover:bg-black disabled:opacity-50"
+            className="bg-gd-panel-dark inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-[11px] font-semibold text-white transition hover:bg-black disabled:opacity-50"
           >
             {pending ? <Loader2 className="size-3 animate-spin" /> : null}
             Apply {chosen.length || ""}

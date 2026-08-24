@@ -181,7 +181,7 @@ function WeekBoards({
         blockedCount
           ? "border-red-300 shadow-[0_0_0_3px_rgba(220,38,38,0.06)]"
           : week.isCurrent
-            ? "border-[#2fe85c]/45 shadow-[0_0_0_3px_rgba(47,232,92,0.07)]"
+            ? "border-brand/45 shadow-[0_0_0_3px_rgba(47,232,92,0.07)]"
             : "border-black/[0.06]",
       )}
     >
@@ -193,7 +193,7 @@ function WeekBoards({
             : week.isOverdue
               ? "border-amber-200/60 bg-amber-50/50"
               : week.isCurrent
-                ? "border-[#2fe85c]/20 bg-[#2fe85c]/[0.06]"
+                ? "border-brand/20 bg-brand/[0.06]"
                 : "border-black/[0.06] bg-black/[0.02]",
         )}
       >
@@ -202,7 +202,7 @@ function WeekBoards({
             Week {week.number}
           </h3>
           {week.isCurrent ? (
-            <span className="rounded-full bg-[#2fe85c]/15 px-2 py-0.5 text-[9px] font-semibold tracking-[0.08em] text-[#08743d] uppercase">
+            <span className="bg-brand/15 text-gd-green-deep rounded-full px-2 py-0.5 text-[9px] font-semibold tracking-[0.08em] uppercase">
               This week
             </span>
           ) : null}
@@ -267,7 +267,7 @@ function WeekBoards({
           className={cn(
             "flex items-center gap-1.5 border-b border-black/[0.06] px-4 py-2 text-[11px] sm:px-5",
             organise.status === "success"
-              ? "bg-[#2fe85c]/[0.06] text-[#08743d]"
+              ? "bg-brand/[0.06] text-gd-green-deep"
               : "bg-red-50 text-red-700",
           )}
         >
@@ -354,7 +354,7 @@ const COLUMN_TONE = {
   },
   work: {
     surface: "bg-white",
-    chip: "bg-[#2fe85c]/14 text-[#08743d]",
+    chip: "bg-brand/14 text-gd-green-deep",
   },
 } as const;
 
@@ -467,7 +467,7 @@ export function CardRow({
           : status === "incomplete"
             ? "border-l-4 border-amber-200/80 border-l-amber-400 bg-amber-50/40"
             : status === "completed"
-              ? "border-l-4 border-[#16a34a]/20 border-l-[#16a34a]/60 bg-[#f2fbf4]"
+              ? "border-gd-green/20 border-l-gd-green/60 border-l-4 bg-[#f2fbf4]"
               : "border-black/[0.07] bg-white hover:border-black/[0.14] hover:shadow-[0_6px_16px_rgba(20,23,26,0.05)]",
       )}
     >
@@ -505,7 +505,7 @@ export function CardRow({
             ) : status === "incomplete" ? (
               <TriangleAlert className="mt-0.5 size-3.5 shrink-0 text-amber-600" />
             ) : status === "completed" ? (
-              <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-[#16a34a]" />
+              <CheckCircle2 className="text-gd-green mt-0.5 size-3.5 shrink-0" />
             ) : null}
             <span
               className={cn(
@@ -664,7 +664,7 @@ function SaveIndicator({
   }
   if (status === "saved") {
     return (
-      <span className="flex shrink-0 items-center gap-1 text-[10px] font-medium text-[#08743d]">
+      <span className="text-gd-green-deep flex shrink-0 items-center gap-1 text-[10px] font-medium">
         <CheckCircle2 className="size-3" />
         Saved
       </span>
@@ -882,7 +882,7 @@ function StatusControls({
               "rounded-full border px-2.5 py-1 text-[10px] font-semibold transition disabled:opacity-50",
               FOCUS_RING,
               reasonTarget === next
-                ? "border-[#15181b] bg-[#15181b] text-white"
+                ? "border-gd-panel-dark bg-gd-panel-dark text-white"
                 : "border-black/10 bg-white text-black/55 hover:border-black/25 hover:text-black",
             )}
           >

@@ -29,7 +29,7 @@ export function ClientList({ clients }: { clients: ClientCompany[] }) {
         >
           <Card
             className={cn(
-              "h-full gap-0 border-black/[0.07] bg-[#f8f8f3] py-0 shadow-none group-focus-visible:border-[#16a34a]/50",
+              "bg-gd-panel group-focus-visible:border-gd-green/50 h-full gap-0 border-black/[0.07] py-0 shadow-none",
               CARD_HOVER,
               client.archivedAt && "opacity-60",
             )}
@@ -62,7 +62,7 @@ export function ClientList({ clients }: { clients: ClientCompany[] }) {
                       {INVITE_LABELS[client.inviteState]}
                     </Badge>
                   )}
-                  <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-black/[0.035] text-black/55 transition-colors duration-300 group-hover:bg-[#2fe85c]/15 group-hover:text-[#08743d]">
+                  <span className="group-hover:bg-brand/15 group-hover:text-gd-green-deep grid size-7 shrink-0 place-items-center rounded-lg bg-black/[0.035] text-black/55 transition-colors duration-300">
                     <ArrowUpRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </span>
                 </div>

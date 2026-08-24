@@ -68,7 +68,7 @@ export function PortalMilestone({
             value={summary.percent}
             aria-label="Milestone progress"
             className="h-2 w-full bg-black/[0.07]"
-            indicatorClassName="rounded-full bg-[#2fe85c] transition-transform duration-500"
+            indicatorClassName="rounded-full bg-brand transition-transform duration-500"
           />
         </div>
       ) : null}
@@ -180,7 +180,7 @@ function StaticItem({ item }: { item: PortalItem }) {
         className={cn(
           "mt-0.5 grid size-4 shrink-0 place-items-center rounded-[5px] border",
           item.done
-            ? "border-[#2fe85c] bg-[#2fe85c] text-[#0b3f1e]"
+            ? "border-brand bg-brand text-[#0b3f1e]"
             : "border-black/20",
         )}
       >
@@ -228,7 +228,7 @@ function TickableItem({
               if (result.status === "error") setFailed(true);
             });
           }}
-          className="mt-0.5 size-4 shrink-0 rounded-[5px] accent-[#2fe85c] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none"
+          className="accent-brand focus-visible:ring-brand/45 mt-0.5 size-4 shrink-0 rounded-[5px] focus-visible:ring-2 focus-visible:outline-none"
         />
         <span
           className={cn(
@@ -276,7 +276,7 @@ function WeekNotes({
             size="none"
             type="button"
             onClick={() => setWriting(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[11.5px] font-medium text-black/45 transition hover:bg-black/[0.045] hover:text-black focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none"
+            className="focus-visible:ring-brand/45 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[11.5px] font-medium text-black/45 transition hover:bg-black/[0.045] hover:text-black focus-visible:ring-2 focus-visible:outline-none"
           >
             <PenLine className="size-3.5" />
             Write
@@ -359,7 +359,7 @@ function Badge({
       className={cn(
         "rounded-full border px-2 py-0.5 text-[10.5px] font-semibold",
         tone === "ok"
-          ? "border-[#2fe85c]/30 bg-[#2fe85c]/12 text-[#08743d]"
+          ? "border-brand/30 bg-brand/12 text-gd-green-deep"
           : tone === "late"
             ? "border-red-200 bg-red-50 text-red-700"
             : "border-black/[0.09] bg-black/[0.04] text-black/55",

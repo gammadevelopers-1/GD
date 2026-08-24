@@ -53,7 +53,7 @@ export function SiteFooter() {
                   key={social.label}
                   href={social.href}
                   aria-label={social.label}
-                  className="grid size-8.5 place-items-center rounded-[9px] border border-white/[0.09] bg-white/[0.05] text-[#c8ccc2] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#2fe85c] hover:bg-[#2fe85c] hover:text-[#0f1512]"
+                  className="hover:border-brand hover:bg-brand grid size-8.5 place-items-center rounded-[9px] border border-white/[0.09] bg-white/[0.05] text-[#c8ccc2] transition-all duration-200 hover:-translate-y-0.5 hover:text-[#0f1512]"
                 >
                   <svg
                     aria-hidden
@@ -76,7 +76,7 @@ export function SiteFooter() {
                   <li key={l.label}>
                     <Link
                       href={l.href}
-                      className="text-[#9aa096] transition-colors hover:text-[#2fe85c]"
+                      className="hover:text-brand text-[#9aa096] transition-colors"
                     >
                       {l.label}
                     </Link>

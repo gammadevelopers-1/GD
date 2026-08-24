@@ -173,7 +173,7 @@ export function ImportDialog({
             className={cn(
               "rounded-2xl border border-dashed px-5 py-10 text-center transition-colors",
               dragging
-                ? "border-[#2fe85c]/60 bg-[#2fe85c]/[0.07]"
+                ? "border-brand/60 bg-brand/[0.07]"
                 : "border-black/12 bg-white/40",
             )}
           >
@@ -271,7 +271,7 @@ export function ImportDialog({
                       }
                       aria-label={`Include ${key || `row ${index + 1}`}`}
                       className={cn(
-                        "size-3.5 shrink-0 accent-[#16a34a]",
+                        "accent-gd-green size-3.5 shrink-0",
                         FOCUS_RING,
                       )}
                     />
@@ -573,7 +573,7 @@ export function ManualDialog({
                         onChange={(event) =>
                           update(index, { replace: event.target.checked })
                         }
-                        className={cn("size-3.5 accent-[#16a34a]", FOCUS_RING)}
+                        className={cn("accent-gd-green size-3.5", FOCUS_RING)}
                       />
                       {key} already exists here — replace it
                     </label>
@@ -648,7 +648,7 @@ function Feedback({ state }: { state: SimpleFormState }) {
       role={state.status === "error" ? "alert" : "status"}
       className={cn(
         "flex items-center gap-1.5 text-[12px] font-medium",
-        state.status === "success" ? "text-[#08743d]" : "text-red-700",
+        state.status === "success" ? "text-gd-green-deep" : "text-red-700",
       )}
     >
       {state.status === "success" ? (

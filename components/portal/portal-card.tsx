@@ -12,7 +12,7 @@ export function PortalCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative grid min-h-dvh overflow-hidden bg-[#15181b] lg:grid-cols-[1.05fr_0.95fr]">
+    <div className="bg-gd-panel-dark relative grid min-h-dvh overflow-hidden lg:grid-cols-[1.05fr_0.95fr]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(47,232,92,0.13),transparent_29%),radial-gradient(circle_at_84%_72%,rgba(110,231,183,0.07),transparent_26%)]" />
       <div className="pointer-events-none absolute inset-0 [background-image:linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] [mask-image:linear-gradient(to_right,black,transparent_78%)] [background-size:52px_52px] opacity-25" />
 
@@ -44,7 +44,7 @@ export function PortalCard({
             <span className="font-medium text-white">Gamma Developers</span>
           </div>
 
-          <p className="font-mono text-[10px] tracking-[0.16em] text-[#2fe85c] uppercase">
+          <p className="text-brand font-mono text-[10px] tracking-[0.16em] uppercase">
             {eyebrow}
           </p>
           <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-[2.3rem]">

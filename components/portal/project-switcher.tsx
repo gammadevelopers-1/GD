@@ -32,7 +32,7 @@ export function ProjectSwitcher({
           variant="bare"
           size="none"
           type="button"
-          className="flex min-w-0 items-center gap-2 rounded-xl border border-black/[0.07] bg-white/55 px-2.5 py-1.5 text-[12px] font-medium text-black/70 transition hover:border-black/[0.14] hover:bg-white/80 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none"
+          className="focus-visible:ring-brand/45 flex min-w-0 items-center gap-2 rounded-xl border border-black/[0.07] bg-white/55 px-2.5 py-1.5 text-[12px] font-medium text-black/70 transition hover:border-black/[0.14] hover:bg-white/80 focus-visible:ring-2 focus-visible:outline-none"
         >
           <span className="max-w-40 truncate sm:max-w-56">{current.name}</span>
           <ChevronsUpDown className="size-3.5 shrink-0 text-black/35" />

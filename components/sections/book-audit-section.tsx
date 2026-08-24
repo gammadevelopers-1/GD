@@ -28,7 +28,7 @@ const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"];
 const FACT_ICONS = [Clock, CalendarDays, MapPin];
 
 const FIELD =
-  "h-11 w-full rounded-xl border border-black/[0.12] bg-[#fbfbf8] px-3.25 text-sm outline-none transition-[border-color,box-shadow] duration-150 focus:border-[#16a34a] focus:shadow-[0_0_0_3px_rgba(22,163,74,0.16)]";
+  "h-11 w-full rounded-xl border border-black/[0.12] bg-[#fbfbf8] px-3.25 text-sm outline-none transition-[border-color,box-shadow] duration-150 focus:border-gd-green focus:shadow-[0_0_0_3px_rgba(22,163,74,0.16)]";
 const FIELD_LABEL = "mb-1.5 block text-xs text-[#6d736a]";
 
 function isSameDay(a: Date, b: Date) {
@@ -192,7 +192,7 @@ export function BookAuditSection() {
                                 key={slot}
                                 type="button"
                                 onClick={() => pickTime(slot)}
-                                className="h-10 cursor-pointer rounded-[11px] border border-black/[0.12] bg-white text-[13.5px] font-semibold transition-all duration-150 hover:border-[#2fe85c] hover:text-[#0a7a45] focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
+                                className="hover:border-brand focus-visible:ring-gd-green/40 h-10 cursor-pointer rounded-[11px] border border-black/[0.12] bg-white text-[13.5px] font-semibold transition-all duration-150 hover:text-[#0a7a45] focus-visible:ring-2 focus-visible:outline-none"
                               >
                                 {slot}
                               </Button>
@@ -211,14 +211,14 @@ export function BookAuditSection() {
                     size="none"
                     type="button"
                     onClick={() => setStage("picker")}
-                    className="inline-flex cursor-pointer items-center gap-1.5 self-start rounded-md text-[12.5px] font-semibold text-[#0a7a45] transition-colors hover:text-[#0b5f2c] focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
+                    className="hover:text-gd-green-ink focus-visible:ring-gd-green/40 inline-flex cursor-pointer items-center gap-1.5 self-start rounded-md text-[12.5px] font-semibold text-[#0a7a45] transition-colors focus-visible:ring-2 focus-visible:outline-none"
                   >
                     <ArrowLeft className="size-3.5" />
                     {bookAudit.form.back}
                   </Button>
 
                   <div className="flex items-center gap-2.5 rounded-[13px] border border-[rgba(47,232,92,0.28)] bg-[#f2f6f0] px-3.75 py-3.25">
-                    <span className="grid size-8.5 shrink-0 place-items-center rounded-[10px] bg-[#0f1512] text-[#2fe85c]">
+                    <span className="text-brand grid size-8.5 shrink-0 place-items-center rounded-[10px] bg-[#0f1512]">
                       <CalendarDays className="size-4.25" strokeWidth={1.5} />
                     </span>
                     <div className="leading-[1.35]">
@@ -301,7 +301,7 @@ export function BookAuditSection() {
                     size="none"
                     type="button"
                     onClick={reset}
-                    className="h-10.5 cursor-pointer rounded-[11px] border border-black/[0.12] bg-white px-5 text-[13px] font-semibold transition-all duration-150 hover:border-[#2fe85c] hover:text-[#0a7a45] focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
+                    className="hover:border-brand focus-visible:ring-gd-green/40 h-10.5 cursor-pointer rounded-[11px] border border-black/[0.12] bg-white px-5 text-[13px] font-semibold transition-all duration-150 hover:text-[#0a7a45] focus-visible:ring-2 focus-visible:outline-none"
                   >
                     {bookAudit.done.cta}
                   </Button>
@@ -347,9 +347,9 @@ function DayCell({
       disabled={!open}
       onClick={onPick}
       className={cn(
-        "grid aspect-square place-items-center rounded-[10px] border text-[13px] font-medium transition-all duration-150 focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none",
+        "focus-visible:ring-gd-green/40 grid aspect-square place-items-center rounded-[10px] border text-[13px] font-medium transition-all duration-150 focus-visible:ring-2 focus-visible:outline-none",
         selected
-          ? "border-[#2fe85c] bg-[#2fe85c] text-[#0f1512]"
+          ? "border-brand bg-brand text-[#0f1512]"
           : open
             ? "cursor-pointer border-transparent bg-[#f2f6f0] hover:border-[rgba(47,232,92,0.5)] hover:bg-[#e2f4e6]"
             : "border-transparent bg-transparent text-black/[0.28]",
@@ -379,7 +379,7 @@ function MonthStep({
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className="grid size-7.5 cursor-pointer place-items-center rounded-[9px] border border-black/[0.1] bg-white text-[#4b5148] transition-all duration-150 hover:border-[#2fe85c] hover:text-[#0a7a45] focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none disabled:cursor-default disabled:opacity-35 disabled:hover:border-black/[0.1] disabled:hover:text-[#4b5148]"
+      className="hover:border-brand focus-visible:ring-gd-green/40 grid size-7.5 cursor-pointer place-items-center rounded-[9px] border border-black/[0.1] bg-white text-[#4b5148] transition-all duration-150 hover:text-[#0a7a45] focus-visible:ring-2 focus-visible:outline-none disabled:cursor-default disabled:opacity-35 disabled:hover:border-black/[0.1] disabled:hover:text-[#4b5148]"
     >
       <ArrowLeft className={cn("size-3.75", forward && "rotate-180")} />
     </Button>
@@ -396,7 +396,7 @@ function Brief() {
 
       <div className="relative">
         <div className="flex items-center gap-2.75">
-          <span className="grid size-11 place-items-center rounded-[13px] border border-[rgba(47,232,92,0.3)] bg-[#15181b] font-mono text-sm font-semibold text-[#2fe85c]">
+          <span className="bg-gd-panel-dark text-brand grid size-11 place-items-center rounded-[13px] border border-[rgba(47,232,92,0.3)] font-mono text-sm font-semibold">
             GD
           </span>
           <div className="leading-[1.3]">
@@ -427,7 +427,7 @@ function Brief() {
         <ul className="flex flex-col gap-3.25">
           {bookAudit.brief.promises.map((promise) => (
             <li key={promise} className="flex items-start gap-2.75">
-              <span className="mt-px grid size-5.5 shrink-0 place-items-center rounded-md bg-[rgba(47,232,92,0.14)] text-[#2fe85c]">
+              <span className="text-brand mt-px grid size-5.5 shrink-0 place-items-center rounded-md bg-[rgba(47,232,92,0.14)]">
                 <Check className="size-2.75" strokeWidth={2.4} />
               </span>
               <span className="text-[13.5px] leading-[1.5] text-[#c8ccc2]">
@@ -438,7 +438,7 @@ function Brief() {
         </ul>
 
         <div className="mt-6.5 flex items-center gap-2.75 border-t border-white/[0.09] pt-5">
-          <span className="grid size-10 place-items-center rounded-full bg-[#2fe85c] font-mono text-[13px] font-semibold text-[#0f1512]">
+          <span className="bg-brand grid size-10 place-items-center rounded-full font-mono text-[13px] font-semibold text-[#0f1512]">
             {bookAudit.brief.host.initials}
           </span>
           <div className="leading-[1.35]">

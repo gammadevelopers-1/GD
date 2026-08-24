@@ -47,7 +47,7 @@ export function PortalTopBar({
         {viewer ? (
           <div className="ml-auto flex items-center gap-2">
             <div className="flex items-center gap-2.5 rounded-xl border border-black/[0.07] bg-white/55 p-1.5 pr-3">
-              <span className="grid size-7 place-items-center rounded-lg bg-[#15181b] text-[10px] font-semibold text-[#2fe85c]">
+              <span className="bg-gd-panel-dark text-brand grid size-7 place-items-center rounded-lg text-[10px] font-semibold">
                 {viewer.initials}
               </span>
               <div className="hidden leading-none sm:block">
@@ -62,7 +62,7 @@ export function PortalTopBar({
                 variant="bare"
                 size="none"
                 type="submit"
-                className="rounded-xl px-2.5 py-2 text-[11.5px] font-medium text-black/45 transition hover:bg-white/60 hover:text-black focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none"
+                className="focus-visible:ring-brand/45 rounded-xl px-2.5 py-2 text-[11.5px] font-medium text-black/45 transition hover:bg-white/60 hover:text-black focus-visible:ring-2 focus-visible:outline-none"
               >
                 Sign out
               </Button>
@@ -102,14 +102,14 @@ export function PortalHero({
               bannerFitClass(project.bannerFit),
             )}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-[#15181b]" />
+          <div className="to-gd-panel-dark absolute inset-0 bg-gradient-to-b from-black/20 via-transparent" />
         </div>
       ) : null}
 
       <div className="relative px-4 pt-5 pb-5 sm:px-6">
-        <div className="pointer-events-none absolute -top-32 right-8 size-80 rounded-full bg-[#2fe85c]/12 blur-3xl" />
+        <div className="bg-brand/12 pointer-events-none absolute -top-32 right-8 size-80 rounded-full blur-3xl" />
         {project.bannerUrl ? null : (
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#2fe85c]/45 to-transparent" />
+          <div className="via-brand/45 pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent" />
         )}
 
         <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -127,7 +127,7 @@ export function PortalHero({
             ) : null}
           </div>
 
-          <span className="inline-flex h-fit shrink-0 rounded-full bg-[#2fe85c]/12 px-2.5 py-1 text-[10px] font-semibold text-[#69ee88]">
+          <span className="bg-brand/12 text-gd-mint-bright inline-flex h-fit shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold">
             {isProjectStatus(project.status)
               ? PROJECT_STATUS_LABEL[project.status]
               : project.status}
@@ -139,7 +139,7 @@ export function PortalHero({
             {meta.map((entry) => (
               <div
                 key={entry.label}
-                className="min-w-0 rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5 transition duration-300 hover:-translate-y-0.5 hover:border-[#2fe85c]/30 hover:bg-white/[0.06]"
+                className="hover:border-brand/30 min-w-0 rounded-xl border border-white/[0.07] bg-white/[0.035] px-3 py-2.5 transition duration-300 hover:-translate-y-0.5 hover:bg-white/[0.06]"
               >
                 <p className="text-[10px] text-white/28">{entry.label}</p>
                 <p className="mt-1.5 truncate text-[12px] font-medium text-white/75">

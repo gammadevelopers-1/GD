@@ -84,7 +84,7 @@ export function MemberFields({
               {TEAM_ROLES.map((role) => (
                 <label
                   key={role}
-                  className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-black/[0.09] bg-white px-3 py-2.5 transition has-checked:border-[#16a34a] has-checked:bg-[#16a34a]/[0.06]"
+                  className="has-checked:border-gd-green has-checked:bg-gd-green/[0.06] flex cursor-pointer items-start gap-2.5 rounded-xl border border-black/[0.09] bg-white px-3 py-2.5 transition"
                 >
                   <input
                     type="radio"
@@ -92,7 +92,7 @@ export function MemberFields({
                     value={role}
                     required
                     defaultChecked={(defaults.role ?? "member") === role}
-                    className="mt-0.5 size-4 shrink-0 accent-[#16a34a]"
+                    className="accent-gd-green mt-0.5 size-4 shrink-0"
                   />
                   <span className="min-w-0">
                     <span className="block text-[13px] font-medium text-black/80">

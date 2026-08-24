@@ -145,7 +145,7 @@ function Avatar({ name, dimmed }: { name: string; dimmed?: boolean }) {
   return (
     <span
       className={cn(
-        "grid size-9 shrink-0 place-items-center rounded-xl bg-[#15181b] text-[11px] font-semibold text-[#2fe85c]",
+        "bg-gd-panel-dark text-brand grid size-9 shrink-0 place-items-center rounded-xl text-[11px] font-semibold",
         dimmed && "opacity-40",
       )}
     >

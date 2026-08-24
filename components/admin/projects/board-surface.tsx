@@ -154,7 +154,7 @@ function SaveState({
   if (status === "saved") {
     return (
       <span className="inline-flex items-center gap-1.5 text-[11px] text-black/45">
-        <Check className="size-3 text-[#0f7a37]" />
+        <Check className="text-gd-green-edge size-3" />
         Saved
       </span>
     );

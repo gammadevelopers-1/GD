@@ -41,7 +41,7 @@ export function PortalTabs({
             value={tab}
             asChild
             className={cn(
-              "group relative h-auto flex-none shrink-0 rounded-none border-0 px-3.5 py-3.5 text-[13px] font-medium transition duration-200 after:hidden focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none sm:px-4",
+              "group focus-visible:ring-brand/45 relative h-auto flex-none shrink-0 rounded-none border-0 px-3.5 py-3.5 text-[13px] font-medium transition duration-200 after:hidden focus-visible:border-transparent focus-visible:ring-2 focus-visible:outline-none sm:px-4",
               shown === tab
                 ? "bg-white/[0.03] text-white"
                 : "text-white/35 hover:bg-white/[0.05] hover:text-white",
@@ -57,7 +57,7 @@ export function PortalTabs({
               <span
                 aria-hidden
                 className={cn(
-                  "absolute inset-x-3.5 bottom-0 h-0.5 rounded-full bg-[#2fe85c] transition-all duration-200 sm:inset-x-4",
+                  "bg-brand absolute inset-x-3.5 bottom-0 h-0.5 rounded-full transition-all duration-200 sm:inset-x-4",
                   shown === tab
                     ? "opacity-100 shadow-[0_0_14px_rgba(47,232,92,0.65)]"
                     : "scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-40",

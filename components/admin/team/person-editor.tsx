@@ -64,7 +64,7 @@ export function PersonEditor({ person }: { person: TeamPerson }) {
         </Button>
 
         {state.status === "success" && state.message && !edited ? (
-          <span className="flex items-center gap-1.5 text-[12px] text-[#0b5f2c]">
+          <span className="text-gd-green-ink flex items-center gap-1.5 text-[12px]">
             <Check className="size-3.5" />
             {state.message}
           </span>

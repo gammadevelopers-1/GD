@@ -291,7 +291,7 @@ export function FlowConsole() {
                       cards.current[i] = node;
                     }}
                     className={cn(
-                      "flex items-center gap-2.5 rounded-[13px] border border-[rgba(47,232,92,0.4)] bg-[#12171d] px-3.25 py-3 text-left shadow-[0_16px_34px_-20px_rgba(47,232,92,0.45)] transition-[opacity,translate,scale,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:scale-[1.03] hover:border-[#2fe85c] hover:shadow-[0_26px_50px_-20px_rgba(47,232,92,0.6)] lg:absolute lg:w-[28%]",
+                      "hover:border-brand flex items-center gap-2.5 rounded-[13px] border border-[rgba(47,232,92,0.4)] bg-[#12171d] px-3.25 py-3 text-left shadow-[0_16px_34px_-20px_rgba(47,232,92,0.45)] transition-[opacity,translate,scale,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:scale-[1.03] hover:shadow-[0_26px_50px_-20px_rgba(47,232,92,0.6)] lg:absolute lg:w-[28%]",
                       SLOTS[i],
                       visible > i
                         ? "translate-y-0 scale-100 opacity-100"

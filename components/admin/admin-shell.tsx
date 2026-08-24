@@ -215,7 +215,7 @@ function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
           pathname === item.href || pathname.startsWith(`${item.href}/`)
         }
         tooltip={item.label}
-        className="gap-3 px-3 text-[13.5px] font-medium transition-colors duration-150 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0! data-active:bg-[#2fe85c]/10 data-active:font-semibold data-active:text-[#2fe85c] data-active:hover:bg-[#2fe85c]/16 data-active:hover:text-[#2fe85c] [&_svg]:size-[18px]"
+        className="data-active:bg-brand/10 data-active:text-brand data-active:hover:bg-brand/16 data-active:hover:text-brand gap-3 px-3 text-[13.5px] font-medium transition-colors duration-150 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0! data-active:font-semibold [&_svg]:size-[18px]"
       >
         <Link href={item.href}>
           <item.icon />
@@ -225,7 +225,7 @@ function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
           {item.inProgress ? (
             <span
               title="In progress"
-              className="ml-auto size-1.5 rounded-full bg-[#2fe85c]/40 group-data-[collapsible=icon]:hidden"
+              className="bg-brand/40 ml-auto size-1.5 rounded-full group-data-[collapsible=icon]:hidden"
             />
           ) : null}
         </Link>

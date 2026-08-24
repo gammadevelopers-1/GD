@@ -155,8 +155,8 @@ function MemberRow({
           className={cn(
             "grid size-10 shrink-0 place-items-center rounded-xl text-[10px] font-semibold transition duration-200",
             member.isLead
-              ? "bg-[#15181b] text-[#2fe85c] ring-2 ring-[#2fe85c]/25"
-              : "bg-[#15181b] text-[#2fe85c]",
+              ? "bg-gd-panel-dark text-brand ring-brand/25 ring-2"
+              : "bg-gd-panel-dark text-brand",
           )}
         >
           {initials(member.name)}
@@ -166,7 +166,7 @@ function MemberRow({
           <p className="flex flex-wrap items-center gap-1.5 text-sm font-semibold">
             {member.name}
             {member.isLead ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-[#2fe85c]/15 px-1.5 py-0.5 text-[10px] font-semibold text-[#08743d]">
+              <span className="bg-brand/15 text-gd-green-deep inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold">
                 <Crown className="size-2.5" /> Lead
               </span>
             ) : null}
@@ -242,7 +242,9 @@ function MemberRow({
             <p
               className={cn(
                 "mt-1.5 flex items-center gap-1.5 text-[11px]",
-                state.status === "success" ? "text-[#08743d]" : "text-red-700",
+                state.status === "success"
+                  ? "text-gd-green-deep"
+                  : "text-red-700",
               )}
             >
               {state.status === "success" ? null : (
@@ -365,7 +367,7 @@ function AddMemberPanel({
         <p
           className={cn(
             "mt-3 flex items-center gap-1.5 text-[11px]",
-            state.status === "success" ? "text-[#08743d]" : "text-red-700",
+            state.status === "success" ? "text-gd-green-deep" : "text-red-700",
           )}
         >
           {state.status === "success" ? (

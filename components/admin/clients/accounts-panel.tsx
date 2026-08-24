@@ -145,7 +145,7 @@ function AccountRow({
       ) : null}
 
       <Dialog open={confirming} onOpenChange={setConfirming}>
-        <DialogContent className="border-black/[0.08] bg-[#f8f8f3] text-black sm:max-w-lg">
+        <DialogContent className="bg-gd-panel border-black/[0.08] text-black sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-[15px] tracking-[-0.025em]">
               Delete {account.fullName}

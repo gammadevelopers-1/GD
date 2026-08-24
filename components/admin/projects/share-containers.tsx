@@ -59,7 +59,7 @@ export function ShareContainers({
               className={cn(
                 "flex cursor-pointer items-center gap-3 rounded-xl border px-3.5 py-3 transition",
                 chosen.includes(container.id)
-                  ? "border-[#16a34a]/50 bg-[#16a34a]/[0.06]"
+                  ? "border-gd-green/50 bg-gd-green/[0.06]"
                   : "border-black/[0.09] bg-white hover:border-black/20",
               )}
             >
@@ -75,7 +75,7 @@ export function ShareContainers({
                       : was.filter((id) => id !== container.id),
                   )
                 }
-                className="size-4 shrink-0 accent-[#16a34a]"
+                className="accent-gd-green size-4 shrink-0"
               />
               <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-black/80">
                 {container.name}

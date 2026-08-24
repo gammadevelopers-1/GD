@@ -56,7 +56,7 @@ function ToolButton({
         "grid size-7 place-items-center rounded-md transition disabled:opacity-30",
         FOCUS_RING,
         active
-          ? "bg-[#15181b] text-white"
+          ? "bg-gd-panel-dark text-white"
           : "text-black/55 hover:bg-black/[0.06] hover:text-black",
       )}
     >

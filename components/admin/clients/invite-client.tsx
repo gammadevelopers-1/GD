@@ -47,14 +47,14 @@ export function InviteClient({
           variant="bare"
           size="none"
           type="button"
-          className="inline-flex h-9 items-center gap-1.5 rounded-full bg-white/[0.08] px-3.5 text-xs font-semibold text-white transition duration-200 hover:bg-white/[0.16] hover:shadow-[0_8px_20px_rgba(0,0,0,0.25)] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none active:scale-[0.97]"
+          className="focus-visible:ring-brand/45 inline-flex h-9 items-center gap-1.5 rounded-full bg-white/[0.08] px-3.5 text-xs font-semibold text-white transition duration-200 hover:bg-white/[0.16] hover:shadow-[0_8px_20px_rgba(0,0,0,0.25)] focus-visible:ring-2 focus-visible:outline-none active:scale-[0.97]"
         >
           <UserPlus className="size-3.5" />
           Invite client
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-h-[85vh] overflow-y-auto border-black/[0.08] bg-[#f8f8f3] text-black sm:max-w-lg">
+      <DialogContent className="bg-gd-panel max-h-[85vh] overflow-y-auto border-black/[0.08] text-black sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-[15px] tracking-[-0.025em]">
             Invite to this project
@@ -85,7 +85,7 @@ export function InviteClient({
                     type="checkbox"
                     name="accountId"
                     value={account.id}
-                    className="size-4 shrink-0 accent-[#16a34a]"
+                    className="accent-gd-green size-4 shrink-0"
                   />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[13px] font-medium text-black/80">
@@ -121,7 +121,7 @@ export function InviteClient({
                     name="contact"
                     value={`${contact.email}|${contact.fullName}`}
                     disabled={contact.onThisProject}
-                    className="size-4 shrink-0 accent-[#16a34a]"
+                    className="accent-gd-green size-4 shrink-0"
                   />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[13px] font-medium text-black/80">
@@ -189,7 +189,7 @@ export function InviteClient({
                     type="checkbox"
                     name="saveAsContact"
                     defaultChecked
-                    className="size-4 shrink-0 accent-[#16a34a]"
+                    className="accent-gd-green size-4 shrink-0"
                   />
                   <span className="text-[12.5px] text-black/70">
                     Save them as a contact on this client
@@ -214,7 +214,7 @@ export function InviteClient({
             <input
               type="checkbox"
               name="canEditMilestones"
-              className="mt-0.5 size-4 shrink-0 accent-[#16a34a]"
+              className="accent-gd-green mt-0.5 size-4 shrink-0"
             />
             <span className="text-[13px] text-black/75">
               Let them tick milestone items

@@ -65,11 +65,11 @@ export function NotificationBell({ inbox }: { inbox: Inbox }) {
               ? `Notifications, ${shown.unread} unread`
               : "Notifications"
           }
-          className="relative grid size-9.5 cursor-pointer place-items-center rounded-xl border border-black/[0.07] bg-white/55 text-black/55 transition duration-200 hover:border-black/[0.14] hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none data-[state=open]:border-black/[0.14] data-[state=open]:bg-white"
+          className="focus-visible:ring-gd-green/40 relative grid size-9.5 cursor-pointer place-items-center rounded-xl border border-black/[0.07] bg-white/55 text-black/55 transition duration-200 hover:border-black/[0.14] hover:bg-white hover:text-black focus-visible:ring-2 focus-visible:outline-none data-[state=open]:border-black/[0.14] data-[state=open]:bg-white"
         >
           <Bell className="size-4.5" strokeWidth={1.6} />
           {shown.unread ? (
-            <span className="absolute top-1.5 right-1.5 grid min-w-3.5 place-items-center rounded-full bg-[#16a34a] px-1 font-mono text-[8px] leading-3.5 font-semibold text-white tabular-nums">
+            <span className="bg-gd-green absolute top-1.5 right-1.5 grid min-w-3.5 place-items-center rounded-full px-1 font-mono text-[8px] leading-3.5 font-semibold text-white tabular-nums">
               {shown.unread > 9 ? "9+" : shown.unread}
             </span>
           ) : null}
@@ -87,7 +87,7 @@ export function NotificationBell({ inbox }: { inbox: Inbox }) {
               size="none"
               type="button"
               onClick={readAll}
-              className="cursor-pointer rounded-md text-[11.5px] font-semibold text-[#08743d] transition-colors duration-150 hover:text-[#0b5f2c] focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
+              className="text-gd-green-deep hover:text-gd-green-ink focus-visible:ring-gd-green/40 cursor-pointer rounded-md text-[11.5px] font-semibold transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none"
             >
               Mark all read
             </Button>
@@ -105,7 +105,7 @@ export function NotificationBell({ inbox }: { inbox: Inbox }) {
                       "mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg",
                       item.read
                         ? "bg-black/[0.05] text-black/40"
-                        : "bg-[#2fe85c]/12 text-[#08743d]",
+                        : "bg-brand/12 text-gd-green-deep",
                     )}
                   >
                     <Icon className="size-3.5" strokeWidth={1.7} />
@@ -135,7 +135,7 @@ export function NotificationBell({ inbox }: { inbox: Inbox }) {
                   </span>
 
                   {item.read ? null : (
-                    <span className="mt-2 size-1.5 shrink-0 rounded-full bg-[#16a34a]" />
+                    <span className="bg-gd-green mt-2 size-1.5 shrink-0 rounded-full" />
                   )}
                 </>
               );

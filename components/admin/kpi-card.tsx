@@ -6,10 +6,10 @@ import type { Trend } from "@/data/dashboard";
 import { cn } from "@/lib/utils";
 
 const SURFACE: Record<"neutral" | "warning" | "danger" | "money", string> = {
-  neutral: "border-black/[0.07] bg-[#f8f8f3]",
+  neutral: "border-black/[0.07] bg-gd-panel",
   warning: "border-amber-600/20 bg-amber-500/[0.07]",
   danger: "border-red-700/20 bg-red-600/[0.055]",
-  money: "border-[#0f7a37]/20 bg-[#16a34a]/[0.06]",
+  money: "border-gd-green-edge/20 bg-gd-green/[0.06]",
 };
 
 export function KpiCard({
@@ -44,7 +44,7 @@ export function KpiCard({
         "h-full gap-0 py-0 shadow-none",
         SURFACE[tone],
         href &&
-          "transition duration-200 group-hover:-translate-y-0.5 group-hover:border-black/[0.14] group-hover:shadow-[0_14px_36px_rgba(20,23,26,0.07)] group-focus-visible:border-[#16a34a]/50",
+          "group-focus-visible:border-gd-green/50 transition duration-200 group-hover:-translate-y-0.5 group-hover:border-black/[0.14] group-hover:shadow-[0_14px_36px_rgba(20,23,26,0.07)]",
       )}
     >
       <CardContent className="p-5">
@@ -53,7 +53,7 @@ export function KpiCard({
             {label}
           </span>
           {href ? (
-            <ArrowRight className="size-3.5 shrink-0 text-black/20 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-[#08743d]" />
+            <ArrowRight className="group-hover:text-gd-green-deep size-3.5 shrink-0 text-black/20 transition-transform duration-200 group-hover:translate-x-0.5" />
           ) : Icon ? (
             <Icon
               className={cn(
@@ -63,7 +63,7 @@ export function KpiCard({
                   : tone === "warning"
                     ? "text-amber-600/70"
                     : tone === "money"
-                      ? "text-[#0b5f2c]/60"
+                      ? "text-gd-green-ink/60"
                       : "text-black/25",
               )}
             />
@@ -78,7 +78,7 @@ export function KpiCard({
               : tone === "warning"
                 ? "text-amber-800"
                 : tone === "money"
-                  ? "text-[#0b5f2c]"
+                  ? "text-gd-green-ink"
                   : "text-[#14171a]",
           )}
         >
@@ -95,7 +95,7 @@ export function KpiCard({
               className={cn(
                 "inline-flex items-center gap-0.5 font-mono font-semibold tabular-nums",
                 delta > 0
-                  ? "text-[#0b5f2c]"
+                  ? "text-gd-green-ink"
                   : delta < 0
                     ? "text-red-700"
                     : "text-black/40",
@@ -116,7 +116,7 @@ export function KpiCard({
         )}
 
         {href && action ? (
-          <p className="mt-2.5 text-[11.5px] font-medium text-[#08743d]">
+          <p className="text-gd-green-deep mt-2.5 text-[11.5px] font-medium">
             {action}
           </p>
         ) : null}

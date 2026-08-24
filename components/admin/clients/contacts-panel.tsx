@@ -49,7 +49,7 @@ export function ContactsPanel({
                 <p className="truncate text-[13px] font-medium text-black/80">
                   {contact.fullName}
                   {contact.isPrimary ? (
-                    <span className="ml-2 text-[10px] font-semibold text-[#08743d]">
+                    <span className="text-gd-green-deep ml-2 text-[10px] font-semibold">
                       Primary
                     </span>
                   ) : null}
@@ -105,7 +105,7 @@ function ContactDialog({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="border-black/[0.08] bg-[#f8f8f3] text-black sm:max-w-lg">
+      <DialogContent className="bg-gd-panel border-black/[0.08] text-black sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-[15px] tracking-[-0.025em]">
             {contact ? `Edit ${contact.fullName}` : "Add a contact"}
@@ -148,7 +148,7 @@ function ContactDialog({
               type="checkbox"
               name="isPrimary"
               defaultChecked={contact?.isPrimary}
-              className="size-4 shrink-0 accent-[#16a34a]"
+              className="accent-gd-green size-4 shrink-0"
             />
             <span className="text-[13px] text-black/75">
               The person we speak to first

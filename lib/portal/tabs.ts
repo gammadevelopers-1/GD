@@ -1,8 +1,4 @@
-export const PORTAL_TABS = [
-  "overview",
-  "team",
-  "milestone",
-] as const;
+export const PORTAL_TABS = ["overview", "team", "milestone"] as const;
 
 export type PortalTab = (typeof PORTAL_TABS)[number];
 

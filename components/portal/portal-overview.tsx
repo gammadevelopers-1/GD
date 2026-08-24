@@ -57,7 +57,7 @@ export function PortalOverview({ portal }: { portal: Portal }) {
                 value={summary.percent}
                 aria-label="Overall progress"
                 className="mt-2 h-2 bg-black/[0.07]"
-                indicatorClassName="rounded-full bg-[#2fe85c] transition-transform duration-500"
+                indicatorClassName="rounded-full bg-brand transition-transform duration-500"
               />
               <p className="mt-2 text-[11px] text-black/40">
                 {summary.done} of {summary.total} milestones done
@@ -73,7 +73,7 @@ export function PortalOverview({ portal }: { portal: Portal }) {
                   <h3 className="text-sm font-semibold">
                     Week {summary.currentWeek.number}
                   </h3>
-                  <span className="rounded-full bg-[#2fe85c]/15 px-2 py-0.5 text-[9px] font-semibold text-[#08743d]">
+                  <span className="bg-brand/15 text-gd-green-deep rounded-full px-2 py-0.5 text-[9px] font-semibold">
                     Current week
                   </span>
                 </div>
@@ -96,7 +96,7 @@ export function PortalOverview({ portal }: { portal: Portal }) {
                         className={cn(
                           "grid size-3.5 shrink-0 place-items-center rounded-[4px] border",
                           item.done
-                            ? "border-[#2fe85c] bg-[#2fe85c] text-[#0b3f1e]"
+                            ? "border-brand bg-brand text-[#0b3f1e]"
                             : "border-black/20",
                         )}
                       >

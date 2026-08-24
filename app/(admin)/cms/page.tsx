@@ -31,7 +31,7 @@ async function CmsPageList() {
   return (
     <>
       {pages.length ? (
-        <div className="overflow-hidden rounded-[20px] border border-black/[0.07] bg-[#f8f8f3]">
+        <div className="bg-gd-panel overflow-hidden rounded-[20px] border border-black/[0.07]">
           {pages.map((page) => (
             <div
               key={page.id}

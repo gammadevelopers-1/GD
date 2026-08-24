@@ -198,7 +198,7 @@ function Overview({
                     project.currentWeek.dueOn,
                     project.currentWeek.startsOn,
                   ) ? (
-                    <span className="rounded-full bg-[#2fe85c]/15 px-2 py-0.5 text-[9px] font-semibold text-[#08743d]">
+                    <span className="bg-brand/15 text-gd-green-deep rounded-full px-2 py-0.5 text-[9px] font-semibold">
                       Current week
                     </span>
                   ) : null}
@@ -222,7 +222,7 @@ function Overview({
                           className={cn(
                             "grid size-4 shrink-0 place-items-center rounded border",
                             card.status === "completed"
-                              ? "border-[#16a34a] bg-[#16a34a] text-white"
+                              ? "border-gd-green bg-gd-green text-white"
                               : "border-black/15 bg-white text-transparent",
                           )}
                         >
@@ -260,7 +260,7 @@ function Overview({
               <Link
                 href={tabHref("milestone")}
                 prefetch
-                className="mt-3 inline-flex rounded text-[11px] font-semibold text-[#08743d] transition hover:underline focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
+                className="text-gd-green-deep focus-visible:ring-gd-green/40 mt-3 inline-flex rounded text-[11px] font-semibold transition hover:underline focus-visible:ring-2 focus-visible:outline-none"
               >
                 Open Milestone →
               </Link>
@@ -280,7 +280,7 @@ function Overview({
                   {gap.href ? (
                     <Link
                       href={gap.href}
-                      className="text-[11px] font-semibold text-[#08743d] hover:underline"
+                      className="text-gd-green-deep text-[11px] font-semibold hover:underline"
                     >
                       {gap.action} →
                     </Link>
@@ -335,10 +335,10 @@ function ValuePanel({
 }) {
   return (
     <section className="panel-dark relative overflow-hidden rounded-[18px] border border-black/[0.07] p-5 text-white">
-      <div className="pointer-events-none absolute -top-20 -right-10 size-52 rounded-full bg-[#2fe85c]/10 blur-3xl" />
+      <div className="bg-brand/10 pointer-events-none absolute -top-20 -right-10 size-52 rounded-full blur-3xl" />
       <div className="relative flex items-center gap-2">
-        <LockKeyhole className="size-3.5 text-[#69ee88]" />
-        <p className="text-[11px] font-medium text-[#69ee88]">
+        <LockKeyhole className="text-gd-mint-bright size-3.5" />
+        <p className="text-gd-mint-bright text-[11px] font-medium">
           Owner only · project value
         </p>
       </div>
@@ -371,7 +371,7 @@ function ValuePanel({
           </p>
           <Link
             href={`/projects/${publicId}/edit`}
-            className="mt-4 inline-flex h-9 items-center gap-1.5 rounded-xl bg-white/[0.08] px-3.5 text-xs font-semibold text-white transition duration-200 hover:bg-white/[0.16] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none active:scale-[0.97]"
+            className="focus-visible:ring-brand/45 mt-4 inline-flex h-9 items-center gap-1.5 rounded-xl bg-white/[0.08] px-3.5 text-xs font-semibold text-white transition duration-200 hover:bg-white/[0.16] focus-visible:ring-2 focus-visible:outline-none active:scale-[0.97]"
           >
             <Pencil className="size-3.5" />
             Record the value

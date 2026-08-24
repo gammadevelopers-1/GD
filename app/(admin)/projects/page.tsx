@@ -39,7 +39,7 @@ export default async function ProjectsPage({
           <Link
             href="/projects/new"
             data-button-fill
-            className="button-fill-fx button-fill-fx--lift inline-flex h-10 items-center gap-2 rounded-xl bg-[#15181b] px-4 text-[13px] font-semibold text-white [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512]"
+            className="button-fill-fx button-fill-fx--lift bg-gd-panel-dark inline-flex h-10 items-center gap-2 rounded-xl px-4 text-[13px] font-semibold text-white [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512]"
           >
             <Plus className="size-4" />
             <span className="button-fill-fx__label">New project</span>

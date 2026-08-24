@@ -117,7 +117,7 @@ function Render(node: IdeaNode, index: number): React.ReactNode {
             readOnly
             disabled
             aria-label={checked ? "Done" : "Not done"}
-            className="mt-1.5 size-3.5 shrink-0 accent-[#16a34a]"
+            className="accent-gd-green mt-1.5 size-3.5 shrink-0"
           />
           <span className="min-w-0">
             <Children nodes={node.content} />

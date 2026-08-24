@@ -70,7 +70,7 @@ export default function ContactPage() {
                 <Link
                   href={site.calendly}
                   data-button-fill
-                  className="button-fill-fx bg-brand flex h-12 items-center justify-center overflow-hidden rounded-xl text-sm font-semibold text-[#101512] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(47,232,92,0.42)] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none"
+                  className="button-fill-fx bg-brand focus-visible:ring-brand/50 flex h-12 items-center justify-center overflow-hidden rounded-xl text-sm font-semibold text-[#101512] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(47,232,92,0.42)] focus-visible:ring-2 focus-visible:outline-none"
                 >
                   <span className="button-fill-fx__label">
                     {contact.aside.cta}

@@ -63,7 +63,7 @@ export default async function EditProjectPage({
       </Link>
 
       <div className="card-surface rounded-2xl border border-black/[0.06] p-5 sm:p-7">
-        <span className="grid size-11 place-items-center rounded-xl bg-[#15181b] text-[#2fe85c]">
+        <span className="bg-gd-panel-dark text-brand grid size-11 place-items-center rounded-xl">
           <SlidersHorizontal className="size-5" />
         </span>
         <h1 className="font-display mt-5 text-[1.75rem] leading-none font-semibold tracking-[-0.045em]">

@@ -26,6 +26,14 @@
   --color-gd-light-emerald: #059669;
   --color-gd-light-green-glow: #10b981;
 
+  --color-gd-green: #16a34a;
+  --color-gd-green-edge: #0f7a37;
+  --color-gd-green-deep: #08743d;
+  --color-gd-green-ink: #0b5f2c;
+  --color-gd-mint-bright: #69ee88;
+  --color-gd-panel: #f8f8f3;
+  --color-gd-panel-dark: #15181b;
+
   --color-brand: var(--color-gd-primary);
   --animate-scroll-hint: scroll-hint 2.2s ease-in-out infinite;
 

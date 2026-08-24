@@ -231,7 +231,7 @@ export function BannerCropper({
             aria-label="Zoom"
             disabled={!image}
             onChange={(event) => changeZoom(Number(event.target.value))}
-            className={`h-1.5 w-full cursor-pointer appearance-none rounded-full bg-black/[0.08] accent-[#16a34a] ${FOCUS_RING}`}
+            className={`accent-gd-green h-1.5 w-full cursor-pointer appearance-none rounded-full bg-black/[0.08] ${FOCUS_RING}`}
           />
         </div>
 

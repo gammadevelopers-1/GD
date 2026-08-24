@@ -6,7 +6,7 @@ export function DeliveryPulse({ weeks }: { weeks: DeliveryWeek[] }) {
   const quiet = weeks.every((week) => week.done === 0);
 
   return (
-    <Card className="gap-0 border-black/[0.07] bg-[#f8f8f3] py-0 shadow-none">
+    <Card className="bg-gd-panel gap-0 border-black/[0.07] py-0 shadow-none">
       <CardContent className="p-5">
         <span className="font-mono text-[9px] tracking-[0.16em] text-black/40 uppercase">
           Work closed, last six weeks
@@ -32,7 +32,7 @@ export function DeliveryPulse({ weeks }: { weeks: DeliveryWeek[] }) {
                   <span
                     className={cn(
                       "font-mono text-[10px] tabular-nums",
-                      now ? "text-[#08743d]" : "text-black/35",
+                      now ? "text-gd-green-deep" : "text-black/35",
                     )}
                   >
                     {week.done}
@@ -41,13 +41,13 @@ export function DeliveryPulse({ weeks }: { weeks: DeliveryWeek[] }) {
                     style={{ height: `${height}px` }}
                     className={cn(
                       "w-full rounded-t-[3px]",
-                      now ? "bg-[#16a34a]" : "bg-black/15",
+                      now ? "bg-gd-green" : "bg-black/15",
                     )}
                   />
                   <span
                     className={cn(
                       "font-mono text-[9px] tracking-[0.08em]",
-                      now ? "text-[#08743d]" : "text-black/30",
+                      now ? "text-gd-green-deep" : "text-black/30",
                     )}
                   >
                     {week.label}

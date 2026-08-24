@@ -26,7 +26,7 @@ export function LoginForm({ next = "/dashboard" }: { next?: string }) {
           type="email"
           autoComplete="email"
           placeholder="you@gammadevelopers.ai"
-          className="h-12 w-full rounded-xl border border-white/10 bg-white/[0.055] px-4 text-[15px] text-white transition outline-none placeholder:text-white/25 focus:border-[#2fe85c]/60 focus:ring-4 focus:ring-[#2fe85c]/10"
+          className="focus:border-brand/60 focus:ring-brand/10 h-12 w-full rounded-xl border border-white/10 bg-white/[0.055] px-4 text-[15px] text-white transition outline-none placeholder:text-white/25 focus:ring-4"
           required
         />
       </label>
@@ -37,8 +37,8 @@ export function LoginForm({ next = "/dashboard" }: { next?: string }) {
           name="password"
           autoComplete="current-password"
           placeholder="Your password"
-          className="h-12 w-full rounded-xl border border-white/10 bg-white/[0.055] px-4 text-[15px] text-white transition outline-none placeholder:text-white/25 focus:border-[#2fe85c]/60 focus:ring-4 focus:ring-[#2fe85c]/10"
-          toggleClassName="text-white/40 hover:text-white focus-visible:ring-[#2fe85c]/45"
+          className="focus:border-brand/60 focus:ring-brand/10 h-12 w-full rounded-xl border border-white/10 bg-white/[0.055] px-4 text-[15px] text-white transition outline-none placeholder:text-white/25 focus:ring-4"
+          toggleClassName="text-white/40 hover:text-white focus-visible:ring-brand/45"
           required
         />
       </label>
@@ -58,7 +58,7 @@ export function LoginForm({ next = "/dashboard" }: { next?: string }) {
         type="submit"
         disabled={pending}
         data-button-fill
-        className="button-fill-fx button-fill-fx--lift group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#2fe85c] px-4 text-sm font-semibold text-[#101512] shadow-[0_12px_35px_rgba(47,232,92,0.2)] transition hover:shadow-[0_18px_45px_rgba(47,232,92,0.3)] disabled:cursor-wait disabled:opacity-60"
+        className="button-fill-fx button-fill-fx--lift group bg-brand flex h-12 w-full items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-[#101512] shadow-[0_12px_35px_rgba(47,232,92,0.2)] transition hover:shadow-[0_18px_45px_rgba(47,232,92,0.3)] disabled:cursor-wait disabled:opacity-60"
       >
         {pending ? (
           <LoaderCircle className="relative size-4 animate-spin" />

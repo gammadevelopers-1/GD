@@ -60,7 +60,7 @@ export default async function LoginPage({
             <span className="font-medium text-white">Gamma Developers</span>
           </div>
 
-          <p className="font-mono text-[10px] tracking-[0.16em] text-[#2fe85c] uppercase">
+          <p className="text-brand font-mono text-[10px] tracking-[0.16em] uppercase">
             Welcome back
           </p>
           <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-[2.3rem]">

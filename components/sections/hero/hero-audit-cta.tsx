@@ -19,7 +19,7 @@ export function HeroAuditCta() {
           className="button-fill-fx marketing-primary-button group/button relative mt-5 inline-flex h-14 items-center gap-4 overflow-hidden rounded-full px-7"
         >
           <span className="button-fill-fx__label">Book the full audit</span>
-          <span className="relative z-[1] grid h-8 w-12 place-items-center rounded-[10px] bg-[#16181c] text-white shadow-[0_5px_16px_rgba(0,0,0,0.2)] transition-all duration-300 group-hover/button:translate-x-1 group-hover/button:bg-[#2fe85c] group-hover/button:text-[#16181c]">
+          <span className="group-hover/button:bg-brand relative z-[1] grid h-8 w-12 place-items-center rounded-[10px] bg-[#16181c] text-white shadow-[0_5px_16px_rgba(0,0,0,0.2)] transition-all duration-300 group-hover/button:translate-x-1 group-hover/button:text-[#16181c]">
             <svg
               aria-hidden
               viewBox="0 0 20 16"

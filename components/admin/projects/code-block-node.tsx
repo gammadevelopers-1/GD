@@ -37,7 +37,7 @@ function CodeBlockView({ node }: NodeViewProps) {
         className="absolute top-2 right-2 z-10 inline-flex items-center gap-1.5 rounded-md bg-white/10 px-2 py-1 text-[10px] font-medium text-white/70 opacity-0 transition group-hover/code:opacity-100 hover:bg-white/20 hover:text-white focus-visible:opacity-100"
       >
         {copied ? (
-          <Check className="size-3 text-[#69ee88]" />
+          <Check className="text-gd-mint-bright size-3" />
         ) : (
           <Copy className="size-3" />
         )}

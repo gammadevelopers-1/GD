@@ -29,19 +29,19 @@ export function PortalProjectCard({ project }: { project: PortalProject }) {
       href={`/portal/${project.publicId}`}
       className="group focus-visible:outline-none"
     >
-      <Card className="h-full gap-0 overflow-hidden border-black/[0.06] bg-white py-0 shadow-none transition duration-200 group-hover:-translate-y-0.5 group-hover:border-black/[0.14] group-hover:shadow-[0_18px_44px_rgba(20,23,26,0.07)] group-focus-visible:border-[#16a34a]/50">
+      <Card className="group-focus-visible:border-gd-green/50 h-full gap-0 overflow-hidden border-black/[0.06] bg-white py-0 shadow-none transition duration-200 group-hover:-translate-y-0.5 group-hover:border-black/[0.14] group-hover:shadow-[0_18px_44px_rgba(20,23,26,0.07)]">
         <PortalCardBanner project={project} />
 
         <CardContent className="flex flex-1 flex-col p-5">
           <div className="flex items-start justify-between gap-3">
             {project.bannerUrl ? (
-              <h2 className="min-w-0 flex-1 truncate text-[17px] leading-tight font-semibold tracking-[-0.035em] transition-colors group-hover:text-[#08743d]">
+              <h2 className="group-hover:text-gd-green-deep min-w-0 flex-1 truncate text-[17px] leading-tight font-semibold tracking-[-0.035em] transition-colors">
                 {project.name}
               </h2>
             ) : (
               <span className="min-w-0 flex-1" />
             )}
-            <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-black/[0.035] text-black/25 transition-colors duration-300 group-hover:bg-[#2fe85c]/15 group-hover:text-[#08743d]">
+            <span className="group-hover:bg-brand/15 group-hover:text-gd-green-deep grid size-7 shrink-0 place-items-center rounded-lg bg-black/[0.035] text-black/25 transition-colors duration-300">
               <ArrowUpRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </span>
           </div>
@@ -132,7 +132,7 @@ function PortalCardBanner({ project }: { project: PortalProject }) {
 
   return (
     <div className="panel-dark relative flex h-24 shrink-0 items-center justify-center overflow-hidden px-5">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#2fe85c]/40 to-transparent" />
+      <div className="via-brand/40 pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent" />
       <h3 className="font-display line-clamp-2 text-center text-[17px] leading-snug font-semibold tracking-[-0.035em] text-white">
         {project.name}
       </h3>

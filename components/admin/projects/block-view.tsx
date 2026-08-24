@@ -36,7 +36,7 @@ function Inline({ value }: { value: string }) {
 function calloutClass(tone: CalloutTone) {
   if (tone === "warn") return "border-amber-200 bg-amber-50 text-amber-900";
   if (tone === "key")
-    return "border-[#2fe85c]/35 bg-[#2fe85c]/[0.08] text-[#08743d]";
+    return "border-brand/35 bg-brand/[0.08] text-gd-green-deep";
   return "border-black/[0.08] bg-black/[0.025] text-black/70";
 }
 
@@ -166,10 +166,10 @@ export function BlockView({
             return (
               <div
                 key={index}
-                className="flex items-center gap-2.5 rounded-xl border border-[#2fe85c]/30 bg-[#2fe85c]/[0.06] px-3 py-2.5"
+                className="border-brand/30 bg-brand/[0.06] flex items-center gap-2.5 rounded-xl border px-3 py-2.5"
               >
-                <KeyRound className="size-4 shrink-0 text-[#08743d]" />
-                <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-[#08743d]">
+                <KeyRound className="text-gd-green-deep size-4 shrink-0" />
+                <span className="text-gd-green-deep min-w-0 flex-1 truncate text-[13px] font-medium">
                   {block.name}
                 </span>
                 <span className="shrink-0 text-[10px] text-black/40">

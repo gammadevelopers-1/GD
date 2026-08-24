@@ -15,8 +15,8 @@ export function Issued({
   onClose: () => void;
 }) {
   return (
-    <div className="rounded-xl border border-[#0f7a37]/30 bg-[#16a34a]/[0.06] p-4">
-      <p className="text-[13px] font-medium text-[#0b5f2c]">
+    <div className="border-gd-green-edge/30 bg-gd-green/[0.06] rounded-xl border p-4">
+      <p className="text-gd-green-ink text-[13px] font-medium">
         Send these to {issued.name}
       </p>
       <p className="mt-1 text-[11.5px] text-black/60">
@@ -91,7 +91,7 @@ export function CopyButton({ value, label }: { value: string; label: string }) {
       )}
     >
       {copied ? (
-        <Check className="size-3.5 text-[#0b5f2c]" />
+        <Check className="text-gd-green-ink size-3.5" />
       ) : (
         <Copy className="size-3.5" />
       )}

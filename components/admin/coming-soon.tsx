@@ -18,18 +18,18 @@ export function ComingSoon({
     <section
       aria-label={`${title} coming soon`}
       className={cn(
-        "group relative isolate overflow-hidden rounded-[24px] border border-white/10 bg-[#15181b] text-white shadow-[0_18px_55px_rgba(20,23,26,0.12)]",
+        "group bg-gd-panel-dark relative isolate overflow-hidden rounded-[24px] border border-white/10 text-white shadow-[0_18px_55px_rgba(20,23,26,0.12)]",
         compact ? "p-5 sm:p-6" : "px-5 py-7 sm:px-7 sm:py-9 lg:px-9",
         className,
       )}
     >
       <div
         aria-hidden="true"
-        className="absolute -top-24 right-[-5%] size-64 rounded-full bg-[#2fe85c]/13 blur-3xl transition duration-700 group-hover:scale-125 group-hover:bg-[#2fe85c]/20"
+        className="bg-brand/13 group-hover:bg-brand/20 absolute -top-24 right-[-5%] size-64 rounded-full blur-3xl transition duration-700 group-hover:scale-125"
       />
       <div
         aria-hidden="true"
-        className="absolute bottom-[-55%] left-[12%] h-44 w-[72%] rotate-[-7deg] rounded-[50%] border-[28px] border-white/[0.035] blur-sm transition duration-700 group-hover:translate-x-5 group-hover:border-[#2fe85c]/10"
+        className="group-hover:border-brand/10 absolute bottom-[-55%] left-[12%] h-44 w-[72%] rotate-[-7deg] rounded-[50%] border-[28px] border-white/[0.035] blur-sm transition duration-700 group-hover:translate-x-5"
       />
       <div
         aria-hidden="true"
@@ -38,10 +38,10 @@ export function ComingSoon({
 
       <div className="relative">
         <div className="flex items-center justify-between gap-4">
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#2fe85c]/20 bg-[#2fe85c]/10 px-3 py-1.5 font-mono text-[8px] tracking-[0.15em] text-[#74ef91] uppercase sm:text-[9px]">
+          <span className="border-brand/20 bg-brand/10 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[8px] tracking-[0.15em] text-[#74ef91] uppercase sm:text-[9px]">
             <Clock3 className="size-3" /> In development
           </span>
-          <Sparkles className="size-4 text-white/18 transition duration-500 group-hover:scale-110 group-hover:rotate-12 group-hover:text-[#2fe85c]/70" />
+          <Sparkles className="group-hover:text-brand/70 size-4 text-white/18 transition duration-500 group-hover:scale-110 group-hover:rotate-12" />
         </div>
 
         <p

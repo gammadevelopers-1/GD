@@ -48,9 +48,9 @@ export default async function DashboardPage() {
             <Link
               href="/projects/new"
               data-button-fill
-              className="button-fill-fx button-fill-fx--lift group inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#15181b] px-4 text-sm font-semibold text-white shadow-sm transition [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512]"
+              className="button-fill-fx button-fill-fx--lift group bg-gd-panel-dark inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-white shadow-sm transition [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512]"
             >
-              <Plus className="size-4 text-[#2fe85c] transition-colors group-hover:text-[#101512]" />
+              <Plus className="text-brand size-4 transition-colors group-hover:text-[#101512]" />
               <span className="button-fill-fx__label">New project</span>
             </Link>
           ) : undefined
@@ -152,7 +152,7 @@ function DashboardView({
         <DeliveryPulse weeks={data.delivery} />
       </section>
 
-      <section className="mt-6 overflow-hidden rounded-[22px] border border-black/[0.07] bg-[#f8f8f3] shadow-[0_12px_40px_rgba(20,23,26,0.035)]">
+      <section className="bg-gd-panel mt-6 overflow-hidden rounded-[22px] border border-black/[0.07] shadow-[0_12px_40px_rgba(20,23,26,0.035)]">
         <div className="flex items-center justify-between border-b border-black/[0.065] px-4 py-4 sm:px-5 lg:px-6">
           <div>
             <h2 className="text-[15px] font-semibold tracking-[-0.025em]">
@@ -161,7 +161,7 @@ function DashboardView({
           </div>
           <Link
             href="/projects"
-            className="group flex items-center gap-1.5 text-xs font-semibold text-[#08743d]"
+            className="group text-gd-green-deep flex items-center gap-1.5 text-xs font-semibold"
           >
             View all{" "}
             <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -223,7 +223,7 @@ function ProjectRow({ project }: { project: DashboardProject }) {
             value={project.progress}
             aria-label={`${project.name} progress`}
             className="h-1.5 w-20 bg-black/[0.07]"
-            indicatorClassName="rounded-full bg-[#16a34a]"
+            indicatorClassName="rounded-full bg-gd-green"
           />
           <span className="font-mono text-[9px] text-black/40">
             {project.progress}%
@@ -262,7 +262,7 @@ function ProjectCard({ project }: { project: DashboardProject }) {
         value={project.progress}
         aria-label={`${project.name} progress`}
         className="mt-3 h-1.5 bg-black/[0.07]"
-        indicatorClassName="rounded-full bg-[#16a34a]"
+        indicatorClassName="rounded-full bg-gd-green"
       />
     </Link>
   );

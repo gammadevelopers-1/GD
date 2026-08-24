@@ -39,7 +39,7 @@ export function CardGridSkeleton({
         <div
           key={index}
           className={cn(
-            "animate-pulse rounded-[20px] border border-black/[0.07] bg-[#f8f8f3]",
+            "bg-gd-panel animate-pulse rounded-[20px] border border-black/[0.07]",
             height,
           )}
         />

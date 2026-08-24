@@ -18,7 +18,7 @@ export function NewsletterForm() {
       <form
         onSubmit={onSubmit}
         aria-label="Newsletter signup"
-        className="flex items-center gap-2 rounded-[10px] border border-white/10 bg-white/[0.05] py-1.25 pr-1.25 pl-3 transition-colors duration-200 focus-within:border-[#2fe85c]"
+        className="focus-within:border-brand flex items-center gap-2 rounded-[10px] border border-white/10 bg-white/[0.05] py-1.25 pr-1.25 pl-3 transition-colors duration-200"
       >
         <label className="min-w-0 flex-1">
           <span className="sr-only">Email address</span>
@@ -35,7 +35,7 @@ export function NewsletterForm() {
           size="none"
           type="submit"
           aria-label="Subscribe"
-          className="grid size-8.5 shrink-0 cursor-pointer place-items-center rounded-lg bg-[#2fe85c] text-[#0f1512] transition-transform duration-200 hover:-translate-y-px focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none"
+          className="bg-brand focus-visible:ring-brand/50 grid size-8.5 shrink-0 cursor-pointer place-items-center rounded-lg text-[#0f1512] transition-transform duration-200 hover:-translate-y-px focus-visible:ring-2 focus-visible:outline-none"
         >
           <svg
             aria-hidden

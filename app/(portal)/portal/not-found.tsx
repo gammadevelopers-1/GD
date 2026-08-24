@@ -14,7 +14,7 @@ export default function PortalNotFound() {
         </p>
         <Link
           href="/portal"
-          className="mt-6 inline-flex text-[13px] font-medium text-[#08743d] hover:underline"
+          className="text-gd-green-deep mt-6 inline-flex text-[13px] font-medium hover:underline"
         >
           Your projects
         </Link>

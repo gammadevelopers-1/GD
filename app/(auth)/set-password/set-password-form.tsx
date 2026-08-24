@@ -12,9 +12,9 @@ import { Button } from "@/components/ui/button";
 const initialState: SetPasswordState = {};
 
 const FIELD =
-  "h-12 w-full rounded-xl border border-white/10 bg-white/[0.055] px-4 text-[15px] text-white transition outline-none placeholder:text-white/25 focus:border-[#2fe85c]/60 focus:ring-4 focus:ring-[#2fe85c]/10 disabled:cursor-not-allowed disabled:opacity-40";
+  "h-12 w-full rounded-xl border border-white/10 bg-white/[0.055] px-4 text-[15px] text-white transition outline-none placeholder:text-white/25 focus:border-brand/60 focus:ring-4 focus:ring-brand/10 disabled:cursor-not-allowed disabled:opacity-40";
 
-const TOGGLE = "text-white/40 hover:text-white focus-visible:ring-[#2fe85c]/45";
+const TOGGLE = "text-white/40 hover:text-white focus-visible:ring-brand/45";
 
 export function SetPasswordForm({
   token,
@@ -129,7 +129,7 @@ export function SetPasswordForm({
         type="submit"
         disabled={pending || !valid}
         data-button-fill
-        className="button-fill-fx button-fill-fx--lift group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#2fe85c] px-4 text-sm font-semibold text-[#101512] shadow-[0_12px_35px_rgba(47,232,92,0.2)] transition hover:shadow-[0_18px_45px_rgba(47,232,92,0.3)] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+        className="button-fill-fx button-fill-fx--lift group bg-brand flex h-12 w-full items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-[#101512] shadow-[0_12px_35px_rgba(47,232,92,0.2)] transition hover:shadow-[0_18px_45px_rgba(47,232,92,0.3)] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
       >
         {pending ? (
           <LoaderCircle className="relative size-4 animate-spin" />

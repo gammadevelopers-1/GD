@@ -33,9 +33,9 @@ export function readUserAgent(value: string | null): Device {
   }
 
   const browser =
-    BROWSERS.find(([pattern]) => pattern.test(value))?.[1] ??
-    "Unknown browser";
-  const platform = PLATFORMS.find(([pattern]) => pattern.test(value))?.[1] ?? "";
+    BROWSERS.find(([pattern]) => pattern.test(value))?.[1] ?? "Unknown browser";
+  const platform =
+    PLATFORMS.find(([pattern]) => pattern.test(value))?.[1] ?? "";
 
   const kind = /\biPad\b|\bTablet\b/.test(value)
     ? "tablet"

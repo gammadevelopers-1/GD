@@ -56,7 +56,7 @@ export function WeekCarryOver({
                   })
                 }
                 title={`Add it here and close it on Week ${item.fromWeek} as moved`}
-                className="inline-flex h-6 shrink-0 items-center rounded-md bg-[#15181b] px-2 text-[10px] font-semibold text-white transition hover:bg-black disabled:opacity-60"
+                className="bg-gd-panel-dark inline-flex h-6 shrink-0 items-center rounded-md px-2 text-[10px] font-semibold text-white transition hover:bg-black disabled:opacity-60"
               >
                 {pending ? (
                   <Loader2 className="size-2.5 animate-spin" />

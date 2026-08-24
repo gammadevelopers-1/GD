@@ -36,7 +36,7 @@ export function AccountMenu({
           size="none"
           type="button"
           aria-label={`${shown} — account menu`}
-          className="cursor-pointer rounded-xl transition duration-200 hover:-translate-y-px focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
+          className="focus-visible:ring-gd-green/40 cursor-pointer rounded-xl transition duration-200 hover:-translate-y-px focus-visible:ring-2 focus-visible:outline-none"
         >
           <Face
             initials={viewer.initials}
@@ -115,7 +115,7 @@ function Face({
   return (
     <span
       className={cn(
-        "grid shrink-0 place-items-center overflow-hidden rounded-lg bg-[#15181b] text-[10px] font-semibold text-[#2fe85c]",
+        "bg-gd-panel-dark text-brand grid shrink-0 place-items-center overflow-hidden rounded-lg text-[10px] font-semibold",
         className,
       )}
     >

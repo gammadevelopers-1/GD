@@ -37,7 +37,7 @@ export function StatusControl({
           if (!form) return;
           startTransition(() => form.requestSubmit());
         }}
-        triggerClassName="h-9 cursor-pointer appearance-none rounded-full border border-white/[0.12] bg-white/[0.06] py-0 pr-8 pl-3.5 text-xs font-semibold text-white capitalize transition outline-none hover:border-white/25 focus-visible:border-white/25 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/40 disabled:opacity-60 [&>svg]:text-white/45"
+        triggerClassName="h-9 cursor-pointer appearance-none rounded-full border border-white/[0.12] bg-white/[0.06] py-0 pr-8 pl-3.5 text-xs font-semibold text-white capitalize transition outline-none hover:border-white/25 focus-visible:border-white/25 focus-visible:ring-2 focus-visible:ring-brand/40 disabled:opacity-60 [&>svg]:text-white/45"
         contentClassName="z-[70]"
         options={PROJECT_STATUSES.map((value) => ({
           value,

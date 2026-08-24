@@ -54,7 +54,7 @@ const STRENGTH = [
   { label: "Weak", bar: "bg-red-500", ink: "text-red-600" },
   { label: "Fair", bar: "bg-amber-500", ink: "text-amber-600" },
   { label: "Good", bar: "bg-lime-500", ink: "text-lime-700" },
-  { label: "Strong", bar: "bg-[#16a34a]", ink: "text-[#0b5f2c]" },
+  { label: "Strong", bar: "bg-gd-green", ink: "text-gd-green-ink" },
 ];
 
 function scorePassword(value: string) {
@@ -81,7 +81,7 @@ function Panel({
         "py-0 shadow-none",
         tone === "danger"
           ? "border-red-700/20 bg-red-600/[0.03]"
-          : "border-black/[0.07] bg-[#f8f8f3]",
+          : "bg-gd-panel border-black/[0.07]",
       )}
     >
       <CardContent className="p-5">
@@ -120,7 +120,7 @@ export function SettingsWorkspace({
             <TabsTrigger
               key={section.value}
               value={section.value}
-              className="h-auto w-full justify-start gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-black/55 transition-colors duration-150 after:hidden hover:bg-black/[0.04] hover:text-black data-[state=active]:bg-[#2fe85c]/10 data-[state=active]:font-semibold data-[state=active]:text-[#08743d]"
+              className="data-[state=active]:bg-brand/10 data-[state=active]:text-gd-green-deep h-auto w-full justify-start gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-black/55 transition-colors duration-150 after:hidden hover:bg-black/[0.04] hover:text-black data-[state=active]:font-semibold"
             >
               <section.icon className="size-3.75" />
               {section.label}
@@ -312,7 +312,7 @@ function PasswordPanel() {
           </Button>
 
           {state.status === "success" && state.message ? (
-            <span className="flex items-center gap-1.5 text-[12px] text-[#0b5f2c]">
+            <span className="text-gd-green-ink flex items-center gap-1.5 text-[12px]">
               <Check className="size-3.5" />
               {state.message}
             </span>
@@ -385,7 +385,7 @@ function NotificationsPanel({ profile }: { profile: MyProfile }) {
           </Button>
 
           {state.status === "success" && state.message ? (
-            <span className="flex items-center gap-1.5 text-[12px] text-[#0b5f2c]">
+            <span className="text-gd-green-ink flex items-center gap-1.5 text-[12px]">
               <Check className="size-3.5" />
               {state.message}
             </span>
@@ -415,7 +415,7 @@ function SessionRow({ session }: { session: MySession }) {
       className={cn(
         "flex items-center gap-3 rounded-xl border bg-white px-3.5 py-3 transition-colors duration-150",
         session.current
-          ? "border-[#2fe85c]/45 bg-[#2fe85c]/[0.04]"
+          ? "border-brand/45 bg-brand/[0.04]"
           : "border-black/[0.07] hover:border-black/[0.14]",
       )}
     >
@@ -423,7 +423,7 @@ function SessionRow({ session }: { session: MySession }) {
         className={cn(
           "grid size-8 shrink-0 place-items-center rounded-lg",
           session.current
-            ? "bg-[#2fe85c]/12 text-[#08743d]"
+            ? "bg-brand/12 text-gd-green-deep"
             : "bg-black/[0.05] text-black/45",
         )}
       >

@@ -69,7 +69,7 @@ export function ProfileHeader({
   }
 
   return (
-    <div className="overflow-hidden rounded-[22px] border border-black/[0.07] bg-[#f8f8f3]">
+    <div className="bg-gd-panel overflow-hidden rounded-[22px] border border-black/[0.07]">
       <Cover url={bannerUrl} />
 
       <div className="-mt-8 flex flex-wrap items-end gap-5 px-5 pb-6 sm:px-7">
@@ -100,7 +100,7 @@ export function ProfileHeader({
               className="h-9.5 rounded-xl border-black/10 bg-white text-[13px] font-medium text-black/65 transition duration-200 hover:border-black/25 hover:text-black active:scale-[0.98]"
             >
               {copied ? (
-                <Check className="size-3.5 text-[#0b5f2c]" />
+                <Check className="text-gd-green-ink size-3.5" />
               ) : (
                 <Copy className="size-3.5" />
               )}
@@ -111,7 +111,7 @@ export function ProfileHeader({
           <Button
             type="button"
             onClick={focusEditor}
-            className="h-9.5 rounded-xl bg-[#15181b] text-[13px] font-semibold text-white transition duration-200 hover:bg-black hover:shadow-[0_10px_24px_rgba(20,23,26,0.18)] active:scale-[0.98]"
+            className="bg-gd-panel-dark h-9.5 rounded-xl text-[13px] font-semibold text-white transition duration-200 hover:bg-black hover:shadow-[0_10px_24px_rgba(20,23,26,0.18)] active:scale-[0.98]"
           >
             <SquarePen className="size-3.5" />
             Edit profile
@@ -286,13 +286,13 @@ function Portrait({ url, initials }: { url: string | null; initials: string }) {
         disabled={pending}
         onClick={() => picker.current?.click()}
         aria-label="Change picture"
-        className="group/pick relative block cursor-pointer rounded-3xl focus-visible:ring-2 focus-visible:ring-[#16a34a]/60 focus-visible:outline-none"
+        className="group/pick focus-visible:ring-gd-green/60 relative block cursor-pointer rounded-3xl focus-visible:ring-2 focus-visible:outline-none"
       >
-        <Avatar className="size-24 rounded-3xl ring-4 ring-[#f8f8f3] after:rounded-3xl">
+        <Avatar className="ring-gd-panel size-24 rounded-3xl ring-4 after:rounded-3xl">
           {preview ? (
             <AvatarImage src={preview} alt="" className="rounded-3xl" />
           ) : null}
-          <AvatarFallback className="rounded-3xl bg-[#15181b] font-mono text-3xl font-semibold text-[#2fe85c]">
+          <AvatarFallback className="bg-gd-panel-dark text-brand rounded-3xl font-mono text-3xl font-semibold">
             {initials}
           </AvatarFallback>
         </Avatar>

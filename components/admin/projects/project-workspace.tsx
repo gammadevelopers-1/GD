@@ -213,9 +213,9 @@ export function ProjectWorkspace({
             type="button"
             onClick={() => goTo("work")}
             title="Open the Work Board"
-            className="group absolute top-1/2 right-0 z-20 flex -translate-y-1/2 items-center gap-2 rounded-l-xl bg-[#15181b] py-4 pr-2.5 pl-2 text-white shadow-[0_10px_30px_rgba(20,23,26,0.18)] transition hover:pr-3.5 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/60 focus-visible:outline-none"
+            className="group bg-gd-panel-dark focus-visible:ring-brand/60 absolute top-1/2 right-0 z-20 flex -translate-y-1/2 items-center gap-2 rounded-l-xl py-4 pr-2.5 pl-2 text-white shadow-[0_10px_30px_rgba(20,23,26,0.18)] transition hover:pr-3.5 focus-visible:ring-2 focus-visible:outline-none"
           >
-            <ChevronLeft className="size-3.5 shrink-0 text-[#2fe85c] transition group-hover:-translate-x-0.5" />
+            <ChevronLeft className="text-brand size-3.5 shrink-0 transition group-hover:-translate-x-0.5" />
             <span className="text-[11px] font-semibold tracking-[0.04em] [writing-mode:vertical-rl]">
               Work Board
             </span>
@@ -286,7 +286,7 @@ export function ProjectWorkspace({
                         ? setConfirming(true)
                         : void runOrganise("replace")
                     }
-                    className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#15181b] px-2.5 text-xs font-semibold text-[#2fe85c] transition hover:bg-black disabled:opacity-60"
+                    className="bg-gd-panel-dark text-brand inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold transition hover:bg-black disabled:opacity-60"
                   >
                     {busy ? (
                       <Loader2 className="size-3.5 animate-spin" />

@@ -34,7 +34,7 @@ function PasswordInput({
         aria-pressed={visible}
         aria-label={visible ? "Hide password" : "Show password"}
         className={cn(
-          "absolute inset-y-0 right-0 grid w-10 cursor-pointer place-items-center rounded-r-xl text-black/35 transition-colors duration-150 hover:text-black focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-40",
+          "focus-visible:ring-gd-green/40 absolute inset-y-0 right-0 grid w-10 cursor-pointer place-items-center rounded-r-xl text-black/35 transition-colors duration-150 hover:text-black focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-40",
           toggleClassName,
         )}
       >

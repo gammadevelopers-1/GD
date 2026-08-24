@@ -112,7 +112,7 @@ export function PortfolioFilters({
             onChange={(event) => onSearchChange(event.target.value)}
             placeholder="Search projects or clients"
             aria-label="Search projects"
-            className="h-10 w-full rounded-xl border border-black/8 bg-black/[0.02] pr-3 pl-9 text-sm transition outline-none placeholder:text-black/28 hover:border-black/15 focus:border-[#16a34a] focus:bg-white focus-visible:ring-2 focus-visible:ring-[#16a34a]/25"
+            className="focus:border-gd-green focus-visible:ring-gd-green/25 h-10 w-full rounded-xl border border-black/8 bg-black/[0.02] pr-3 pl-9 text-sm transition outline-none placeholder:text-black/28 hover:border-black/15 focus:bg-white focus-visible:ring-2"
           />
         </div>
 
@@ -161,10 +161,10 @@ export function PortfolioFilters({
               aria-pressed={active}
               onClick={() => toggleStatus(status)}
               className={cn(
-                "rounded-full border px-3 py-1 text-[11px] font-medium transition duration-200 focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none",
+                "focus-visible:ring-gd-green/40 rounded-full border px-3 py-1 text-[11px] font-medium transition duration-200 focus-visible:ring-2 focus-visible:outline-none",
                 active
-                  ? "border-[#15181b] bg-[#15181b] text-white shadow-[0_6px_16px_-6px_rgba(20,23,26,0.55)]"
-                  : "border-black/8 bg-white text-black/50 hover:-translate-y-px hover:border-[#2fe85c]/45 hover:bg-white hover:text-black",
+                  ? "border-gd-panel-dark bg-gd-panel-dark text-white shadow-[0_6px_16px_-6px_rgba(20,23,26,0.55)]"
+                  : "hover:border-brand/45 border-black/8 bg-white text-black/50 hover:-translate-y-px hover:bg-white hover:text-black",
               )}
             >
               {PROJECT_STATUS_LABEL[status]}
@@ -182,7 +182,7 @@ export function PortfolioFilters({
               apply({ ...query, includeArchived: !query.includeArchived })
             }
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium transition focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none",
+              "focus-visible:ring-gd-green/40 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium transition focus-visible:ring-2 focus-visible:outline-none",
               query.includeArchived
                 ? "border-amber-300 bg-amber-100 text-amber-800"
                 : "border-dashed border-black/15 bg-white text-black/45 hover:text-black",
@@ -199,7 +199,7 @@ export function PortfolioFilters({
             size="none"
             type="button"
             onClick={reset}
-            className="ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold text-black/50 underline-offset-4 transition hover:text-black hover:underline focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none"
+            className="focus-visible:ring-gd-green/40 ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold text-black/50 underline-offset-4 transition hover:text-black hover:underline focus-visible:ring-2 focus-visible:outline-none"
           >
             <X className="size-3" />
             Reset {filterCount} filter{filterCount === 1 ? "" : "s"}
@@ -224,7 +224,7 @@ function Select({
   onChange: (value: string | null) => void;
 }) {
   return (
-    <label className="flex h-10 min-w-0 items-center gap-2 rounded-xl border border-black/8 bg-black/[0.02] pr-1 pl-3 transition focus-within:border-[#16a34a] hover:border-black/15 lg:w-42">
+    <label className="focus-within:border-gd-green flex h-10 min-w-0 items-center gap-2 rounded-xl border border-black/8 bg-black/[0.02] pr-1 pl-3 transition hover:border-black/15 lg:w-42">
       <span className="sr-only">{label}</span>
       <FormSelect
         value={value}
@@ -265,9 +265,9 @@ function ViewButton({
       aria-label={label}
       aria-pressed={active}
       className={cn(
-        "grid size-8 place-items-center rounded-lg transition focus-visible:ring-2 focus-visible:ring-[#16a34a]/40 focus-visible:outline-none",
+        "focus-visible:ring-gd-green/40 grid size-8 place-items-center rounded-lg transition focus-visible:ring-2 focus-visible:outline-none",
         active
-          ? "bg-[#15181b] text-white"
+          ? "bg-gd-panel-dark text-white"
           : "text-black/35 hover:bg-black/[0.04] hover:text-black/70",
       )}
     >

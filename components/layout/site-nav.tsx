@@ -69,7 +69,7 @@ export function SiteNav() {
         <Link
           href="/"
           aria-label={`${site.name} home`}
-          className="group/logo relative block h-10 w-14 overflow-hidden rounded-lg transition-[width,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black/[0.025] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none md:hover:w-[158px] md:focus-visible:w-[158px]"
+          className="group/logo focus-visible:ring-brand/50 relative block h-10 w-14 overflow-hidden rounded-lg transition-[width,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black/[0.025] focus-visible:ring-2 focus-visible:outline-none md:hover:w-[158px] md:focus-visible:w-[158px]"
         >
           <span className="absolute inset-0 transition-all duration-300 ease-out group-hover/logo:-translate-x-2 group-hover/logo:scale-95 group-hover/logo:opacity-0 group-focus-visible/logo:-translate-x-2 group-focus-visible/logo:scale-95 group-focus-visible/logo:opacity-0 max-md:group-hover/logo:translate-x-0 max-md:group-hover/logo:scale-100 max-md:group-hover/logo:opacity-100">
             <Image
@@ -108,7 +108,7 @@ export function SiteNav() {
               aria-expanded={services}
               onClick={() => setServices((v) => !v)}
               className={cn(
-                "hover:text-foreground inline-flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-[12.5px] font-medium tracking-[-0.01em] transition-colors focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none",
+                "hover:text-foreground focus-visible:ring-brand/50 inline-flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 text-[12.5px] font-medium tracking-[-0.01em] transition-colors focus-visible:ring-2 focus-visible:outline-none",
                 services ? "text-foreground" : "text-muted-foreground",
               )}
             >
@@ -134,7 +134,7 @@ export function SiteNav() {
                   key={item.title}
                   href={item.href}
                   onClick={() => setServices(false)}
-                  className="rounded-[14px] px-4 py-3.5 transition-colors duration-200 hover:bg-[rgba(47,232,92,0.06)] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none"
+                  className="focus-visible:ring-brand/50 rounded-[14px] px-4 py-3.5 transition-colors duration-200 hover:bg-[rgba(47,232,92,0.06)] focus-visible:ring-2 focus-visible:outline-none"
                 >
                   <span className="text-foreground block text-sm font-semibold">
                     {item.title}
@@ -157,7 +157,7 @@ export function SiteNav() {
         <div className="flex items-center justify-end gap-2">
           <Link
             href="/contact"
-            className="text-muted-foreground hover:text-foreground hidden rounded-full px-3 py-2 text-[13px] font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none sm:inline-flex"
+            className="text-muted-foreground hover:text-foreground focus-visible:ring-brand/50 hidden rounded-full px-3 py-2 text-[13px] font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none sm:inline-flex"
           >
             Contact
           </Link>
@@ -184,7 +184,7 @@ function NavLink({
   return (
     <Link
       href={href}
-      className="text-muted-foreground hover:text-foreground group relative rounded-full px-4 py-2 text-[12.5px] font-medium tracking-[-0.01em] transition-colors hover:bg-white/70 focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none"
+      className="text-muted-foreground hover:text-foreground group focus-visible:ring-brand/50 relative rounded-full px-4 py-2 text-[12.5px] font-medium tracking-[-0.01em] transition-colors hover:bg-white/70 focus-visible:ring-2 focus-visible:outline-none"
     >
       <span className="relative z-1">{children}</span>
       <span className="bg-brand/16 absolute inset-x-1.5 bottom-1 h-0.5 origin-left scale-x-0 rounded-full transition-transform duration-300 group-hover:scale-x-100" />

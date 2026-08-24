@@ -41,7 +41,7 @@ export function ShareProject({
         size="none"
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex h-9 items-center gap-1.5 rounded-full bg-white/[0.08] px-3.5 text-xs font-semibold text-white transition duration-200 hover:bg-white/[0.16] hover:shadow-[0_8px_20px_rgba(0,0,0,0.25)] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/45 focus-visible:outline-none active:scale-[0.97]"
+        className="focus-visible:ring-brand/45 inline-flex h-9 items-center gap-1.5 rounded-full bg-white/[0.08] px-3.5 text-xs font-semibold text-white transition duration-200 hover:bg-white/[0.16] hover:shadow-[0_8px_20px_rgba(0,0,0,0.25)] focus-visible:ring-2 focus-visible:outline-none active:scale-[0.97]"
       >
         <Share2 className="size-3.5" />
         Share project
@@ -89,7 +89,7 @@ export function ShareProject({
               <input
                 type="checkbox"
                 name="canEditMilestones"
-                className="mt-0.5 size-4 shrink-0 accent-[#16a34a]"
+                className="accent-gd-green mt-0.5 size-4 shrink-0"
               />
               <span className="min-w-0">
                 <span className="block text-[13px] font-medium text-black/80">
