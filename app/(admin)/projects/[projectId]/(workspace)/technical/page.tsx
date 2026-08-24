@@ -5,27 +5,15 @@ import {
   WorkingLinks,
 } from "@/components/admin/projects/working-links";
 import {
-  type EnvActions,
-  EnvPanel,
-} from "@/components/admin/projects/env-panel";
+  EnvWorkspace,
+  type EnvWorkspaceActions,
+} from "@/components/admin/projects/env-workspace";
 import { AuditHistory } from "@/components/admin/projects/audit-history";
 import { requireRole } from "@/data/auth";
 import { getProjectCore, getProjectMembers } from "@/data/project-detail";
 import { getProjectLinks } from "@/data/project-links";
-import { getEnvFiles, getEnvGroups } from "@/data/env";
-import { getCopyVariables, getMergeRows, getMyCopies } from "@/data/env-copies";
-import { EnvCompare } from "@/components/admin/projects/env-compare";
-import { EnvMyCopy } from "@/components/admin/projects/env-my-copy";
-import { buildMerge } from "@/lib/projects/env-merge";
-import {
-  adoptIntoMain,
-  createMyCopy,
-  removeMyVariable,
-  saveMyVariables,
-} from "../../../env-copy-actions";
-import { getProjectCredentials } from "@/data/credentials";
+import { getEnvWorkspace } from "@/data/env-workspace";
 import { getProjectAudit } from "@/data/project-audit";
-import { credentialsConfigured } from "@/lib/credentials/crypto";
 import {
   addProjectLink,
   clearProjectLink,
@@ -36,18 +24,21 @@ import {
 import {
   copyEnvValue,
   createEnvGroup,
-  shareEnvGroups,
-  deleteEnvFile,
-  deleteEnvGroup,
   deleteEnvVariable,
-  downloadEnvFile,
   grantEnvAccess,
   renameEnvGroup,
-  revokeEnvAccess,
-  saveEnvVariables,
-  updateEnvVariable,
-  uploadEnvFile,
 } from "../../../env-actions";
+import {
+  createMyCopy,
+  adoptIntoMain,
+  saveMyVariables,
+} from "../../../env-copy-actions";
+import {
+  deleteEnvVersion,
+  deleteMyGroup,
+  moveEnvVariable,
+  renameMyGroup,
+} from "../../../env-version-actions";
 
 export default async function ProjectTechnicalPage({
   params,
@@ -74,37 +65,16 @@ async function TechnicalSections({ publicId }: { publicId: string }) {
   const canManageLinks =
     (isOwner || viewer.id === project.leadId) && !project.isArchived;
 
-  // Five independent reads. They used to run as two waves with the member list
-  // and the technical row already paid for by the shared project query.
-  const [links, members, credentials, envGroups, envFiles] =
-    await Promise.all([
-      getProjectLinks(project.id, viewer),
-      getProjectMembers(project.id, project.leadId),
-      getProjectCredentials(project.id, viewer),
-      getEnvGroups(project.id, viewer),
-      getEnvFiles(project.id, viewer),
-    ]);
+  const [links, members, workspace] = await Promise.all([
+    getProjectLinks(project.id, viewer),
+    getProjectMembers(project.id, project.leadId),
+    getEnvWorkspace(project.id, viewer),
+  ]);
 
-  const audit = isOwner ? await getProjectAudit(project.id, viewer) : [];
   const onThisProject =
     isOwner || members.some((member) => member.id === viewer.id);
 
-  const [copies, mergeRows] = await Promise.all([
-    onThisProject ? getMyCopies(project.id, viewer) : Promise.resolve([]),
-    getMergeRows(project.id, viewer),
-  ]);
-
-  const copyVariables = Object.fromEntries(
-    await Promise.all(
-      copies.map(
-        async (copy) => [copy.id, await getCopyVariables(copy.id)] as const,
-      ),
-    ),
-  );
-
-  const mergeKeys = buildMerge(mergeRows);
-  const mainGroupId =
-    mergeRows.find((row) => row.isMain)?.groupId ?? envGroups[0]?.id ?? null;
+  const audit = isOwner ? await getProjectAudit(project.id, viewer) : [];
 
   const linkActions: LinkActions = {
     setLink: setProjectLink,
@@ -114,19 +84,19 @@ async function TechnicalSections({ publicId }: { publicId: string }) {
     deleteLink: deleteProjectLink,
   };
 
-  const envActions: EnvActions = {
-    createGroup: createEnvGroup,
-    shareGroups: shareEnvGroups,
-    renameGroup: renameEnvGroup,
-    deleteGroup: deleteEnvGroup,
-    saveVariables: saveEnvVariables,
-    updateVariable: updateEnvVariable,
+  const envActions: EnvWorkspaceActions = {
+    addVariable: saveMyVariables,
     deleteVariable: deleteEnvVariable,
-    grantAccess: grantEnvAccess,
-    revokeAccess: revokeEnvAccess,
-    uploadFile: uploadEnvFile,
-    deleteFile: deleteEnvFile,
-    downloadFile: downloadEnvFile,
+    moveVariable: moveEnvVariable,
+    createMainGroup: createEnvGroup,
+    renameMainGroup: renameEnvGroup,
+    createVersionGroup: createMyCopy,
+    renameVersionGroup: renameMyGroup,
+    deleteVersionGroup: deleteMyGroup,
+    upload: saveMyVariables,
+    adopt: adoptIntoMain,
+    share: grantEnvAccess,
+    deleteVersion: deleteEnvVersion,
     copy: copyEnvValue,
   };
 
@@ -139,36 +109,17 @@ async function TechnicalSections({ publicId }: { publicId: string }) {
         actions={linkActions}
       />
 
-      <EnvPanel
-        projectId={project.id}
-        groups={envGroups}
-        variables={credentials.filter((entry) => !entry.isArchived)}
-        files={envFiles}
-        members={members.map((member) => ({
-          id: member.id,
-          name: member.name,
-        }))}
-        isOwner={isOwner}
-        vaultReady={credentialsConfigured()}
-        actions={envActions}
-      />
-
-      {isOwner && mergeKeys.length ? (
-        <EnvCompare
-          mainGroupId={mainGroupId}
-          keys={mergeKeys}
-          adopt={adoptIntoMain}
-        />
-      ) : null}
-
       {onThisProject ? (
-        <EnvMyCopy
+        <EnvWorkspace
           projectId={project.id}
-          copies={copies}
-          variables={copyVariables}
-          createCopy={createMyCopy}
-          saveVariables={saveMyVariables}
-          removeVariable={removeMyVariable}
+          workspace={workspace}
+          members={members.map((member) => ({
+            id: member.id,
+            name: member.name,
+          }))}
+          isOwner={isOwner}
+          viewerId={viewer.id}
+          actions={envActions}
         />
       ) : null}
 
