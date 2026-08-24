@@ -89,7 +89,8 @@ $$;
 comment on function private.owns_env_group(uuid)
 is 'True only for the caller''s own personal copy on a project they are still a live member of.';
 
-revoke all on function private.owns_env_group(uuid) from public, anon, authenticated;
+revoke all on function private.owns_env_group(uuid) from public, anon;
+grant execute on function private.owns_env_group(uuid) to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- Policies
@@ -263,15 +264,18 @@ begin
   end if;
 
   insert into public.app_credential_secrets
-    (credential_id, ciphertext, nonce, auth_tag, key_version, value_digest)
+    (credential_id, ciphertext, nonce, auth_tag, key_version, value_digest, updated_by)
   values
-    (target_id, new_ciphertext, new_nonce, new_auth_tag, new_key_version, new_digest)
+    (target_id, new_ciphertext, new_nonce, new_auth_tag, new_key_version,
+     new_digest, (select auth.uid()))
   on conflict (credential_id) do update
     set ciphertext = excluded.ciphertext,
         nonce = excluded.nonce,
         auth_tag = excluded.auth_tag,
         key_version = excluded.key_version,
-        value_digest = excluded.value_digest;
+        value_digest = excluded.value_digest,
+        updated_by = excluded.updated_by,
+        updated_at = now();
 
   perform private.record_credential_event(
     target_id,
@@ -382,7 +386,7 @@ is 'Owner-only. One row per variable per copy, carrying a digest rather than a v
 
 create or replace function public.app_env_main_target(
   target_main_group_id uuid,
-  source_credential_id uuid,
+  from_credential_id uuid,
   fallback_id uuid
 )
 returns uuid
@@ -409,7 +413,7 @@ begin
 
   select id, name, project_id into source_cred
   from public.app_project_credentials
-  where id = source_credential_id and archived_at is null;
+  where id = from_credential_id and archived_at is null;
 
   if source_cred.id is null or source_cred.project_id <> main_group.project_id then
     raise exception 'That value is not on this project.' using errcode = '22023';
@@ -439,7 +443,7 @@ grant execute on function public.app_env_main_target(uuid, uuid, uuid) to authen
 
 create or replace function public.app_env_adopt_value(
   target_credential_id uuid,
-  source_credential_id uuid,
+  from_credential_id uuid,
   new_ciphertext text,
   new_nonce text,
   new_auth_tag text,
@@ -462,7 +466,7 @@ begin
 
   select cred.id, cred.project_id, cred.env_group_id into source_cred
   from public.app_project_credentials cred
-  where cred.id = source_credential_id and cred.archived_at is null;
+  where cred.id = from_credential_id and cred.archived_at is null;
 
   select cred.id, cred.project_id into target_cred
   from public.app_project_credentials cred
@@ -477,16 +481,18 @@ begin
   from public.app_env_groups where id = source_cred.env_group_id;
 
   insert into public.app_credential_secrets
-    (credential_id, ciphertext, nonce, auth_tag, key_version, value_digest)
+    (credential_id, ciphertext, nonce, auth_tag, key_version, value_digest, updated_by)
   values
     (target_credential_id, new_ciphertext, new_nonce, new_auth_tag,
-     new_key_version, new_digest)
+     new_key_version, new_digest, (select auth.uid()))
   on conflict (credential_id) do update
     set ciphertext = excluded.ciphertext,
         nonce = excluded.nonce,
         auth_tag = excluded.auth_tag,
         key_version = excluded.key_version,
-        value_digest = excluded.value_digest;
+        value_digest = excluded.value_digest,
+        updated_by = excluded.updated_by,
+        updated_at = now();
 
   update public.app_project_credentials
   set source_credential_id = source_cred.id,
