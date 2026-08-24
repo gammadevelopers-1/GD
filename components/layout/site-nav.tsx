@@ -161,13 +161,16 @@ export function SiteNav() {
           >
             Contact
           </Link>
-          <Link
-            href={site.calendly}
-            data-button-fill
-            className="button-fill-fx marketing-primary-button nav-cta relative inline-flex h-10 items-center overflow-hidden rounded-full px-4 md:px-[19px]"
+          <Button
+            asChild
+            variant="marketing"
+            size="marketing-sm"
+            className="nav-cta relative px-4 md:px-[19px]"
           >
-            <span className="button-fill-fx__label">Book a call</span>
-          </Link>
+            <Link href={site.calendly} data-button-fill>
+              <span className="button-fill-fx__label">Book a call</span>
+            </Link>
+          </Button>
         </div>
       </nav>
     </header>

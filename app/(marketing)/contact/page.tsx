@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AmbientField } from "@/components/common/ambient-field";
 import { Reveal } from "@/components/common/reveal";
+import { Button } from "@/components/ui/button";
 import { ContactForm } from "@/components/sections/contact/contact-form";
 import { contact } from "@/lib/content/home";
 import { site } from "@/lib/content/site";
@@ -67,15 +68,18 @@ export default function ContactPage() {
                 <p className="mb-4.5 text-[13.5px] leading-[1.55] text-[#a8aea5]">
                   {contact.aside.body}
                 </p>
-                <Link
-                  href={site.calendly}
-                  data-button-fill
-                  className="button-fill-fx bg-brand focus-visible:ring-brand/50 flex h-12 items-center justify-center overflow-hidden rounded-xl text-sm font-semibold text-[#101512] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(47,232,92,0.42)] focus-visible:ring-2 focus-visible:outline-none"
+                <Button
+                  asChild
+                  variant="marketing"
+                  size="marketing"
+                  className="w-full"
                 >
-                  <span className="button-fill-fx__label">
-                    {contact.aside.cta}
-                  </span>
-                </Link>
+                  <Link href={site.calendly} data-button-fill>
+                    <span className="button-fill-fx__label">
+                      {contact.aside.cta}
+                    </span>
+                  </Link>
+                </Button>
               </div>
             </div>
 

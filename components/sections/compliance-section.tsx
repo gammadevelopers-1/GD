@@ -3,6 +3,7 @@ import { ArrowRight, ShieldCheck } from "lucide-react";
 import { Reveal } from "@/components/common/reveal";
 import { SectionHeading } from "@/components/common/section-heading";
 import { compliance } from "@/lib/content/home";
+import { Button } from "@/components/ui/button";
 
 export function ComplianceSection() {
   return (
@@ -21,16 +22,19 @@ export function ComplianceSection() {
               {compliance.body}
             </p>
 
-            <Link
-              href="/contact"
-              data-button-fill
-              className="button-fill-fx marketing-primary-button group/trust mt-5.5 inline-flex h-12 items-center gap-2.25 overflow-hidden rounded-full px-6"
+            <Button
+              asChild
+              variant="marketing"
+              size="marketing"
+              className="group/trust mt-5.5 gap-2.25"
             >
-              <span className="button-fill-fx__label inline-flex items-center gap-2.25">
-                {compliance.cta}
-                <ArrowRight className="size-4 transition-transform duration-300 group-hover/trust:translate-x-1" />
-              </span>
-            </Link>
+              <Link href="/contact" data-button-fill>
+                <span className="button-fill-fx__label inline-flex items-center gap-2.25">
+                  {compliance.cta}
+                  <ArrowRight className="size-4 transition-transform duration-300 group-hover/trust:translate-x-1" />
+                </span>
+              </Link>
+            </Button>
           </Reveal>
 
           <Reveal delay={0.1} stagger className="grid gap-3.5 sm:grid-cols-2">

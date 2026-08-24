@@ -110,12 +110,12 @@ export function AuditForm() {
             />
           </div>
           <Button
-            variant="bare"
-            size="none"
+            variant="marketing"
+            size="marketing"
             type="submit"
             disabled={busy}
             data-button-fill
-            className="button-fill-fx marketing-primary-button h-11 w-full shrink-0 cursor-pointer rounded-full px-6 sm:w-auto"
+            className="w-full shrink-0 cursor-pointer sm:w-auto"
           >
             <span className="button-fill-fx__label">
               {busy ? "Analyzing…" : hero.cta}

@@ -31,6 +31,8 @@ const buttonVariants = cva(
           "size-7 rounded-lg text-black/35 hover:bg-black/[0.05] hover:text-black active:scale-95 focus-visible:ring-2 focus-visible:ring-gd-green/40 focus-visible:outline-none",
         "admin-icon-danger":
           "size-7 rounded-lg text-black/35 hover:bg-red-50 hover:text-red-700 active:scale-95 focus-visible:ring-2 focus-visible:ring-gd-green/40 focus-visible:outline-none",
+        marketing:
+          "button-fill-fx marketing-primary-button gap-2 overflow-hidden rounded-full",
         "admin-cta":
           "button-fill-fx button-fill-fx--lift bg-gd-panel-dark gap-2 rounded-xl px-4 text-[13px] font-semibold text-white [--button-fill-color:var(--color-gd-primary)] [--button-fill-hover-text:var(--color-gd-ink)]",
         bare: "",
@@ -49,6 +51,9 @@ const buttonVariants = cva(
         "icon-sm":
           "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
         "icon-lg": "size-9",
+        "marketing-sm": "h-10 px-[19px]",
+        marketing: "h-12 px-6",
+        "marketing-lg": "h-14 px-7",
         "admin-xs": "h-7",
         "admin-sm": "h-8",
         admin: "h-9",

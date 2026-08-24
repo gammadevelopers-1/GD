@@ -274,12 +274,15 @@ export function BookAuditSection() {
                   </label>
 
                   <Button
-                    variant="bare"
-                    size="none"
+                    variant="marketing"
+                    size="marketing"
                     type="submit"
-                    className="marketing-primary-button h-12 cursor-pointer rounded-xl"
+                    data-button-fill
+                    className="w-full cursor-pointer"
                   >
-                    {bookAudit.form.cta}
+                    <span className="button-fill-fx__label">
+                      {bookAudit.form.cta}
+                    </span>
                   </Button>
                 </form>
               ) : null}

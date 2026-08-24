@@ -79,11 +79,11 @@ export function ContactForm() {
           {contact.disclaimer}
         </p>
         <Button
-          variant="bare"
-          size="none"
+          variant="marketing"
+          size="marketing"
           type="submit"
           data-button-fill
-          className="button-fill-fx bg-brand focus-visible:ring-brand/50 inline-flex h-13 cursor-pointer items-center overflow-hidden rounded-full px-7.5 text-[15px] font-semibold text-[#101512] shadow-[0_12px_32px_rgba(47,232,92,0.34)] transition-all hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(47,232,92,0.46)] focus-visible:ring-2 focus-visible:outline-none"
+          className="cursor-pointer px-7.5"
         >
           <span className="button-fill-fx__label">{contact.cta}</span>
         </Button>
