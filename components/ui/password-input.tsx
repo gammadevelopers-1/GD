@@ -4,6 +4,7 @@ import * as React from "react";
 import { Eye, EyeOff } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 function PasswordInput({
   className,
@@ -18,7 +19,8 @@ function PasswordInput({
 
   return (
     <span data-slot="password-input" className="relative block">
-      <input
+      <Input
+        variant="bare"
         {...props}
         type={visible ? "text" : "password"}
         data-slot="input"

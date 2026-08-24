@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import type { PortalAuthState } from "@/app/(portal)/portal/sign-in/actions";
+import { Input } from "@/components/ui/input";
 
 const FIELD =
   "h-12 w-full rounded-xl border border-white/10 bg-white/[0.055] px-4 text-[15px] text-white transition outline-none placeholder:text-white/25 focus:border-[#2fe85c]/60 focus:ring-4 focus:ring-[#2fe85c]/10";
@@ -39,7 +40,8 @@ export function AuthForm({
           <span className="text-[13px] font-medium text-white/70">
             {field.label}
           </span>
-          <input
+          <Input
+            variant="bare"
             name={field.name}
             type={field.type}
             required

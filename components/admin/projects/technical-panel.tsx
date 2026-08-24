@@ -22,10 +22,11 @@ import {
 } from "@/lib/projects/technical";
 import type { TechnicalFormState } from "@/lib/projects/technical";
 import { formatDate } from "@/lib/projects/format";
-import { FOCUS_RING, INPUT, PANEL } from "@/lib/admin-ui";
+import { FOCUS_RING, PANEL } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 
 export type TechnicalDetails = TechnicalValues & {
   updatedBy: string | null;
@@ -322,7 +323,8 @@ function TechnicalForm({
               <span className="text-[13px] text-black/55">
                 {row.label} <Optional />
               </span>
-              <input
+              <Input
+                variant="admin"
                 name={row.field}
                 defaultValue={current[row.field]}
                 placeholder={row.placeholder}
@@ -332,7 +334,6 @@ function TechnicalForm({
                   errors[row.field] ? `${row.field}-error` : undefined
                 }
                 className={cn(
-                  INPUT,
                   "h-10",
                   errors[row.field] && "border-red-300 focus:border-red-400",
                 )}

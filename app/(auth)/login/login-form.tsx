@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import { PasswordInput } from "@/components/ui/password-input";
 import { login, type LoginState } from "./actions";
+import { Input } from "@/components/ui/input";
 
 const initialState: LoginState = {};
 
@@ -18,7 +19,8 @@ export function LoginForm({ next = "/dashboard" }: { next?: string }) {
         <span className="text-[13px] font-medium text-white/70">
           Work email
         </span>
-        <input
+        <Input
+          variant="bare"
           name="email"
           type="email"
           autoComplete="email"

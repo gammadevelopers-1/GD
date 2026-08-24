@@ -55,6 +55,7 @@ import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-succ
 import { FormDatePicker } from "@/components/common/form-date-picker";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 type FormAction = (
   state: SimpleFormState,
@@ -748,14 +749,15 @@ function CardEditor({
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <input
+        <Input
+          variant="admin-sm"
           value={title}
           onChange={(event) => {
             setTitle(event.target.value);
             schedule();
           }}
           aria-label="Card title"
-          className={cn(INPUT_SMALL, "h-9 w-full text-[13px] font-medium")}
+          className={cn("h-9 w-full text-[13px] font-medium")}
         />
         <SaveIndicator status={autosave.status} message={autosave.message} />
       </div>
@@ -1003,11 +1005,12 @@ export function AddCardForm({
     <form action={formAction} className="space-y-2">
       <input type="hidden" name="projectId" value={projectId} />
       <input type="hidden" name="weekId" value={weekId} />
-      <input
+      <Input
+        variant="admin-sm"
         name="title"
         autoFocus
         placeholder="What could we do this week?"
-        className={cn(INPUT_SMALL, "h-9 w-full")}
+        className={cn("h-9 w-full")}
       />
       {state.status === "error" && state.message ? (
         <p className="text-[11px] font-medium text-red-700">{state.message}</p>
@@ -1072,12 +1075,13 @@ function AddWeekForm({
       <div className="grid gap-2 sm:grid-cols-3">
         <label className="text-[11px] font-medium text-black/50">
           Week number
-          <input
+          <Input
+            variant="admin-sm"
             name="weekNumber"
             type="number"
             min={1}
             required
-            className={cn(INPUT_SMALL, "mt-1 h-9 w-full")}
+            className={cn("mt-1 h-9 w-full")}
           />
         </label>
         <label className="text-[11px] font-medium text-black/50">

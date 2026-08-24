@@ -6,6 +6,7 @@ import { Reveal } from "@/components/common/reveal";
 import { bookAudit } from "@/lib/content/home";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 
 const MONTHS = [
   "January",
@@ -228,7 +229,8 @@ export function BookAuditSection() {
                       <span className={FIELD_LABEL}>
                         {bookAudit.form.name.label}
                       </span>
-                      <input
+                      <Input
+                        variant="bare"
                         required
                         name="name"
                         placeholder={bookAudit.form.name.placeholder}
@@ -239,7 +241,8 @@ export function BookAuditSection() {
                       <span className={FIELD_LABEL}>
                         {bookAudit.form.email.label}
                       </span>
-                      <input
+                      <Input
+                        variant="bare"
                         required
                         type="email"
                         name="email"

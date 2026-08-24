@@ -9,8 +9,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import type { MyProfile } from "@/data/profile";
 import { IDLE_FORM } from "@/lib/projects/form-state";
-import { BUTTON_PRIMARY, INPUT } from "@/lib/admin-ui";
+import { BUTTON_PRIMARY } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 export function ProfileEditor({ profile }: { profile: MyProfile }) {
   const [state, action, pending] = useActionState(saveMyProfile, IDLE_FORM);
@@ -30,14 +31,15 @@ export function ProfileEditor({ profile }: { profile: MyProfile }) {
             >
               Display name
             </Label>
-            <input
+            <Input
+              variant="admin"
               id={EDIT_FIELD_ID}
               name="displayName"
               defaultValue={profile.displayName ?? ""}
               minLength={2}
               maxLength={60}
               placeholder={profile.fullName}
-              className={cn(INPUT, "h-10")}
+              className={cn("h-10")}
             />
           </div>
 

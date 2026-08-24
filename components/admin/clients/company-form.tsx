@@ -4,10 +4,10 @@ import { useActionState } from "react";
 import { AlertCircle, Check, Loader2 } from "lucide-react";
 import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
 import { type SimpleFormState, IDLE_FORM } from "@/lib/projects/form-state";
-import { INPUT } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export type CompanyAction = (
   state: SimpleFormState,
@@ -39,23 +39,25 @@ export function CompanyForm({
 
       <label className="block space-y-1.5">
         <span className="text-[12px] text-black/55">Company name</span>
-        <input
+        <Input
+          variant="admin"
           name="name"
           required
           maxLength={160}
           defaultValue={defaults?.name}
           placeholder="Northstar Labs"
-          className={cn(INPUT, "h-10")}
+          className={cn("h-10")}
         />
       </label>
 
       <label className="block space-y-1.5">
         <span className="text-[12px] text-black/55">Website</span>
-        <input
+        <Input
+          variant="admin"
           name="website"
           defaultValue={defaults?.website}
           placeholder="https://example.com"
-          className={cn(INPUT, "h-10")}
+          className={cn("h-10")}
         />
       </label>
 

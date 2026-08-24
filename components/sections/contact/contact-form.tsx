@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { contact } from "@/lib/content/home";
 import { FormSelect } from "@/components/common/form-select";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 
 const FIELD =
   "h-12 rounded-xl border border-black/14 bg-[#fbfbf8] px-3.75 text-[15px] outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#2fe85c] focus:shadow-[0_0_0_3px_rgba(47,232,92,0.16)]";
@@ -26,11 +27,17 @@ export function ContactForm() {
       <div className="grid gap-4.5 sm:grid-cols-2">
         <label className={LABEL}>
           Full name
-          <input required placeholder="Sara Malik" className={FIELD} />
+          <Input
+            variant="bare"
+            required
+            placeholder="Sara Malik"
+            className={FIELD}
+          />
         </label>
         <label className={LABEL}>
           Work email
-          <input
+          <Input
+            variant="bare"
             required
             type="email"
             placeholder="you@company.com"
@@ -39,7 +46,7 @@ export function ContactForm() {
         </label>
         <label className={LABEL}>
           Company
-          <input placeholder="Cortek" className={FIELD} />
+          <Input variant="bare" placeholder="Cortek" className={FIELD} />
         </label>
         <div className={LABEL}>
           Team size

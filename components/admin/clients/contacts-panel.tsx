@@ -17,9 +17,10 @@ import {
 } from "@/components/ui/dialog";
 import type { ClientContact } from "@/data/clients";
 import { IDLE_FORM } from "@/lib/projects/form-state";
-import { ICON_BUTTON_DANGER, INPUT, PANEL } from "@/lib/admin-ui";
+import { ICON_BUTTON_DANGER, PANEL } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function ContactsPanel({
   clientId,
@@ -196,12 +197,13 @@ function Field({
   return (
     <label className="block space-y-1.5">
       <span className="text-[12px] text-black/55">{label}</span>
-      <input
+      <Input
+        variant="admin"
         name={name}
         type={type}
         required={required}
         defaultValue={defaultValue}
-        className={cn(INPUT, "h-10")}
+        className={cn("h-10")}
       />
     </label>
   );

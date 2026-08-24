@@ -30,6 +30,7 @@ import { FormSelect } from "@/components/common/form-select";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export type CredentialOption = { id: string; name: string };
 
@@ -529,13 +530,14 @@ function BlockFields({
               Image attached
             </div>
           )}
-          <input
+          <Input
+            variant="admin-sm"
             value={block.alt}
             onChange={(event) =>
               onChange({ ...block, alt: event.target.value })
             }
             placeholder="Describe the image (for screen readers)"
-            className={cn(INPUT_SMALL, "h-7 w-full")}
+            className={cn("h-7 w-full")}
           />
         </figure>
       );

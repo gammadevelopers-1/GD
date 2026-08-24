@@ -19,6 +19,7 @@ import {
 } from "@/lib/projects/status";
 import { FormSelect } from "@/components/common/form-select";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -102,7 +103,8 @@ export function PortfolioFilters({
       <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
         <div className="relative min-w-0 flex-1 lg:max-w-[320px]">
           <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-black/28" />
-          <input
+          <Input
+            variant="bare"
             type="search"
             value={search}
             maxLength={SEARCH_MAX_LENGTH}

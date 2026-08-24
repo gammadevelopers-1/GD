@@ -30,6 +30,7 @@ import type { MilestoneCard } from "@/data/project-detail";
 import { formatDate } from "@/lib/projects/format";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -713,7 +714,8 @@ function ProposalReview({
                 </button>
 
                 <div className="min-w-0 flex-1">
-                  <input
+                  <Input
+                    variant="bare"
                     value={row.title}
                     onChange={(event) =>
                       update(index, { title: event.target.value.slice(0, 240) })

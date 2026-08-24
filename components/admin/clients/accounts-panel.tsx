@@ -17,9 +17,10 @@ import {
 import type { ClientAccount } from "@/data/clients";
 import { formatDate } from "@/lib/projects/format";
 import { IDLE_FORM } from "@/lib/projects/form-state";
-import { BUTTON_SECONDARY, INPUT, PANEL } from "@/lib/admin-ui";
+import { BUTTON_SECONDARY, PANEL } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const CONFIRM_WORD = "confirm";
 
@@ -177,11 +178,12 @@ function AccountRow({
                 </span>{" "}
                 to continue
               </span>
-              <input
+              <Input
+                variant="admin"
                 value={typed}
                 onChange={(event) => setTyped(event.target.value)}
                 autoComplete="off"
-                className={cn(INPUT, "h-10")}
+                className={cn("h-10")}
               />
             </label>
 

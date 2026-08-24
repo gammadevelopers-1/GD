@@ -63,6 +63,7 @@ import { ConfirmAction, Modal } from "@/components/admin/projects/modal";
 import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 type FormAction = (
   state: SimpleFormState,
@@ -598,12 +599,13 @@ function EditVariableDialog({
 
         <label className="block space-y-1.5">
           <span className="text-[12px] text-black/60">Key</span>
-          <input
+          <Input
+            variant="admin"
             name="key"
             defaultValue={variable.name}
             autoFocus
             spellCheck={false}
-            className={cn(INPUT, "h-10 font-mono text-xs")}
+            className={cn("h-10 font-mono text-xs")}
           />
         </label>
 
@@ -612,13 +614,14 @@ function EditVariableDialog({
             New value <span className="text-black/55">(optional)</span>
           </span>
           <span className="relative block">
-            <input
+            <Input
+              variant="admin"
               name="value"
               type={reveal ? "text" : "password"}
               autoComplete="off"
               spellCheck={false}
               placeholder="Leave empty to keep the current value"
-              className={cn(INPUT, "h-10 pr-10 font-mono text-xs")}
+              className={cn("h-10 pr-10 font-mono text-xs")}
             />
             <button
               type="button"
@@ -642,12 +645,13 @@ function EditVariableDialog({
           <span className="text-[12px] text-black/60">
             Note <span className="text-black/55">(optional)</span>
           </span>
-          <input
+          <Input
+            variant="admin"
             name="note"
             defaultValue={variable.description ?? ""}
             maxLength={ENV_NOTE_MAX}
             placeholder="Where to rotate this, or who to contact"
-            className={cn(INPUT, "h-10 text-xs")}
+            className={cn("h-10 text-xs")}
           />
         </label>
 
@@ -965,13 +969,14 @@ function RenameGroupForm({
     >
       <input type="hidden" name="projectId" value={projectId} />
       <input type="hidden" name="groupId" value={group.id} />
-      <input
+      <Input
+        variant="admin-sm"
         name="name"
         defaultValue={group.name}
         required
         autoFocus
         aria-label="Group name"
-        className={cn(INPUT_SMALL, "h-8 flex-1")}
+        className={cn("h-8 flex-1")}
       />
       <Button
         variant="admin-secondary"
@@ -1034,13 +1039,14 @@ function NewGroupForm({
       className="flex flex-wrap items-center gap-2 rounded-2xl border border-black/[0.08] bg-white p-3"
     >
       <input type="hidden" name="projectId" value={projectId} />
-      <input
+      <Input
+        variant="admin-sm"
         name="name"
         required
         autoFocus
         placeholder="Frontend"
         aria-label="Group name"
-        className={cn(INPUT_SMALL, "h-9 flex-1")}
+        className={cn("h-9 flex-1")}
       />
       <Button
         variant="admin-primary"

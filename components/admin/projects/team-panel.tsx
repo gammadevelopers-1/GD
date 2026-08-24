@@ -17,9 +17,10 @@ import { ConfirmAction } from "@/components/admin/projects/modal";
 import { FormSelect } from "@/components/common/form-select";
 import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
 import { initials } from "@/lib/projects/format";
-import { ICON_BUTTON_DANGER, INPUT, INPUT_SMALL, PANEL } from "@/lib/admin-ui";
+import { ICON_BUTTON_DANGER, INPUT, PANEL } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 type Person = { id: string; name: string };
 type FormAction = (
@@ -179,7 +180,8 @@ function MemberRow({
             >
               <input type="hidden" name="projectId" value={projectId} />
               <input type="hidden" name="profileId" value={member.id} />
-              <input
+              <Input
+                variant="admin-sm"
                 ref={fieldRef}
                 name="responsibility"
                 defaultValue={member.responsibility ?? ""}
@@ -187,7 +189,7 @@ function MemberRow({
                 autoFocus
                 placeholder="Frontend, QA, client contact…"
                 aria-label={`What ${member.name} does on this project`}
-                className={cn(INPUT_SMALL, "h-9 min-w-0 flex-1")}
+                className={cn("h-9 min-w-0 flex-1")}
               />
               <Button
                 variant="admin-primary"
@@ -334,11 +336,12 @@ function AddMemberPanel({
               What are they doing on it?{" "}
               <span className="font-normal text-black/55">(optional)</span>
             </span>
-            <input
+            <Input
+              variant="admin"
               name="responsibility"
               maxLength={120}
               placeholder="Frontend, QA, client contact…"
-              className={cn(INPUT, "h-10")}
+              className={cn("h-10")}
             />
           </label>
           <Button

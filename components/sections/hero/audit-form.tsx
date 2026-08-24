@@ -5,6 +5,7 @@ import { gsap, useGSAP } from "@/lib/gsap";
 import { hero } from "@/lib/content/home";
 import { useReducedMotion } from "@/lib/hooks/use-reduced-motion";
 import { useHero } from "./hero-provider";
+import { Input } from "@/components/ui/input";
 
 export function AuditForm() {
   const { phase, status, runAudit } = useHero();
@@ -95,7 +96,8 @@ export function AuditForm() {
                 <i className="bg-accent ml-0.5 h-[1.05em] w-px shrink-0 animate-pulse not-italic" />
               </span>
             )}
-            <input
+            <Input
+              variant="bare"
               ref={inputRef}
               id="audit-input"
               value={value}

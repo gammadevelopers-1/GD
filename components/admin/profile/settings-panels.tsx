@@ -40,6 +40,7 @@ import {
   TONE_SOFT,
 } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 const SECTIONS = [
   { value: "account", label: "Account", icon: UserRound },
@@ -157,12 +158,12 @@ function AccountPanel({ profile }: { profile: MyProfile }) {
           >
             Email
           </Label>
-          <input
+          <Input
+            variant="admin"
             id="account-email"
             value={profile.email ?? "Not recorded"}
             readOnly
             className={cn(
-              INPUT,
               "h-10 cursor-default bg-black/[0.03] text-black/55 hover:border-black/[0.09]",
             )}
           />
@@ -175,12 +176,12 @@ function AccountPanel({ profile }: { profile: MyProfile }) {
           >
             Official name
           </Label>
-          <input
+          <Input
+            variant="admin"
             id="account-full-name"
             value={profile.fullName}
             readOnly
             className={cn(
-              INPUT,
               "h-10 cursor-default bg-black/[0.03] text-black/55 hover:border-black/[0.09]",
             )}
           />

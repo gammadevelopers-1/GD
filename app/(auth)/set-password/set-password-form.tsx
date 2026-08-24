@@ -6,6 +6,7 @@ import { LinkSpentNotice } from "@/components/auth/link-spent-notice";
 import { PasswordInput } from "@/components/ui/password-input";
 import { PASSWORD_MIN } from "@/lib/team/records";
 import { setPassword, type SetPasswordState } from "./actions";
+import { Input } from "@/components/ui/input";
 
 const initialState: SetPasswordState = {};
 
@@ -53,7 +54,8 @@ export function SetPasswordForm({
           <span className="text-[13px] font-medium text-white/70">
             Your work email
           </span>
-          <input
+          <Input
+            variant="bare"
             name="email"
             type="email"
             autoComplete="username"

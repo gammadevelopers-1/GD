@@ -18,13 +18,14 @@ import {
   isEnvKey,
   parseEnvBlob,
 } from "@/lib/projects/env";
-import { FOCUS_RING, INPUT, INPUT_SMALL } from "@/lib/admin-ui";
+import { FOCUS_RING, INPUT_SMALL } from "@/lib/admin-ui";
 import { Modal } from "@/components/admin/projects/modal";
 import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
 import { FormSelect } from "@/components/common/form-select";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export type GroupOption = { id: string; name: string; keys: string[] };
 
@@ -284,7 +285,8 @@ export function ImportDialog({
                       {key || "(no key)"}
                     </code>
                     <div className="relative w-40 shrink-0 sm:w-56">
-                      <input
+                      <Input
+                        variant="admin-sm"
                         value={draft.value}
                         onChange={(event) =>
                           update(index, { value: event.target.value })
@@ -293,7 +295,7 @@ export function ImportDialog({
                         autoComplete="off"
                         spellCheck={false}
                         aria-label={`Value for ${key || `row ${index + 1}`}`}
-                        className={cn(INPUT_SMALL, "h-8 w-full pr-8 font-mono")}
+                        className={cn("h-8 w-full pr-8 font-mono")}
                       />
                       <button
                         type="button"
@@ -481,7 +483,8 @@ export function ManualDialog({
                 <div className="grid gap-2 sm:grid-cols-2">
                   <label className="block space-y-1">
                     <span className="text-[11px] text-black/60">Key</span>
-                    <input
+                    <Input
+                      variant="admin"
                       value={draft.key}
                       onChange={(event) =>
                         update(index, { key: event.target.value })
@@ -491,7 +494,6 @@ export function ManualDialog({
                       spellCheck={false}
                       aria-invalid={badKey || undefined}
                       className={cn(
-                        INPUT,
                         "h-9 font-mono text-xs",
                         badKey && "border-red-300",
                       )}
@@ -500,7 +502,8 @@ export function ManualDialog({
                   <label className="block space-y-1">
                     <span className="text-[11px] text-black/60">Value</span>
                     <span className="relative block">
-                      <input
+                      <Input
+                        variant="admin"
                         value={draft.value}
                         onChange={(event) =>
                           update(index, { value: event.target.value })
@@ -508,7 +511,7 @@ export function ManualDialog({
                         type={reveal === index ? "text" : "password"}
                         autoComplete="off"
                         spellCheck={false}
-                        className={cn(INPUT, "h-9 pr-9 font-mono text-xs")}
+                        className={cn("h-9 pr-9 font-mono text-xs")}
                       />
                       <button
                         type="button"
@@ -537,14 +540,15 @@ export function ManualDialog({
                   <span className="text-[11px] text-black/60">
                     Note <span className="text-black/55">(optional)</span>
                   </span>
-                  <input
+                  <Input
+                    variant="admin"
                     value={draft.note}
                     onChange={(event) =>
                       update(index, { note: event.target.value })
                     }
                     maxLength={ENV_NOTE_MAX}
                     placeholder="Where to rotate this, or who to contact"
-                    className={cn(INPUT, "h-9 text-xs")}
+                    className={cn("h-9 text-xs")}
                   />
                 </label>
 

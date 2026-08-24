@@ -13,10 +13,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { IDLE_FORM } from "@/lib/projects/form-state";
-import { INPUT } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const MAX_CONTACTS = 12;
 
@@ -61,21 +61,23 @@ export function AddClient() {
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block space-y-1.5">
               <span className="text-[12px] text-black/55">Company name</span>
-              <input
+              <Input
+                variant="admin"
                 name="name"
                 required
                 maxLength={160}
                 placeholder="Northstar Labs"
-                className={cn(INPUT, "h-10")}
+                className={cn("h-10")}
               />
             </label>
 
             <label className="block space-y-1.5">
               <span className="text-[12px] text-black/55">Website</span>
-              <input
+              <Input
+                variant="admin"
                 name="website"
                 placeholder="https://example.com"
-                className={cn(INPUT, "h-10")}
+                className={cn("h-10")}
               />
             </label>
           </div>
@@ -186,7 +188,7 @@ function Field({
   return (
     <label className="block space-y-1.5">
       <span className="text-[12px] text-black/55">{label}</span>
-      <input name={name} type={type} className={cn(INPUT, "h-10")} />
+      <Input variant="admin" name={name} type={type} className={cn("h-10")} />
     </label>
   );
 }

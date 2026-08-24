@@ -16,6 +16,7 @@ import { FormSelect } from "@/components/common/form-select";
 import { FormDatePicker } from "@/components/common/form-date-picker";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 
 type Option = { id: string; name: string };
 
@@ -84,7 +85,8 @@ export function ProjectForm({
           required
           className="sm:col-span-2"
         >
-          <input
+          <Input
+            variant="bare"
             id="name"
             name="name"
             defaultValue={values.name}
@@ -200,7 +202,8 @@ export function ProjectForm({
               label="Project value"
               error={errors.valueAmount}
             >
-              <input
+              <Input
+                variant="bare"
                 id="valueAmount"
                 name="valueAmount"
                 inputMode="decimal"
@@ -235,7 +238,8 @@ export function ProjectForm({
               label="PKR per 1 USD"
               error={errors.exchangeRate}
             >
-              <input
+              <Input
+                variant="bare"
                 id="exchangeRate"
                 name="exchangeRate"
                 inputMode="decimal"

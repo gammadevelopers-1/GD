@@ -13,6 +13,7 @@ import { INPUT } from "@/lib/admin-ui";
 import { FormSelect } from "@/components/common/form-select";
 import { FormDatePicker } from "@/components/common/form-date-picker";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 export type MemberFieldDefaults = Partial<TeamFormValues>;
 
@@ -29,44 +30,48 @@ export function MemberFields({
     <div className="space-y-6">
       <Group title="Person">
         <Field label="Full name" error={errors.fullName}>
-          <input
+          <Input
+            variant="admin"
             name="fullName"
             required
             maxLength={120}
             defaultValue={defaults.fullName ?? ""}
-            className={cn(INPUT, "h-10")}
+            className={cn("h-10")}
           />
         </Field>
 
         <Field label="Work email" error={errors.email}>
-          <input
+          <Input
+            variant="admin"
             name="email"
             type="email"
             required
             readOnly={lockEmail}
             defaultValue={defaults.email ?? ""}
             placeholder="name@gammadevelopers.ai"
-            className={cn(INPUT, "h-10", lockEmail && "bg-black/[0.03]")}
+            className={cn("h-10", lockEmail && "bg-black/[0.03]")}
           />
         </Field>
 
         <Field label="Job title" error={errors.jobTitle}>
-          <input
+          <Input
+            variant="admin"
             name="jobTitle"
             required
             maxLength={120}
             defaultValue={defaults.jobTitle ?? ""}
             placeholder="Delivery engineer"
-            className={cn(INPUT, "h-10")}
+            className={cn("h-10")}
           />
         </Field>
 
         <Field label="Phone (optional)" error={errors.phone}>
-          <input
+          <Input
+            variant="admin"
             name="phone"
             defaultValue={defaults.phone ?? ""}
             placeholder="+92 300 0000000"
-            className={cn(INPUT, "h-10")}
+            className={cn("h-10")}
           />
         </Field>
       </Group>
@@ -133,41 +138,45 @@ export function MemberFields({
           label="Monthly salary, PKR (optional)"
           error={errors.salaryAmount}
         >
-          <input
+          <Input
+            variant="admin"
             name="salaryAmount"
             inputMode="decimal"
             defaultValue={defaults.salaryAmount ?? ""}
             placeholder="0"
-            className={cn(INPUT, "h-10 font-mono")}
+            className={cn("h-10 font-mono")}
           />
         </Field>
 
         <Field label="CNIC (optional)" error={errors.cnic}>
-          <input
+          <Input
+            variant="admin"
             name="cnic"
             defaultValue={defaults.cnic ?? ""}
             placeholder="00000-0000000-0"
-            className={cn(INPUT, "h-10 font-mono")}
+            className={cn("h-10 font-mono")}
           />
         </Field>
       </Group>
 
       <Group title="Bank account">
         <Field label="Account title (optional)" error={errors.bankAccountTitle}>
-          <input
+          <Input
+            variant="admin"
             name="bankAccountTitle"
             maxLength={120}
             defaultValue={defaults.bankAccountTitle ?? ""}
-            className={cn(INPUT, "h-10")}
+            className={cn("h-10")}
           />
         </Field>
 
         <Field label="Bank (optional)" error={errors.bankName}>
-          <input
+          <Input
+            variant="admin"
             name="bankName"
             maxLength={120}
             defaultValue={defaults.bankName ?? ""}
-            className={cn(INPUT, "h-10")}
+            className={cn("h-10")}
           />
         </Field>
 
@@ -176,11 +185,12 @@ export function MemberFields({
           error={errors.bankAccountNumber}
           wide
         >
-          <input
+          <Input
+            variant="admin"
             name="bankAccountNumber"
             defaultValue={defaults.bankAccountNumber ?? ""}
             placeholder="PK00XXXX0000000000000000"
-            className={cn(INPUT, "h-10 font-mono")}
+            className={cn("h-10 font-mono")}
           />
         </Field>
       </Group>

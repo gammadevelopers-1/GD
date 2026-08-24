@@ -10,10 +10,10 @@ import {
 import { CopyButton } from "@/components/admin/projects/issued-access";
 import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
 import { INVITE_LINK_HEADING } from "@/lib/invites/email";
-import { INPUT } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const IDLE: InviteState = { status: "idle", message: null };
 
@@ -41,12 +41,13 @@ export function InviteComposer({
 
       <label className="block space-y-1.5">
         <span className="text-[12px] text-black/55">Subject</span>
-        <input
+        <Input
+          variant="admin"
           name="subject"
           required
           maxLength={200}
           defaultValue={draft.subject}
-          className={cn(INPUT, "h-10")}
+          className={cn("h-10")}
         />
       </label>
 

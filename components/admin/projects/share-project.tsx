@@ -5,9 +5,9 @@ import { AlertCircle, Loader2, Share2 } from "lucide-react";
 import type { ShareState } from "@/app/(admin)/projects/client-actions";
 import { Modal } from "@/components/admin/projects/modal";
 import { Issued } from "@/components/admin/projects/issued-access";
-import { INPUT } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const IDLE: ShareState = { status: "idle", message: null };
 
@@ -60,24 +60,26 @@ export function ShareProject({
 
             <label className="block space-y-1.5">
               <span className="text-[12px] text-black/55">Client name</span>
-              <input
+              <Input
+                variant="admin"
                 name="fullName"
                 required
                 maxLength={120}
                 autoFocus
                 placeholder="How they should be addressed"
-                className={cn(INPUT, "h-10")}
+                className={cn("h-10")}
               />
             </label>
 
             <label className="block space-y-1.5">
               <span className="text-[12px] text-black/55">Client email</span>
-              <input
+              <Input
+                variant="admin"
                 name="email"
                 type="email"
                 required
                 placeholder="name@company.com"
-                className={cn(INPUT, "h-10")}
+                className={cn("h-10")}
               />
             </label>
 

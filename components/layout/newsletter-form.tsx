@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { newsletter } from "@/lib/content/home";
+import { Input } from "@/components/ui/input";
 
 export function NewsletterForm() {
   const [message, setMessage] = useState("");
@@ -20,7 +21,8 @@ export function NewsletterForm() {
       >
         <label className="min-w-0 flex-1">
           <span className="sr-only">Email address</span>
-          <input
+          <Input
+            variant="bare"
             type="email"
             required
             placeholder={newsletter.placeholder}

@@ -19,9 +19,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import type { ProjectInviteContext } from "@/data/clients";
-import { INPUT } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const IDLE: ClientInviteState = { status: "idle", message: null };
 
@@ -162,19 +162,21 @@ export function InviteClient({
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="block space-y-1.5">
                   <span className="text-[12px] text-black/55">Their name</span>
-                  <input
+                  <Input
+                    variant="admin"
                     name="fullName"
                     maxLength={120}
-                    className={cn(INPUT, "h-10")}
+                    className={cn("h-10")}
                   />
                 </label>
                 <label className="block space-y-1.5">
                   <span className="text-[12px] text-black/55">Their email</span>
-                  <input
+                  <Input
+                    variant="admin"
                     name="email"
                     type="email"
                     placeholder="name@company.com"
-                    className={cn(INPUT, "h-10")}
+                    className={cn("h-10")}
                   />
                 </label>
               </div>
