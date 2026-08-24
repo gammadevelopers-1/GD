@@ -58,6 +58,51 @@ function refresh(profileId?: string) {
   if (profileId) revalidatePath(`/team/${profileId}`);
 }
 
+function joinNames(names: string[]) {
+  if (names.length < 3) return names.join(" and ");
+  return `${names.slice(0, -1).join(", ")}, and ${names.at(-1)}`;
+}
+
+// Which companies a portal account can still be reached through. A portal
+// account is not owned by one client -- it is reached through whichever
+// projects it holds access to -- so "I deleted that client" can leave the
+// address held by a company the owner never thought to look at.
+async function clientsHoldingAccount(clientUserId: string) {
+  const supabase = await createClient();
+
+  const { data: grants } = await supabase
+    .from("app_project_client_access")
+    .select("project_id")
+    .eq("client_user_id", clientUserId)
+    .is("revoked_at", null);
+
+  const projectIds = (grants ?? []).map((grant) => String(grant.project_id));
+  if (!projectIds.length) return [];
+
+  const { data: projects } = await supabase
+    .from("app_projects")
+    .select("client_id")
+    .in("id", projectIds);
+
+  const clientIds = [
+    ...new Set(
+      (projects ?? [])
+        .map((project) => project.client_id)
+        .filter(Boolean)
+        .map(String),
+    ),
+  ];
+  if (!clientIds.length) return [];
+
+  const { data: clients } = await supabase
+    .from("app_clients")
+    .select("name")
+    .in("id", clientIds)
+    .order("name");
+
+  return (clients ?? []).map((client) => String(client.name));
+}
+
 async function addressIsTaken(email: string) {
   const supabase = await createClient();
 
@@ -77,12 +122,18 @@ async function addressIsTaken(email: string) {
 
   if (profile.data) return "Someone on the team already uses that address.";
 
-  if (clientUser.data?.archived_at) {
-    return "That address belongs to an archived client account, which still holds the sign-in. Delete that account under its client to free the address.";
-  }
   if (clientUser.data) {
-    return "That address belongs to a client portal account, so it cannot also be a team account.";
+    const holders = await clientsHoldingAccount(String(clientUser.data.id));
+    const where = holders.length ? ` under ${joinNames(holders)}` : "";
+
+    if (clientUser.data.archived_at) {
+      return `That address is an archived portal account${where}. Archiving keeps the sign-in, so delete the account${where || " under its client"} to free the address.`;
+    }
+    return holders.length
+      ? `That address is the portal sign-in for ${joinNames(holders)}. Delete that account there to free it for a team account.`
+      : "That address belongs to a client portal account, so it cannot also be a team account.";
   }
+
   if (pendingClient.data) {
     return "A client portal invite is already in flight for that address. Finish or cancel it first.";
   }
