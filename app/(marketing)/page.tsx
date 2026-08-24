@@ -1,7 +1,3 @@
-import { ScrollProgress } from "@/components/layout/scroll-progress";
-import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteNav } from "@/components/layout/site-nav";
-import { StickyCta } from "@/components/layout/sticky-cta";
 import { BookAuditSection } from "@/components/sections/book-audit-section";
 import { ComplianceSection } from "@/components/sections/compliance-section";
 import { HeroSection } from "@/components/sections/hero/hero-section";
@@ -13,21 +9,15 @@ import { WorkSection } from "@/components/sections/work-section";
 
 export default function HomePage() {
   return (
-    <>
-      <ScrollProgress />
-      <SiteNav />
-      <StickyCta />
-      <main id="top">
-        <HeroSection />
-        <LogoMarquee />
-        <ProcessSection />
-        <OutcomesSection />
-        <WorkSection />
-        <TestimonialsSection />
-        <ComplianceSection />
-        <BookAuditSection />
-      </main>
-      <SiteFooter />
-    </>
+    <main id="top">
+      <HeroSection />
+      <LogoMarquee />
+      <ProcessSection />
+      <OutcomesSection />
+      <WorkSection />
+      <TestimonialsSection />
+      <ComplianceSection />
+      <BookAuditSection />
+    </main>
   );
 }

@@ -66,7 +66,7 @@ export function SiteNav() {
         className="relative mx-auto grid h-[72px] w-full max-w-[1480px] grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 sm:px-6 lg:px-8 xl:px-10"
       >
         <Link
-          href="#"
+          href="/"
           aria-label={`${site.name} home`}
           className="group/logo relative block h-10 w-14 overflow-hidden rounded-lg transition-[width,background-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-black/[0.025] focus-visible:ring-2 focus-visible:ring-[#2fe85c]/50 focus-visible:outline-none md:hover:w-[158px] md:focus-visible:w-[158px]"
         >

@@ -11,31 +11,31 @@ export const site = {
 } as const;
 
 export const navLinks = [
-  { label: "Home", href: "#top" },
-  { label: "Work", href: "#work" },
-  { label: "Compliance", href: "#compliance" },
+  { label: "Home", href: "/#top" },
+  { label: "Work", href: "/#work" },
+  { label: "Compliance", href: "/#compliance" },
 ] as const;
 
 export const servicesMenu = [
   {
     title: "Production AI agents",
     body: "Agents that own a real outcome, with logs you can audit.",
-    href: "#process",
+    href: "/#process",
   },
   {
     title: "Internal platforms",
     body: "Dashboards and CRMs that replace the shared spreadsheet.",
-    href: "#process",
+    href: "/#process",
   },
   {
     title: "Systems integration",
     body: "Connect the tools you pay for, so nothing gets retyped.",
-    href: "#process",
+    href: "/#process",
   },
   {
     title: "Ongoing engineering",
     body: "A retained team that keeps shipping after launch.",
-    href: "#process",
+    href: "/#process",
   },
 ] as const;
 
@@ -63,9 +63,9 @@ export const footerColumns = [
   {
     title: "Site",
     links: [
-      { label: "How we work", href: "#process" },
-      { label: "Case studies", href: "#work" },
-      { label: "Compliance", href: "#compliance" },
+      { label: "How we work", href: "/#process" },
+      { label: "Case studies", href: "/#work" },
+      { label: "Compliance", href: "/#compliance" },
     ],
   },
   {

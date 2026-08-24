@@ -2,11 +2,12 @@
 
 import { useRef, useState, type MouseEvent } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useReducedMotion } from "@/lib/hooks/use-reduced-motion";
 import { cn } from "@/lib/utils";
 
 export function StickyCta() {
+  const pathname = usePathname();
   const router = useRouter();
   const reduced = useReducedMotion();
   const [leaving, setLeaving] = useState(false);
@@ -19,6 +20,8 @@ export function StickyCta() {
     window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => router.push("/contact"), 520);
   }
+
+  if (pathname === "/contact") return null;
 
   return (
     <>
