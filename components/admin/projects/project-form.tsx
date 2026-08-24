@@ -271,19 +271,21 @@ export function ProjectForm({
       </fieldset>
 
       <div className="flex flex-col-reverse gap-3 border-t border-black/[0.06] pt-5 sm:flex-row sm:justify-end">
-        <Link
-          href={cancelHref}
-          className="focus-visible:ring-gd-green/40 inline-flex h-11 items-center justify-center rounded-xl px-4 text-sm font-medium text-black/45 transition duration-150 hover:bg-black/[0.045] hover:text-black/75 focus-visible:ring-2 focus-visible:outline-none"
-        >
-          Cancel
-        </Link>
         <Button
-          variant="bare"
+          asChild
+          variant="admin-ghost"
+          size="none"
+          className="h-10 px-4 text-[13px]"
+        >
+          <Link href={cancelHref}>Cancel</Link>
+        </Button>
+        <Button
+          variant="admin-cta"
           size="none"
           type="submit"
           disabled={pending}
           data-button-fill
-          className="button-fill-fx button-fill-fx--lift bg-gd-panel-dark inline-flex h-11 items-center justify-center gap-2 rounded-xl px-5 text-sm font-semibold text-white transition [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512] disabled:opacity-60"
+          className="h-10 px-5 disabled:opacity-60"
         >
           {pending ? <Loader2 className="size-4 animate-spin" /> : null}
           <span className="button-fill-fx__label">

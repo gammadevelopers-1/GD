@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { AlertCircle, Building2, Loader2, Plus, X } from "lucide-react";
+import { AlertCircle, Loader2, Plus, X } from "lucide-react";
 import { createClientCompany } from "@/app/(admin)/clients/actions";
 import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
 import {
@@ -37,13 +37,14 @@ export function AddClient() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
-          variant="admin-primary"
+          variant="admin-cta"
           size="none"
           type="button"
+          data-button-fill
           className="h-10"
         >
-          <Building2 className="size-4" />
-          Add client
+          <Plus className="size-4" />
+          <span className="button-fill-fx__label">Add client</span>
         </Button>
       </DialogTrigger>
 

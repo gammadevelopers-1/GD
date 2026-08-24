@@ -6,6 +6,7 @@ import { PortfolioResults } from "@/components/admin/projects/portfolio-results"
 import { PortfolioSkeleton } from "@/components/admin/projects/portfolio-skeleton";
 import { requireRole, type Viewer } from "@/data/auth";
 import { getPortfolio, getPortfolioOptions } from "@/data/portfolio";
+import { Button } from "@/components/ui/button";
 import {
   type PortfolioQuery,
   type RawSearchParams,
@@ -36,14 +37,12 @@ export default async function ProjectsPage({
         </h1>
 
         {isOwner ? (
-          <Link
-            href="/projects/new"
-            data-button-fill
-            className="button-fill-fx button-fill-fx--lift bg-gd-panel-dark inline-flex h-10 items-center gap-2 rounded-xl px-4 text-[13px] font-semibold text-white [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512]"
-          >
-            <Plus className="size-4" />
-            <span className="button-fill-fx__label">New project</span>
-          </Link>
+          <Button asChild variant="admin-cta" size="none" className="h-10">
+            <Link href="/projects/new" data-button-fill>
+              <Plus className="size-4" />
+              <span className="button-fill-fx__label">New project</span>
+            </Link>
+          </Button>
         ) : null}
       </div>
 

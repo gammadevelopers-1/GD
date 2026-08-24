@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { AlertCircle, Loader2, UserPlus } from "lucide-react";
+import { AlertCircle, Loader2, Plus } from "lucide-react";
 import {
   createTeamMember,
   type CreateTeamState,
@@ -30,17 +30,18 @@ export function AddMember() {
   return (
     <>
       <Button
-        variant="admin-primary"
+        variant="admin-cta"
         size="none"
         type="button"
         onClick={() => {
           setStage("form");
           setOpen(true);
         }}
+        data-button-fill
         className="h-10"
       >
-        <UserPlus className="size-4" />
-        Add team member
+        <Plus className="size-4" />
+        <span className="button-fill-fx__label">Add team member</span>
       </Button>
 
       <Modal

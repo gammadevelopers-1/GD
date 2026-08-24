@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { AlertCircle, Loader2, Trash2, UserPlus } from "lucide-react";
+import { AlertCircle, Loader2, Trash2, Plus } from "lucide-react";
 import {
   archiveClientContact,
   saveClientContact,
@@ -89,17 +89,18 @@ function ContactDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
-          variant="admin-secondary"
+          variant={contact ? "admin-secondary" : "admin-cta"}
           size="none"
           type="button"
+          data-button-fill={contact ? undefined : ""}
           className={cn("h-8 px-2.5 text-xs", !contact && "h-9 px-3")}
         >
           {contact ? (
             "Edit"
           ) : (
             <>
-              <UserPlus className="size-3.5" />
-              Add contact
+              <Plus className="size-3.5" />
+              <span className="button-fill-fx__label">Add contact</span>
             </>
           )}
         </Button>

@@ -16,6 +16,7 @@ import { KpiCard } from "@/components/admin/kpi-card";
 import { DeliveryPulse } from "@/components/admin/delivery-pulse";
 import { Progress } from "@/components/ui/progress";
 import { requireViewer, type Viewer } from "@/data/auth";
+import { Button } from "@/components/ui/button";
 import {
   getDashboardData,
   type DashboardData,
@@ -45,14 +46,12 @@ export default async function DashboardPage() {
         title={`Good morning, ${firstName}.`}
         action={
           viewer.role === "owner" ? (
-            <Link
-              href="/projects/new"
-              data-button-fill
-              className="button-fill-fx button-fill-fx--lift group bg-gd-panel-dark inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-white shadow-sm transition [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512]"
-            >
-              <Plus className="text-brand size-4 transition-colors group-hover:text-[#101512]" />
-              <span className="button-fill-fx__label">New project</span>
-            </Link>
+            <Button asChild variant="admin-cta" size="none" className="h-10">
+              <Link href="/projects/new" data-button-fill>
+                <Plus className="size-4" />
+                <span className="button-fill-fx__label">New project</span>
+              </Link>
+            </Button>
           ) : undefined
         }
       />

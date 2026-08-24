@@ -31,6 +31,8 @@ const buttonVariants = cva(
           "size-7 rounded-lg text-black/35 hover:bg-black/[0.05] hover:text-black active:scale-95 focus-visible:ring-2 focus-visible:ring-gd-green/40 focus-visible:outline-none",
         "admin-icon-danger":
           "size-7 rounded-lg text-black/35 hover:bg-red-50 hover:text-red-700 active:scale-95 focus-visible:ring-2 focus-visible:ring-gd-green/40 focus-visible:outline-none",
+        "admin-cta":
+          "button-fill-fx button-fill-fx--lift bg-gd-panel-dark gap-2 rounded-xl px-4 text-[13px] font-semibold text-white [--button-fill-color:var(--color-gd-primary)] [--button-fill-hover-text:var(--color-gd-ink)]",
         bare: "",
         "admin-dashed":
           "w-full gap-2 rounded-[20px] border border-dashed border-black/12 bg-white/40 px-4 py-4 text-xs font-semibold text-black/50 hover:border-brand/60 hover:bg-brand/[0.06] hover:text-gd-green-deep active:scale-[0.995] focus-visible:ring-2 focus-visible:ring-gd-green/40 focus-visible:outline-none",
@@ -47,6 +49,10 @@ const buttonVariants = cva(
         "icon-sm":
           "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
         "icon-lg": "size-9",
+        "admin-xs": "h-7",
+        "admin-sm": "h-8",
+        admin: "h-9",
+        "admin-lg": "h-10",
         none: "",
       },
     },
