@@ -17,6 +17,16 @@ import {
   getProjectTechnical,
 } from "@/data/project-detail";
 import { getEnvFiles, getEnvGroups } from "@/data/env";
+import { getCopyVariables, getMergeRows, getMyCopies } from "@/data/env-copies";
+import { EnvCompare } from "@/components/admin/projects/env-compare";
+import { EnvMyCopy } from "@/components/admin/projects/env-my-copy";
+import { buildMerge } from "@/lib/projects/env-merge";
+import {
+  adoptIntoMain,
+  createMyCopy,
+  removeMyVariable,
+  saveMyVariables,
+} from "../../../env-copy-actions";
 import { getCredentialAudit, getProjectCredentials } from "@/data/credentials";
 import { credentialsConfigured } from "@/lib/credentials/crypto";
 import { saveTechnicalDetails } from "../../../technical-actions";
@@ -74,6 +84,23 @@ async function TechnicalSections({ publicId }: { publicId: string }) {
   const onThisProject =
     isOwner || members.some((member) => member.id === viewer.id);
 
+  const [copies, mergeRows] = await Promise.all([
+    onThisProject ? getMyCopies(project.id, viewer) : Promise.resolve([]),
+    getMergeRows(project.id, viewer),
+  ]);
+
+  const copyVariables = Object.fromEntries(
+    await Promise.all(
+      copies.map(
+        async (copy) => [copy.id, await getCopyVariables(copy.id)] as const,
+      ),
+    ),
+  );
+
+  const mergeKeys = buildMerge(mergeRows);
+  const mainGroupId =
+    mergeRows.find((row) => row.isMain)?.groupId ?? envGroups[0]?.id ?? null;
+
   const envActions: EnvActions = {
     createGroup: createEnvGroup,
     shareGroups: shareEnvGroups,
@@ -113,6 +140,25 @@ async function TechnicalSections({ publicId }: { publicId: string }) {
         vaultReady={credentialsConfigured()}
         actions={envActions}
       />
+
+      {isOwner && mergeKeys.length ? (
+        <EnvCompare
+          mainGroupId={mainGroupId}
+          keys={mergeKeys}
+          adopt={adoptIntoMain}
+        />
+      ) : null}
+
+      {onThisProject ? (
+        <EnvMyCopy
+          projectId={project.id}
+          copies={copies}
+          variables={copyVariables}
+          createCopy={createMyCopy}
+          saveVariables={saveMyVariables}
+          removeVariable={removeMyVariable}
+        />
+      ) : null}
 
       {isOwner ? <AuditHistory entries={audit} /> : null}
     </div>
