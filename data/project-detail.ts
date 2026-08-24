@@ -709,51 +709,6 @@ export const getProjectMembers = cache(async function getProjectMembers(
   members.sort((a, b) => Number(b.isLead) - Number(a.isLead));
   return members;
 });
-
-export const getProjectTechnical = cache(async function getProjectTechnical(
-  projectId: string,
-): Promise<ProjectCore["technical"]> {
-  const supabase = await createClient();
-
-  const { data } = await supabase
-    .from("app_project_technical_details")
-    .select(
-      `repository_url, hosting_url, live_domain, staging_domain, design_url,
-       technical_contact, stack_notes, onboarding_notes, updated_at,
-       updatedBy:app_profiles!app_project_technical_details_updated_by_fkey(full_name)`,
-    )
-    .eq("project_id", projectId)
-    .maybeSingle();
-
-  if (!data) return null;
-
-  const row = data as unknown as {
-    repository_url: string | null;
-    hosting_url: string | null;
-    live_domain: string | null;
-    staging_domain: string | null;
-    design_url: string | null;
-    technical_contact: string | null;
-    stack_notes: string | null;
-    onboarding_notes: string | null;
-    updated_at: string | null;
-    updatedBy: NameRef;
-  };
-
-  return {
-    repositoryUrl: row.repository_url,
-    hostingUrl: row.hosting_url,
-    liveDomain: row.live_domain,
-    stagingDomain: row.staging_domain,
-    designUrl: row.design_url,
-    technicalContact: row.technical_contact,
-    stackNotes: row.stack_notes,
-    onboardingNotes: row.onboarding_notes,
-    updatedBy: row.updatedBy?.full_name ? String(row.updatedBy.full_name) : null,
-    updatedAt: row.updated_at ? String(row.updated_at) : null,
-  };
-});
-
 export type ProjectWeekStats = {
   weeks: number;
   closedWeeks: number;

@@ -1,21 +1,17 @@
 import { Suspense } from "react";
 import { PanelSkeleton } from "@/components/admin/skeletons";
 import {
-  type TechnicalDetails,
-  TechnicalPanel,
-} from "@/components/admin/projects/technical-panel";
+  type LinkActions,
+  WorkingLinks,
+} from "@/components/admin/projects/working-links";
 import {
   type EnvActions,
   EnvPanel,
 } from "@/components/admin/projects/env-panel";
 import { AuditHistory } from "@/components/admin/projects/audit-history";
 import { requireRole } from "@/data/auth";
-import {
-  type ProjectCore,
-  getProjectCore,
-  getProjectMembers,
-  getProjectTechnical,
-} from "@/data/project-detail";
+import { getProjectCore, getProjectMembers } from "@/data/project-detail";
+import { getProjectLinks } from "@/data/project-links";
 import { getEnvFiles, getEnvGroups } from "@/data/env";
 import { getCopyVariables, getMergeRows, getMyCopies } from "@/data/env-copies";
 import { EnvCompare } from "@/components/admin/projects/env-compare";
@@ -29,7 +25,13 @@ import {
 } from "../../../env-copy-actions";
 import { getCredentialAudit, getProjectCredentials } from "@/data/credentials";
 import { credentialsConfigured } from "@/lib/credentials/crypto";
-import { saveTechnicalDetails } from "../../../technical-actions";
+import {
+  addProjectLink,
+  clearProjectLink,
+  deleteProjectLink,
+  renameProjectLink,
+  setProjectLink,
+} from "../../../link-actions";
 import {
   copyEnvValue,
   createEnvGroup,
@@ -68,12 +70,14 @@ async function TechnicalSections({ publicId }: { publicId: string }) {
   if (!project) return null;
 
   const isOwner = viewer.role === "owner";
+  const canManageLinks =
+    (isOwner || viewer.id === project.leadId) && !project.isArchived;
 
   // Five independent reads. They used to run as two waves with the member list
   // and the technical row already paid for by the shared project query.
-  const [technical, members, credentials, envGroups, envFiles] =
+  const [links, members, credentials, envGroups, envFiles] =
     await Promise.all([
-      getProjectTechnical(project.id),
+      getProjectLinks(project.id, viewer),
       getProjectMembers(project.id, project.leadId),
       getProjectCredentials(project.id, viewer),
       getEnvGroups(project.id, viewer),
@@ -101,6 +105,14 @@ async function TechnicalSections({ publicId }: { publicId: string }) {
   const mainGroupId =
     mergeRows.find((row) => row.isMain)?.groupId ?? envGroups[0]?.id ?? null;
 
+  const linkActions: LinkActions = {
+    setLink: setProjectLink,
+    renameLink: renameProjectLink,
+    clearLink: clearProjectLink,
+    addLink: addProjectLink,
+    deleteLink: deleteProjectLink,
+  };
+
   const envActions: EnvActions = {
     createGroup: createEnvGroup,
     shareGroups: shareEnvGroups,
@@ -119,12 +131,11 @@ async function TechnicalSections({ publicId }: { publicId: string }) {
 
   return (
     <div className="space-y-8">
-      <TechnicalPanel
+      <WorkingLinks
         projectId={project.id}
-        details={toTechnicalDetails(technical)}
-        canEdit={onThisProject}
-        isArchived={project.isArchived}
-        save={saveTechnicalDetails}
+        links={links}
+        canManage={canManageLinks}
+        actions={linkActions}
       />
 
       <EnvPanel
@@ -172,22 +183,4 @@ function TechnicalSkeleton() {
       <PanelSkeleton lines={5} />
     </div>
   );
-}
-
-function toTechnicalDetails(
-  technical: ProjectCore["technical"],
-): TechnicalDetails | null {
-  if (!technical) return null;
-
-  return {
-    repositoryUrl: technical.repositoryUrl ?? "",
-    hostingUrl: technical.hostingUrl ?? "",
-    liveDomain: technical.liveDomain ?? "",
-    stagingDomain: technical.stagingDomain ?? "",
-    designUrl: technical.designUrl ?? "",
-    stackNotes: technical.stackNotes ?? "",
-    onboardingNotes: technical.onboardingNotes ?? "",
-    updatedBy: technical.updatedBy,
-    updatedAt: technical.updatedAt,
-  };
 }
