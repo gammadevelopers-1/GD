@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { ButtonFillEffects } from "@/components/common/button-fill-effects";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 import { configuredOrigin } from "@/lib/site/origin";
 
@@ -66,6 +67,7 @@ export default function RootLayout({
       <body className="bg-background text-foreground font-body antialiased">
         <ButtonFillEffects />
         {children}
+        <Toaster />
       </body>
     </html>
   );
