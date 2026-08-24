@@ -313,6 +313,8 @@ async function ensureClientAccount(
     .update({ full_name: fullName, created_by: ownerId })
     .eq("id", created.id);
 
+  await supabase.from("app_client_registrations").delete().eq("email", email);
+
   return { ok: true, id: created.id };
 }
 
