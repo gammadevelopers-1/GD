@@ -7,10 +7,13 @@ description: The Gamma Developers design system for this repo — brand tokens, 
 
 Design lives in the browser here, not in Figma. There is no separate design source of truth — `app/globals.css`, `components/ui/`, and `lib/admin-ui.ts` **are** the design system. Read them before styling; this file tells you what's in them and which one to reach for.
 
+**Full reference: [`DESIGN-SYSTEM.md`](../../../DESIGN-SYSTEM.md) in the repo root.** This file is the working summary; that file carries the complete token tables, the surface definitions, the component vocabulary and the known gaps. Read it when this summary does not settle the question.
+
 Feel: Linear (fast, quietly confident), Vercel (sharp type), Ramp (proof everywhere), Anthropic (calm). Restrained. Never playful.
 
 ## Hard rules
 
+0. **shadcn/ui is the only component source.** Every interactive control comes from `components/ui/`. If the component you need is not there, install it — `npx shadcn@latest add <component>` — and use it. **Never hand-roll a component shadcn already ships**, never copy shadcn source out of the docs by hand, never approximate one with a `<div>` and some state. The CLI gets the Radix primitive, the accessibility wiring, the `data-slot` attributes and the `radix-nova` style right; an imitation gets the styling close and the keyboard, focus management, portalling and ARIA wrong. This holds even when it looks trivial. Extend a primitive by adding a **variant** to its `cva`, never by forking the file. The one component deliberately not installed is `form` — it needs react-hook-form, and all 27 form files use `useActionState` with server actions.
 1. **No code comments.** Not explanatory, not "why", not section headers. Only functional directives survive: `eslint-disable*`, `@ts-expect-error`, `/// <reference>`, `prettier-ignore` (including JSX-wrapped `{/* eslint-disable-next-line */}`). Explain in chat, not in source.
 2. **No filler text.** Clarity comes from labels, icons, spacing, and hierarchy — never from added helper copy, description paragraphs, or tooltips-used-as-explanation.
 3. **No dead controls.** Remove a not-yet-working button; don't ship it disabled or greyed. Planned nav items go under a small "Planned" label.
