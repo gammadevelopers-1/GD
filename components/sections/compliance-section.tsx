@@ -21,8 +21,6 @@ export function ComplianceSection() {
               {compliance.body}
             </p>
 
-           
-
             <Link
               href="/contact"
               data-button-fill

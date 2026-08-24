@@ -47,8 +47,8 @@ export function ArchiveControl({
     <div className="rounded-2xl border border-black/[0.08] bg-white/50 p-4 transition-colors duration-200 hover:border-black/[0.14] sm:p-5">
       <h2 className="text-sm font-semibold">Archive this project</h2>
       <p className="mt-1.5 text-xs leading-5 text-black/45">
-        This cause the assigned members to
-        lose access immediately, and you can restore it at any time.
+        This cause the assigned members to lose access immediately, and you can
+        restore it at any time.
       </p>
 
       <button

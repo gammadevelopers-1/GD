@@ -34,6 +34,7 @@ import {
 } from "@/lib/admin-ui";
 import { FormSelect } from "@/components/common/form-select";
 import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
 
 export type CredentialOption = { id: string; name: string };
 
@@ -95,12 +96,13 @@ function AutoTextarea({
   }, [value]);
 
   return (
-    <textarea
+    <Textarea
       ref={ref}
       rows={rows}
       value={value}
       maxLength={TEXT_MAX}
       placeholder={placeholder}
+      variant="bare"
       onChange={(event) => onChange(event.target.value)}
       className={cn(
         "w-full resize-none bg-transparent leading-6 outline-none placeholder:text-black/25",

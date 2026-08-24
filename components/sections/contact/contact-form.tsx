@@ -2,6 +2,8 @@
 
 import { useState, type FormEvent } from "react";
 import { contact } from "@/lib/content/home";
+import { FormSelect } from "@/components/common/form-select";
+import { Textarea } from "@/components/ui/textarea";
 
 const FIELD =
   "h-12 rounded-xl border border-black/14 bg-[#fbfbf8] px-3.75 text-[15px] outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#2fe85c] focus:shadow-[0_0_0_3px_rgba(47,232,92,0.16)]";
@@ -39,22 +41,28 @@ export function ContactForm() {
           Company
           <input placeholder="Cortek" className={FIELD} />
         </label>
-        <label className={LABEL}>
+        <div className={LABEL}>
           Team size
-          <select className={`${FIELD} text-foreground`} defaultValue="1–10">
-            {contact.teamSizes.map((size) => (
-              <option key={size}>{size}</option>
-            ))}
-          </select>
-        </label>
+          <FormSelect
+            name="teamSize"
+            ariaLabel="Team size"
+            defaultValue="1–10"
+            options={contact.teamSizes.map((size) => ({
+              value: size,
+              label: size,
+            }))}
+            triggerClassName={`${FIELD} text-foreground`}
+          />
+        </div>
       </div>
 
       <label className={`${LABEL} mt-4.5`}>
         What’s the messiest part of your day?
-        <textarea
+        <Textarea
           rows={5}
           placeholder="Leads arrive on WhatsApp and get missed. We retype every booking into two systems..."
-          className="resize-y rounded-xl border border-black/14 bg-[#fbfbf8] px-3.75 py-3.25 text-[15px] leading-[1.55] outline-none transition-[border-color,box-shadow] duration-200 focus:border-[#2fe85c] focus:shadow-[0_0_0_3px_rgba(47,232,92,0.16)]"
+          variant="bare"
+          className="resize-y rounded-xl border border-black/14 bg-[#fbfbf8] px-3.75 py-3.25 text-[15px] leading-[1.55] transition-[border-color,box-shadow] duration-200 outline-none focus:border-[#2fe85c] focus:shadow-[0_0_0_3px_rgba(47,232,92,0.16)]"
         />
       </label>
 

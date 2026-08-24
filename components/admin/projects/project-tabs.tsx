@@ -24,7 +24,6 @@ export function ProjectTabs({ publicId }: { publicId: string }) {
         aria-label="Project sections"
         className="flex h-auto w-full justify-start gap-0 overflow-x-auto rounded-none border-t border-white/[0.07] p-0 px-2 sm:px-4"
       >
-        
         {PROJECT_TABS.map((tab) => (
           <TabsTrigger
             key={tab}

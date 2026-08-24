@@ -15,6 +15,7 @@ import { PROJECT_STATUSES, PROJECT_STATUS_LABEL } from "@/lib/projects/status";
 import { FormSelect } from "@/components/common/form-select";
 import { FormDatePicker } from "@/components/common/form-date-picker";
 import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
 
 type Option = { id: string; name: string };
 
@@ -170,12 +171,13 @@ export function ProjectForm({
           error={errors.description}
           className="sm:col-span-2"
         >
-          <textarea
+          <Textarea
             id="description"
             name="description"
             rows={4}
             defaultValue={values.description}
             maxLength={DESCRIPTION_MAX}
+            variant="bare"
             aria-invalid={Boolean(errors.description)}
             className={cn(
               inputClass(Boolean(errors.description)),

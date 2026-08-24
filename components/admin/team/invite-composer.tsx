@@ -12,6 +12,7 @@ import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-succ
 import { INVITE_LINK_HEADING } from "@/lib/invites/email";
 import { BUTTON_PRIMARY, BUTTON_SECONDARY, INPUT } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
 
 const IDLE: InviteState = { status: "idle", message: null };
 
@@ -50,12 +51,13 @@ export function InviteComposer({
 
       <label className="block space-y-1.5">
         <span className="text-[12px] text-black/55">Message</span>
-        <textarea
+        <Textarea
           name="body"
           required
           rows={10}
           defaultValue={draft.body}
-          className={cn(INPUT, "resize-y py-2.5 leading-6")}
+          variant="admin"
+          className="resize-y py-2.5 leading-6"
         />
       </label>
 

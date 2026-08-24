@@ -375,8 +375,8 @@ function TaskRow({
         className={cn(
           "relative z-10 grid size-8 shrink-0 cursor-pointer place-items-center rounded-lg border shadow-sm transition duration-150 active:scale-95",
           hasDetail
-            ? "border-[#16a34a]/35 bg-[#16a34a]/10 text-[#0b5f2c] hover:border-[#16a34a]/60 hover:bg-[#16a34a]/20 group-hover:border-[#16a34a]/45"
-            : "border-dashed border-black/30 bg-white text-black/60 hover:border-black/55 hover:bg-black/[0.04] hover:text-black group-hover:border-black/40",
+            ? "border-[#16a34a]/35 bg-[#16a34a]/10 text-[#0b5f2c] group-hover:border-[#16a34a]/45 hover:border-[#16a34a]/60 hover:bg-[#16a34a]/20"
+            : "border-dashed border-black/30 bg-white text-black/60 group-hover:border-black/40 hover:border-black/55 hover:bg-black/[0.04] hover:text-black",
         )}
       >
         {hasDetail ? (

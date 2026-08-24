@@ -61,6 +61,7 @@ import {
 } from "@/components/admin/projects/use-autosave";
 import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
 import { FormDatePicker } from "@/components/common/form-date-picker";
+import { Textarea } from "@/components/ui/textarea";
 
 type FormAction = (
   state: SimpleFormState,
@@ -906,7 +907,7 @@ function StatusControls({
                 <span className="ml-1 text-red-600">*</span>
               ) : null}
             </label>
-            <textarea
+            <Textarea
               id={`reason-${card.id}`}
               name="reason"
               rows={2}
@@ -918,7 +919,8 @@ function StatusControls({
                   : (card.carryReason ?? "")
               }
               placeholder={prompt.placeholder}
-              className={cn(INPUT_SMALL, "mt-1 w-full resize-none py-2")}
+              variant="admin-sm"
+              className="mt-1 w-full resize-none py-2"
             />
           </div>
           <button

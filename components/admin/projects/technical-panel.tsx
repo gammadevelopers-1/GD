@@ -31,6 +31,7 @@ import {
 } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 export type TechnicalDetails = TechnicalValues & {
   updatedBy: string | null;
@@ -304,18 +305,18 @@ function TechnicalForm({
               <span className="text-[13px] text-black/55">
                 {row.label} <Optional />
               </span>
-              <textarea
+              <Textarea
                 name={row.field}
                 defaultValue={current[row.field]}
                 placeholder={row.placeholder}
                 rows={4}
                 maxLength={NOTES_MAX}
+                variant="admin"
                 aria-invalid={errors[row.field] ? true : undefined}
                 aria-describedby={
                   errors[row.field] ? `${row.field}-error` : undefined
                 }
                 className={cn(
-                  INPUT,
                   "resize-y py-2.5 leading-6",
                   errors[row.field] && "border-red-300 focus:border-red-400",
                 )}

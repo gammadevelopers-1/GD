@@ -1,7 +1,15 @@
 "use client";
 
 import { useActionState, useRef, useState, useTransition } from "react";
-import { Camera, Check, Copy, ImageUp, Loader2, SquarePen, Trash2 } from "lucide-react";
+import {
+  Camera,
+  Check,
+  Copy,
+  ImageUp,
+  Loader2,
+  SquarePen,
+  Trash2,
+} from "lucide-react";
 import {
   removeMyBanner,
   saveMyAvatar,
@@ -72,7 +80,7 @@ export function ProfileHeader({
             <h1 className="font-display text-[26px] leading-none font-semibold tracking-[-0.04em]">
               {name}
             </h1>
-           
+
             <Badge
               variant="outline"
               className={cn("rounded-full font-semibold", TONE_SOFT.muted)}
@@ -243,13 +251,7 @@ function Cover({ url }: { url: string | null }) {
   );
 }
 
-function Portrait({
-  url,
-  initials,
-}: {
-  url: string | null;
-  initials: string;
-}) {
+function Portrait({ url, initials }: { url: string | null; initials: string }) {
   const [state, action, pending] = useActionState(saveMyAvatar, IDLE_FORM);
   const form = useRef<HTMLFormElement>(null);
   const picker = useRef<HTMLInputElement>(null);
@@ -303,8 +305,6 @@ function Portrait({
             <Camera className="size-6" />
           )}
         </span>
-
-       
       </button>
 
       {state.status === "error" && state.message ? (

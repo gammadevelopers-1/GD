@@ -48,11 +48,7 @@ export function ShareProject({
         open={open}
         onClose={close}
         title="Share this project"
-        description={
-          issued
-            ? undefined
-            : " "
-        }
+        description={issued ? undefined : " "}
       >
         {issued ? (
           <Issued issued={issued} onClose={close} />
@@ -82,7 +78,6 @@ export function ShareProject({
                 placeholder="name@company.com"
                 className={cn(INPUT, "h-10")}
               />
-           
             </label>
 
             <label className="flex items-start gap-3 rounded-xl border border-black/[0.09] bg-white px-3.5 py-3">
@@ -95,7 +90,6 @@ export function ShareProject({
                 <span className="block text-[13px] font-medium text-black/80">
                   Allow editing the milestone board
                 </span>
-              
               </span>
             </label>
 

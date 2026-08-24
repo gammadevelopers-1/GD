@@ -1,15 +1,11 @@
 "use client";
 
-import {
-  useMemo,
-  useState,
-  useSyncExternalStore,
-  type FormEvent,
-} from "react";
+import { useMemo, useState, useSyncExternalStore, type FormEvent } from "react";
 import { ArrowLeft, CalendarDays, Check, Clock, MapPin } from "lucide-react";
 import { Reveal } from "@/components/common/reveal";
 import { bookAudit } from "@/lib/content/home";
 import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
 
 const MONTHS = [
   "January",
@@ -45,11 +41,7 @@ function todayKey() {
 }
 
 function useToday() {
-  const key = useSyncExternalStore(
-    keepStill,
-    todayKey,
-    () => null,
-  );
+  const key = useSyncExternalStore(keepStill, todayKey, () => null);
 
   return useMemo(() => {
     if (!key) return null;
@@ -264,10 +256,11 @@ export function BookAuditSection() {
                         {bookAudit.form.note.hint}
                       </span>
                     </span>
-                    <textarea
+                    <Textarea
                       rows={2}
                       name="note"
                       placeholder={bookAudit.form.note.placeholder}
+                      variant="bare"
                       className={cn(FIELD, "h-auto resize-y py-2.75")}
                     />
                   </label>
@@ -391,9 +384,7 @@ function Brief() {
             GD
           </span>
           <div className="leading-[1.3]">
-            <p className="text-[13px] text-[#9aa096]">
-              {bookAudit.brief.org}
-            </p>
+            <p className="text-[13px] text-[#9aa096]">{bookAudit.brief.org}</p>
             <p className="text-[15px] font-semibold">{bookAudit.brief.kind}</p>
           </div>
         </div>

@@ -6,6 +6,7 @@ import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-succ
 import { type SimpleFormState, IDLE_FORM } from "@/lib/projects/form-state";
 import { BUTTON_PRIMARY, INPUT } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
 
 export type CompanyAction = (
   state: SimpleFormState,
@@ -59,11 +60,12 @@ export function CompanyForm({
 
       <label className="block space-y-1.5">
         <span className="text-[12px] text-black/55">Notes</span>
-        <textarea
+        <Textarea
           name="notes"
           rows={3}
           defaultValue={defaults?.notes}
-          className={cn(INPUT, "resize-y py-2")}
+          variant="admin"
+          className="resize-y"
         />
       </label>
 

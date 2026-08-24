@@ -131,8 +131,8 @@ export function AccountPanel({
           {person.deleteBlocker ? (
             <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[12px] leading-5 text-amber-900">
               {person.deleteBlocker.charAt(0).toUpperCase() +
-                person.deleteBlocker.slice(1)}. That work stays on the platform
-              and moves to your name.
+                person.deleteBlocker.slice(1)}
+              . That work stays on the platform and moves to your name.
             </p>
           ) : null}
 

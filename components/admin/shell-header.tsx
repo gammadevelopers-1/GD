@@ -13,7 +13,8 @@ async function InboxBell({ viewer }: { viewer: Viewer }) {
 }
 
 async function AccountFace({ viewer }: { viewer: Viewer }) {
-  if (!viewer.avatarPath) return <AccountMenu viewer={viewer} avatarUrl={null} />;
+  if (!viewer.avatarPath)
+    return <AccountMenu viewer={viewer} avatarUrl={null} />;
 
   const supabase = await createClient();
   const { data } = await supabase.storage

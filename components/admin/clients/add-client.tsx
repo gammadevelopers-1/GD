@@ -20,6 +20,7 @@ import {
   INPUT,
 } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
 
 const MAX_CONTACTS = 12;
 
@@ -80,10 +81,11 @@ export function AddClient() {
 
           <label className="block space-y-1.5">
             <span className="text-[12px] text-black/55">Notes</span>
-            <textarea
+            <Textarea
               name="notes"
               rows={2}
-              className={cn(INPUT, "resize-y py-2")}
+              variant="admin"
+              className="resize-y"
             />
           </label>
 

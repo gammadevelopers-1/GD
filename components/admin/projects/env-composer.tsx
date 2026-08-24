@@ -31,6 +31,7 @@ import { Modal } from "@/components/admin/projects/modal";
 import { useCloseOnSuccess } from "@/components/admin/projects/use-close-on-success";
 import { FormSelect } from "@/components/common/form-select";
 import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
 
 export type GroupOption = { id: string; name: string; keys: string[] };
 
@@ -208,14 +209,15 @@ export function ImportDialog({
             <label htmlFor="env-paste" className="text-[13px] text-black/55">
               Or paste the contents
             </label>
-            <textarea
+            <Textarea
               id="env-paste"
               value={pasted}
               onChange={(event) => setPasted(event.target.value)}
               rows={6}
               spellCheck={false}
               placeholder={"DATABASE_URL=postgres://…\nSTRIPE_KEY=sk_live_…"}
-              className={cn(INPUT, "mt-1.5 resize-y py-2.5 font-mono text-xs")}
+              variant="admin"
+              className="mt-1.5 resize-y py-2.5 font-mono text-xs"
             />
             <button
               type="button"

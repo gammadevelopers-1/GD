@@ -118,7 +118,10 @@ export function SiteFooter() {
             </span>
             <Dot />
             <span>Built in Pakistan</span>
-            <Link href="#top" className="transition-colors hover:text-[#eceae2]">
+            <Link
+              href="#top"
+              className="transition-colors hover:text-[#eceae2]"
+            >
               Back to top ↑
             </Link>
           </div>
