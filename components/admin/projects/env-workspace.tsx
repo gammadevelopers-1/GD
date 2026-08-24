@@ -117,10 +117,20 @@ export function EnvWorkspace({
   const [dialog, setDialog] = useState<Dialog>(null);
 
   const mainGroupId = workspace.mainGroups[0]?.id ?? null;
+
+  // Deleting a version leaves `view` pointing at somebody who is no longer
+  // there. Their own empty state still makes sense to them, but for an owner
+  // it is a dead end, so fall back to main.
+  const known =
+    view === "main" ||
+    view === viewerId ||
+    workspace.versions.some((version) => version.profileId === view);
+  const effective = known ? view : "main";
+
   const active = workspace.versions.find(
-    (version) => version.profileId === view,
+    (version) => version.profileId === effective,
   );
-  const isMain = view === "main";
+  const isMain = effective === "main";
 
   return (
     <>
@@ -148,7 +158,7 @@ export function EnvWorkspace({
             {workspace.versions.map((version) => (
               <VersionChip
                 key={version.profileId}
-                active={view === version.profileId}
+                active={effective === version.profileId}
                 onClick={() => setView(version.profileId)}
                 count={version.total}
                 label={`${version.name.split(" ")[0]}${version.isViewer ? " · you" : ""}`}
@@ -182,7 +192,7 @@ export function EnvWorkspace({
         ) : (
           <NoVersion
             projectId={projectId}
-            mine={view === viewerId}
+            mine={effective === viewerId}
             action={actions.createVersion}
           />
         )}
