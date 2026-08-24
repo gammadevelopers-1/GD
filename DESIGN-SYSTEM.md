@@ -277,6 +277,14 @@ The `marketing` variant needs `data-button-fill` on the element and a
 cursor-origin fill animates. `admin-cta` is the same treatment in the admin
 palette.
 
+**Never set the fill colour with an arbitrary utility.** `[--button-fill-color:#2fe85c]`
+looks correct and silently does nothing: `.button-fill-fx` is written unlayered
+in `globals.css`, and unlayered CSS outranks everything in `@layer utilities`,
+so the class's own `#232825` default always wins and the button fills grey.
+Add a modifier class next to `.button-fill-fx` instead — that is what
+`.button-fill-fx--brand` is. This applies to any unlayered global class in
+`globals.css`, not just this one.
+
 Heights come from the size scale. Do not type `h-11` or `h-13` onto a button.
 
 The `admin-*` variants encode the `lib/admin-ui.ts` strings verbatim. Pair them
@@ -347,7 +355,11 @@ skin. Compose with `cn()` from `@/lib/utils`.
 | `.edge-lit` | Brand-green hairline fades in along the top edge on hover/focus |
 | `.reactive-tile` / `.terminal-glare` / `.nav-cta` | Diagonal sheen sweeps on hover |
 | `.shimmer-label` | Animated gradient text for mono eyebrows |
-| `.button-fill-fx` | Cursor-origin fill; `--soft` or `--lift`. Needs `data-button-fill`; `ButtonFillEffects` in `app/layout.tsx` wires it globally |
+| `.button-fill-fx` | Cursor-origin fill. Needs `data-button-fill` on the element; `ButtonFillEffects` in `app/layout.tsx` wires it globally |
+| `.button-fill-fx--brand` | Fills brand green with ink text. **Use this, not an arbitrary `[--button-fill-color:…]`** — see below |
+| `.button-fill-fx--nudge` | 2px hover rise + soft shadow. The standard lift |
+| `.button-fill-fx--lift` | 4px rise + `scale(1.025)` + heavy glow. Reserve for hero-scale CTAs |
+| `.button-fill-fx--soft` | Softer fill opacity |
 | `.ambient-field` (+ `.ambient-grid`, `.ambient-orb`) | Use the `AmbientField` component, not the classes |
 | `.marketing-container` / `.marketing-section` / `.marketing-primary-button` | Marketing layout and CTA skin |
 | `.hero-*` / `.loader-*` / `.route-error-*` | Owned by their components; do not reuse |

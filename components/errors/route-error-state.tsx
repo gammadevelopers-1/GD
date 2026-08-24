@@ -115,7 +115,7 @@ export function RouteErrorState({
                   <Link
                     href={state.secondaryHref}
                     data-button-fill
-                    className="button-fill-fx button-fill-fx--lift group focus-visible:ring-brand inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-white/12 bg-white/[0.045] px-6 text-sm font-medium text-white/65 transition duration-300 outline-none [--button-fill-color:#2fe85c] [--button-fill-hover-text:#101512] hover:border-transparent focus-visible:ring-2 focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b0e10] sm:w-auto"
+                    className="button-fill-fx button-fill-fx--brand button-fill-fx--nudge group focus-visible:ring-brand inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-white/12 bg-white/[0.045] px-6 text-sm font-medium text-white/65 outline-none hover:border-transparent focus-visible:ring-2 focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b0e10] sm:w-auto"
                   >
                     <span className="button-fill-fx__label">
                       {state.secondaryLabel}

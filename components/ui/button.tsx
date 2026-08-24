@@ -34,7 +34,7 @@ const buttonVariants = cva(
         marketing:
           "button-fill-fx marketing-primary-button gap-2 overflow-hidden rounded-full",
         "admin-cta":
-          "button-fill-fx button-fill-fx--lift bg-gd-panel-dark gap-2 rounded-xl px-4 text-[13px] font-semibold text-white [--button-fill-color:var(--color-gd-primary)] [--button-fill-hover-text:var(--color-gd-ink)]",
+          "button-fill-fx button-fill-fx--brand button-fill-fx--nudge bg-gd-panel-dark gap-2 rounded-xl px-4 text-[13px] font-semibold text-white",
         bare: "",
         "admin-dashed":
           "w-full gap-2 rounded-[20px] border border-dashed border-black/12 bg-white/40 px-4 py-4 text-xs font-semibold text-black/50 hover:border-brand/60 hover:bg-brand/[0.06] hover:text-gd-green-deep active:scale-[0.995] focus-visible:ring-2 focus-visible:ring-gd-green/40 focus-visible:outline-none",
