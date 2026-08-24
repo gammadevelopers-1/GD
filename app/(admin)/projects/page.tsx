@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { Plus, X } from "lucide-react";
+import { Plus } from "lucide-react";
 import { PortfolioFilters } from "@/components/admin/projects/portfolio-filters";
 import { PortfolioResults } from "@/components/admin/projects/portfolio-results";
 import { PortfolioSkeleton } from "@/components/admin/projects/portfolio-skeleton";
@@ -27,30 +27,9 @@ export default async function ProjectsPage({
   const isOwner = viewer.role === "owner";
   const raw = await searchParams;
   const query = parsePortfolioQuery(raw, isOwner);
-  const archived =
-    (Array.isArray(raw.notice) ? raw.notice[0] : raw.notice) === "archived";
 
   return (
     <div className="mx-auto max-w-[1480px] space-y-5">
-      {archived ? (
-        <div
-          role="status"
-          className="flex items-start justify-between gap-3 rounded-xl border border-amber-200/80 bg-amber-50/80 px-4 py-3 text-[13px] text-amber-800"
-        >
-          <span>
-            Project archived. Members can no longer reach it — turn on the
-            Archived filter to find or restore it.
-          </span>
-          <Link
-            href="/projects"
-            aria-label="Dismiss"
-            className="shrink-0 opacity-55 transition hover:opacity-100"
-          >
-            <X className="size-4" />
-          </Link>
-        </div>
-      ) : null}
-
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-[1.75rem] leading-none font-semibold tracking-[-0.05em] sm:text-[2.15rem]">
           {isOwner ? "Projects" : "Your projects"}

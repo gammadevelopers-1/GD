@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { AdminShell } from "@/components/admin/admin-shell";
+import { RouteNotice } from "@/components/admin/route-notice";
 import { ShellAccount, ShellBell } from "@/components/admin/shell-header";
 import { requireViewer } from "@/data/auth";
 
@@ -20,6 +21,7 @@ export default async function AdminLayout({
       account={<ShellAccount viewer={viewer} />}
       defaultSidebarOpen={defaultSidebarOpen}
     >
+      <RouteNotice />
       {children}
     </AdminShell>
   );

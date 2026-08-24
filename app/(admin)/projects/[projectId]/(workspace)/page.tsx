@@ -8,7 +8,6 @@ import {
   LockKeyhole,
   Pencil,
   Signal,
-  X,
 } from "lucide-react";
 import { PanelSkeleton } from "@/components/admin/skeletons";
 import { Progress } from "@/components/ui/progress";
@@ -54,53 +53,15 @@ function currentWeekCards(week: ProjectWeeks["weeks"][number]) {
   return [...week.workCards, ...week.ideaCards];
 }
 
-const NOTICES: Record<string, { tone: "ok" | "warning"; message: string }> = {
-  created: { tone: "ok", message: "Project created." },
-  restored: {
-    tone: "ok",
-    message: "Project restored. It is back in the portfolio.",
-  },
-  "value-not-saved": {
-    tone: "warning",
-    message:
-      "The project was created, but its value was not recorded. Add it from Edit project.",
-  },
-};
-
 export default async function ProjectOverviewPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ projectId: string }>;
-  searchParams: Promise<{ notice?: string }>;
 }) {
   const { projectId: publicId } = await params;
-  const { notice: noticeKey } = await searchParams;
-  const notice = noticeKey ? NOTICES[noticeKey] : undefined;
 
   return (
     <div className="space-y-4">
-      {notice ? (
-        <div
-          role="status"
-          className={cn(
-            "flex items-start justify-between gap-3 rounded-xl border px-4 py-3 text-sm",
-            notice.tone === "ok"
-              ? "border-[#2fe85c]/30 bg-[#2fe85c]/10 text-[#08743d]"
-              : "border-amber-200 bg-amber-50 text-amber-800",
-          )}
-        >
-          <span>{notice.message}</span>
-          <Link
-            href={`/projects/${publicId}`}
-            aria-label="Dismiss"
-            className="shrink-0 opacity-60 transition hover:opacity-100"
-          >
-            <X className="size-4" />
-          </Link>
-        </div>
-      ) : null}
-
       <Suspense fallback={<OverviewSkeleton />}>
         <OverviewSection publicId={publicId} />
       </Suspense>

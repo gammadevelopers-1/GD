@@ -16,9 +16,7 @@ import {
   type BannerFormState,
   IDLE_BANNER,
 } from "@/lib/projects/banner";
-import { cn } from "@/lib/utils";
-
-const NOTICE_MS = 6000;
+import { toast } from "@/components/ui/sonner";
 
 type BannerAction = (
   state: BannerFormState,
@@ -46,8 +44,8 @@ export function BannerControl({
   );
   const [pending, setPending] = useState<File | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
-  const [dismissed, setDismissed] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const announced = useRef<string | null>(null);
 
   const serverError =
     saveState.status === "error"
@@ -59,13 +57,16 @@ export function BannerControl({
 
   const notice = localError ?? serverError ?? warning ?? null;
   const tone = localError || serverError ? "error" : "warning";
-  const shown = notice && notice !== dismissed ? notice : null;
 
   useEffect(() => {
-    if (!shown) return;
-    const timer = setTimeout(() => setDismissed(shown), NOTICE_MS);
-    return () => clearTimeout(timer);
-  }, [shown]);
+    if (!notice) {
+      announced.current = null;
+      return;
+    }
+    if (announced.current === notice) return;
+    announced.current = notice;
+    (tone === "error" ? toast.error : toast.warning)(notice);
+  }, [notice, tone]);
 
   function pick(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -82,7 +83,6 @@ export function BannerControl({
     }
 
     setLocalError(null);
-    setDismissed(notice);
     setPending(file);
   }
 
@@ -136,18 +136,6 @@ export function BannerControl({
           </form>
         ) : null}
       </div>
-
-      {shown ? (
-        <p
-          role={tone === "error" ? "alert" : "status"}
-          className={cn(
-            "max-w-xs text-[11px] lg:text-right",
-            tone === "error" ? "text-red-300" : "text-amber-300",
-          )}
-        >
-          {shown}
-        </p>
-      ) : null}
 
       {pending ? (
         <BannerCropper
