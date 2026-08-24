@@ -27,6 +27,8 @@ import {
   deleteEnvVariable,
   grantEnvAccess,
   renameEnvGroup,
+  saveEnvVariables,
+  shareEnvGroups,
 } from "../../../env-actions";
 import {
   createMyCopy,
@@ -86,6 +88,10 @@ async function TechnicalSections({ publicId }: { publicId: string }) {
 
   const envActions: EnvWorkspaceActions = {
     addVariable: saveMyVariables,
+    addMainVariable: saveEnvVariables,
+    uploadMain: saveEnvVariables,
+    createVersion: createMyCopy,
+    shareAll: shareEnvGroups,
     deleteVariable: deleteEnvVariable,
     moveVariable: moveEnvVariable,
     createMainGroup: createEnvGroup,

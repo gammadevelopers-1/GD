@@ -363,6 +363,9 @@ function ValueForm({
           autoFocus
           rows={3}
           defaultValue={row.value}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") onDone();
+          }}
           className="flex-1 py-2 text-[13px]"
         />
       ) : (
@@ -372,6 +375,9 @@ function ValueForm({
           autoFocus
           placeholder="https://…"
           defaultValue={row.value}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") onDone();
+          }}
           className="h-9 flex-1 text-[13px]"
         />
       )}

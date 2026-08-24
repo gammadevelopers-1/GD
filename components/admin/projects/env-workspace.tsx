@@ -53,6 +53,10 @@ import {
 
 export type EnvWorkspaceActions = {
   addVariable: FormAction;
+  addMainVariable: FormAction;
+  uploadMain: FormAction;
+  createVersion: FormAction;
+  shareAll: FormAction;
   deleteVariable: FormAction;
   moveVariable: FormAction;
   createMainGroup: FormAction;
@@ -68,10 +72,20 @@ export type EnvWorkspaceActions = {
 };
 
 type Dialog =
-  | { kind: "variable"; groupId: string | null; groups: EnvGroupRow[] }
+  | {
+      kind: "variable";
+      scope: "main" | "version";
+      groupId: string | null;
+      groups: EnvGroupRow[];
+    }
   | { kind: "group"; scope: "main" | "version"; group?: EnvGroupRow }
   | { kind: "move"; credentialId: string; key: string; groups: EnvGroupRow[] }
-  | { kind: "upload"; groupId: string; keys: string[] }
+  | {
+      kind: "upload";
+      scope: "main" | "version";
+      groupId: string;
+      keys: string[];
+    }
   | { kind: "source"; entry?: MainEntryRow; candidate?: EnvCandidate }
   | { kind: "share"; entry: MainEntryRow | null }
   | {
@@ -99,7 +113,6 @@ export function EnvWorkspace({
   viewerId: string;
   actions: EnvWorkspaceActions;
 }) {
-  const myVersion = workspace.versions.find((version) => version.isViewer);
   const [view, setView] = useState<string>(isOwner ? "main" : viewerId);
   const [dialog, setDialog] = useState<Dialog>(null);
 
@@ -167,15 +180,13 @@ export function EnvWorkspace({
             actions={actions}
           />
         ) : (
-          <EmptyState
-            icon={KeyRound}
-            title="No version yet"
-            description="Nothing has been added to this version."
+          <NoVersion
+            projectId={projectId}
+            mine={view === viewerId}
+            action={actions.createVersion}
           />
         )}
       </section>
-
-      {!isOwner && myVersion ? null : null}
 
       {!isOwner ? (
         <SharedWithMe entries={workspace.sharedWithMe} copy={actions.copy} />
@@ -183,9 +194,15 @@ export function EnvWorkspace({
 
       {dialog?.kind === "variable" ? (
         <VariableDialog
+          scope={dialog.scope}
+          projectId={projectId}
           groupId={dialog.groupId}
           groups={dialog.groups}
-          action={actions.addVariable}
+          action={
+            dialog.scope === "main"
+              ? actions.addMainVariable
+              : actions.addVariable
+          }
           onClose={() => setDialog(null)}
         />
       ) : null}
@@ -219,9 +236,13 @@ export function EnvWorkspace({
 
       {dialog?.kind === "upload" ? (
         <UploadDialog
+          scope={dialog.scope}
+          projectId={projectId}
           groupId={dialog.groupId}
           existingKeys={dialog.keys}
-          action={actions.upload}
+          action={
+            dialog.scope === "main" ? actions.uploadMain : actions.upload
+          }
           onClose={() => setDialog(null)}
         />
       ) : null}
@@ -241,8 +262,9 @@ export function EnvWorkspace({
         <ShareDialog
           projectId={projectId}
           entry={dialog.entry}
+          mainGroupIds={workspace.mainGroups.map((group) => group.id)}
           members={members}
-          action={actions.share}
+          action={dialog.entry ? actions.share : actions.shareAll}
           onClose={() => setDialog(null)}
         />
       ) : null}
@@ -255,6 +277,56 @@ export function EnvWorkspace({
           hidden={dialog.hidden}
           action={dialog.action}
           onClose={() => setDialog(null)}
+        />
+      ) : null}
+    </>
+  );
+}
+
+function NoVersion({
+  projectId,
+  mine,
+  action,
+}: {
+  projectId: string;
+  mine: boolean;
+  action: FormAction;
+}) {
+  const [open, setOpen] = useState(false);
+
+  if (!mine) {
+    return (
+      <EmptyState
+        icon={KeyRound}
+        title="No version yet"
+        description="This person has not started a version on this project."
+      />
+    );
+  }
+
+  return (
+    <>
+      <EmptyState
+        icon={KeyRound}
+        title="You have no version yet"
+        description="A version is your private copy of this project's environment. Only you and project owners can see it."
+        action={
+          <Button
+            variant="admin-cta"
+            size="admin"
+            data-button-fill
+            onClick={() => setOpen(true)}
+          >
+            <Plus className="size-4" />
+            Create my version
+          </Button>
+        }
+      />
+      {open ? (
+        <GroupDialog
+          projectId={projectId}
+          action={action}
+          onClose={() => setOpen(false)}
         />
       ) : null}
     </>
@@ -333,6 +405,45 @@ function MainPane({
         title="Main environment"
         subtitle="The shared, resolved env that gets deployed."
       >
+        <Button
+          variant="admin-cta"
+          size="admin-sm"
+          data-button-fill
+          onClick={() =>
+            onDialog({
+              kind: "variable",
+              scope: "main",
+              groupId: workspace.mainGroups[0]?.id ?? null,
+              groups: workspace.mainGroups.map((group) => ({
+                id: group.id,
+                name: group.name,
+                variables: [],
+              })),
+            })
+          }
+        >
+          <Plus className="size-4" />
+          Add variable
+        </Button>
+        {workspace.mainGroups[0] ? (
+          <Button
+            variant="admin-secondary"
+            size="admin-sm"
+            onClick={() =>
+              onDialog({
+                kind: "upload",
+                scope: "main",
+                groupId: workspace.mainGroups[0].id,
+                keys: workspace.mainGroups.flatMap((group) =>
+                  group.entries.map((entry) => entry.key),
+                ),
+              })
+            }
+          >
+            <Upload className="size-4" />
+            Upload .env
+          </Button>
+        ) : null}
         <Button
           variant="admin-secondary"
           size="admin-sm"
@@ -638,6 +749,7 @@ function VersionPane({
               onClick={() =>
                 onDialog({
                   kind: "variable",
+                  scope: "version",
                   groupId: firstGroup,
                   groups: version.groups,
                 })
@@ -653,6 +765,7 @@ function VersionPane({
                 onClick={() =>
                   onDialog({
                     kind: "upload",
+                    scope: "version",
                     groupId: firstGroup,
                     keys: version.groups.flatMap((group) =>
                       group.variables.map((variable) => variable.key),
@@ -782,6 +895,7 @@ function GroupCard({
               onClick={() =>
                 onDialog({
                   kind: "variable",
+                  scope: "version",
                   groupId: group.id,
                   groups: version.groups,
                 })
@@ -806,6 +920,7 @@ function GroupCard({
                   onSelect={() =>
                     onDialog({
                       kind: "upload",
+                      scope: "version",
                       groupId: group.id,
                       keys: group.variables.map((variable) => variable.key),
                     })

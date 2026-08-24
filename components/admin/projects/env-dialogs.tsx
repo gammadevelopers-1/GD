@@ -62,11 +62,15 @@ function Footer({
 }
 
 export function VariableDialog({
+  scope,
+  projectId,
   groupId,
   groups,
   action,
   onClose,
 }: {
+  scope: "main" | "version";
+  projectId: string;
   groupId: string | null;
   groups: EnvGroupRow[];
   action: FormAction;
@@ -74,12 +78,51 @@ export function VariableDialog({
 }) {
   const [state, formAction, pending] = useActionState(action, IDLE_FORM);
   const [target, setTarget] = useState(groupId ?? groups[0]?.id ?? "");
+  const [key, setKey] = useState("");
+  const [value, setValue] = useState("");
   useCloseOnSuccess(state, onClose);
 
+  if (!groups.length) {
+    return (
+      <Modal open title="Add variable" onClose={onClose}>
+        <div className="px-5 py-4">
+          <p className="text-xs leading-relaxed text-black/60">
+            There is no group to put it in yet. Create a group first, then add
+            variables to it.
+          </p>
+          <div className="mt-5 flex justify-end">
+            <Button variant="admin-secondary" size="admin" onClick={onClose}>
+              Close
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
   return (
-    <Modal open title="Add variable" description="Added to this version only." onClose={onClose}>
+    <Modal
+      open
+      title="Add variable"
+      description={
+        scope === "main"
+          ? "Stored in main and shared with whoever you grant it to."
+          : "Added to this version only."
+      }
+      onClose={onClose}
+    >
       <form action={formAction} className="px-5 py-4">
         <input type="hidden" name="groupId" value={target} />
+        {scope === "main" ? (
+          <>
+            <input type="hidden" name="projectId" value={projectId} />
+            <input
+              type="hidden"
+              name="rows"
+              value={JSON.stringify([{ key: key.trim(), value }])}
+            />
+          </>
+        ) : null}
 
         <label className="block space-y-1.5">
           <span className="text-xs font-medium text-black/70">Key</span>
@@ -88,6 +131,8 @@ export function VariableDialog({
             variant="admin"
             autoFocus
             required
+            value={key}
+            onChange={(event) => setKey(event.target.value)}
             placeholder="STRIPE_SECRET_KEY"
             className="h-9 font-mono text-xs"
           />
@@ -101,6 +146,8 @@ export function VariableDialog({
             revealNoun="value"
             autoComplete="off"
             spellCheck={false}
+            value={value}
+            onChange={(event) => setValue(event.target.value)}
             placeholder="sk_live_…"
             className="h-9 font-mono text-xs"
           />
@@ -247,11 +294,15 @@ export function MoveDialog({
 }
 
 export function UploadDialog({
+  scope,
+  projectId,
   groupId,
   existingKeys,
   action,
   onClose,
 }: {
+  scope: "main" | "version";
+  projectId: string;
   groupId: string;
   existingKeys: string[];
   action: FormAction;
@@ -275,7 +326,18 @@ export function UploadDialog({
     >
       <form action={formAction} className="px-5 py-4">
         <input type="hidden" name="groupId" value={groupId} />
-        <input type="hidden" name="blob" value={text} />
+        {scope === "main" ? (
+          <>
+            <input type="hidden" name="projectId" value={projectId} />
+            <input type="hidden" name="rows" value={JSON.stringify(fresh)} />
+          </>
+        ) : (
+          <input
+            type="hidden"
+            name="blob"
+            value={fresh.map((pair) => `${pair.key}=${pair.value}`).join("\n")}
+          />
+        )}
 
         <Textarea
           variant="admin"
@@ -379,6 +441,24 @@ export function SourceDialog({
   const [group, setGroup] = useState(mainGroupId ?? mainGroups[0]?.id ?? "");
   useCloseOnSuccess(state, onClose);
 
+  if (!mainGroups.length) {
+    return (
+      <Modal open title={key} onClose={onClose}>
+        <div className="px-5 py-4">
+          <p className="text-xs leading-relaxed text-black/60">
+            Main has no group to put this in yet. Create a group in main first,
+            then pull values into it.
+          </p>
+          <div className="mt-5 flex justify-end">
+            <Button variant="admin-secondary" size="admin" onClick={onClose}>
+              Close
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
   return (
     <Modal
       open
@@ -472,12 +552,14 @@ export function SourceDialog({
 export function ShareDialog({
   projectId,
   entry,
+  mainGroupIds,
   members,
   action,
   onClose,
 }: {
   projectId: string;
   entry: MainEntryRow | null;
+  mainGroupIds: string[];
   members: { id: string; name: string }[];
   action: FormAction;
   onClose: () => void;
@@ -485,6 +567,7 @@ export function ShareDialog({
   const [state, formAction, pending] = useActionState(action, IDLE_FORM);
   const [pick, setPick] = useState(members[0]?.id ?? "");
   const shared = new Set((entry?.sharedWith ?? []).map((row) => row.profileId));
+  useCloseOnSuccess(state, onClose);
 
   return (
     <Modal
@@ -497,7 +580,11 @@ export function ShareDialog({
         <input type="hidden" name="projectId" value={projectId} />
         {entry ? (
           <input type="hidden" name="credentialId" value={entry.credentialId} />
-        ) : null}
+        ) : (
+          mainGroupIds.map((id) => (
+            <input key={id} type="hidden" name="groupId" value={id} />
+          ))
+        )}
         <input type="hidden" name="profileId" value={pick} />
         <input type="hidden" name="access" value="use" />
 
@@ -538,7 +625,7 @@ export function ShareDialog({
 
         <Problem state={state} />
         <Footer
-          pending={pending || !pick}
+          pending={pending || !pick || (!entry && !mainGroupIds.length)}
           submit="Share"
           onClose={onClose}
           icon={<Share2 className="size-4" />}

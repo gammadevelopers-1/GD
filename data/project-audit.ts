@@ -89,26 +89,47 @@ export async function getProjectAudit(
     ),
   );
 
-  const ids = [
-    ...credentialName.keys(),
-    ...linkName.keys(),
-    ...groupById.keys(),
-  ];
-  if (!ids.length) return [];
+  const ids = [...credentialName.keys(), ...groupById.keys()];
 
-  const { data, error } = await supabase
-    .from("app_audit_logs")
-    .select(
-      "id, actor_id, action, resource_type, resource_id, metadata, occurred_at, ip, user_agent",
+  const columns =
+    "id, actor_id, action, resource_type, resource_id, metadata, occurred_at, ip, user_agent";
+
+  // Links are deleted outright rather than archived, so filtering by the ids
+  // that still exist would drop the removal events -- the ones an audit log is
+  // for. Their project is recorded on the entry itself, so ask by that.
+  const [byResource, byProject] = await Promise.all([
+    ids.length
+      ? supabase
+          .from("app_audit_logs")
+          .select(columns)
+          .in("resource_type", ["credential", "env_group"])
+          .in("resource_id", ids)
+          .order("occurred_at", { ascending: false })
+          .limit(limit)
+      : Promise.resolve({ data: [], error: null }),
+    supabase
+      .from("app_audit_logs")
+      .select(columns)
+      .eq("resource_type", "project_link")
+      .eq("metadata->>project_id", projectId)
+      .order("occurred_at", { ascending: false })
+      .limit(limit),
+  ]);
+
+  const merged = [
+    ...((byResource.data ?? []) as Row[]),
+    ...((byProject.data ?? []) as Row[]),
+  ]
+    .sort(
+      (a, b) =>
+        new Date(String(b.occurred_at)).getTime() -
+        new Date(String(a.occurred_at)).getTime(),
     )
-    .in("resource_type", ["credential", "project_link", "env_group"])
-    .in("resource_id", ids)
-    .order("occurred_at", { ascending: false })
-    .limit(limit);
+    .slice(0, limit);
 
-  if (error || !data?.length) return [];
+  if (!merged.length) return [];
 
-  const rows = data as Row[];
+  const rows = merged;
   const peopleIds = new Set<string>();
   for (const row of rows) {
     if (row.actor_id) peopleIds.add(String(row.actor_id));
