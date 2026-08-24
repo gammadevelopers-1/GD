@@ -3,6 +3,7 @@ import "server-only";
 import { timingSafeEqual } from "node:crypto";
 import {
   KEY_BYTES,
+  digestWithKey,
   openWithKey,
   parseKey,
   sealWithKey,
@@ -118,6 +119,22 @@ export function sealSecret(
   ) as Omit<SealedSecret, "keyVersion">;
 
   return { ...sealed, keyVersion };
+}
+
+export function digestSecret(plaintext: string, keyVersion?: number): string {
+  const ring = requireRing();
+  const version = keyVersion ?? activeVersion(ring);
+  const key = ring.get(version);
+  if (!key) {
+    throw new CredentialKeyError(
+      `Key version ${version} is not configured, so this value cannot be fingerprinted.`,
+    );
+  }
+  return digestWithKey(plaintext, key) as string;
+}
+
+export function fingerprint(digest: string | null): string | null {
+  return digest ? digest.slice(0, 4) : null;
 }
 
 export function openSecret(sealed: SealedSecret, credentialId: string): string {

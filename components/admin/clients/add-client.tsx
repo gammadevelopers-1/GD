@@ -47,7 +47,6 @@ export function AddClient() {
           <span className="button-fill-fx__label">Add client</span>
         </Button>
       </DialogTrigger>
-
       <DialogContent className="bg-gd-panel max-h-[85vh] overflow-y-auto border-black/[0.08] text-black sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-[15px] tracking-[-0.025em]">
