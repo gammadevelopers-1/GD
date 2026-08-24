@@ -80,7 +80,9 @@ Numbers always get `tabular-nums`.
 
 `Accordion` `Badge` `Button` `Calendar` `Card` `Dialog` `DropdownMenu` `Input` `Popover` `Progress` `Select` `Separator` `Sheet` `Sidebar` `Skeleton` `Tabs` `Tooltip` (plus their compound parts — `CardHeader`/`CardContent`/`CardFooter`/`CardTitle`/`CardAction`/`CardDescription`, `DialogContent`/`DialogHeader`/…, the full `Sidebar*` family and `useSidebar`).
 
-`Button` variants: `default` `outline` `secondary` `ghost` `destructive` `link`. Sizes: `xs` `sm` `default` `lg` `icon` `icon-xs` `icon-sm` `icon-lg`. `Badge` variants: `default` `secondary` `destructive` `outline` `ghost` `link`.
+`Button` variants: `default` `outline` `secondary` `ghost` `destructive` `link` `marketing` `admin-cta` `admin-primary` `admin-secondary` `admin-ghost` `admin-danger` `admin-icon` `admin-icon-danger` `admin-dashed` `bare`. Sizes: `xs` `sm` `default` `lg` `icon` `icon-xs` `icon-sm` `icon-lg` `marketing-sm` `marketing` `marketing-lg` `admin-xs` `admin-sm` `admin` `admin-lg` `none`.
+
+**Pick a button by its job, never by eye — the same action must look the same on every screen.** Create anything in admin (project, client, team member, contact) and admin form submits are `admin-cta` + `data-button-fill` at `admin-lg`, with a `Plus size-4` icon for creates. Marketing CTAs are `marketing` + `data-button-fill` at `marketing-sm` (nav) / `marketing` (section, form) / `marketing-lg` (hero). Heights come from the size scale — never type `h-11` or `h-13` onto a button. `bare` is an escape hatch, not a default. Full job table in `DESIGN-SYSTEM.md` §5.2. `Badge` variants: `default` `secondary` `destructive` `outline` `ghost` `link`.
 
 Both accept `asChild` for composition and expose `buttonVariants` / `badgeVariants`. These are the default for **new admin chrome**.
 

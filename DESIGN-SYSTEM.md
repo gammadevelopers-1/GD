@@ -248,10 +248,36 @@ the full `Sidebar*` family and `useSidebar`.
 ### 5.2 Button
 
 Variants: `default` `outline` `secondary` `ghost` `destructive` `link`
-`admin-primary` `admin-secondary` `admin-ghost` `admin-danger` `admin-icon`
-`admin-icon-danger` `admin-dashed` `bare`
+`marketing` `admin-cta` `admin-primary` `admin-secondary` `admin-ghost`
+`admin-danger` `admin-icon` `admin-icon-danger` `admin-dashed` `bare`
 
-Sizes: `default` `xs` `sm` `lg` `icon` `icon-xs` `icon-sm` `icon-lg` `none`
+Sizes: `default` `xs` `sm` `lg` `icon` `icon-xs` `icon-sm` `icon-lg`
+`marketing-sm` `marketing` `marketing-lg` `admin-xs` `admin-sm` `admin`
+`admin-lg` `none`
+
+**Pick the button by its job, not by eye.** These two rows are not
+interchangeable — a create action on any admin screen is `admin-cta`, a
+primary CTA on any marketing screen is `marketing`. Two screens showing the
+same action must produce the same button.
+
+| Job | Variant | Size | Icon |
+|---|---|---|---|
+| Create anything in admin — project, client, team member, contact | `admin-cta` + `data-button-fill` | `admin-lg` (`h-10`), or `h-9` nested in a panel | `Plus` `size-4` |
+| Submit an admin form | `admin-cta` + `data-button-fill` | `admin-lg` | `Loader2` spinner while pending |
+| Secondary admin action | `admin-secondary` | `admin` (`h-9`) | optional |
+| Cancel / dismiss | `admin-ghost` | `admin` | none |
+| Destructive admin action | `admin-danger` | `admin` | `Trash2` / `Archive` |
+| Icon-only admin action | `admin-icon` / `admin-icon-danger` | — (variant sets `size-7`) | `size-3.5` |
+| Marketing nav CTA | `marketing` + `data-button-fill` | `marketing-sm` (`h-10`) | none |
+| Marketing section / form CTA | `marketing` + `data-button-fill` | `marketing` (`h-12`) | optional `ArrowRight` |
+| Marketing hero CTA | `marketing` + `data-button-fill` | `marketing-lg` (`h-14`) | optional |
+
+The `marketing` variant needs `data-button-fill` on the element and a
+`<span className="button-fill-fx__label">` around the text — that is what the
+cursor-origin fill animates. `admin-cta` is the same treatment in the admin
+palette.
+
+Heights come from the size scale. Do not type `h-11` or `h-13` onto a button.
 
 The `admin-*` variants encode the `lib/admin-ui.ts` strings verbatim. Pair them
 with `size="none"` so the variant's own padding stands rather than the default
