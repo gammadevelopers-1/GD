@@ -37,6 +37,10 @@
 
   --color-brand: var(--color-gd-primary);
   --animate-scroll-hint: scroll-hint 2.2s ease-in-out infinite;
+  --animate-ai-sheen: ai-sheen 3.8s linear infinite;
+  --animate-ai-shimmer: ai-sheen 1.8s linear infinite;
+  --animate-ai-halo: ai-halo 2.8s ease-out infinite;
+  --animate-ai-rise: ai-rise 0.24s cubic-bezier(0.2, 0.7, 0.3, 1);
 
   --color-background: #eef0e9;
   --color-foreground: #14171a;
@@ -74,6 +78,41 @@
   50% {
     opacity: 1;
     transform: scaleY(1);
+  }
+}
+
+@keyframes ai-sheen {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes ai-halo {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+
+  55% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+}
+
+@keyframes ai-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
@@ -280,10 +319,7 @@ summary {
   outline-offset: 2px;
 }
 
-/* Admin form controls use a single border change instead of stacking the
-   global outline with Tailwind's focus ring. Keep non-field controls on the
-   stronger global keyboard-focus treatment above. */
-.admin-shell
+body:has(.admin-shell)
   :where(
     input:not([type]),
     input[type="text"],

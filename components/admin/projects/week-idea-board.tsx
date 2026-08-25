@@ -15,6 +15,7 @@ import {
   IdeaEditor,
   type IdeaEditorHandle,
 } from "@/components/admin/projects/idea-editor";
+import type { AskIdeaAi } from "@/components/admin/projects/idea-ai-panel";
 import { useBoardDoc } from "@/components/admin/projects/use-board-doc";
 import type { IdeaDoc } from "@/lib/projects/idea-doc";
 import type { SimpleFormState } from "@/lib/projects/form-state";
@@ -43,6 +44,7 @@ export function WeekIdeaBoard({
   onOpenWork,
   save,
   upload,
+  askAi,
   onDocChange,
   workBoard,
   transcript,
@@ -62,6 +64,7 @@ export function WeekIdeaBoard({
   onOpenWork: () => void;
   save: (weekId: string, doc: string) => Promise<SimpleFormState>;
   upload: (state: UploadResult, formData: FormData) => Promise<UploadResult>;
+  askAi?: AskIdeaAi;
   onDocChange?: (doc: IdeaDoc) => void;
   workBoard?: ReactNode;
   transcript?: ReactNode;
@@ -186,6 +189,7 @@ export function WeekIdeaBoard({
             }}
             onAttach={attach.open}
             attaching={attach.uploading}
+            ai={askAi ? { projectId, ask: askAi } : undefined}
           />
         </div>
         {transcript}

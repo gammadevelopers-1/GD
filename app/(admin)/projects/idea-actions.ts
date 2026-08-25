@@ -13,6 +13,12 @@ import {
   IDEA_ATTACHMENT_MAX_BYTES,
   IDEA_ATTACHMENT_TYPES,
 } from "@/lib/projects/idea-media";
+import {
+  IDEA_PROMPT_MAX,
+  type IdeaAiState,
+  isIdeaAiAction,
+} from "@/lib/projects/idea-draft";
+import { draftIdeaPassage } from "@/lib/projects/idea-ai";
 
 export type UploadResult = SimpleFormState & {
   path?: string;
@@ -101,5 +107,52 @@ export async function uploadIdeaAttachment(
     if (isFrameworkSignal(error)) throw error;
     console.error("uploadIdeaAttachment failed", error);
     return formError("The file could not be uploaded. Please try again.");
+  }
+}
+
+export async function askIdeaAi(
+  _state: IdeaAiState,
+  formData: FormData,
+): Promise<IdeaAiState> {
+  try {
+    await requireRole(["owner", "member"]);
+
+    const projectId = String(formData.get("projectId") ?? "");
+    const rawAction = String(formData.get("action") ?? "custom");
+    const prompt = String(formData.get("prompt") ?? "");
+
+    if (!isUuid(projectId)) {
+      return formError("That project could not be found.");
+    }
+    if (!isIdeaAiAction(rawAction)) {
+      return formError("That is not something AI can do here.");
+    }
+    if (prompt.length > IDEA_PROMPT_MAX) {
+      return formError("That prompt is too long.");
+    }
+
+    const supabase = await createClient();
+    const { data: project } = await supabase
+      .from("app_projects")
+      .select("id")
+      .eq("id", projectId)
+      .maybeSingle();
+
+    if (!project) return formError("That project could not be found.");
+
+    const draft = await draftIdeaPassage({
+      action: rawAction,
+      prompt,
+      document: String(formData.get("document") ?? ""),
+      selection: String(formData.get("selection") ?? ""),
+    });
+
+    if (!draft.ok) return formError(draft.reason);
+
+    return { ...formSuccess("Drafted."), blocks: draft.blocks };
+  } catch (error) {
+    if (isFrameworkSignal(error)) throw error;
+    console.error("askIdeaAi failed", error);
+    return formError("The draft could not be written. Try again.");
   }
 }

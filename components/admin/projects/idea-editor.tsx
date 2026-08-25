@@ -48,6 +48,12 @@ import {
   Undo2,
 } from "lucide-react";
 import { Attachment } from "@/components/admin/projects/attachment-node";
+import {
+  AskAiPanel,
+  AskAiTrigger,
+  type IdeaAiConfig,
+} from "@/components/admin/projects/idea-ai-panel";
+import { type IdeaDraftBlock, draftToNodes } from "@/lib/projects/idea-draft";
 import { FormSelect } from "@/components/common/form-select";
 import { TEXT_COLORS, HIGHLIGHT_COLORS } from "@/lib/projects/idea-doc";
 import type { IdeaDoc } from "@/lib/projects/idea-doc";
@@ -213,10 +219,12 @@ function Toolbar({
   editor,
   onAttach,
   attaching,
+  onAskAi,
 }: {
   editor: Editor;
   onAttach?: () => void;
   attaching?: boolean;
+  onAskAi?: () => void;
 }) {
   const setLink = useCallback(() => {
     const previous = String(editor.getAttributes("link").href ?? "");
@@ -460,6 +468,8 @@ function Toolbar({
           </Tool>
         </>
       ) : null}
+
+      {onAskAi ? <AskAiTrigger onOpen={onAskAi} /> : null}
     </div>
   );
 }
@@ -472,6 +482,7 @@ export function IdeaEditor({
   onAttach,
   attaching,
   contentClassName,
+  ai,
   ref,
 }: {
   initialDoc: IdeaDoc;
@@ -481,9 +492,16 @@ export function IdeaEditor({
   onAttach?: () => void;
   attaching?: boolean;
   contentClassName?: string;
+  ai?: IdeaAiConfig;
   ref?: Ref<IdeaEditorHandle>;
 }) {
   const [, setTick] = useState(0);
+  const [asking, setAsking] = useState<{
+    document: string;
+    selection: string;
+    from: number;
+    to: number;
+  } | null>(null);
 
   const editor = useEditor({
     editable,
@@ -568,10 +586,40 @@ export function IdeaEditor({
     return <div className="h-full min-h-96 animate-pulse bg-black/[0.02]" />;
   }
 
+  const openAi = () => {
+    const { from, to } = editor.state.selection;
+    setAsking({
+      document: editor.getText(),
+      selection:
+        from === to ? "" : editor.state.doc.textBetween(from, to, "\n"),
+      from,
+      to,
+    });
+  };
+
+  const insertDraft = (blocks: IdeaDraftBlock[], replaceSelection: boolean) => {
+    if (!asking) return;
+    const limit = editor.state.doc.content.size;
+    const from = Math.min(asking.from, limit);
+    const to = Math.min(asking.to, limit);
+    const nodes = draftToNodes(blocks);
+
+    if (replaceSelection && to > from) {
+      editor.chain().focus().insertContentAt({ from, to }, nodes).run();
+      return;
+    }
+    editor.chain().focus().insertContentAt(to, nodes).run();
+  };
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="relative flex min-h-0 flex-1 flex-col">
       {editable ? (
-        <Toolbar editor={editor} onAttach={onAttach} attaching={attaching} />
+        <Toolbar
+          editor={editor}
+          onAttach={onAttach}
+          attaching={attaching}
+          onAskAi={ai ? openAi : undefined}
+        />
       ) : null}
 
       <div className="idea-surface min-h-0 flex-1 overflow-y-auto py-4 pr-6 pl-3 sm:pr-8 sm:pl-4">
@@ -584,6 +632,16 @@ export function IdeaEditor({
         <div className="flex justify-end border-t border-black/[0.06] px-4 py-1.5 text-[10px] text-black/55">
           {editor.storage.characterCount.words()} words
         </div>
+      ) : null}
+
+      {ai && asking ? (
+        <AskAiPanel
+          config={ai}
+          note={asking.document}
+          selection={asking.selection}
+          onInsert={insertDraft}
+          onClose={() => setAsking(null)}
+        />
       ) : null}
     </div>
   );

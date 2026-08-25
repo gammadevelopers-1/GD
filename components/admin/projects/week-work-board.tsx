@@ -45,6 +45,8 @@ import {
   type TranscriptActions,
 } from "@/components/admin/projects/transcript-panel";
 import { formatDate } from "@/lib/projects/format";
+import { duration as motionDuration, ease, gsap, useGSAP } from "@/lib/gsap";
+import { useReducedMotion } from "@/lib/hooks/use-reduced-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -135,13 +137,67 @@ export function WeekWorkBoard({
   const [error, setError] = useState<string | null>(null);
   const [busy, startBusy] = useTransition();
   const closeRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
+  const animationReady = useRef(false);
+  const reducedMotion = useReducedMotion();
+
+  useGSAP(
+    () => {
+      const panel = panelRef.current;
+      const backdrop = backdropRef.current;
+      if (!panel || !backdrop) return;
+
+      if (!animationReady.current) {
+        gsap.set(panel, { x: 32, xPercent: 100, force3D: true });
+        gsap.set(backdrop, { opacity: 0 });
+        animationReady.current = true;
+        if (!open) return;
+      }
+
+      gsap.killTweensOf([panel, backdrop]);
+
+      if (reducedMotion) {
+        gsap.set(panel, {
+          x: open ? 0 : 32,
+          xPercent: open ? 0 : 100,
+          force3D: true,
+        });
+        gsap.set(backdrop, { opacity: open ? 1 : 0 });
+        return;
+      }
+
+      gsap.to(panel, {
+        x: open ? 0 : 32,
+        xPercent: open ? 0 : 100,
+        duration: motionDuration.base,
+        ease: ease.inOut,
+        force3D: true,
+        overwrite: "auto",
+      });
+      gsap.to(backdrop, {
+        opacity: open ? 1 : 0,
+        duration: open ? 0.5 : motionDuration.fast,
+        ease: ease.soft,
+        overwrite: "auto",
+      });
+    },
+    { dependencies: [open, reducedMotion] },
+  );
 
   useEffect(() => {
     if (!open) return;
     const previous = document.activeElement as HTMLElement | null;
-    closeRef.current?.focus();
-    return () => previous?.focus?.();
-  }, [open]);
+    const focusDelay = reducedMotion ? 0 : motionDuration.base * 1000;
+    const focusTimer = window.setTimeout(
+      () => closeRef.current?.focus({ preventScroll: true }),
+      focusDelay,
+    );
+    return () => {
+      window.clearTimeout(focusTimer);
+      previous?.focus?.({ preventScroll: true });
+    };
+  }, [open, reducedMotion]);
 
   useEffect(() => {
     if (!open) return;
@@ -182,25 +238,27 @@ export function WeekWorkBoard({
   return (
     <>
       <div
+        ref={backdropRef}
         aria-hidden
         onClick={onClose}
+        style={{ opacity: 0 }}
         className={cn(
-          "absolute inset-0 z-20 bg-black/12 transition-opacity duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none",
-          open ? "opacity-100" : "pointer-events-none opacity-0",
+          "absolute inset-0 z-20 bg-black/12 will-change-[opacity]",
+          !open && "pointer-events-none",
         )}
       />
 
       <aside
+        ref={panelRef}
         id={`week-work-board-${weekId}`}
         inert={!open}
         role="dialog"
         aria-modal={open || undefined}
         aria-label={`Week ${weekNumber} work board`}
+        style={{ transform: "translate3d(calc(100% + 2rem), 0, 0)" }}
         className={cn(
-          "absolute inset-y-0 right-0 left-2 z-30 flex transform-gpu flex-col overflow-hidden rounded-l-2xl border-l border-black/[0.09] bg-white shadow-[-18px_0_50px_rgba(20,23,26,0.22)] transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform backface-hidden motion-reduce:transition-none sm:left-8 lg:left-12",
-          open
-            ? "translate-x-0"
-            : "pointer-events-none translate-x-[calc(100%+2rem)]",
+          "absolute inset-y-0 right-0 left-2 z-30 flex flex-col overflow-hidden rounded-l-2xl border-l border-black/[0.09] bg-white shadow-[-18px_0_50px_rgba(20,23,26,0.22)] will-change-transform backface-hidden sm:left-8 lg:left-12",
+          !open && "pointer-events-none",
         )}
       >
         <header className="bg-gd-panel-dark flex shrink-0 items-center gap-2 px-3 py-2 text-white">

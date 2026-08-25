@@ -32,6 +32,7 @@ import {
 import { WeekCarryOver } from "@/components/admin/projects/week-carry-over";
 import { FormDatePicker } from "@/components/common/form-date-picker";
 import type { IdeaEditorHandle } from "@/components/admin/projects/idea-editor";
+import type { AskIdeaAi } from "@/components/admin/projects/idea-ai-panel";
 import { type CarryOver, carryOverFor } from "@/lib/projects/carry-over";
 import type { MilestoneWeek } from "@/data/project-detail";
 import type { CardStatus } from "@/lib/projects/board";
@@ -68,6 +69,7 @@ export function WeekPlan({
   archiveWeek,
   saveIdeaBoard,
   setFocus,
+  askIdeaAi,
   upload,
   workActions,
   transcripts,
@@ -101,6 +103,7 @@ export function WeekPlan({
   saveIdeaBoard: (weekId: string, doc: string) => Promise<SimpleFormState>;
   setFocus: (weekId: string, focus: string) => Promise<SimpleFormState>;
   upload: (state: UploadResult, formData: FormData) => Promise<UploadResult>;
+  askIdeaAi: AskIdeaAi;
   workActions: WorkBoardActions;
   transcripts: Record<string, WeekTranscript[]>;
   transcriptMedia: Record<string, string>;
@@ -206,6 +209,7 @@ export function WeekPlan({
               archiveWeek={archiveWeek}
               saveIdeaBoard={saveIdeaBoard}
               setFocus={setFocus}
+              askIdeaAi={askIdeaAi}
               upload={upload}
               projectId={projectId}
               transcripts={transcripts[week.id] ?? []}
@@ -304,6 +308,7 @@ function WeekRow({
   archiveWeek,
   saveIdeaBoard,
   setFocus,
+  askIdeaAi,
   upload,
   transcripts,
   transcriptMedia,
@@ -336,6 +341,7 @@ function WeekRow({
   saveIdeaBoard: (weekId: string, doc: string) => Promise<SimpleFormState>;
   setFocus: (weekId: string, focus: string) => Promise<SimpleFormState>;
   upload: (state: UploadResult, formData: FormData) => Promise<UploadResult>;
+  askIdeaAi: AskIdeaAi;
   transcripts: WeekTranscript[];
   transcriptMedia: Record<string, string>;
   transcriptActions: TranscriptActions;
@@ -594,6 +600,7 @@ function WeekRow({
             onExpandedChange={onBoardExpandedChange}
             onOpenWork={() => setWorkOpen(true)}
             save={saveIdeaBoard}
+            askAi={canWrite ? askIdeaAi : undefined}
             transcript={
               <TranscriptPanel
                 projectId={projectId}

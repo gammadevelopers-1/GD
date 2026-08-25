@@ -224,7 +224,7 @@ function Select({
   onChange: (value: string | null) => void;
 }) {
   return (
-    <label className="focus-within:border-gd-green flex h-10 min-w-0 items-center gap-2 rounded-xl border border-black/8 bg-black/[0.02] pr-1 pl-3 transition hover:border-black/15 lg:w-42">
+    <label className="flex h-10 min-w-0 items-center gap-2 rounded-xl border border-black/8 bg-black/[0.02] pr-1 pl-3 transition focus-within:border-black/25 hover:border-black/15 lg:w-42">
       <span className="sr-only">{label}</span>
       <FormSelect
         value={value}

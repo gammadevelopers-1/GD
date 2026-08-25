@@ -459,6 +459,13 @@ In JSX use the Tailwind utilities:
 Hand-written CSS in `globals.css` runs longer: `320ms` for card surfaces,
 `650ms` for sheen sweeps.
 
+Named animations live in the `@theme` block as `--animate-*` and are used as
+utilities: `animate-scroll-hint`, plus the AI set — `animate-ai-sheen` (the
+Ask AI pill's gradient sweep), `animate-ai-shimmer` (the same sweep at
+generating speed, over `bg-clip-text`), `animate-ai-halo` (the assistant orb's
+pulse) and `animate-ai-rise` (a panel entering). Reach for one of these before
+writing a new keyframe.
+
 Motion is restrained: a 0.5px hover lift, a rail scaling in, a sheen. Nothing
 bounces.
 

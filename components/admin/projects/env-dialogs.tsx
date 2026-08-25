@@ -534,7 +534,7 @@ export function UploadDialog({
       {!drafts.length ? (
         <div className="space-y-3">
           <div className="grid gap-3 md:grid-cols-2">
-            <div className="focus-within:border-gd-green/60 flex min-h-80 min-w-0 flex-col rounded-2xl border border-black/[0.08] bg-white p-3.5 transition-colors duration-150">
+            <div className="flex min-h-80 min-w-0 flex-col rounded-2xl border border-black/[0.08] bg-white p-3.5 transition-colors duration-150 focus-within:border-black/25">
               <span className="font-mono text-[9px] tracking-[0.12em] text-black/40 uppercase">
                 Paste
               </span>

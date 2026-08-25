@@ -13,7 +13,7 @@ import {
   setMilestoneWeekComplete,
   setMilestoneWeekFocus,
 } from "../../../milestone-actions";
-import { uploadIdeaAttachment } from "../../../idea-actions";
+import { askIdeaAi, uploadIdeaAttachment } from "../../../idea-actions";
 import {
   acceptCarryOver,
   acceptWeekTasks,
@@ -91,6 +91,7 @@ async function WorkspaceSection({ publicId }: { publicId: string }) {
       setFocus={setMilestoneWeekFocus}
       saveIdeaBoard={saveWeekIdeaBoard}
       upload={uploadIdeaAttachment}
+      askIdeaAi={askIdeaAi}
       workActions={{
         saveTask,
         setTaskDone,
