@@ -461,7 +461,7 @@ function MainPane({
             }
           >
             <Upload className="size-4" />
-            Upload .env
+            Import .env
           </Button>
         ) : null}
         <Button
@@ -836,7 +836,7 @@ function VersionPane({
                 }
               >
                 <Upload className="size-4" />
-                Upload .env
+                Import .env
               </Button>
             ) : null}
             <Button
@@ -977,7 +977,7 @@ function GroupCard({
                   }
                 >
                   <Upload className="size-3.5" />
-                  Upload .env
+                  Import .env
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={() =>

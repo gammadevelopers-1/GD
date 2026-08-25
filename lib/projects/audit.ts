@@ -75,6 +75,29 @@ export function auditActionLabel(action: string) {
   return AUDIT_ACTION_LABEL[action] ?? action.replace(/[._]/g, " ");
 }
 
+const AUDIT_PHRASE: Record<string, string> = {
+  "credential.created": "added",
+  "credential.value_replaced": "changed the value of",
+  "credential.metadata_updated": "edited",
+  "credential.archived": "deleted",
+  "credential.restored": "restored",
+  "credential.secret_copied": "copied",
+  "credential.access_denied": "was refused",
+  "credential.access_granted": "shared",
+  "credential.access_level_changed": "changed who can use",
+  "credential.access_revoked": "revoked access to",
+  "env_group.created": "created the group",
+  "env_group.renamed": "renamed a group to",
+  "env_group.deleted": "deleted the group",
+  create: "added the link",
+  update: "updated the link",
+  delete: "cleared the link",
+};
+
+export function auditPhrase(action: string) {
+  return AUDIT_PHRASE[action] ?? action.replace(/[._]/g, " ");
+}
+
 export function deviceLabel(userAgent: string | null) {
   if (!userAgent) return null;
 

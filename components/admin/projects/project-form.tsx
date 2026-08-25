@@ -303,14 +303,14 @@ export function ProjectForm({
 
 function inputClass(hasError: boolean) {
   return cn(
-    "h-11 w-full rounded-xl border bg-white px-3 text-sm outline-none transition duration-150 hover:border-black/20 focus:border-gd-green focus-visible:ring-2 focus-visible:ring-gd-green/20",
+    "h-11 w-full rounded-xl border bg-white px-3 text-sm outline-none transition duration-150 hover:border-black/20 focus:border-black/35 focus-visible:ring-0",
     hasError ? "border-red-300 bg-red-50/40" : "border-black/[0.09]",
   );
 }
 
 function darkInputClass(hasError: boolean) {
   return cn(
-    "h-11 w-full rounded-xl border bg-white/[0.06] px-3 text-sm text-white outline-none transition duration-150 hover:border-white/25 focus:border-brand/60 focus-visible:ring-2 focus-visible:ring-brand/20",
+    "h-11 w-full rounded-xl border bg-white/[0.06] px-3 text-sm text-white outline-none transition duration-150 hover:border-white/25 focus:border-white/40 focus-visible:ring-0",
     hasError ? "border-red-400/60 bg-red-500/10" : "border-white/[0.09]",
   );
 }

@@ -1,23 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronDown, Clock3, History, UserRound } from "lucide-react";
+import { ChevronDown, Clock3, History } from "lucide-react";
 import type { ProjectAuditEntry } from "@/data/project-audit";
 import {
   AUDIT_CATEGORIES,
   AUDIT_CATEGORY_LABEL,
   AUDIT_CATEGORY_TONE,
   auditActionLabel,
+  auditPhrase,
   deviceLabel,
 } from "@/lib/projects/audit";
 import { ROLE_LABELS, type TeamRole } from "@/lib/team/records";
-import {
-  FOCUS_RING,
-  INPUT_SMALL,
-  PANEL,
-  TONE_INK,
-  TONE_SOFT,
-} from "@/lib/admin-ui";
+import { FOCUS_RING, INPUT_SMALL, PANEL, TONE_SOFT } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 import { FormSelect } from "@/components/common/form-select";
 import { Button } from "@/components/ui/button";
@@ -128,52 +123,54 @@ function AuditRow({ entry }: { entry: ProjectAuditEntry }) {
   const occurred = new Date(entry.occurredAt);
   const tone = AUDIT_CATEGORY_TONE[entry.category];
   const place = [entry.group, entry.version].filter(Boolean).join(" · ");
+  const role = entry.actorRole
+    ? (ROLE_LABELS[entry.actorRole as TeamRole] ?? entry.actorRole)
+    : null;
 
   return (
     <li className="overflow-hidden rounded-[13px] border border-black/[0.07] bg-white">
       <div className="px-3.5 py-3">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <span
-              className={cn(
-                "rounded-full border px-1.75 py-0.75 font-mono text-[8.5px] tracking-[0.06em] uppercase",
-                TONE_SOFT[tone],
-              )}
-            >
-              {AUDIT_CATEGORY_LABEL[entry.category]}
-            </span>
-            <span className="font-mono text-xs font-semibold break-all text-black/80">
+        <div className="flex flex-wrap items-start gap-x-2 gap-y-1">
+          <span
+            className={cn(
+              "mt-0.5 shrink-0 rounded-full border px-1.75 py-0.75 font-mono text-[8.5px] tracking-[0.06em] uppercase",
+              TONE_SOFT[tone],
+            )}
+          >
+            {AUDIT_CATEGORY_LABEL[entry.category]}
+          </span>
+
+          <p className="min-w-0 flex-1 text-[12.5px] leading-5 text-black/55">
+            <span className="font-semibold text-black/80">{entry.actor}</span>{" "}
+            {auditPhrase(entry.action)}{" "}
+            <span className="font-mono text-[11.5px] font-semibold break-all text-black/80">
               {entry.target}
             </span>
-            <span className="ml-auto inline-flex shrink-0 items-center gap-1.5 font-mono text-[10px] text-black/40 tabular-nums">
-              <Clock3 className="size-3" />
-              {shortStamp(occurred)}
-            </span>
-          </div>
-
-          <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11.5px] text-black/50">
-            <span className="inline-flex items-center gap-1.5 font-medium text-black/70">
-              <UserRound className="size-3" />
-              {entry.actor}
-            </span>
-            {place ? (
-              <>
-                <span>·</span>
-                <span>{place}</span>
-              </>
-            ) : null}
           </p>
+
+          <span className="inline-flex shrink-0 items-center gap-1.5 font-mono text-[10px] text-black/40 tabular-nums">
+            <Clock3 className="size-3" />
+            {shortStamp(occurred)}
+          </span>
+        </div>
+
+        <div className="mt-1.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 pl-0 sm:pl-[3.6rem]">
+          {place ? (
+            <span className="text-[11.5px] text-black/45">{place}</span>
+          ) : (
+            <span />
+          )}
 
           <button
             type="button"
             onClick={() => setOpen((was) => !was)}
             aria-expanded={open}
             className={cn(
-              "mt-2 inline-flex cursor-pointer items-center gap-1 rounded text-[11.5px] text-black/50 transition-colors duration-150 hover:text-black",
+              "inline-flex cursor-pointer items-center gap-1 rounded text-[11.5px] text-black/50 transition-colors duration-150 hover:text-black",
               FOCUS_RING,
             )}
           >
-            View details
+            Details
             <ChevronDown
               className={cn(
                 "size-3.5 transition-transform duration-200",
@@ -185,76 +182,41 @@ function AuditRow({ entry }: { entry: ProjectAuditEntry }) {
       </div>
 
       {open ? (
-        <div className="border-t border-black/[0.06] bg-black/[0.015] px-3.5 pt-3 pb-3.5">
-          <p
-            className={cn(
-              "text-[13px] font-semibold tracking-[-0.02em]",
-              TONE_INK[tone],
-            )}
-          >
-            {auditActionLabel(entry.action)}
-          </p>
-          <p className="mt-0.5 font-mono text-[11px] break-all text-black/45">
-            {entry.target}
-            {place ? ` · ${place}` : null}
-          </p>
-
-          {entry.detail ? (
-            <p className="mt-2 text-[11.5px] leading-relaxed text-black/55">
-              {entry.detail}
-            </p>
-          ) : null}
-
-          <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2.5 border-t border-black/[0.06] pt-3 sm:grid-cols-2">
-            <Detail label="Actor">
-              <span className="block">
-                {entry.actor}
-                {entry.actorRole ? (
-                  <span className="ml-1.5 font-mono text-[10px] text-black/40">
-                    {ROLE_LABELS[entry.actorRole as TeamRole] ?? entry.actorRole}
-                  </span>
-                ) : null}
+        <dl className="space-y-2 border-t border-black/[0.06] bg-black/[0.015] px-3.5 pt-3 pb-3.5">
+          <Fact label="What">{auditActionLabel(entry.action)}</Fact>
+          <Fact label="Who">
+            {entry.actorEmail ?? entry.actor}
+            {role ? (
+              <span className="ml-1.5 font-mono text-[10px] text-black/40">
+                {role}
               </span>
-              {entry.actorEmail ? (
-                <span className="mt-0.5 block font-mono text-[10.5px] break-all text-black/45">
-                  {entry.actorEmail}
-                </span>
-              ) : null}
-            </Detail>
-            <Detail label="When" mono>
-              {fullStamp(occurred)}
-            </Detail>
-            <Detail label="IP address" mono>
-              {entry.ip ?? "Not recorded"}
-            </Detail>
-            <Detail label="Device">{device ?? "Not recorded"}</Detail>
-          </dl>
-        </div>
+            ) : null}
+          </Fact>
+          {place ? <Fact label="Where">{place}</Fact> : null}
+          <Fact label="From">
+            {[entry.ip, device].filter(Boolean).join(" · ") || "Not recorded"}
+          </Fact>
+          <Fact label="Exact time">{fullStamp(occurred)}</Fact>
+          {entry.detail ? <Fact label="Note">{entry.detail}</Fact> : null}
+        </dl>
       ) : null}
     </li>
   );
 }
 
-function Detail({
+function Fact({
   label,
-  mono,
   children,
 }: {
   label: string;
-  mono?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-w-0">
-      <dt className="mb-0.75 font-mono text-[8.5px] tracking-[0.1em] text-black/40 uppercase">
+    <div className="flex flex-col gap-0.5 sm:flex-row sm:gap-3">
+      <dt className="shrink-0 font-mono text-[8.5px] tracking-[0.1em] text-black/40 uppercase sm:w-24 sm:pt-1">
         {label}
       </dt>
-      <dd
-        className={cn(
-          "m-0 break-words text-black/80",
-          mono ? "font-mono text-[11.5px]" : "text-xs",
-        )}
-      >
+      <dd className="m-0 min-w-0 flex-1 text-xs break-words text-black/80">
         {children}
       </dd>
     </div>

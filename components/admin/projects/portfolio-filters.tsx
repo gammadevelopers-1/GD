@@ -112,7 +112,7 @@ export function PortfolioFilters({
             onChange={(event) => onSearchChange(event.target.value)}
             placeholder="Search projects or clients"
             aria-label="Search projects"
-            className="focus:border-gd-green focus-visible:ring-gd-green/25 h-10 w-full rounded-xl border border-black/8 bg-black/[0.02] pr-3 pl-9 text-sm transition outline-none placeholder:text-black/28 hover:border-black/15 focus:bg-white focus-visible:ring-2"
+            className="h-10 w-full rounded-xl border border-black/8 bg-black/[0.02] pr-3 pl-9 text-sm transition outline-none placeholder:text-black/28 hover:border-black/15 focus:border-black/35 focus:bg-white focus-visible:ring-0"
           />
         </div>
 

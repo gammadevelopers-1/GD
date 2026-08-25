@@ -3,28 +3,34 @@
 import { useActionState, useRef, useState } from "react";
 import {
   Check,
-  Eraser,
+  FileUp,
   Loader2,
   Move,
   Plus,
   Share2,
   Trash2,
-  Upload,
-  X,
 } from "lucide-react";
-import type { EnvCandidate, EnvGroupRow, EnvHolder, MainEntryRow } from "@/data/env-workspace";
+import type {
+  EnvCandidate,
+  EnvGroupRow,
+  EnvHolder,
+  MainEntryRow,
+} from "@/data/env-workspace";
 import { IDLE_FORM, type SimpleFormState } from "@/lib/projects/form-state";
 import {
   ENV_GROUP_NAME_MAX,
   type EnvPair,
-  isEnvKey,
+  describeDrafts,
   parseEnvBlob,
 } from "@/lib/projects/env";
-import { type Tone, TONE_SOFT } from "@/lib/admin-ui";
+import { TONE_SOFT } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { PasswordInput } from "@/components/ui/password-input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { FormSelect } from "@/components/common/form-select";
 import { Modal } from "./modal";
 import { useCloseOnSuccess } from "./use-close-on-success";
@@ -59,8 +65,13 @@ function Footer({
   icon?: React.ReactNode;
 }) {
   return (
-    <div className="mt-5 flex items-center justify-end gap-2">
-      <Button type="button" variant="admin-ghost" size="admin" onClick={onClose}>
+    <div className="mt-5 flex flex-wrap items-center justify-end gap-2">
+      <Button
+        type="button"
+        variant="admin-ghost"
+        size="admin"
+        onClick={onClose}
+      >
         Cancel
       </Button>
       <Button
@@ -101,7 +112,7 @@ export function VariableDialog({
   if (!groups.length) {
     return (
       <Modal open title="Add variable" onClose={onClose}>
-        <div className="px-5 py-4">
+        <div>
           <p className="text-xs leading-relaxed text-black/60">
             There is no group to put it in yet. Create a group first, then add
             variables to it.
@@ -117,12 +128,8 @@ export function VariableDialog({
   }
 
   return (
-    <Modal
-      open
-      title="Add variable"
-      onClose={onClose}
-    >
-      <form action={formAction} className="px-5 py-4">
+    <Modal open title="Add variable" onClose={onClose}>
+      <form action={formAction}>
         <input type="hidden" name="groupId" value={target} />
         {scope === "main" ? (
           <>
@@ -212,7 +219,7 @@ export function EditVariableDialog({
 
   return (
     <Modal open title="Edit variable" onClose={onClose}>
-      <form action={formAction} className="px-5 py-4">
+      <form action={formAction}>
         <input type="hidden" name="projectId" value={projectId} />
         <input type="hidden" name="credentialId" value={credentialId} />
 
@@ -282,12 +289,8 @@ export function GroupDialog({
   useCloseOnSuccess(state, onClose);
 
   return (
-    <Modal
-      open
-      title={group ? "Rename group" : "New group"}
-      onClose={onClose}
-    >
-      <form action={formAction} className="px-5 py-4">
+    <Modal open title={group ? "Rename group" : "New group"} onClose={onClose}>
+      <form action={formAction}>
         <input type="hidden" name="projectId" value={projectId} />
         {group ? <input type="hidden" name="groupId" value={group.id} /> : null}
 
@@ -335,12 +338,8 @@ export function MoveDialog({
   useCloseOnSuccess(state, onClose);
 
   return (
-    <Modal
-      open
-      title={`Move ${variableKey}`}
-      onClose={onClose}
-    >
-      <form action={formAction} className="px-5 py-4">
+    <Modal open title={`Move ${variableKey}`} onClose={onClose}>
+      <form action={formAction}>
         <input type="hidden" name="credentialId" value={credentialId} />
         <input type="hidden" name="groupId" value={target} />
 
@@ -379,7 +378,13 @@ export function MoveDialog({
   );
 }
 
-type DraftRow = { id: number; key: string; value: string };
+type Draft = {
+  id: number;
+  key: string;
+  value: string;
+  include: boolean;
+  replace: boolean;
+};
 
 function blobLine({ key, value }: EnvPair) {
   const risky = /\n/.test(value) || /\s#/.test(value) || value !== value.trim();
@@ -404,265 +409,331 @@ export function UploadDialog({
   onClose: () => void;
 }) {
   const [state, formAction, pending] = useActionState(action, IDLE_FORM);
-  const nextId = useRef(1);
-  const [rows, setRows] = useState<DraftRow[]>([{ id: 0, key: "", value: "" }]);
-  const [problem, setProblem] = useState<string | null>(null);
+  const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [pasted, setPasted] = useState("");
+  const [reveal, setReveal] = useState<number | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
   useCloseOnSuccess(state, onClose);
 
   const known = new Set(existingKeys);
-  const blank = () => ({ id: nextId.current++, key: "", value: "" });
+  const readable = pasted.trim() ? parseEnvBlob(pasted).pairs.length : 0;
+  const conflicts = new Set(
+    drafts.map((draft) => draft.key).filter((key) => known.has(key)),
+  );
 
-  function absorb(pairs: EnvPair[], source: string) {
+  const chosen = drafts.filter(
+    (draft) =>
+      draft.include &&
+      draft.value &&
+      (!conflicts.has(draft.key) || draft.replace),
+  );
+
+  const summary = describeDrafts(
+    drafts.map((draft) => ({
+      key: draft.key,
+      value: draft.value,
+      note: "",
+      include: draft.include,
+      conflict: conflicts.has(draft.key),
+    })),
+  );
+
+  function absorb(text: string, source: string) {
+    const { pairs, skipped } = parseEnvBlob(text);
     if (!pairs.length) {
-      setProblem(`No variables found in ${source}.`);
+      setNote(`Nothing readable in ${source}.`);
       return;
     }
-    setProblem(null);
-    const added = pairs.map((pair) => ({ id: nextId.current++, ...pair }));
-    setRows((current) => [
-      ...current.filter((row) => row.key.trim() || row.value),
-      ...added,
-    ]);
-  }
-
-  function edit(id: number, patch: Partial<DraftRow>) {
-    setRows((current) =>
-      current.map((row) => (row.id === id ? { ...row, ...patch } : row)),
+    setDrafts(
+      pairs.map((pair, index) => ({
+        id: index,
+        key: pair.key,
+        value: pair.value,
+        include: true,
+        replace: false,
+      })),
+    );
+    setReveal(null);
+    setNote(
+      skipped.length
+        ? `${skipped.length} line${skipped.length === 1 ? "" : "s"} in ${source} could not be read.`
+        : null,
     );
   }
 
-  function drop(id: number) {
-    const spare = blank();
-    setRows((current) => {
-      const left = current.filter((row) => row.id !== id);
-      return left.length ? left : [spare];
-    });
+  async function readFile(file: File | undefined) {
+    if (!file) return;
+    if (file.size > 1024 * 1024) {
+      setNote("That file is too large to be a .env file.");
+      return;
+    }
+    absorb(await file.text(), file.name);
   }
 
-  const filled = rows
-    .map((row) => ({ key: row.key.trim(), value: row.value }))
-    .filter((row) => row.key || row.value);
-  const valid = filled.filter((row) => isEnvKey(row.key) && row.value);
-  const fresh = valid.filter((row) => !known.has(row.key));
-  const taken = valid.length - fresh.length;
-  const broken = filled.length - valid.length;
-
-  const counts = [
-    `${fresh.length} to import`,
-    taken ? `${taken} already ${taken === 1 ? "exists" : "exist"}` : null,
-    broken ? `${broken} incomplete` : null,
-  ].filter(Boolean);
+  function update(id: number, patch: Partial<Draft>) {
+    setDrafts((current) =>
+      current.map((draft) =>
+        draft.id === id ? { ...draft, ...patch } : draft,
+      ),
+    );
+  }
 
   return (
-    <Modal open size="lg" title="Upload .env" onClose={onClose}>
-      <form action={formAction} className="px-5 py-4">
-        <input type="hidden" name="groupId" value={groupId} />
-        {scope === "main" ? (
-          <>
-            <input type="hidden" name="projectId" value={projectId} />
-            <input type="hidden" name="rows" value={JSON.stringify(fresh)} />
-          </>
-        ) : (
-          <input
-            type="hidden"
-            name="blob"
-            value={fresh.map(blobLine).join("\n")}
-          />
-        )}
+    <Modal
+      open
+      size="xl"
+      title="Import environment variables"
+      onClose={onClose}
+    >
+      {!drafts.length ? (
+        <div className="space-y-3">
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="flex min-h-80 min-w-0 flex-col rounded-2xl border border-black/[0.08] bg-white p-3.5 transition-colors duration-150 focus-within:border-gd-green/60">
+              <span className="font-mono text-[9px] tracking-[0.12em] text-black/40 uppercase">
+                Paste
+              </span>
+              <Textarea
+                id="env-paste"
+                variant="bare"
+                value={pasted}
+                onChange={(event) => setPasted(event.target.value)}
+                spellCheck={false}
+                aria-label="Paste .env contents"
+                placeholder={"DATABASE_URL=postgres://…\nSTRIPE_KEY=sk_live_…"}
+                className="mt-2 min-h-0 w-full flex-1 resize-none bg-transparent font-mono text-xs leading-relaxed placeholder:text-black/25"
+              />
+              <Button
+                type="button"
+                variant="admin-secondary"
+                size="admin"
+                className="mt-3 self-start text-xs"
+                disabled={!pasted.trim()}
+                onClick={() => absorb(pasted, "the pasted text")}
+              >
+                {readable === 1
+                  ? "Read 1 variable"
+                  : readable
+                    ? `Read ${readable} variables`
+                    : "Read variables"}
+              </Button>
+            </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <label
-            className={cn(
-              buttonVariants({ variant: "admin-secondary", size: "admin-sm" }),
-              "cursor-pointer px-3 text-xs",
-            )}
-          >
-            <Upload className="size-3.5" />
-            Choose a file
-            <input
-              type="file"
-              className="sr-only"
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                event.target.value = "";
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = () =>
-                  absorb(
-                    parseEnvBlob(String(reader.result ?? "")).pairs,
-                    file.name,
-                  );
-                reader.readAsText(file);
+            <div
+              onDragOver={(event) => {
+                event.preventDefault();
+                setDragging(true);
               }}
-            />
-          </label>
+              onDragLeave={() => setDragging(false)}
+              onDrop={(event) => {
+                event.preventDefault();
+                setDragging(false);
+                void readFile(event.dataTransfer.files?.[0]);
+              }}
+              className={cn(
+                "flex min-h-80 min-w-0 flex-col items-center justify-center rounded-2xl border border-dashed p-3.5 text-center transition-colors duration-150",
+                dragging
+                  ? "border-gd-green/60 bg-gd-green/[0.07]"
+                  : "border-black/15 bg-white/50",
+              )}
+            >
+              <FileUp className="size-6 text-black/25" />
+              <p className="mt-3 text-[13px] font-medium text-black/70">
+                Drop a .env file here
+              </p>
+              <Button
+                type="button"
+                variant="admin-secondary"
+                size="admin"
+                className="mt-3 text-xs"
+                onClick={() => fileInput.current?.click()}
+              >
+                Browse
+              </Button>
+              <p className="mt-2.5 font-mono text-[9.5px] tracking-[0.1em] text-black/35 uppercase">
+                Any file, up to 1 MB
+              </p>
+              <input
+                ref={fileInput}
+                type="file"
+                className="sr-only"
+                onChange={(event) => {
+                  void readFile(event.target.files?.[0]);
+                  event.target.value = "";
+                }}
+              />
+            </div>
+          </div>
 
-          {filled.length ? (
+          <p className="min-h-4 text-xs text-black/50">{note}</p>
+        </div>
+      ) : (
+        <form action={formAction} className="space-y-4">
+          <input type="hidden" name="groupId" value={groupId} />
+          {scope === "main" ? (
+            <>
+              <input type="hidden" name="projectId" value={projectId} />
+              <input
+                type="hidden"
+                name="rows"
+                value={JSON.stringify(
+                  chosen.map((draft) => ({
+                    key: draft.key,
+                    value: draft.value,
+                    note: "",
+                    replace: draft.replace,
+                  })),
+                )}
+              />
+            </>
+          ) : (
+            <input
+              type="hidden"
+              name="blob"
+              value={chosen.map(blobLine).join("\n")}
+            />
+          )}
+
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-[13px] text-black/60">{summary}</p>
             <Button
               type="button"
               variant="admin-ghost"
               size="admin-sm"
               onClick={() => {
-                setRows([blank()]);
-                setProblem(null);
+                setDrafts([]);
+                setNote(null);
+                setPasted("");
               }}
             >
-              <Eraser className="size-3.5" />
-              Clear
-            </Button>
-          ) : null}
-        </div>
-
-        <div className="mt-3.5 rounded-xl border border-black/[0.09] bg-white">
-          <div className="hidden grid-cols-[minmax(0,13rem)_minmax(0,1fr)_7rem] gap-2.5 px-2.5 pt-2.5 pb-1 font-mono text-[8.5px] tracking-[0.1em] text-black/40 uppercase sm:grid">
-            <span>Key</span>
-            <span>Value</span>
-            <span />
-          </div>
-
-          <ul>
-            {rows.map((row) => (
-              <DraftLine
-                key={row.id}
-                row={row}
-                state={rowState(row, known)}
-                onEdit={(patch) => edit(row.id, patch)}
-                onPaste={(pairs) => absorb(pairs, "that paste")}
-                onDrop={() => drop(row.id)}
-              />
-            ))}
-          </ul>
-
-          <div className="px-2.5 py-2">
-            <Button
-              type="button"
-              variant="admin-ghost"
-              size="admin-sm"
-              onClick={() => setRows((current) => [...current, blank()])}
-            >
-              <Plus className="size-3.5" />
-              Add another
+              Start over
             </Button>
           </div>
-        </div>
 
-        <p className="mt-2.5 min-h-4 font-mono text-[10.5px] text-black/45">
-          {problem ?? (filled.length ? counts.join(" · ") : null)}
-        </p>
-
-        <Problem state={state} />
-        <Footer
-          pending={pending}
-          disabled={!fresh.length}
-          submit={
-            fresh.length === 1
-              ? "Import 1 variable"
-              : fresh.length
-                ? `Import ${fresh.length} variables`
-                : "Import variables"
-          }
-          onClose={onClose}
-          icon={<Check className="size-4" />}
-        />
-      </form>
-    </Modal>
-  );
-}
-
-type RowState = "empty" | "invalid" | "novalue" | "exists" | "new";
-
-function rowState(row: DraftRow, known: Set<string>): RowState {
-  const key = row.key.trim();
-  if (!key && !row.value) return "empty";
-  if (!isEnvKey(key)) return "invalid";
-  if (!row.value) return "novalue";
-  return known.has(key) ? "exists" : "new";
-}
-
-const ROW_BADGE: Record<Exclude<RowState, "empty">, [string, Tone]> = {
-  invalid: ["bad key", "danger"],
-  novalue: ["no value", "muted"],
-  exists: ["exists", "warning"],
-  new: ["new", "ok"],
-};
-
-function DraftLine({
-  row,
-  state,
-  onEdit,
-  onPaste,
-  onDrop,
-}: {
-  row: DraftRow;
-  state: RowState;
-  onEdit: (patch: Partial<DraftRow>) => void;
-  onPaste: (pairs: EnvPair[]) => void;
-  onDrop: () => void;
-}) {
-  const badge = state === "empty" ? null : ROW_BADGE[state];
-
-  function spread(event: React.ClipboardEvent<HTMLInputElement>) {
-    const dropped = event.clipboardData.getData("text");
-    if (!dropped.includes("=")) return;
-    const { pairs } = parseEnvBlob(dropped);
-    if (!pairs.length) return;
-    if (pairs.length === 1) {
-      if (row.key.trim() || row.value) return;
-      event.preventDefault();
-      onEdit(pairs[0]);
-      return;
-    }
-    event.preventDefault();
-    onPaste(pairs);
-  }
-
-  return (
-    <li className="grid gap-2 border-t border-black/[0.05] px-2.5 py-2.5 first:border-t-0 sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)_7rem] sm:items-center sm:gap-2.5 sm:first:border-t">
-      <Input
-        variant="admin-sm"
-        value={row.key}
-        onChange={(event) => onEdit({ key: event.target.value })}
-        onPaste={spread}
-        spellCheck={false}
-        autoComplete="off"
-        aria-label="Key"
-        placeholder="STRIPE_SECRET_KEY"
-        className="h-8 font-mono"
-      />
-      <PasswordInput
-        variant="admin-sm"
-        toggleSize="sm"
-        revealNoun="value"
-        value={row.value}
-        onChange={(event) => onEdit({ value: event.target.value })}
-        spellCheck={false}
-        autoComplete="off"
-        aria-label="Value"
-        placeholder="sk_live_…"
-        className="h-8 font-mono"
-      />
-      <div className="flex items-center justify-end gap-1.5">
-        {badge ? (
-          <span
-            className={cn(
-              "rounded-full border px-1.75 py-0.5 font-mono text-[8.5px] tracking-[0.08em] whitespace-nowrap uppercase",
-              TONE_SOFT[badge[1]],
-            )}
+          <ScrollArea
+            className="rounded-xl border border-black/[0.07] bg-white"
+            viewportClassName="max-h-96"
           >
-            {badge[0]}
-          </span>
-        ) : null}
-        <Button
-          type="button"
-          variant="admin-icon-danger"
-          size="none"
-          aria-label={`Remove ${row.key.trim() || "this row"}`}
-          onClick={onDrop}
-        >
-          <X className="size-3.5" />
-        </Button>
-      </div>
-    </li>
+            <ul className="divide-y divide-black/[0.06]">
+              {drafts.map((draft) => {
+                const clash = conflicts.has(draft.key);
+                return (
+                  <li key={draft.id} className="space-y-2 px-3 py-2.5">
+                    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-2">
+                      <Checkbox
+                        checked={draft.include}
+                        onCheckedChange={(next) =>
+                          update(draft.id, { include: next === true })
+                        }
+                        aria-label={`Include ${draft.key}`}
+                        className="data-checked:border-gd-green-edge data-checked:bg-gd-green-edge shrink-0 border-black/20 data-checked:text-white"
+                      />
+                      <code
+                        className={cn(
+                          "min-w-0 flex-1 truncate font-mono text-xs",
+                          draft.include ? "text-black/75" : "text-black/30",
+                        )}
+                      >
+                        {draft.key}
+                      </code>
+                      <div className="w-full pl-6.5 sm:w-56 sm:pl-0">
+                        <PasswordInput
+                          variant="admin-sm"
+                          toggleSize="sm"
+                          revealNoun="value"
+                          visible={reveal === draft.id}
+                          onVisibleChange={(shown) =>
+                            setReveal(shown ? draft.id : null)
+                          }
+                          value={draft.value}
+                          onChange={(event) =>
+                            update(draft.id, { value: event.target.value })
+                          }
+                          autoComplete="off"
+                          spellCheck={false}
+                          aria-label={`Value for ${draft.key}`}
+                          className="h-8 w-full font-mono"
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="admin-icon-danger"
+                        size="none"
+                        className="shrink-0"
+                        aria-label={`Remove ${draft.key}`}
+                        onClick={() =>
+                          setDrafts((current) =>
+                            current.filter((row) => row.id !== draft.id),
+                          )
+                        }
+                      >
+                        <Trash2 className="size-3.5" />
+                      </Button>
+                    </div>
+
+                    {clash && draft.include ? (
+                      <div className="flex flex-wrap items-center gap-2 pl-6.5 text-[11px]">
+                        <span className="text-amber-800">
+                          Already in this group.
+                        </span>
+                        <span className="flex overflow-hidden rounded-lg border border-black/[0.09]">
+                          <Button
+                            type="button"
+                            variant="bare"
+                            size="none"
+                            className={cn(
+                              "px-2 py-0.5 text-[11px] font-medium",
+                              draft.replace
+                                ? "text-black/45 hover:bg-black/[0.04]"
+                                : "bg-black/[0.06] text-black",
+                            )}
+                            onClick={() => update(draft.id, { replace: false })}
+                          >
+                            Skip
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="bare"
+                            size="none"
+                            className={cn(
+                              "px-2 py-0.5 text-[11px] font-medium",
+                              draft.replace
+                                ? "bg-black/[0.06] text-black"
+                                : "text-black/45 hover:bg-black/[0.04]",
+                            )}
+                            onClick={() => update(draft.id, { replace: true })}
+                          >
+                            Replace
+                          </Button>
+                        </span>
+                      </div>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          </ScrollArea>
+
+          {note ? <p className="text-xs text-black/50">{note}</p> : null}
+
+          <Problem state={state} />
+          <Footer
+            pending={pending}
+            disabled={!chosen.length}
+            submit={
+              chosen.length === 1
+                ? "Save 1 variable"
+                : chosen.length
+                  ? `Save ${chosen.length} variables`
+                  : "Save"
+            }
+            onClose={onClose}
+            icon={<Check className="size-4" />}
+          />
+        </form>
+      )}
+    </Modal>
   );
 }
 
@@ -696,7 +767,7 @@ export function SourceDialog({
   if (!mainGroups.length) {
     return (
       <Modal open title={key} onClose={onClose}>
-        <div className="px-5 py-4">
+        <div>
           <p className="text-xs leading-relaxed text-black/60">
             Main has no group to put this in yet. Create a group in main first,
             then pull values into it.
@@ -712,19 +783,17 @@ export function SourceDialog({
   }
 
   return (
-    <Modal
-      open
-      title={key}
-      onClose={onClose}
-    >
-      <form action={formAction} className="px-5 py-4">
+    <Modal open title={key} onClose={onClose}>
+      <form action={formAction}>
         <input type="hidden" name="key" value={key} />
         <input type="hidden" name="mainGroupId" value={group} />
         <input type="hidden" name="sourceCredentialId" value={pick} />
 
         {!entry && mainGroups.length > 1 ? (
           <div className="mb-3.5 space-y-1.5">
-            <span className="text-xs font-medium text-black/70">Main group</span>
+            <span className="text-xs font-medium text-black/70">
+              Main group
+            </span>
             <FormSelect
               value={group}
               onValueChange={setGroup}
@@ -756,9 +825,9 @@ export function SourceDialog({
                   name="pick"
                   checked={chosen}
                   onChange={() => setPick(holder.credentialId)}
-                  className="size-3.5 accent-gd-green"
+                  className="accent-gd-green size-3.5"
                 />
-                <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-gd-panel-dark font-mono text-[10px] font-semibold text-gd-primary">
+                <span className="bg-gd-panel-dark text-gd-primary grid size-7 shrink-0 place-items-center rounded-lg font-mono text-[10px] font-semibold">
                   {holder.initials}
                 </span>
                 <span className="min-w-0 flex-1">
@@ -790,7 +859,9 @@ export function SourceDialog({
           disabled={!pick}
           submit={entry ? "Use this value" : "Add to main"}
           onClose={onClose}
-          icon={entry ? <Check className="size-4" /> : <Plus className="size-4" />}
+          icon={
+            entry ? <Check className="size-4" /> : <Plus className="size-4" />
+          }
         />
       </form>
     </Modal>
@@ -823,7 +894,7 @@ export function ShareDialog({
       title={entry ? `Share ${entry.key}` : "Share main"}
       onClose={onClose}
     >
-      <form action={formAction} className="px-5 py-4">
+      <form action={formAction}>
         <input type="hidden" name="projectId" value={projectId} />
         {entry ? (
           <input type="hidden" name="credentialId" value={entry.credentialId} />
@@ -851,7 +922,7 @@ export function ShareDialog({
                 name="member"
                 checked={pick === member.id}
                 onChange={() => setPick(member.id)}
-                className="size-3.5 accent-gd-green"
+                className="accent-gd-green size-3.5"
               />
               <span className="min-w-0 flex-1 text-[13px] font-semibold">
                 {member.name}
@@ -903,7 +974,7 @@ export function ConfirmDialog({
 
   return (
     <Modal open title={title} description={description} onClose={onClose}>
-      <form action={formAction} className="px-5 py-4">
+      <form action={formAction}>
         {Object.entries(hidden).map(([name, value]) => (
           <input key={name} type="hidden" name={name} value={value} />
         ))}

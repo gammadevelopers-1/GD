@@ -280,6 +280,32 @@ summary {
   outline-offset: 2px;
 }
 
+/* Admin form controls use a single border change instead of stacking the
+   global outline with Tailwind's focus ring. Keep non-field controls on the
+   stronger global keyboard-focus treatment above. */
+.admin-shell
+  :where(
+    input:not([type]),
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="search"],
+    input[type="tel"],
+    input[type="url"],
+    input[type="number"],
+    input[type="date"],
+    input[type="time"],
+    input[type="datetime-local"],
+    input[type="month"],
+    input[type="week"],
+    textarea,
+    select,
+    [data-slot="select-trigger"]
+  ):focus-visible {
+  outline: none;
+  box-shadow: none !important;
+}
+
 p {
   text-wrap: pretty;
 }

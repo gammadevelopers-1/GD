@@ -111,7 +111,7 @@ export function AdminShell({
     <TooltipProvider>
       <SidebarProvider
         defaultOpen={defaultSidebarOpen}
-        className="bg-background"
+        className="admin-shell bg-background"
         style={{ "--sidebar-width": "17rem" } as React.CSSProperties}
       >
         <Sidebar

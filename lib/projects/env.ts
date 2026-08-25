@@ -147,5 +147,5 @@ export function describeDrafts(drafts: EnvDraft[]) {
   if (!found) return "No variables found.";
   const noun = `${found} variable${found === 1 ? "" : "s"}`;
   if (!conflicts) return `Found ${noun}.`;
-  return `Found ${noun} — ${fresh} new, ${conflicts} already exist.`;
+  return `Found ${noun} — ${fresh} new, ${conflicts} already here.`;
 }

@@ -40,9 +40,9 @@ export const BUTTON_GHOST = `inline-flex items-center justify-center gap-1.5 rou
 
 export const BUTTON_DANGER = `inline-flex items-center justify-center gap-1.5 rounded-lg bg-red-600 px-3 text-xs font-semibold text-white transition duration-200 hover:bg-red-700 hover:shadow-[0_8px_20px_rgba(220,38,38,0.25)] active:scale-[0.98] ${FOCUS_RING}`;
 
-export const INPUT = `w-full rounded-xl border border-black/[0.09] bg-white px-3 text-sm outline-none transition duration-150 placeholder:text-black/30 hover:border-black/20 focus:border-gd-green focus-visible:ring-2 focus-visible:ring-gd-green/20`;
+export const INPUT = `w-full rounded-xl border border-black/[0.09] bg-white px-3 text-sm outline-none transition duration-150 placeholder:text-black/30 hover:border-black/20 focus:border-black/35 focus-visible:ring-0`;
 
-export const INPUT_SMALL = `rounded-lg border border-black/[0.09] bg-white px-2.5 text-xs outline-none transition duration-150 placeholder:text-black/30 hover:border-black/20 focus:border-gd-green focus-visible:ring-2 focus-visible:ring-gd-green/20`;
+export const INPUT_SMALL = `rounded-lg border border-black/[0.09] bg-white px-2.5 text-xs outline-none transition duration-150 placeholder:text-black/30 hover:border-black/20 focus:border-black/35 focus-visible:ring-0`;
 
 export const REVEAL_ON_HOVER =
   "opacity-100 transition-opacity duration-150 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100";

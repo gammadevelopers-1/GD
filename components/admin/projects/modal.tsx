@@ -25,9 +25,16 @@ export function Modal({
   title: string;
   description?: string;
   onClose: () => void;
-  size?: "md" | "lg";
+  size?: "md" | "lg" | "xl";
   children: React.ReactNode;
 }) {
+  const width =
+    size === "xl"
+      ? "w-[min(calc(100vw-2rem),64rem)] max-w-[min(calc(100vw-2rem),64rem)] sm:max-w-[min(calc(100vw-2rem),64rem)]"
+      : size === "lg"
+        ? "w-[min(calc(100vw-2rem),48rem)] max-w-[min(calc(100vw-2rem),48rem)] sm:max-w-[min(calc(100vw-2rem),48rem)]"
+        : "w-[min(calc(100vw-2rem),32rem)] max-w-[min(calc(100vw-2rem),32rem)] sm:max-w-[min(calc(100vw-2rem),32rem)]";
+
   return (
     <Dialog
       open={open}
@@ -40,9 +47,7 @@ export function Modal({
         overlayClassName="bg-black/35 backdrop-blur-none supports-backdrop-filter:backdrop-blur-none"
         className={cn(
           "bg-gd-panel gap-0 overflow-hidden rounded-[20px] border border-black/[0.08] p-0 text-black shadow-[0_30px_80px_rgba(20,23,26,0.22)] ring-0",
-          size === "lg"
-            ? "w-[min(calc(100vw-2rem),48rem)] max-w-[min(calc(100vw-2rem),48rem)]"
-            : "w-[min(calc(100vw-2rem),32rem)] max-w-[min(calc(100vw-2rem),32rem)]",
+          width,
         )}
       >
         <div className="flex max-h-[85vh] flex-col">
