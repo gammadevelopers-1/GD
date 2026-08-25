@@ -12,6 +12,7 @@ import { isUuid } from "@/lib/projects/validation";
 import { IdeaDocError, parseIdeaDoc } from "@/lib/projects/idea-doc";
 import {
   TRANSCRIBE_MAX_BYTES,
+  type OrganisedPoint,
   askAboutPoints,
   extractPoints,
   organisePoints,
@@ -304,7 +305,7 @@ export async function organiseTranscriptPoints(
 
   const { data: rows } = await supabase
     .from("app_week_transcript_points")
-    .select("id, transcript_id, body, tag")
+    .select("id, transcript_id, body, tag, original_body, original_language")
     .in("transcript_id", ids)
     .is("archived_at", null)
     .order("position", { ascending: true });
@@ -314,6 +315,10 @@ export async function organiseTranscriptPoints(
     transcriptId: String(row.transcript_id),
     body: String(row.body ?? ""),
     tag: typeof row.tag === "string" ? row.tag : null,
+    originalBody:
+      typeof row.original_body === "string" ? row.original_body : null,
+    originalLanguage:
+      typeof row.original_language === "string" ? row.original_language : null,
   }));
 
   if (points.length < 2) {
@@ -321,14 +326,20 @@ export async function organiseTranscriptPoints(
   }
 
   const organised = await organisePoints(
-    points.map(({ id, body, tag }) => ({ id, body, tag })),
+    points.map((point) => ({
+      id: point.id,
+      body: point.body,
+      tag: point.tag,
+      originalBody: point.originalBody,
+      originalLanguage: point.originalLanguage,
+    })),
   );
   if (!organised.ok) return formError(organised.reason);
 
   const home = new Map(points.map((point) => [point.id, point.transcriptId]));
   const perSource = new Map<
     string,
-    Array<{ id: string; body: string; tag: string | null; position: number }>
+    Array<OrganisedPoint & { position: number }>
   >();
 
   for (const point of organised.points) {

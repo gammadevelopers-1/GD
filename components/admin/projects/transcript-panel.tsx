@@ -17,9 +17,11 @@ import {
   File as FileIcon,
   FileText,
   Image as ImageIcon,
+  Languages,
   Loader2,
   Maximize2,
   Mic,
+  MoreHorizontal,
   PanelRightClose,
   PanelRightOpen,
   Paperclip,
@@ -61,6 +63,12 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export type AskAction = (
   state: SimpleFormState & { answer?: string; grounded?: boolean },
@@ -105,6 +113,50 @@ const KIND_ICON: Record<TranscriptKind, typeof Mic> = {
   other: FileIcon,
 };
 
+export function spokenBody(point: TranscriptPoint, original: boolean) {
+  return original && point.originalBody ? point.originalBody : point.body;
+}
+
+export function OriginalToggle({
+  point,
+  original,
+  onToggle,
+  className,
+}: {
+  point: TranscriptPoint;
+  original: boolean;
+  onToggle: () => void;
+  className?: string;
+}) {
+  if (!point.originalBody) return null;
+
+  const language = point.originalLanguage ?? "the original";
+
+  return (
+    <Button
+      variant="bare"
+      size="none"
+      type="button"
+      onClick={onToggle}
+      aria-pressed={original}
+      title={
+        original ? "Show the English" : `Show the ${language} it was said in`
+      }
+      className={cn(
+        "inline-flex h-5 shrink-0 items-center gap-1 rounded-full border px-1.5 font-mono text-[8.5px] leading-none tracking-[0.08em] uppercase transition duration-150",
+        original
+          ? TONE_SOFT.ok
+          : "border-black/10 text-black/45 hover:border-black/25 hover:text-black",
+        FOCUS_RING,
+        className,
+      )}
+    >
+      <Languages className="size-2.5" />
+      {original ? "English" : language}
+    </Button>
+  );
+}
+
 const COLLAPSED_WIDTH = 56;
 const MIN_WIDTH = 320;
 const MAX_WIDTH = 620;
@@ -128,6 +180,12 @@ export function TranscriptPanel({
   const [collapsed, setCollapsed] = useState(false);
   const [width, setWidth] = useState(420);
   const [chatOpen, setChatOpen] = useState(false);
+  const chat = useAiChat({
+    projectId,
+    weekId,
+    addSource: actions.addSource,
+    ask: actions.ask,
+  });
   const dragging = useRef(false);
   const openTrigger = useRef<HTMLButtonElement>(null);
   const closeTrigger = useRef<HTMLButtonElement>(null);
@@ -292,39 +350,37 @@ export function TranscriptPanel({
         </CollapsibleContent>
 
         {canEdit && !chatOpen ? (
-          <>
-            {total ? null : (
-              <span
-                aria-hidden
-                className="bg-gd-primary pointer-events-none absolute right-3 bottom-3 z-20 h-11 w-28 animate-ping rounded-full opacity-20 motion-reduce:hidden"
-              />
+          <Button
+            variant="bare"
+            size="none"
+            type="button"
+            onClick={() => setChatOpen(true)}
+            title="Ask AI"
+            className={cn(
+              "bg-gd-panel-dark absolute right-3 bottom-3 z-30 inline-flex h-11 items-center gap-2 rounded-full pr-4 pl-1.5 text-[13px] font-semibold text-white shadow-[0_12px_30px_rgba(20,23,26,0.28)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(20,23,26,0.34)]",
+              FOCUS_RING,
             )}
-            <Button
-              variant="bare"
-              size="none"
-              type="button"
-              onClick={() => setChatOpen(true)}
-              title="Ask AI"
-              className={cn(
-                "bg-gd-panel-dark absolute right-3 bottom-3 z-30 inline-flex h-11 items-center gap-2 rounded-full pr-4 pl-1.5 text-[13px] font-semibold text-white shadow-[0_12px_30px_rgba(20,23,26,0.28)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_38px_rgba(20,23,26,0.34)]",
-                FOCUS_RING,
-              )}
-            >
-              <span className="bg-gd-primary grid size-8 shrink-0 place-items-center rounded-full text-[#06251a]">
+          >
+            <span className="bg-gd-primary grid size-8 shrink-0 place-items-center rounded-full text-[#06251a]">
+              {chat.busy ? (
+                <Loader2 className="size-4.5 animate-spin" />
+              ) : (
                 <Bot className="size-4.5" />
+              )}
+            </span>
+            Ask AI
+            {chat.lines.length ? (
+              <span className="rounded-full bg-white/15 px-1.5 py-0.5 font-mono text-[9px] text-white/70">
+                {chat.lines.length}
               </span>
-              Ask AI
-            </Button>
-          </>
+            ) : null}
+          </Button>
         ) : null}
 
         {chatOpen ? (
           <AiChat
-            projectId={projectId}
-            weekId={weekId}
+            chat={chat}
             hasPoints={total > 0}
-            addSource={actions.addSource}
-            ask={actions.ask}
             onClose={() => setChatOpen(false)}
           />
         ) : null}
@@ -419,6 +475,26 @@ export function PointSheet({
               .join(" · ")}
           </span>
         </div>
+
+        {point.originalBody ? (
+          <div className="flex shrink-0 items-start gap-2.5 border-b border-black/[0.07] bg-[#fbfbf7] px-4 py-2.5">
+            <span
+              className={cn(
+                "mt-px inline-flex h-5 shrink-0 items-center gap-1 rounded-full border px-1.5 font-mono text-[8.5px] leading-none tracking-[0.08em] uppercase",
+                TONE_SOFT.ok,
+              )}
+            >
+              <Languages className="size-2.5" />
+              {point.originalLanguage ?? "As said"}
+            </span>
+            <p
+              dir="auto"
+              className="min-w-0 flex-1 text-[12px] leading-5 text-black/65"
+            >
+              {point.originalBody}
+            </p>
+          </div>
+        ) : null}
 
         <div className="flex min-h-0 flex-1 flex-col">
           <IdeaEditor
@@ -555,15 +631,20 @@ function SourceCard({
             <span>Key points · by AI</span>
             <span>{transcript.points.length}</span>
           </span>
-          {transcript.points.map((point) => (
-            <PointCard
-              key={point.id}
-              point={point}
-              canEdit={canEdit}
-              actions={actions}
-              onOpen={() => onOpenPoint(point)}
-            />
-          ))}
+          <div
+            aria-label={`${transcript.name} transcript points`}
+            className="-mx-4 flex snap-x snap-mandatory [scrollbar-width:none] gap-2.5 overflow-x-auto overscroll-x-contain px-4 pb-1 md:mx-0 md:flex-col md:overflow-visible md:px-0 md:pb-0 [&::-webkit-scrollbar]:hidden"
+          >
+            {transcript.points.map((point) => (
+              <PointCard
+                key={point.id}
+                point={point}
+                canEdit={canEdit}
+                actions={actions}
+                onOpen={() => onOpenPoint(point)}
+              />
+            ))}
+          </div>
         </div>
       ) : null}
     </div>
@@ -656,11 +737,25 @@ function PointCard({
   onOpen: () => void;
 }) {
   const at = stamp(point.atSeconds);
-  const [, send] = useActionState(actions.sendToWork, IDLE_FORM);
-  const [, drop] = useActionState(actions.removePoint, IDLE_FORM);
+  const [original, setOriginal] = useState(false);
+  const [, send, sending] = useActionState(actions.sendToWork, IDLE_FORM);
+  const [, drop, dropping] = useActionState(actions.removePoint, IDLE_FORM);
+  const sendFormId = `send-point-${point.id}`;
+  const dropFormId = `remove-point-${point.id}`;
 
   return (
-    <div className="rounded-xl border border-black/[0.08] bg-white px-3 py-3 transition duration-150 hover:border-black/18 hover:shadow-[0_4px_12px_rgba(20,23,26,0.05)]">
+    <div className="@container w-[min(20rem,calc(100vw-2rem))] shrink-0 snap-start rounded-xl border border-black/[0.08] bg-white px-3 py-3 transition duration-150 hover:border-black/18 hover:shadow-[0_4px_12px_rgba(20,23,26,0.05)] md:w-auto md:max-w-none">
+      {canEdit && !point.cardId ? (
+        <form id={sendFormId} action={send} className="hidden">
+          <input type="hidden" name="pointId" value={point.id} />
+        </form>
+      ) : null}
+      {canEdit ? (
+        <form id={dropFormId} action={drop} className="hidden">
+          <input type="hidden" name="pointId" value={point.id} />
+        </form>
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-2.5">
         {at ? (
           <span className="bg-gd-green/12 text-gd-green-deep shrink-0 rounded-md px-1.5 py-0.5 font-mono text-[9.5px]">
@@ -675,7 +770,7 @@ function PointCard({
         {point.tag ? (
           <span
             className={cn(
-              "shrink-0 rounded-full border px-1.5 py-0.5 font-mono text-[8.5px] tracking-[0.08em] uppercase",
+              "inline-flex h-5 shrink-0 items-center rounded-full border px-1.5 font-mono text-[8.5px] leading-none tracking-[0.08em] uppercase",
               TONE_SOFT.muted,
             )}
           >
@@ -683,7 +778,13 @@ function PointCard({
           </span>
         ) : null}
 
-        <span className="ml-auto flex shrink-0 items-center gap-0.5">
+        <OriginalToggle
+          point={point}
+          original={original}
+          onToggle={() => setOriginal((value) => !value)}
+        />
+
+        <span className="ml-auto hidden shrink-0 items-center gap-0.5 @sm:flex">
           <Button
             variant="admin-icon"
             size="none"
@@ -705,38 +806,104 @@ function PointCard({
           ) : null}
 
           {canEdit && !point.cardId ? (
-            <form action={send}>
-              <input type="hidden" name="pointId" value={point.id} />
-              <Button
-                variant="admin-icon"
-                size="none"
-                type="submit"
-                title="Send to Work Board"
-                aria-label="Send to Work Board"
-              >
+            <Button
+              variant="admin-icon"
+              size="none"
+              type="submit"
+              form={sendFormId}
+              disabled={sending}
+              title="Send to Work Board"
+              aria-label="Send to Work Board"
+            >
+              {sending ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
                 <ArrowRight className="size-3.5" />
-              </Button>
-            </form>
+              )}
+            </Button>
           ) : null}
 
           {canEdit ? (
-            <form action={drop}>
-              <input type="hidden" name="pointId" value={point.id} />
-              <Button
-                variant="admin-icon-danger"
-                size="none"
-                type="submit"
-                title="Remove point"
-                aria-label="Remove point"
-              >
+            <Button
+              variant="admin-icon-danger"
+              size="none"
+              type="submit"
+              form={dropFormId}
+              disabled={dropping}
+              title="Remove point"
+              aria-label="Remove point"
+            >
+              {dropping ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
                 <X className="size-3.5" />
-              </Button>
-            </form>
+              )}
+            </Button>
           ) : null}
         </span>
+
+        <span className="ml-auto shrink-0 @sm:hidden">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="admin-icon"
+                size="none"
+                type="button"
+                title="More actions"
+                aria-label={`More actions for ${point.body.slice(0, 40)}`}
+              >
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={onOpen}>
+                <Maximize2 className="size-3.5" />
+                Details
+              </DropdownMenuItem>
+              {canEdit && point.cardId ? (
+                <DropdownMenuItem disabled>
+                  <Check className="size-3.5" />
+                  Added
+                </DropdownMenuItem>
+              ) : null}
+              {canEdit && !point.cardId ? (
+                <DropdownMenuItem disabled={sending} asChild>
+                  <button type="submit" form={sendFormId} className="w-full">
+                    {sending ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <ArrowRight className="size-3.5" />
+                    )}
+                    Send
+                  </button>
+                </DropdownMenuItem>
+              ) : null}
+              {canEdit ? (
+                <DropdownMenuItem
+                  variant="destructive"
+                  disabled={dropping}
+                  asChild
+                >
+                  <button type="submit" form={dropFormId} className="w-full">
+                    {dropping ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <Trash2 className="size-3.5" />
+                    )}
+                    Delete
+                  </button>
+                </DropdownMenuItem>
+              ) : null}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </span>
       </div>
-      <p className="mt-2.5 text-[12.5px] leading-5 text-black/80">
-        {point.body}
+      <p
+        dir="auto"
+        lang={original ? undefined : "en"}
+        className="mt-2.5 text-[12.5px] leading-5 text-black/80"
+      >
+        {spokenBody(point, original)}
       </p>
     </div>
   );
@@ -760,40 +927,30 @@ type ChatLine =
   | { who: "ai"; text: string }
   | { who: "file"; name: string };
 
-function AiChat({
+type AiChatState = {
+  lines: ChatLine[];
+  question: string;
+  setQuestion: (value: string) => void;
+  busy: "ask" | "upload" | null;
+  askNow: (value: string) => void;
+  ingest: (file: File) => void;
+};
+
+function useAiChat({
   projectId,
   weekId,
-  hasPoints,
   addSource,
   ask,
-  onClose,
 }: {
   projectId: string;
   weekId: string;
-  hasPoints: boolean;
   addSource: TranscriptActions["addSource"];
   ask: AskAction;
-  onClose: () => void;
-}) {
+}): AiChatState {
   const [lines, setLines] = useState<ChatLine[]>([]);
   const [question, setQuestion] = useState("");
-  const fileInput = useRef<HTMLInputElement>(null);
-  const bodyRef = useRef<HTMLDivElement>(null);
-
   const [busy, setBusy] = useState<"ask" | "upload" | null>(null);
   const [, startTask] = useTransition();
-  const asking = busy === "ask";
-  const uploading = busy === "upload";
-
-  useEffect(() => {
-    if (bodyRef.current) {
-      bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
-    }
-  }, [lines, busy]);
-
-  const chips = hasPoints
-    ? ["What did the client ask for?", "Summarise this in three lines"]
-    : ["What can you do?"];
 
   function say(text: string) {
     setLines((current) => [...current, { who: "ai", text }]);
@@ -831,6 +988,35 @@ function AiChat({
       setBusy(null);
     });
   }
+
+  return { lines, question, setQuestion, busy, askNow, ingest };
+}
+
+function AiChat({
+  chat,
+  hasPoints,
+  onClose,
+}: {
+  chat: AiChatState;
+  hasPoints: boolean;
+  onClose: () => void;
+}) {
+  const { lines, question, setQuestion, busy, askNow, ingest } = chat;
+  const fileInput = useRef<HTMLInputElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  const asking = busy === "ask";
+  const uploading = busy === "upload";
+
+  useEffect(() => {
+    if (bodyRef.current) {
+      bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+    }
+  }, [lines, busy]);
+
+  const chips = hasPoints
+    ? ["What did the client ask for?", "Summarise this in three lines"]
+    : ["What can you do?"];
 
   return (
     <div className="absolute inset-x-2 bottom-2 z-30 flex h-[min(38rem,calc(100%-1rem))] flex-col overflow-hidden rounded-[18px] border border-black/10 bg-white shadow-[0_24px_60px_rgba(20,23,26,0.28)]">

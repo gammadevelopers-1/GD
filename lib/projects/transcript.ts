@@ -11,6 +11,8 @@ export type TranscriptPoint = {
   speaker: string | null;
   body: string;
   tag: string | null;
+  originalBody: string | null;
+  originalLanguage: string | null;
   doc: IdeaDoc | null;
   cardId: string | null;
 };

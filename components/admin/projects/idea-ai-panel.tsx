@@ -60,10 +60,6 @@ export function AskAiTrigger({ onOpen }: { onOpen: () => void }) {
         FOCUS_RING,
       )}
     >
-      <span
-        aria-hidden
-        className="animate-ai-sheen absolute inset-0 bg-[linear-gradient(100deg,transparent_22%,rgba(105,238,136,0.4)_50%,transparent_78%)] bg-[length:220%_100%]"
-      />
       <Sparkles className="text-gd-mint-bright relative size-3.5 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-90 motion-reduce:transition-none" />
       <span className="relative">Ask AI</span>
     </Button>

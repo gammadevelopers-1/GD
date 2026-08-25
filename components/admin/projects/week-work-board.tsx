@@ -16,6 +16,7 @@ import {
   ListChecks,
   MessagesSquare,
   Loader2,
+  MoreHorizontal,
   Plus,
   Sparkles,
   X,
@@ -41,8 +42,10 @@ import {
   type WeekTranscript,
 } from "@/lib/projects/transcript";
 import {
+  OriginalToggle,
   PointSheet,
   type TranscriptActions,
+  spokenBody,
 } from "@/components/admin/projects/transcript-panel";
 import { formatDate } from "@/lib/projects/format";
 import { duration as motionDuration, ease, gsap, useGSAP } from "@/lib/gsap";
@@ -56,6 +59,12 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export type ProposedTask = {
   title: string;
@@ -525,6 +534,7 @@ function PointRow({
   onOpen: () => void;
 }) {
   const [sendState, send, sending] = useActionState(sendToWork, IDLE_FORM);
+  const [original, setOriginal] = useState(false);
   const checked = Boolean(point.cardId) || sendState.status === "success";
   const failed = sendState.status === "error";
 
@@ -532,6 +542,7 @@ function PointRow({
     <li
       className={cn(
         BOARD_ROW,
+        "[scrollbar-width:none] overflow-x-auto overscroll-x-contain sm:overflow-x-visible [&::-webkit-scrollbar]:hidden",
         failed ? "border-red-200 bg-red-50" : BOARD_ROW_IDLE,
       )}
     >
@@ -579,15 +590,23 @@ function PointRow({
 
       <span
         aria-hidden
-        className="pointer-events-none relative z-10 min-w-0 flex-1 truncate py-0.5 text-left text-[12.5px] font-medium text-black/80 transition group-hover:text-black"
+        dir="auto"
+        className="pointer-events-none relative z-10 w-max shrink-0 py-0.5 text-left text-[12.5px] font-medium whitespace-nowrap text-black/80 transition group-hover:text-black sm:min-w-0 sm:flex-1 sm:truncate"
       >
-        {point.body}
+        {spokenBody(point, original)}
       </span>
+
+      <OriginalToggle
+        point={point}
+        original={original}
+        onToggle={() => setOriginal((value) => !value)}
+        className="relative z-10"
+      />
 
       {point.tag ? (
         <span
           className={cn(
-            "relative z-10 shrink-0 rounded-full border px-1.5 py-0.5 font-mono text-[8.5px] tracking-[0.08em] whitespace-nowrap uppercase",
+            "relative z-10 inline-flex h-5 shrink-0 items-center rounded-full border px-1.5 font-mono text-[8.5px] leading-none tracking-[0.08em] whitespace-nowrap uppercase",
             TONE_SOFT.muted,
           )}
         >
@@ -595,7 +614,35 @@ function PointRow({
         </span>
       ) : null}
 
-      <BoardDetailButton hasDetail noun="point" onOpen={onOpen} />
+      <BoardDetailButton
+        hasDetail
+        noun="point"
+        onOpen={onOpen}
+        className="hidden sm:grid"
+      />
+
+      <span className="sticky right-0 z-20 ml-auto shrink-0 sm:hidden">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="admin-icon"
+              size="none"
+              type="button"
+              title="More actions"
+              aria-label={`More actions for ${point.body.slice(0, 40)}`}
+              className="bg-white"
+            >
+              <MoreHorizontal className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={onOpen}>
+              <FileText className="size-3.5" />
+              Details
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </span>
 
       {failed ? (
         <span role="alert" className="shrink-0 text-[9px] text-red-600">
@@ -631,10 +678,12 @@ function BoardDetailButton({
   hasDetail,
   noun,
   onOpen,
+  className,
 }: {
   hasDetail: boolean;
   noun: "point" | "task";
   onOpen: () => void;
+  className?: string;
 }) {
   return (
     <Button
@@ -648,6 +697,7 @@ function BoardDetailButton({
       className={cn(
         BOARD_ROW_DETAIL,
         hasDetail ? BOARD_ROW_DETAIL_FILLED : BOARD_ROW_DETAIL_EMPTY,
+        className,
       )}
     >
       {hasDetail ? (

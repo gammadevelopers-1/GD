@@ -107,11 +107,33 @@ function describeFailure(error: unknown, fallback: string): string {
   return fallback;
 }
 
+function languageName(value: unknown): string | null {
+  const raw = typeof value === "string" ? value.trim() : "";
+  if (!raw) return null;
+
+  const lower = raw.toLowerCase();
+  if (lower === "english") return null;
+  if (/^roman[\s-]?urdu$/.test(lower)) return "Roman Urdu";
+  if (/^(urdu|hindi|hindustani|urdu\/hindi|hindi\/urdu)$/.test(lower)) {
+    return "Urdu";
+  }
+  return raw.slice(0, 40);
+}
+
+function spokenAs(rawBody: unknown, rawLanguage: unknown, english: string) {
+  const body = typeof rawBody === "string" ? rawBody.trim() : "";
+  const language = languageName(rawLanguage);
+  if (!body || !language || body === english) return null;
+  return { body: body.slice(0, 4000), language };
+}
+
 export type TranscriptPointDraft = {
   at_seconds: number | null;
   speaker: string | null;
   body: string;
   tag: string | null;
+  original_body: string | null;
+  original_language: string | null;
 };
 
 const POINTS_SCHEMA = {
@@ -137,15 +159,32 @@ const POINTS_SCHEMA = {
           body: {
             type: "string",
             description:
-              "One decision, requirement or question, in one sentence.",
+              "One decision, requirement or question, in one sentence, in English.",
           },
           tag: {
             type: ["string", "null"],
             description:
               "One word: Scope, Feature, Detail, Rule, Risk, Question or Decision.",
           },
+          original_body: {
+            type: ["string", "null"],
+            description:
+              "The same point in the language it was said in. Null when that language was English.",
+          },
+          original_language: {
+            type: ["string", "null"],
+            description:
+              "That language named in English: Urdu, Roman Urdu, Punjabi, Arabic. Null when original_body is null.",
+          },
         },
-        required: ["at_seconds", "speaker", "body", "tag"],
+        required: [
+          "at_seconds",
+          "speaker",
+          "body",
+          "tag",
+          "original_body",
+          "original_language",
+        ],
         additionalProperties: false,
       },
     },
@@ -153,6 +192,20 @@ const POINTS_SCHEMA = {
   required: ["points"],
   additionalProperties: false,
 } as const;
+
+const URDU_RULE = `- The people on these calls speak Pakistani Urdu. Speech recognition keeps
+  writing their Urdu in Devanagari and calling it Hindi. It is neither. When the
+  text you receive is in Devanagari, transliterate it into Urdu script before
+  you put it in original_body, and set original_language to "Urdu". Devanagari
+  must never appear anywhere in your output, and you must never report the
+  language as Hindi. For example, given
+  "एडिट और डिलीट की आप्शन ड्रॉपडाउन के अंदर शो होनी चाहिए।"
+  original_body is
+  "ایڈٹ اور ڈیلیٹ کی آپشن ڈراپ ڈاؤن کے اندر شو ہونی چاہیے۔"
+- Keep the everyday English loanwords a Pakistani speaker actually says rather
+  than reaching for a formal Hindi or Persian substitute.
+- Roman Urdu stays exactly as typed: Latin letters, spelling untouched, and
+  original_language is "Roman Urdu".`;
 
 const SYSTEM = `You pull the working points out of a planning conversation for a small software studio.
 
@@ -166,9 +219,12 @@ Rules:
 - Skip greetings, scheduling and small talk.
 - at_seconds is where the point starts. Use null when the source has no timeline.
 - speaker is who said it, if the transcript names them. Otherwise null.
-- Write each point in the language the source used. If it is Urdu, answer in Urdu.
-  If it is Roman Urdu, keep Roman Urdu. If speakers mix languages, follow the
-  language of that particular point. Never translate into English.
+- body is always English, whatever language the source was in. Translate the
+  meaning, not the words: keep it as plain and specific as the speaker was.
+- original_body is that same point as it was actually said, in the speaker's
+  own words. When the source was already English, set both original_body and
+  original_language to null rather than repeating yourself.
+${URDU_RULE}
 - The tag stays in English so the board can group on it.
 - Return at most 40 points. If the source says nothing actionable, return an empty list.`;
 
@@ -372,6 +428,12 @@ export async function extractPoints(
       if (!pointBody) continue;
 
       const at = row.at_seconds;
+      const said = spokenAs(
+        row.original_body,
+        row.original_language,
+        pointBody,
+      );
+
       points.push({
         at_seconds:
           typeof at === "number" && Number.isFinite(at) && at >= 0
@@ -386,6 +448,8 @@ export async function extractPoints(
           typeof row.tag === "string" && row.tag.trim()
             ? row.tag.trim().slice(0, 40)
             : null,
+        original_body: said?.body ?? null,
+        original_language: said?.language ?? null,
       });
     }
 
@@ -519,15 +583,26 @@ const ORGANISE_SCHEMA = {
           id: { type: "string", description: "The id you were given." },
           body: {
             type: "string",
-            description: "The point, tightened to one clear sentence.",
+            description:
+              "The point, tightened to one clear sentence, in English.",
           },
           tag: {
             type: ["string", "null"],
             description:
               "One of Scope, Feature, Detail, Rule, Risk, Question, Decision.",
           },
+          original_body: {
+            type: ["string", "null"],
+            description:
+              "The point in the language it was said in. Repeat what you were given, or supply it when the point you were given was not in English. Null when it was.",
+          },
+          original_language: {
+            type: ["string", "null"],
+            description:
+              "That language named in English. Null when original_body is null.",
+          },
         },
-        required: ["id", "body", "tag"],
+        required: ["id", "body", "tag", "original_body", "original_language"],
         additionalProperties: false,
       },
     },
@@ -545,18 +620,36 @@ You receive points in the order they were said. Return the same points, but:
 
 Rules:
 - Return every id you were given, exactly once. Add nothing, drop nothing, merge nothing.
-- Keep each point in the language it was written in. If it is Urdu or Roman Urdu,
-  keep it that way. Only the tag is in English.
+- body is always English. A point handed to you in Urdu or Roman Urdu is
+  translated, not left as it was.
+- Each point may also arrive with the wording it was originally said in. Hand
+  that back untouched — it is a record of what was said, and tidying up never
+  rewrites it.
+- A point with no original yet is one written before the board kept both. If it
+  reached you in Urdu or Roman Urdu, put that wording in original_body and name
+  the language.
+${URDU_RULE}
 - Do not turn a question into a statement, or a risk into a task.`;
 
-export type OrganisedPoint = { id: string; body: string; tag: string | null };
+export type OrganisedPoint = {
+  id: string;
+  body: string;
+  tag: string | null;
+  original_body: string | null;
+  original_language: string | null;
+};
 
 export type OrganiseResult =
-  | { ok: true; points: OrganisedPoint[] }
-  | { ok: false; reason: string };
+  { ok: true; points: OrganisedPoint[] } | { ok: false; reason: string };
 
 export async function organisePoints(
-  points: Array<{ id: string; body: string; tag: string | null }>,
+  points: Array<{
+    id: string;
+    body: string;
+    tag: string | null;
+    originalBody: string | null;
+    originalLanguage: string | null;
+  }>,
 ): Promise<OrganiseResult> {
   if (!transcriptAiConfigured()) {
     return { ok: false, reason: "AI is not configured on this environment." };
@@ -566,7 +659,18 @@ export async function organisePoints(
   }
 
   const input = points
-    .map((point) => `id: ${point.id}\ntag: ${point.tag ?? "-"}\n${point.body}`)
+    .map((point) =>
+      [
+        `id: ${point.id}`,
+        `tag: ${point.tag ?? "-"}`,
+        point.originalBody
+          ? `said in ${point.originalLanguage ?? "another language"}: ${point.originalBody}`
+          : null,
+        point.body,
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    )
     .join("\n\n---\n\n");
 
   try {
@@ -608,6 +712,8 @@ export async function organisePoints(
       const body = String(row.body ?? "").trim();
       if (!body) continue;
 
+      const said = spokenAs(row.original_body, row.original_language, body);
+
       seen.add(id);
       organised.push({
         id,
@@ -616,6 +722,8 @@ export async function organisePoints(
           typeof row.tag === "string" && row.tag.trim()
             ? row.tag.trim().slice(0, 40)
             : null,
+        original_body: said?.body ?? null,
+        original_language: said?.language ?? null,
       });
     }
 

@@ -38,6 +38,8 @@ type PointRow = {
   speaker: unknown;
   body: unknown;
   tag: unknown;
+  original_body: unknown;
+  original_language: unknown;
   doc: unknown;
   card_id: unknown;
 };
@@ -93,7 +95,9 @@ export const getWeekTranscripts = cache(async function getWeekTranscripts(
 
   const { data: pointRows } = await supabase
     .from("app_week_transcript_points")
-    .select("id, transcript_id, at_seconds, speaker, body, tag, doc, card_id")
+    .select(
+      "id, transcript_id, at_seconds, speaker, body, tag, original_body, original_language, doc, card_id",
+    )
     .in("transcript_id", ids)
     .is("archived_at", null)
     .order("position", { ascending: true });
@@ -108,6 +112,8 @@ export const getWeekTranscripts = cache(async function getWeekTranscripts(
       speaker: text(row.speaker),
       body: String(row.body ?? ""),
       tag: text(row.tag),
+      originalBody: text(row.original_body),
+      originalLanguage: text(row.original_language),
       doc: readDoc(row.doc),
       cardId: text(row.card_id),
     });
