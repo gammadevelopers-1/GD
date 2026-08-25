@@ -6,11 +6,11 @@ import {
   Copy,
   ExternalLink,
   Link2,
-  Lock,
   MoreHorizontal,
   Pencil,
   Plus,
   Trash2,
+  Type,
   X,
 } from "lucide-react";
 import type { ProjectLink } from "@/data/project-links";
@@ -26,8 +26,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCloseOnSuccess } from "./use-close-on-success";
@@ -88,13 +86,6 @@ export function WorkingLinks({
           </Button>
         ) : null}
       </div>
-
-      {!canManage ? (
-        <p className="mt-3.5 flex items-start gap-2.5 rounded-xl border border-black/[0.08] bg-black/[0.02] px-3.5 py-2.5 text-xs leading-relaxed text-black/60">
-          <Lock className="mt-0.5 size-3.5 shrink-0" />
-          Links are maintained by project owners. You can open and copy them.
-        </p>
-      ) : null}
 
       {adding ? (
         <AddLinkForm
@@ -210,7 +201,12 @@ function LinkRow({
             <CopyLinkButton value={linkHref(row.value)} label={row.label} />
           ) : null}
           {canManage ? (
-            <RowMenu row={row} onEdit={onEdit} actions={actions} />
+            <RowMenu
+              row={row}
+              onEdit={onEdit}
+              onCopy={() => copyLink(row, () => undefined)}
+              actions={actions}
+            />
           ) : null}
         </div>
       ) : (
@@ -218,6 +214,16 @@ function LinkRow({
       )}
     </div>
   );
+}
+
+async function copyLink(row: ProjectLink, onDone: () => void) {
+  try {
+    await navigator.clipboard.writeText(linkHref(row.value));
+    toast.success("Link copied.");
+    onDone();
+  } catch {
+    toast.error("That link could not be copied.");
+  }
 }
 
 function CopyLinkButton({ value, label }: { value: string; label: string }) {
@@ -252,10 +258,12 @@ function CopyLinkButton({ value, label }: { value: string; label: string }) {
 function RowMenu({
   row,
   onEdit,
+  onCopy,
   actions,
 }: {
   row: ProjectLink;
   onEdit: (next: Editing) => void;
+  onCopy: () => void;
   actions: LinkActions;
 }) {
   const [clearState, clearAction, clearing] = useActionState(
@@ -268,14 +276,6 @@ function RowMenu({
   );
   useToastOnSettle(clearState);
   useToastOnSettle(deleteState);
-
-  const editLabel = row.value
-    ? row.kind === "notes"
-      ? "Edit notes"
-      : "Edit URL"
-    : row.kind === "notes"
-      ? "Add notes"
-      : "Add URL";
 
   const clearFormId = `clear-link-${row.id}`;
   const deleteFormId = `delete-link-${row.id}`;
@@ -300,21 +300,25 @@ function RowMenu({
             <MoreHorizontal className="size-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="min-w-52">
-          <DropdownMenuLabel>{row.label}</DropdownMenuLabel>
+        <DropdownMenuContent align="end" className="min-w-44">
           <DropdownMenuItem
             onSelect={() => onEdit({ id: row.id, field: "value" })}
           >
             <Pencil className="size-3.5" />
-            {editLabel}
+            Edit
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() => onEdit({ id: row.id, field: "label" })}
           >
-            <Pencil className="size-3.5" />
-            Rename label
+            <Type className="size-3.5" />
+            Rename
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
+          {row.value && row.kind !== "notes" ? (
+            <DropdownMenuItem onSelect={() => onCopy()}>
+              <Copy className="size-3.5" />
+              Copy
+            </DropdownMenuItem>
+          ) : null}
           {row.slug ? (
             <DropdownMenuItem
               variant="destructive"
@@ -322,15 +326,15 @@ function RowMenu({
               asChild
             >
               <button type="submit" form={clearFormId} className="w-full">
-                <X className="size-3.5" />
-                Clear value
+                <Trash2 className="size-3.5" />
+                Delete
               </button>
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem variant="destructive" disabled={deleting} asChild>
               <button type="submit" form={deleteFormId} className="w-full">
                 <Trash2 className="size-3.5" />
-                Remove link
+                Delete
               </button>
             </DropdownMenuItem>
           )}
@@ -397,7 +401,7 @@ function ValueForm({
         data-button-fill
       >
         <Check className="size-3.5" />
-        Save
+        <span className="button-fill-fx__label">Save</span>
       </Button>
     </form>
   );
@@ -509,7 +513,7 @@ function AddLinkForm({
           data-button-fill
         >
           <Plus className="size-3.5" />
-          Add
+          <span className="button-fill-fx__label">Add</span>
         </Button>
       </div>
     </form>

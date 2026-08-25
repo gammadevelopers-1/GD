@@ -1,3 +1,5 @@
+import type { Tone } from "@/lib/admin-ui";
+
 export const AUDIT_CATEGORIES = [
   "create",
   "update",
@@ -16,6 +18,15 @@ export const AUDIT_CATEGORY_LABEL: Record<AuditCategory, string> = {
   access: "access",
   share: "shared",
   group: "group",
+};
+
+export const AUDIT_CATEGORY_TONE: Record<AuditCategory, Tone> = {
+  create: "ok",
+  update: "info",
+  delete: "danger",
+  access: "warning",
+  share: "info",
+  group: "muted",
 };
 
 const BY_ACTION: Record<string, AuditCategory> = {

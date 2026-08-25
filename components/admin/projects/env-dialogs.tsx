@@ -1,15 +1,29 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { Check, Loader2, Move, Plus, Share2, Trash2, Upload } from "lucide-react";
+import { useActionState, useRef, useState } from "react";
+import {
+  Check,
+  Eraser,
+  Loader2,
+  Move,
+  Plus,
+  Share2,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
 import type { EnvCandidate, EnvGroupRow, EnvHolder, MainEntryRow } from "@/data/env-workspace";
 import { IDLE_FORM, type SimpleFormState } from "@/lib/projects/form-state";
-import { ENV_GROUP_NAME_MAX, maskValue, parseEnvBlob } from "@/lib/projects/env";
-import { TONE_SOFT } from "@/lib/admin-ui";
+import {
+  ENV_GROUP_NAME_MAX,
+  type EnvPair,
+  isEnvKey,
+  parseEnvBlob,
+} from "@/lib/projects/env";
+import { type Tone, TONE_SOFT } from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { PasswordInput } from "@/components/ui/password-input";
 import { FormSelect } from "@/components/common/form-select";
 import { Modal } from "./modal";
@@ -31,12 +45,14 @@ function Problem({ state }: { state: SimpleFormState }) {
 
 function Footer({
   pending,
+  disabled,
   submit,
   onClose,
   tone = "cta",
   icon,
 }: {
   pending: boolean;
+  disabled?: boolean;
   submit: string;
   onClose: () => void;
   tone?: "cta" | "danger";
@@ -51,11 +67,11 @@ function Footer({
         type="submit"
         variant={tone === "danger" ? "admin-danger" : "admin-cta"}
         size="admin"
-        disabled={pending}
+        disabled={pending || disabled}
         {...(tone === "cta" ? { "data-button-fill": true } : {})}
       >
         {pending ? <Loader2 className="size-4 animate-spin" /> : icon}
-        {submit}
+        <span className="button-fill-fx__label">{submit}</span>
       </Button>
     </div>
   );
@@ -104,11 +120,6 @@ export function VariableDialog({
     <Modal
       open
       title="Add variable"
-      description={
-        scope === "main"
-          ? "Stored in main and shared with whoever you grant it to."
-          : "Added to this version only."
-      }
       onClose={onClose}
     >
       <form action={formAction} className="px-5 py-4">
@@ -173,6 +184,81 @@ export function VariableDialog({
         <Footer
           pending={pending}
           submit="Add variable"
+          onClose={onClose}
+          icon={<Check className="size-4" />}
+        />
+      </form>
+    </Modal>
+  );
+}
+
+export function EditVariableDialog({
+  projectId,
+  credentialId,
+  variableKey,
+  note,
+  action,
+  onClose,
+}: {
+  projectId: string;
+  credentialId: string;
+  variableKey: string;
+  note: string | null;
+  action: FormAction;
+  onClose: () => void;
+}) {
+  const [state, formAction, pending] = useActionState(action, IDLE_FORM);
+  useCloseOnSuccess(state, onClose);
+
+  return (
+    <Modal open title="Edit variable" onClose={onClose}>
+      <form action={formAction} className="px-5 py-4">
+        <input type="hidden" name="projectId" value={projectId} />
+        <input type="hidden" name="credentialId" value={credentialId} />
+
+        <label className="block space-y-1.5">
+          <span className="text-xs font-medium text-black/70">Key</span>
+          <Input
+            name="key"
+            variant="admin"
+            autoFocus
+            required
+            defaultValue={variableKey}
+            className="h-9 font-mono text-xs"
+          />
+        </label>
+
+        <label className="mt-3.5 block space-y-1.5">
+          <span className="text-xs font-medium text-black/70">
+            New value{" "}
+            <span className="font-mono text-[10px] text-black/40">
+              leave empty to keep
+            </span>
+          </span>
+          <PasswordInput
+            name="value"
+            variant="admin"
+            revealNoun="value"
+            autoComplete="off"
+            spellCheck={false}
+            className="h-9 font-mono text-xs"
+          />
+        </label>
+
+        <label className="mt-3.5 block space-y-1.5">
+          <span className="text-xs font-medium text-black/70">Note</span>
+          <Input
+            name="note"
+            variant="admin"
+            defaultValue={note ?? ""}
+            className="h-9 text-sm"
+          />
+        </label>
+
+        <Problem state={state} />
+        <Footer
+          pending={pending}
+          submit="Save"
           onClose={onClose}
           icon={<Check className="size-4" />}
         />
@@ -251,8 +337,7 @@ export function MoveDialog({
   return (
     <Modal
       open
-      title="Move variable"
-      description={`Move ${variableKey} to another group in this version.`}
+      title={`Move ${variableKey}`}
       onClose={onClose}
     >
       <form action={formAction} className="px-5 py-4">
@@ -283,7 +368,8 @@ export function MoveDialog({
 
         <Problem state={state} />
         <Footer
-          pending={pending || !groups.length}
+          pending={pending}
+          disabled={!groups.length}
           submit="Move"
           onClose={onClose}
           icon={<Move className="size-4" />}
@@ -291,6 +377,15 @@ export function MoveDialog({
       </form>
     </Modal>
   );
+}
+
+type DraftRow = { id: number; key: string; value: string };
+
+function blobLine({ key, value }: EnvPair) {
+  const risky = /\n/.test(value) || /\s#/.test(value) || value !== value.trim();
+  if (!risky) return `${key}=${value}`;
+  const escaped = value.replace(/"/g, '\\"').replace(/\n/g, "\\n");
+  return `${key}="${escaped}"`;
 }
 
 export function UploadDialog({
@@ -309,21 +404,57 @@ export function UploadDialog({
   onClose: () => void;
 }) {
   const [state, formAction, pending] = useActionState(action, IDLE_FORM);
-  const [text, setText] = useState("");
+  const nextId = useRef(1);
+  const [rows, setRows] = useState<DraftRow[]>([{ id: 0, key: "", value: "" }]);
+  const [problem, setProblem] = useState<string | null>(null);
   useCloseOnSuccess(state, onClose);
 
   const known = new Set(existingKeys);
-  const parsed = parseEnvBlob(text);
-  const fresh = parsed.pairs.filter((pair) => !known.has(pair.key));
+  const blank = () => ({ id: nextId.current++, key: "", value: "" });
+
+  function absorb(pairs: EnvPair[], source: string) {
+    if (!pairs.length) {
+      setProblem(`No variables found in ${source}.`);
+      return;
+    }
+    setProblem(null);
+    const added = pairs.map((pair) => ({ id: nextId.current++, ...pair }));
+    setRows((current) => [
+      ...current.filter((row) => row.key.trim() || row.value),
+      ...added,
+    ]);
+  }
+
+  function edit(id: number, patch: Partial<DraftRow>) {
+    setRows((current) =>
+      current.map((row) => (row.id === id ? { ...row, ...patch } : row)),
+    );
+  }
+
+  function drop(id: number) {
+    const spare = blank();
+    setRows((current) => {
+      const left = current.filter((row) => row.id !== id);
+      return left.length ? left : [spare];
+    });
+  }
+
+  const filled = rows
+    .map((row) => ({ key: row.key.trim(), value: row.value }))
+    .filter((row) => row.key || row.value);
+  const valid = filled.filter((row) => isEnvKey(row.key) && row.value);
+  const fresh = valid.filter((row) => !known.has(row.key));
+  const taken = valid.length - fresh.length;
+  const broken = filled.length - valid.length;
+
+  const counts = [
+    `${fresh.length} to import`,
+    taken ? `${taken} already ${taken === 1 ? "exists" : "exist"}` : null,
+    broken ? `${broken} incomplete` : null,
+  ].filter(Boolean);
 
   return (
-    <Modal
-      open
-      size="lg"
-      title="Upload .env"
-      description="Paste an .env block or choose a file. Each line becomes its own variable, and a key that already exists is skipped."
-      onClose={onClose}
-    >
+    <Modal open size="lg" title="Upload .env" onClose={onClose}>
       <form action={formAction} className="px-5 py-4">
         <input type="hidden" name="groupId" value={groupId} />
         {scope === "main" ? (
@@ -335,81 +466,203 @@ export function UploadDialog({
           <input
             type="hidden"
             name="blob"
-            value={fresh.map((pair) => `${pair.key}=${pair.value}`).join("\n")}
+            value={fresh.map(blobLine).join("\n")}
           />
         )}
 
-        <Textarea
-          variant="admin"
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-          spellCheck={false}
-          rows={8}
-          placeholder={"STRIPE_WEBHOOK_SECRET=whsec_…\nRESEND_API_KEY=re_…"}
-          className="min-h-38 py-2.5 font-mono text-xs leading-relaxed"
-        />
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <label
+            className={cn(
+              buttonVariants({ variant: "admin-secondary", size: "admin-sm" }),
+              "cursor-pointer px-3 text-xs",
+            )}
+          >
+            <Upload className="size-3.5" />
+            Choose a file
+            <input
+              type="file"
+              className="sr-only"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                event.target.value = "";
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () =>
+                  absorb(
+                    parseEnvBlob(String(reader.result ?? "")).pairs,
+                    file.name,
+                  );
+                reader.readAsText(file);
+              }}
+            />
+          </label>
 
-        <label className="mt-2.5 inline-flex cursor-pointer items-center gap-2 text-xs text-black/55">
-          <Upload className="size-3.5" />
-          Choose a file
-          <input
-            type="file"
-            accept=".env,.txt,text/plain"
-            className="sr-only"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (!file) return;
-              const reader = new FileReader();
-              reader.onload = () => setText(String(reader.result ?? ""));
-              reader.readAsText(file);
-            }}
-          />
-        </label>
+          {filled.length ? (
+            <Button
+              type="button"
+              variant="admin-ghost"
+              size="admin-sm"
+              onClick={() => {
+                setRows([blank()]);
+                setProblem(null);
+              }}
+            >
+              <Eraser className="size-3.5" />
+              Clear
+            </Button>
+          ) : null}
+        </div>
 
-        {parsed.pairs.length ? (
-          <ul className="mt-3.5 max-h-52 overflow-auto rounded-xl border border-black/[0.09]">
-            {parsed.pairs.map((pair) => {
-              const exists = known.has(pair.key);
-              return (
-                <li
-                  key={pair.key}
-                  className="flex items-center gap-2.5 border-b border-black/[0.05] px-3 py-2 last:border-b-0"
-                >
-                  <code className="min-w-0 flex-1 truncate font-mono text-xs font-semibold text-black/80">
-                    {pair.key}
-                  </code>
-                  <span className="font-mono text-[11px] text-black/40">
-                    {maskValue(pair.value)}
-                  </span>
-                  <span
-                    className={cn(
-                      "rounded-full border px-1.75 py-0.5 font-mono text-[8.5px] tracking-[0.08em] uppercase",
-                      exists ? TONE_SOFT.warning : TONE_SOFT.ok,
-                    )}
-                  >
-                    {exists ? "exists" : "new"}
-                  </span>
-                </li>
-              );
-            })}
+        <div className="mt-3.5 rounded-xl border border-black/[0.09] bg-white">
+          <div className="hidden grid-cols-[minmax(0,13rem)_minmax(0,1fr)_7rem] gap-2.5 px-2.5 pt-2.5 pb-1 font-mono text-[8.5px] tracking-[0.1em] text-black/40 uppercase sm:grid">
+            <span>Key</span>
+            <span>Value</span>
+            <span />
+          </div>
+
+          <ul>
+            {rows.map((row) => (
+              <DraftLine
+                key={row.id}
+                row={row}
+                state={rowState(row, known)}
+                onEdit={(patch) => edit(row.id, patch)}
+                onPaste={(pairs) => absorb(pairs, "that paste")}
+                onDrop={() => drop(row.id)}
+              />
+            ))}
           </ul>
-        ) : null}
 
-        <p className="mt-2.5 font-mono text-[10.5px] text-black/45">
-          {parsed.pairs.length
-            ? `${parsed.pairs.length} parsed · ${fresh.length} new · ${parsed.pairs.length - fresh.length} already exist`
-            : "Nothing to import yet."}
+          <div className="px-2.5 py-2">
+            <Button
+              type="button"
+              variant="admin-ghost"
+              size="admin-sm"
+              onClick={() => setRows((current) => [...current, blank()])}
+            >
+              <Plus className="size-3.5" />
+              Add another
+            </Button>
+          </div>
+        </div>
+
+        <p className="mt-2.5 min-h-4 font-mono text-[10.5px] text-black/45">
+          {problem ?? (filled.length ? counts.join(" · ") : null)}
         </p>
 
         <Problem state={state} />
         <Footer
-          pending={pending || !fresh.length}
-          submit={`Import ${fresh.length} new`}
+          pending={pending}
+          disabled={!fresh.length}
+          submit={
+            fresh.length === 1
+              ? "Import 1 variable"
+              : fresh.length
+                ? `Import ${fresh.length} variables`
+                : "Import variables"
+          }
           onClose={onClose}
           icon={<Check className="size-4" />}
         />
       </form>
     </Modal>
+  );
+}
+
+type RowState = "empty" | "invalid" | "novalue" | "exists" | "new";
+
+function rowState(row: DraftRow, known: Set<string>): RowState {
+  const key = row.key.trim();
+  if (!key && !row.value) return "empty";
+  if (!isEnvKey(key)) return "invalid";
+  if (!row.value) return "novalue";
+  return known.has(key) ? "exists" : "new";
+}
+
+const ROW_BADGE: Record<Exclude<RowState, "empty">, [string, Tone]> = {
+  invalid: ["bad key", "danger"],
+  novalue: ["no value", "muted"],
+  exists: ["exists", "warning"],
+  new: ["new", "ok"],
+};
+
+function DraftLine({
+  row,
+  state,
+  onEdit,
+  onPaste,
+  onDrop,
+}: {
+  row: DraftRow;
+  state: RowState;
+  onEdit: (patch: Partial<DraftRow>) => void;
+  onPaste: (pairs: EnvPair[]) => void;
+  onDrop: () => void;
+}) {
+  const badge = state === "empty" ? null : ROW_BADGE[state];
+
+  function spread(event: React.ClipboardEvent<HTMLInputElement>) {
+    const dropped = event.clipboardData.getData("text");
+    if (!dropped.includes("=")) return;
+    const { pairs } = parseEnvBlob(dropped);
+    if (!pairs.length) return;
+    if (pairs.length === 1) {
+      if (row.key.trim() || row.value) return;
+      event.preventDefault();
+      onEdit(pairs[0]);
+      return;
+    }
+    event.preventDefault();
+    onPaste(pairs);
+  }
+
+  return (
+    <li className="grid gap-2 border-t border-black/[0.05] px-2.5 py-2.5 first:border-t-0 sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)_7rem] sm:items-center sm:gap-2.5 sm:first:border-t">
+      <Input
+        variant="admin-sm"
+        value={row.key}
+        onChange={(event) => onEdit({ key: event.target.value })}
+        onPaste={spread}
+        spellCheck={false}
+        autoComplete="off"
+        aria-label="Key"
+        placeholder="STRIPE_SECRET_KEY"
+        className="h-8 font-mono"
+      />
+      <PasswordInput
+        variant="admin-sm"
+        toggleSize="sm"
+        revealNoun="value"
+        value={row.value}
+        onChange={(event) => onEdit({ value: event.target.value })}
+        spellCheck={false}
+        autoComplete="off"
+        aria-label="Value"
+        placeholder="sk_live_…"
+        className="h-8 font-mono"
+      />
+      <div className="flex items-center justify-end gap-1.5">
+        {badge ? (
+          <span
+            className={cn(
+              "rounded-full border px-1.75 py-0.5 font-mono text-[8.5px] tracking-[0.08em] whitespace-nowrap uppercase",
+              TONE_SOFT[badge[1]],
+            )}
+          >
+            {badge[0]}
+          </span>
+        ) : null}
+        <Button
+          type="button"
+          variant="admin-icon-danger"
+          size="none"
+          aria-label={`Remove ${row.key.trim() || "this row"}`}
+          onClick={onDrop}
+        >
+          <X className="size-3.5" />
+        </Button>
+      </div>
+    </li>
   );
 }
 
@@ -431,7 +684,6 @@ export function SourceDialog({
   const [state, formAction, pending] = useActionState(action, IDLE_FORM);
   const holders: EnvHolder[] = entry?.holders ?? candidate?.holders ?? [];
   const key = entry?.key ?? candidate?.key ?? "";
-  const agree = entry?.agree ?? candidate?.agree ?? true;
   const [pick, setPick] = useState(
     holders.find((holder) => holder.profileId === entry?.sourceProfileId)
       ?.credentialId ??
@@ -463,11 +715,6 @@ export function SourceDialog({
     <Modal
       open
       title={key}
-      description={
-        agree
-          ? "Every version holds the same value here, so any source is equivalent."
-          : "Versions differ. Choose which value becomes the shared main."
-      }
       onClose={onClose}
     >
       <form action={formAction} className="px-5 py-4">
@@ -539,7 +786,8 @@ export function SourceDialog({
 
         <Problem state={state} />
         <Footer
-          pending={pending || !pick}
+          pending={pending}
+          disabled={!pick}
           submit={entry ? "Use this value" : "Add to main"}
           onClose={onClose}
           icon={entry ? <Check className="size-4" /> : <Plus className="size-4" />}
@@ -572,8 +820,7 @@ export function ShareDialog({
   return (
     <Modal
       open
-      title={entry ? `Share ${entry.key}` : "Share main with a member"}
-      description="They can copy the value; it is never shown to them as text."
+      title={entry ? `Share ${entry.key}` : "Share main"}
       onClose={onClose}
     >
       <form action={formAction} className="px-5 py-4">
@@ -625,7 +872,8 @@ export function ShareDialog({
 
         <Problem state={state} />
         <Footer
-          pending={pending || !pick || (!entry && !mainGroupIds.length)}
+          pending={pending}
+          disabled={!pick || (!entry && !mainGroupIds.length)}
           submit="Share"
           onClose={onClose}
           icon={<Share2 className="size-4" />}

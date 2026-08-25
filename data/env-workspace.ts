@@ -137,14 +137,25 @@ export async function getEnvWorkspace(
   const credentials = credentialsResult.data ?? [];
 
   const credentialIds = credentials.map((row) => String(row.id));
-  const { data: grantRows } = credentialIds.length
-    ? await supabase
-        .from("app_credential_grants")
-        .select("credential_id, profile_id")
-        .in("credential_id", credentialIds)
-        .is("revoked_at", null)
-    : { data: [] };
+  const groupIds = groups.map((row) => String(row.id));
+  const [{ data: grantRows }, { data: groupGrantRows }] = await Promise.all([
+    credentialIds.length
+      ? supabase
+          .from("app_credential_grants")
+          .select("credential_id, profile_id")
+          .in("credential_id", credentialIds)
+          .is("revoked_at", null)
+      : Promise.resolve({ data: [] }),
+    groupIds.length
+      ? supabase
+          .from("app_env_group_grants")
+          .select("env_group_id, profile_id")
+          .in("env_group_id", groupIds)
+          .is("revoked_at", null)
+      : Promise.resolve({ data: [] }),
+  ]);
   const grants = grantRows ?? [];
+  const groupGrants = groupGrantRows ?? [];
 
   const digestByCredential = new Map<string, string | null>();
   const profileByCredential = new Map<string, string>();
@@ -182,7 +193,7 @@ export async function getEnvWorkspace(
     if (!nameByProfile.has(id)) nameByProfile.set(id, "Unknown");
   }
 
-  for (const grant of grants) {
+  for (const grant of [...grants, ...groupGrants]) {
     const profileId = String(grant.profile_id);
     if (!nameByProfile.has(profileId)) nameByProfile.set(profileId, "Unknown");
   }
@@ -263,18 +274,36 @@ export async function getEnvWorkspace(
     return seen.size <= 1;
   }
 
-  const sharedByCredential = new Map<string, { profileId: string; name: string }[]>();
-  const myGrants = new Set<string>();
-  for (const grant of grants) {
-    const credentialId = String(grant.credential_id);
-    const profileId = String(grant.profile_id);
-    if (profileId === viewer.id) myGrants.add(credentialId);
+  const sharedByCredential = new Map<
+    string,
+    { profileId: string; name: string }[]
+  >();
+
+  function noteShare(credentialId: string, profileId: string) {
     const list = sharedByCredential.get(credentialId) ?? [];
+    if (list.some((row) => row.profileId === profileId)) return;
     list.push({
       profileId,
       name: nameByProfile.get(profileId) ?? "Unknown",
-      });
+    });
     sharedByCredential.set(credentialId, list);
+  }
+
+  for (const grant of grants) {
+    noteShare(String(grant.credential_id), String(grant.profile_id));
+  }
+
+  const sharedGroups = new Map<string, string[]>();
+  for (const grant of groupGrants) {
+    const groupId = String(grant.env_group_id);
+    const list = sharedGroups.get(groupId) ?? [];
+    list.push(String(grant.profile_id));
+    sharedGroups.set(groupId, list);
+  }
+  for (const [groupId, profileIds] of sharedGroups) {
+    for (const variable of variablesByGroup.get(groupId) ?? []) {
+      for (const profileId of profileIds) noteShare(variable.id, profileId);
+    }
   }
 
   const mainGroups: MainGroupRow[] = mainGroupRows.map((group) => ({
@@ -344,7 +373,6 @@ export async function getEnvWorkspace(
     ? []
     : mainGroups
         .flatMap((group) => group.entries)
-        .filter((entry) => myGrants.has(entry.credentialId))
         .map((entry) => ({
           credentialId: entry.credentialId,
           key: entry.key,

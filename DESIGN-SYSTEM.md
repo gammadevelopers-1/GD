@@ -328,6 +328,23 @@ real `<button type="button">` with `aria-pressed` and a stated label.
 Covers: admin login, set-password (team and client), profile → change password,
 portal sign-in, and both ENV secret-value fields.
 
+### 5.3b Dropdown menus
+
+`components/ui/dropdown-menu.tsx` wraps the Radix primitives in the admin skin
+and exports `DropdownMenu` `DropdownMenuTrigger` `DropdownMenuContent`
+`DropdownMenuItem` `DropdownMenuLabel` `DropdownMenuSeparator`.
+
+Row menus follow one shape, so a menu reads the same wherever it opens:
+
+- **One word per item** — Edit, Copy, Share, Move, Rename, Source, Delete. Not
+  "Edit URL", not "Move to group…", not "Share with a member…". The row the
+  menu belongs to already says what the object is.
+- **A lucide icon on every item**, `size-3.5`, in the item's order of use.
+- **No label header and no separator.** The trigger is attached to the row, so
+  a title repeating the row's own name is a second copy of information that is
+  already on screen, and a rule inside a five-item menu divides nothing.
+- **Destructive last**, `variant="destructive"`.
+
 ### 5.4 Badge
 
 Variants: `default` `secondary` `destructive` `outline` `ghost` `link`.
@@ -389,6 +406,18 @@ skin. Compose with `cn()` from `@/lib/utils`.
 | `.hero-*` / `.loader-*` / `.route-error-*` | Owned by their components; do not reuse |
 
 ---
+
+### 5.9 Long lists scroll inside their panel
+
+A list that grows without bound — an audit history, an activity feed — is
+wrapped in `ScrollArea` rather than allowed to push the rest of the page down.
+The panel keeps its place on screen and the list moves inside it.
+
+The cap goes on the **viewport**, not the root: `viewportClassName="max-h-112"`.
+Radix puts `overflow-y: scroll` on the viewport and shadcn sizes it `size-full`,
+so a `max-h-*` on the root resolves to `height: auto` and the list overflows the
+panel instead of scrolling. Give the root the gutter the scrollbar sits in
+(`pr-2.5`) and let the viewport hold the height.
 
 ## 6. Feedback and notifications
 

@@ -28,7 +28,7 @@ import {
   grantEnvAccess,
   renameEnvGroup,
   saveEnvVariables,
-  shareEnvGroups,
+  updateEnvVariable,
 } from "../../../env-actions";
 import {
   createMyCopy,
@@ -40,6 +40,7 @@ import {
   deleteMyGroup,
   moveEnvVariable,
   renameMyGroup,
+  shareMainEnv,
 } from "../../../env-version-actions";
 
 export default async function ProjectTechnicalPage({
@@ -88,10 +89,11 @@ async function TechnicalSections({ publicId }: { publicId: string }) {
 
   const envActions: EnvWorkspaceActions = {
     addVariable: saveMyVariables,
+    editVariable: updateEnvVariable,
     addMainVariable: saveEnvVariables,
     uploadMain: saveEnvVariables,
     createVersion: createMyCopy,
-    shareAll: shareEnvGroups,
+    shareAll: shareMainEnv,
     deleteVariable: deleteEnvVariable,
     moveVariable: moveEnvVariable,
     createMainGroup: createEnvGroup,

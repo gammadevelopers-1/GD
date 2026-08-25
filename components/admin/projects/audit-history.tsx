@@ -1,50 +1,28 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  ChevronDown,
-  Clock3,
-  Copy,
-  FolderPlus,
-  History,
-  Pencil,
-  Plus,
-  Share2,
-  Trash2,
-  UserRound,
-} from "lucide-react";
+import { ChevronDown, Clock3, History, UserRound } from "lucide-react";
 import type { ProjectAuditEntry } from "@/data/project-audit";
 import {
   AUDIT_CATEGORIES,
   AUDIT_CATEGORY_LABEL,
-  type AuditCategory,
+  AUDIT_CATEGORY_TONE,
   auditActionLabel,
   deviceLabel,
 } from "@/lib/projects/audit";
 import { ROLE_LABELS, type TeamRole } from "@/lib/team/records";
-import { FOCUS_RING, INPUT_SMALL, PANEL } from "@/lib/admin-ui";
+import {
+  FOCUS_RING,
+  INPUT_SMALL,
+  PANEL,
+  TONE_INK,
+  TONE_SOFT,
+} from "@/lib/admin-ui";
 import { cn } from "@/lib/utils";
 import { FormSelect } from "@/components/common/form-select";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/admin/empty-state";
-
-const CATEGORY_ICON: Record<AuditCategory, typeof Plus> = {
-  create: Plus,
-  update: Pencil,
-  delete: Trash2,
-  access: Copy,
-  share: Share2,
-  group: FolderPlus,
-};
-
-const CATEGORY_SKIN: Record<AuditCategory, string> = {
-  create: "bg-blue-600/12 text-blue-900",
-  update: "bg-gd-green/14 text-gd-green-ink",
-  delete: "bg-red-100 text-red-700",
-  access: "bg-black/[0.06] text-black/60",
-  share: "bg-violet-500/14 text-violet-900",
-  group: "bg-blue-600/10 text-blue-900",
-};
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function AuditHistory({ entries }: { entries: ProjectAuditEntry[] }) {
   const [person, setPerson] = useState("");
@@ -120,11 +98,13 @@ export function AuditHistory({ entries }: { entries: ProjectAuditEntry[] }) {
       </div>
 
       {rows.length ? (
-        <ul className="mt-3.5 flex flex-col gap-2">
-          {rows.map((entry) => (
-            <AuditRow key={entry.id} entry={entry} />
-          ))}
-        </ul>
+        <ScrollArea className="mt-3.5 pr-2.5" viewportClassName="max-h-112">
+          <ul className="flex flex-col gap-2">
+            {rows.map((entry) => (
+              <AuditRow key={entry.id} entry={entry} />
+            ))}
+          </ul>
+        </ScrollArea>
       ) : (
         <div className="mt-3">
           <EmptyState
@@ -144,25 +124,22 @@ export function AuditHistory({ entries }: { entries: ProjectAuditEntry[] }) {
 
 function AuditRow({ entry }: { entry: ProjectAuditEntry }) {
   const [open, setOpen] = useState(false);
-  const Icon = CATEGORY_ICON[entry.category];
   const device = deviceLabel(entry.userAgent);
   const occurred = new Date(entry.occurredAt);
+  const tone = AUDIT_CATEGORY_TONE[entry.category];
+  const place = [entry.group, entry.version].filter(Boolean).join(" · ");
 
   return (
     <li className="overflow-hidden rounded-[13px] border border-black/[0.07] bg-white">
-      <div className="flex items-start gap-3 px-3.5 py-3">
-        <span
-          className={cn(
-            "mt-0.5 grid size-7.5 shrink-0 place-items-center rounded-lg",
-            CATEGORY_SKIN[entry.category],
-          )}
-        >
-          <Icon className="size-3.5" />
-        </span>
-
-        <div className="min-w-0 flex-1">
+      <div className="px-3.5 py-3">
+        <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-black/[0.06] px-1.75 py-0.75 font-mono text-[8.5px] tracking-[0.06em] text-black/60 uppercase">
+            <span
+              className={cn(
+                "rounded-full border px-1.75 py-0.75 font-mono text-[8.5px] tracking-[0.06em] uppercase",
+                TONE_SOFT[tone],
+              )}
+            >
               {AUDIT_CATEGORY_LABEL[entry.category]}
             </span>
             <span className="font-mono text-xs font-semibold break-all text-black/80">
@@ -179,16 +156,10 @@ function AuditRow({ entry }: { entry: ProjectAuditEntry }) {
               <UserRound className="size-3" />
               {entry.actor}
             </span>
-            {entry.version ? (
+            {place ? (
               <>
                 <span>·</span>
-                <span>{entry.version}</span>
-              </>
-            ) : null}
-            {entry.group ? (
-              <>
-                <span>·</span>
-                <span>{entry.group}</span>
+                <span>{place}</span>
               </>
             ) : null}
           </p>
@@ -215,38 +186,49 @@ function AuditRow({ entry }: { entry: ProjectAuditEntry }) {
 
       {open ? (
         <div className="border-t border-black/[0.06] bg-black/[0.015] px-3.5 pt-3 pb-3.5">
-          <dl className="grid grid-cols-1 gap-x-6 gap-y-2.5 sm:grid-cols-2">
+          <p
+            className={cn(
+              "text-[13px] font-semibold tracking-[-0.02em]",
+              TONE_INK[tone],
+            )}
+          >
+            {auditActionLabel(entry.action)}
+          </p>
+          <p className="mt-0.5 font-mono text-[11px] break-all text-black/45">
+            {entry.target}
+            {place ? ` · ${place}` : null}
+          </p>
+
+          {entry.detail ? (
+            <p className="mt-2 text-[11.5px] leading-relaxed text-black/55">
+              {entry.detail}
+            </p>
+          ) : null}
+
+          <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2.5 border-t border-black/[0.06] pt-3 sm:grid-cols-2">
             <Detail label="Actor">
-              {entry.actor}
-              {entry.actorRole ? (
-                <span className="ml-1.5 font-mono text-[10px] text-black/40">
-                  {ROLE_LABELS[entry.actorRole as TeamRole] ?? entry.actorRole}
+              <span className="block">
+                {entry.actor}
+                {entry.actorRole ? (
+                  <span className="ml-1.5 font-mono text-[10px] text-black/40">
+                    {ROLE_LABELS[entry.actorRole as TeamRole] ?? entry.actorRole}
+                  </span>
+                ) : null}
+              </span>
+              {entry.actorEmail ? (
+                <span className="mt-0.5 block font-mono text-[10.5px] break-all text-black/45">
+                  {entry.actorEmail}
                 </span>
               ) : null}
             </Detail>
-            <Detail label="Email" mono>
-              {entry.actorEmail ?? "—"}
+            <Detail label="When" mono>
+              {fullStamp(occurred)}
             </Detail>
             <Detail label="IP address" mono>
               {entry.ip ?? "Not recorded"}
             </Detail>
             <Detail label="Device">{device ?? "Not recorded"}</Detail>
-            <Detail label="When" mono>
-              {fullStamp(occurred)}
-            </Detail>
-            <Detail label="Event">{auditActionLabel(entry.action)}</Detail>
-            <Detail label="Target" mono>
-              {entry.target}
-            </Detail>
-            <Detail label="Version">{entry.version ?? "—"}</Detail>
-            <Detail label="Group">{entry.group ?? "—"}</Detail>
           </dl>
-
-          {entry.detail ? (
-            <p className="mt-3 font-mono text-[10.5px] leading-relaxed text-black/45">
-              {entry.detail}
-            </p>
-          ) : null}
         </div>
       ) : null}
     </li>

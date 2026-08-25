@@ -1,0 +1,919 @@
+"use client";
+
+import { useActionState, useRef, useState } from "react";
+import {
+  Check,
+  Eraser,
+  Loader2,
+  Move,
+  Plus,
+  Share2,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
+import type { EnvCandidate, EnvGroupRow, EnvHolder, MainEntryRow } from "@/data/env-workspace";
+import { IDLE_FORM, type SimpleFormState } from "@/lib/projects/form-state";
+import {
+  ENV_GROUP_NAME_MAX,
+  type EnvPair,
+  isEnvKey,
+  parseEnvBlob,
+} from "@/lib/projects/env";
+import { type Tone, TONE_SOFT } from "@/lib/admin-ui";
+import { cn } from "@/lib/utils";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
+import { FormSelect } from "@/components/common/form-select";
+import { Modal } from "./modal";
+import { useCloseOnSuccess } from "./use-close-on-success";
+
+export type FormAction = (
+  state: SimpleFormState,
+  formData: FormData,
+) => Promise<SimpleFormState>;
+
+function Problem({ state }: { state: SimpleFormState }) {
+  if (state.status !== "error" || !state.message) return null;
+  return (
+    <p role="alert" className="mt-3 text-xs text-red-700">
+      {state.message}
+    </p>
+  );
+}
+
+function Footer({
+  pending,
+  disabled,
+  submit,
+  onClose,
+  tone = "cta",
+  icon,
+}: {
+  pending: boolean;
+  disabled?: boolean;
+  submit: string;
+  onClose: () => void;
+  tone?: "cta" | "danger";
+  icon?: React.ReactNode;
+}) {
+  return (
+    <div className="mt-5 flex items-center justify-end gap-2">
+      <Button type="button" variant="admin-ghost" size="admin" onClick={onClose}>
+        Cancel
+      </Button>
+      <Button
+        type="submit"
+        variant={tone === "danger" ? "admin-danger" : "admin-cta"}
+        size="admin"
+        disabled={pending || disabled}
+        {...(tone === "cta" ? { "data-button-fill": true } : {})}
+      >
+        {pending ? <Loader2 className="size-4 animate-spin" /> : icon}
+        <span className="button-fill-fx__label">{submit}</span>
+      </Button>
+    </div>
+  );
+}
+
+export function VariableDialog({
+  scope,
+  projectId,
+  groupId,
+  groups,
+  action,
+  onClose,
+}: {
+  scope: "main" | "version";
+  projectId: string;
+  groupId: string | null;
+  groups: EnvGroupRow[];
+  action: FormAction;
+  onClose: () => void;
+}) {
+  const [state, formAction, pending] = useActionState(action, IDLE_FORM);
+  const [target, setTarget] = useState(groupId ?? groups[0]?.id ?? "");
+  const [key, setKey] = useState("");
+  const [value, setValue] = useState("");
+  useCloseOnSuccess(state, onClose);
+
+  if (!groups.length) {
+    return (
+      <Modal open title="Add variable" onClose={onClose}>
+        <div className="px-5 py-4">
+          <p className="text-xs leading-relaxed text-black/60">
+            There is no group to put it in yet. Create a group first, then add
+            variables to it.
+          </p>
+          <div className="mt-5 flex justify-end">
+            <Button variant="admin-secondary" size="admin" onClick={onClose}>
+              Close
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal
+      open
+      title="Add variable"
+      onClose={onClose}
+    >
+      <form action={formAction} className="px-5 py-4">
+        <input type="hidden" name="groupId" value={target} />
+        {scope === "main" ? (
+          <>
+            <input type="hidden" name="projectId" value={projectId} />
+            <input
+              type="hidden"
+              name="rows"
+              value={JSON.stringify([{ key: key.trim(), value }])}
+            />
+          </>
+        ) : null}
+
+        <label className="block space-y-1.5">
+          <span className="text-xs font-medium text-black/70">Key</span>
+          <Input
+            name="key"
+            variant="admin"
+            autoFocus
+            required
+            value={key}
+            onChange={(event) => setKey(event.target.value)}
+            placeholder="STRIPE_SECRET_KEY"
+            className="h-9 font-mono text-xs"
+          />
+        </label>
+
+        <label className="mt-3.5 block space-y-1.5">
+          <span className="text-xs font-medium text-black/70">Value</span>
+          <PasswordInput
+            name="value"
+            variant="admin"
+            revealNoun="value"
+            autoComplete="off"
+            spellCheck={false}
+            value={value}
+            onChange={(event) => setValue(event.target.value)}
+            placeholder="sk_live_…"
+            className="h-9 font-mono text-xs"
+          />
+        </label>
+
+        {groups.length > 1 ? (
+          <div className="mt-3.5 space-y-1.5">
+            <span className="text-xs font-medium text-black/70">Group</span>
+            <FormSelect
+              value={target}
+              onValueChange={setTarget}
+              ariaLabel="Group"
+              triggerClassName="h-9 w-full rounded-xl border border-black/[0.09] bg-white px-3 text-sm"
+              options={groups.map((group) => ({
+                value: group.id,
+                label: group.name,
+              }))}
+            />
+          </div>
+        ) : null}
+
+        <Problem state={state} />
+        <Footer
+          pending={pending}
+          submit="Add variable"
+          onClose={onClose}
+          icon={<Check className="size-4" />}
+        />
+      </form>
+    </Modal>
+  );
+}
+
+export function EditVariableDialog({
+  projectId,
+  credentialId,
+  variableKey,
+  note,
+  action,
+  onClose,
+}: {
+  projectId: string;
+  credentialId: string;
+  variableKey: string;
+  note: string | null;
+  action: FormAction;
+  onClose: () => void;
+}) {
+  const [state, formAction, pending] = useActionState(action, IDLE_FORM);
+  useCloseOnSuccess(state, onClose);
+
+  return (
+    <Modal open title="Edit variable" onClose={onClose}>
+      <form action={formAction} className="px-5 py-4">
+        <input type="hidden" name="projectId" value={projectId} />
+        <input type="hidden" name="credentialId" value={credentialId} />
+
+        <label className="block space-y-1.5">
+          <span className="text-xs font-medium text-black/70">Key</span>
+          <Input
+            name="key"
+            variant="admin"
+            autoFocus
+            required
+            defaultValue={variableKey}
+            className="h-9 font-mono text-xs"
+          />
+        </label>
+
+        <label className="mt-3.5 block space-y-1.5">
+          <span className="text-xs font-medium text-black/70">
+            New value{" "}
+            <span className="font-mono text-[10px] text-black/40">
+              leave empty to keep
+            </span>
+          </span>
+          <PasswordInput
+            name="value"
+            variant="admin"
+            revealNoun="value"
+            autoComplete="off"
+            spellCheck={false}
+            className="h-9 font-mono text-xs"
+          />
+        </label>
+
+        <label className="mt-3.5 block space-y-1.5">
+          <span className="text-xs font-medium text-black/70">Note</span>
+          <Input
+            name="note"
+            variant="admin"
+            defaultValue={note ?? ""}
+            className="h-9 text-sm"
+          />
+        </label>
+
+        <Problem state={state} />
+        <Footer
+          pending={pending}
+          submit="Save"
+          onClose={onClose}
+          icon={<Check className="size-4" />}
+        />
+      </form>
+    </Modal>
+  );
+}
+
+export function GroupDialog({
+  projectId,
+  group,
+  action,
+  onClose,
+}: {
+  projectId: string;
+  group?: EnvGroupRow;
+  action: FormAction;
+  onClose: () => void;
+}) {
+  const [state, formAction, pending] = useActionState(action, IDLE_FORM);
+  useCloseOnSuccess(state, onClose);
+
+  return (
+    <Modal
+      open
+      title={group ? "Rename group" : "New group"}
+      onClose={onClose}
+    >
+      <form action={formAction} className="px-5 py-4">
+        <input type="hidden" name="projectId" value={projectId} />
+        {group ? <input type="hidden" name="groupId" value={group.id} /> : null}
+
+        <label className="block space-y-1.5">
+          <span className="text-xs font-medium text-black/70">Group name</span>
+          <Input
+            name="name"
+            variant="admin"
+            autoFocus
+            required
+            maxLength={ENV_GROUP_NAME_MAX}
+            defaultValue={group?.name ?? ""}
+            placeholder="Payments"
+            className="h-9 text-sm"
+          />
+        </label>
+
+        <Problem state={state} />
+        <Footer
+          pending={pending}
+          submit={group ? "Rename" : "Create group"}
+          onClose={onClose}
+          icon={<Check className="size-4" />}
+        />
+      </form>
+    </Modal>
+  );
+}
+
+export function MoveDialog({
+  credentialId,
+  variableKey,
+  groups,
+  action,
+  onClose,
+}: {
+  credentialId: string;
+  variableKey: string;
+  groups: EnvGroupRow[];
+  action: FormAction;
+  onClose: () => void;
+}) {
+  const [state, formAction, pending] = useActionState(action, IDLE_FORM);
+  const [target, setTarget] = useState(groups[0]?.id ?? "");
+  useCloseOnSuccess(state, onClose);
+
+  return (
+    <Modal
+      open
+      title={`Move ${variableKey}`}
+      onClose={onClose}
+    >
+      <form action={formAction} className="px-5 py-4">
+        <input type="hidden" name="credentialId" value={credentialId} />
+        <input type="hidden" name="groupId" value={target} />
+
+        {groups.length ? (
+          <div className="space-y-1.5">
+            <span className="text-xs font-medium text-black/70">
+              Destination group
+            </span>
+            <FormSelect
+              value={target}
+              onValueChange={setTarget}
+              ariaLabel="Destination group"
+              triggerClassName="h-9 w-full rounded-xl border border-black/[0.09] bg-white px-3 text-sm"
+              options={groups.map((group) => ({
+                value: group.id,
+                label: group.name,
+              }))}
+            />
+          </div>
+        ) : (
+          <p className="font-mono text-[10.5px] text-black/45">
+            No other group to move to. Create one first.
+          </p>
+        )}
+
+        <Problem state={state} />
+        <Footer
+          pending={pending}
+          disabled={!groups.length}
+          submit="Move"
+          onClose={onClose}
+          icon={<Move className="size-4" />}
+        />
+      </form>
+    </Modal>
+  );
+}
+
+type DraftRow = { id: number; key: string; value: string };
+
+function blobLine({ key, value }: EnvPair) {
+  const risky = /\n/.test(value) || /\s#/.test(value) || value !== value.trim();
+  if (!risky) return `${key}=${value}`;
+  const escaped = value.replace(/"/g, '\\"').replace(/\n/g, "\\n");
+  return `${key}="${escaped}"`;
+}
+
+export function UploadDialog({
+  scope,
+  projectId,
+  groupId,
+  existingKeys,
+  action,
+  onClose,
+}: {
+  scope: "main" | "version";
+  projectId: string;
+  groupId: string;
+  existingKeys: string[];
+  action: FormAction;
+  onClose: () => void;
+}) {
+  const [state, formAction, pending] = useActionState(action, IDLE_FORM);
+  const nextId = useRef(1);
+  const [rows, setRows] = useState<DraftRow[]>([{ id: 0, key: "", value: "" }]);
+  const [problem, setProblem] = useState<string | null>(null);
+  useCloseOnSuccess(state, onClose);
+
+  const known = new Set(existingKeys);
+  const blank = () => ({ id: nextId.current++, key: "", value: "" });
+
+  function absorb(pairs: EnvPair[], source: string) {
+    if (!pairs.length) {
+      setProblem(`No variables found in ${source}.`);
+      return;
+    }
+    setProblem(null);
+    setRows((current) => [
+      ...current.filter((row) => row.key.trim() || row.value),
+      ...pairs.map((pair) => ({ id: nextId.current++, ...pair })),
+    ]);
+  }
+
+  function edit(id: number, patch: Partial<DraftRow>) {
+    setRows((current) =>
+      current.map((row) => (row.id === id ? { ...row, ...patch } : row)),
+    );
+  }
+
+  function drop(id: number) {
+    setRows((current) => {
+      const left = current.filter((row) => row.id !== id);
+      return left.length ? left : [blank()];
+    });
+  }
+
+  const filled = rows
+    .map((row) => ({ key: row.key.trim(), value: row.value }))
+    .filter((row) => row.key || row.value);
+  const valid = filled.filter((row) => isEnvKey(row.key) && row.value);
+  const fresh = valid.filter((row) => !known.has(row.key));
+  const taken = valid.length - fresh.length;
+  const broken = filled.length - valid.length;
+
+  const counts = [
+    `${fresh.length} to import`,
+    taken ? `${taken} already ${taken === 1 ? "exists" : "exist"}` : null,
+    broken ? `${broken} incomplete` : null,
+  ].filter(Boolean);
+
+  return (
+    <Modal open size="lg" title="Upload .env" onClose={onClose}>
+      <form action={formAction} className="px-5 py-4">
+        <input type="hidden" name="groupId" value={groupId} />
+        {scope === "main" ? (
+          <>
+            <input type="hidden" name="projectId" value={projectId} />
+            <input type="hidden" name="rows" value={JSON.stringify(fresh)} />
+          </>
+        ) : (
+          <input
+            type="hidden"
+            name="blob"
+            value={fresh.map(blobLine).join("\n")}
+          />
+        )}
+
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <label
+            className={cn(
+              buttonVariants({ variant: "admin-secondary", size: "admin-sm" }),
+              "cursor-pointer px-3 text-xs",
+            )}
+          >
+            <Upload className="size-3.5" />
+            Choose a file
+            <input
+              type="file"
+              className="sr-only"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                event.target.value = "";
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () =>
+                  absorb(
+                    parseEnvBlob(String(reader.result ?? "")).pairs,
+                    file.name,
+                  );
+                reader.readAsText(file);
+              }}
+            />
+          </label>
+
+          {filled.length ? (
+            <Button
+              type="button"
+              variant="admin-ghost"
+              size="admin-sm"
+              onClick={() => {
+                setRows([blank()]);
+                setProblem(null);
+              }}
+            >
+              <Eraser className="size-3.5" />
+              Clear
+            </Button>
+          ) : null}
+        </div>
+
+        <div className="mt-3.5 rounded-xl border border-black/[0.09] bg-white">
+          <div className="hidden grid-cols-[minmax(0,13rem)_minmax(0,1fr)_6.5rem] gap-2.5 px-2.5 pt-2.5 pb-1 font-mono text-[8.5px] tracking-[0.1em] text-black/40 uppercase sm:grid">
+            <span>Key</span>
+            <span>Value</span>
+            <span />
+          </div>
+
+          <ul>
+            {rows.map((row) => (
+              <DraftLine
+                key={row.id}
+                row={row}
+                state={rowState(row, known)}
+                onEdit={(patch) => edit(row.id, patch)}
+                onPaste={(pairs) => absorb(pairs, "that paste")}
+                onDrop={() => drop(row.id)}
+              />
+            ))}
+          </ul>
+
+          <div className="px-2.5 py-2">
+            <Button
+              type="button"
+              variant="admin-ghost"
+              size="admin-sm"
+              onClick={() => setRows((current) => [...current, blank()])}
+            >
+              <Plus className="size-3.5" />
+              Add another
+            </Button>
+          </div>
+        </div>
+
+        <p className="mt-2.5 font-mono text-[10.5px] text-black/45">
+          {problem ?? counts.join(" · ")}
+        </p>
+
+        <Problem state={state} />
+        <Footer
+          pending={pending}
+          disabled={!fresh.length}
+          submit={
+            fresh.length === 1
+              ? "Import 1 variable"
+              : fresh.length
+                ? `Import ${fresh.length} variables`
+                : "Import variables"
+          }
+          onClose={onClose}
+          icon={<Check className="size-4" />}
+        />
+      </form>
+    </Modal>
+  );
+}
+
+type RowState = "empty" | "invalid" | "novalue" | "exists" | "new";
+
+function rowState(row: DraftRow, known: Set<string>): RowState {
+  const key = row.key.trim();
+  if (!key && !row.value) return "empty";
+  if (!isEnvKey(key)) return "invalid";
+  if (!row.value) return "novalue";
+  return known.has(key) ? "exists" : "new";
+}
+
+const ROW_BADGE: Record<Exclude<RowState, "empty">, [string, Tone]> = {
+  invalid: ["check the key", "danger"],
+  novalue: ["add a value", "muted"],
+  exists: ["exists", "warning"],
+  new: ["new", "ok"],
+};
+
+function DraftLine({
+  row,
+  state,
+  onEdit,
+  onPaste,
+  onDrop,
+}: {
+  row: DraftRow;
+  state: RowState;
+  onEdit: (patch: Partial<DraftRow>) => void;
+  onPaste: (pairs: EnvPair[]) => void;
+  onDrop: () => void;
+}) {
+  const badge = state === "empty" ? null : ROW_BADGE[state];
+
+  function spread(event: React.ClipboardEvent<HTMLInputElement>) {
+    const dropped = event.clipboardData.getData("text");
+    if (!dropped.includes("=")) return;
+    const { pairs } = parseEnvBlob(dropped);
+    if (!pairs.length) return;
+    if (pairs.length === 1) {
+      if (row.key.trim() || row.value) return;
+      event.preventDefault();
+      onEdit(pairs[0]);
+      return;
+    }
+    event.preventDefault();
+    onPaste(pairs);
+  }
+
+  return (
+    <li className="grid gap-2 border-t border-black/[0.05] px-2.5 py-2.5 sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)_6.5rem] sm:items-center sm:gap-2.5">
+      <Input
+        variant="admin-sm"
+        value={row.key}
+        onChange={(event) => onEdit({ key: event.target.value })}
+        onPaste={spread}
+        spellCheck={false}
+        autoComplete="off"
+        aria-label="Key"
+        placeholder="STRIPE_SECRET_KEY"
+        className="h-8 font-mono"
+      />
+      <PasswordInput
+        variant="admin-sm"
+        toggleSize="sm"
+        revealNoun="value"
+        value={row.value}
+        onChange={(event) => onEdit({ value: event.target.value })}
+        spellCheck={false}
+        autoComplete="off"
+        aria-label="Value"
+        placeholder="sk_live_…"
+        className="h-8 font-mono"
+      />
+      <div className="flex items-center justify-end gap-1.5">
+        {badge ? (
+          <span
+            className={cn(
+              "rounded-full border px-1.75 py-0.5 font-mono text-[8.5px] tracking-[0.08em] whitespace-nowrap uppercase",
+              TONE_SOFT[badge[1]],
+            )}
+          >
+            {badge[0]}
+          </span>
+        ) : null}
+        <Button
+          type="button"
+          variant="admin-icon-danger"
+          size="none"
+          aria-label={`Remove ${row.key.trim() || "this row"}`}
+          onClick={onDrop}
+        >
+          <X className="size-3.5" />
+        </Button>
+      </div>
+    </li>
+  );
+}
+
+export function SourceDialog({
+  entry,
+  candidate,
+  mainGroupId,
+  mainGroups,
+  action,
+  onClose,
+}: {
+  entry?: MainEntryRow;
+  candidate?: EnvCandidate;
+  mainGroupId: string | null;
+  mainGroups: { id: string; name: string }[];
+  action: FormAction;
+  onClose: () => void;
+}) {
+  const [state, formAction, pending] = useActionState(action, IDLE_FORM);
+  const holders: EnvHolder[] = entry?.holders ?? candidate?.holders ?? [];
+  const key = entry?.key ?? candidate?.key ?? "";
+  const [pick, setPick] = useState(
+    holders.find((holder) => holder.profileId === entry?.sourceProfileId)
+      ?.credentialId ??
+      holders[0]?.credentialId ??
+      "",
+  );
+  const [group, setGroup] = useState(mainGroupId ?? mainGroups[0]?.id ?? "");
+  useCloseOnSuccess(state, onClose);
+
+  if (!mainGroups.length) {
+    return (
+      <Modal open title={key} onClose={onClose}>
+        <div className="px-5 py-4">
+          <p className="text-xs leading-relaxed text-black/60">
+            Main has no group to put this in yet. Create a group in main first,
+            then pull values into it.
+          </p>
+          <div className="mt-5 flex justify-end">
+            <Button variant="admin-secondary" size="admin" onClick={onClose}>
+              Close
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal
+      open
+      title={key}
+      onClose={onClose}
+    >
+      <form action={formAction} className="px-5 py-4">
+        <input type="hidden" name="key" value={key} />
+        <input type="hidden" name="mainGroupId" value={group} />
+        <input type="hidden" name="sourceCredentialId" value={pick} />
+
+        {!entry && mainGroups.length > 1 ? (
+          <div className="mb-3.5 space-y-1.5">
+            <span className="text-xs font-medium text-black/70">Main group</span>
+            <FormSelect
+              value={group}
+              onValueChange={setGroup}
+              ariaLabel="Main group"
+              triggerClassName="h-9 w-full rounded-xl border border-black/[0.09] bg-white px-3 text-sm"
+              options={mainGroups.map((row) => ({
+                value: row.id,
+                label: row.name,
+              }))}
+            />
+          </div>
+        ) : null}
+
+        <div className="flex flex-col gap-2">
+          {holders.map((holder) => {
+            const chosen = pick === holder.credentialId;
+            return (
+              <label
+                key={holder.credentialId}
+                className={cn(
+                  "flex cursor-pointer items-center gap-2.5 rounded-xl border bg-white px-3 py-2.5 transition duration-150",
+                  chosen
+                    ? "border-gd-green/50 bg-gd-green/[0.06]"
+                    : "border-black/10 hover:border-black/20",
+                )}
+              >
+                <input
+                  type="radio"
+                  name="pick"
+                  checked={chosen}
+                  onChange={() => setPick(holder.credentialId)}
+                  className="size-3.5 accent-gd-green"
+                />
+                <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-gd-panel-dark font-mono text-[10px] font-semibold text-gd-primary">
+                  {holder.initials}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[13px] font-semibold">
+                    {holder.name}
+                  </span>
+                  <span className="block font-mono text-[10.5px] text-black/50">
+                    fingerprint {holder.fingerprint}
+                  </span>
+                </span>
+                {entry?.sourceProfileId === holder.profileId ? (
+                  <span
+                    className={cn(
+                      "rounded-full border px-1.75 py-0.5 font-mono text-[8.5px] tracking-[0.08em] uppercase",
+                      TONE_SOFT.ok,
+                    )}
+                  >
+                    current
+                  </span>
+                ) : null}
+              </label>
+            );
+          })}
+        </div>
+
+        <Problem state={state} />
+        <Footer
+          pending={pending}
+          disabled={!pick}
+          submit={entry ? "Use this value" : "Add to main"}
+          onClose={onClose}
+          icon={entry ? <Check className="size-4" /> : <Plus className="size-4" />}
+        />
+      </form>
+    </Modal>
+  );
+}
+
+export function ShareDialog({
+  projectId,
+  entry,
+  mainGroupIds,
+  members,
+  action,
+  onClose,
+}: {
+  projectId: string;
+  entry: MainEntryRow | null;
+  mainGroupIds: string[];
+  members: { id: string; name: string }[];
+  action: FormAction;
+  onClose: () => void;
+}) {
+  const [state, formAction, pending] = useActionState(action, IDLE_FORM);
+  const [pick, setPick] = useState(members[0]?.id ?? "");
+  const shared = new Set((entry?.sharedWith ?? []).map((row) => row.profileId));
+  useCloseOnSuccess(state, onClose);
+
+  return (
+    <Modal
+      open
+      title={entry ? `Share ${entry.key}` : "Share main"}
+      onClose={onClose}
+    >
+      <form action={formAction} className="px-5 py-4">
+        <input type="hidden" name="projectId" value={projectId} />
+        {entry ? (
+          <input type="hidden" name="credentialId" value={entry.credentialId} />
+        ) : (
+          mainGroupIds.map((id) => (
+            <input key={id} type="hidden" name="groupId" value={id} />
+          ))
+        )}
+        <input type="hidden" name="profileId" value={pick} />
+        <input type="hidden" name="access" value="use" />
+
+        <div className="flex flex-col gap-2">
+          {members.map((member) => (
+            <label
+              key={member.id}
+              className={cn(
+                "flex cursor-pointer items-center gap-2.5 rounded-xl border bg-white px-3 py-2.5 transition duration-150",
+                pick === member.id
+                  ? "border-gd-green/50 bg-gd-green/[0.06]"
+                  : "border-black/10 hover:border-black/20",
+              )}
+            >
+              <input
+                type="radio"
+                name="member"
+                checked={pick === member.id}
+                onChange={() => setPick(member.id)}
+                className="size-3.5 accent-gd-green"
+              />
+              <span className="min-w-0 flex-1 text-[13px] font-semibold">
+                {member.name}
+              </span>
+              {shared.has(member.id) ? (
+                <span
+                  className={cn(
+                    "rounded-full border px-1.75 py-0.5 font-mono text-[8.5px] tracking-[0.08em] uppercase",
+                    TONE_SOFT.ok,
+                  )}
+                >
+                  shared
+                </span>
+              ) : null}
+            </label>
+          ))}
+        </div>
+
+        <Problem state={state} />
+        <Footer
+          pending={pending}
+          disabled={!pick || (!entry && !mainGroupIds.length)}
+          submit="Share"
+          onClose={onClose}
+          icon={<Share2 className="size-4" />}
+        />
+      </form>
+    </Modal>
+  );
+}
+
+export function ConfirmDialog({
+  title,
+  description,
+  confirm,
+  hidden,
+  action,
+  onClose,
+}: {
+  title: string;
+  description: string;
+  confirm: string;
+  hidden: Record<string, string>;
+  action: FormAction;
+  onClose: () => void;
+}) {
+  const [state, formAction, pending] = useActionState(action, IDLE_FORM);
+  useCloseOnSuccess(state, onClose);
+
+  return (
+    <Modal open title={title} description={description} onClose={onClose}>
+      <form action={formAction} className="px-5 py-4">
+        {Object.entries(hidden).map(([name, value]) => (
+          <input key={name} type="hidden" name={name} value={value} />
+        ))}
+        <Problem state={state} />
+        <Footer
+          pending={pending}
+          submit={confirm}
+          onClose={onClose}
+          tone="danger"
+          icon={<Trash2 className="size-4" />}
+        />
+      </form>
+    </Modal>
+  );
+}

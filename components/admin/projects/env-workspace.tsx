@@ -7,11 +7,11 @@ import {
   Copy,
   FolderPlus,
   KeyRound,
-  Lock,
   MoreHorizontal,
   Move,
   Pencil,
   Plus,
+  Replace,
   Share2,
   Shield,
   Trash2,
@@ -35,13 +35,12 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EmptyState } from "@/components/admin/empty-state";
 import {
   ConfirmDialog,
+  EditVariableDialog,
   type FormAction,
   GroupDialog,
   MoveDialog,
@@ -53,6 +52,7 @@ import {
 
 export type EnvWorkspaceActions = {
   addVariable: FormAction;
+  editVariable: FormAction;
   addMainVariable: FormAction;
   uploadMain: FormAction;
   createVersion: FormAction;
@@ -87,6 +87,12 @@ type Dialog =
       keys: string[];
     }
   | { kind: "source"; entry?: MainEntryRow; candidate?: EnvCandidate }
+  | {
+      kind: "edit";
+      credentialId: string;
+      key: string;
+      note: string | null;
+    }
   | { kind: "share"; entry: MainEntryRow | null }
   | {
       kind: "confirm";
@@ -176,6 +182,7 @@ export function EnvWorkspace({
 
         {isMain ? (
           <MainPane
+            projectId={projectId}
             workspace={workspace}
             onDialog={setDialog}
             actions={actions}
@@ -268,6 +275,17 @@ export function EnvWorkspace({
         />
       ) : null}
 
+      {dialog?.kind === "edit" ? (
+        <EditVariableDialog
+          projectId={projectId}
+          credentialId={dialog.credentialId}
+          variableKey={dialog.key}
+          note={dialog.note}
+          action={actions.editVariable}
+          onClose={() => setDialog(null)}
+        />
+      ) : null}
+
       {dialog?.kind === "share" ? (
         <ShareDialog
           projectId={projectId}
@@ -328,7 +346,7 @@ function NoVersion({
             onClick={() => setOpen(true)}
           >
             <Plus className="size-4" />
-            Create my version
+            <span className="button-fill-fx__label">Create my version</span>
           </Button>
         }
       />
@@ -380,41 +398,33 @@ function VersionChip({
 
 function PaneHeader({
   title,
-  subtitle,
   children,
 }: {
   title: string;
-  subtitle: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-3">
-      <div>
-        <h3 className="text-[14.5px] font-semibold tracking-[-0.02em]">
-          {title}
-        </h3>
-        <p className="mt-0.5 text-xs text-black/55">{subtitle}</p>
-      </div>
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <h3 className="text-[14.5px] font-semibold tracking-[-0.02em]">{title}</h3>
       <div className="flex flex-wrap items-center gap-2">{children}</div>
     </div>
   );
 }
 
 function MainPane({
+  projectId,
   workspace,
   onDialog,
   actions,
 }: {
+  projectId: string;
   workspace: Workspace;
   onDialog: (dialog: Dialog) => void;
   actions: EnvWorkspaceActions;
 }) {
   return (
     <div>
-      <PaneHeader
-        title="Main environment"
-        subtitle="The shared, resolved env that gets deployed."
-      >
+      <PaneHeader title="Main environment">
         <Button
           variant="admin-cta"
           size="admin-sm"
@@ -433,7 +443,7 @@ function MainPane({
           }
         >
           <Plus className="size-4" />
-          Add variable
+          <span className="button-fill-fx__label">Add variable</span>
         </Button>
         {workspace.mainGroups[0] ? (
           <Button
@@ -460,7 +470,7 @@ function MainPane({
           onClick={() => onDialog({ kind: "share", entry: null })}
         >
           <Share2 className="size-4" />
-          Share with a member
+          Share
         </Button>
         <Button
           variant="admin-secondary"
@@ -497,8 +507,7 @@ function MainPane({
                     <MoreHorizontal className="size-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-52">
-                  <DropdownMenuLabel>{group.name}</DropdownMenuLabel>
+                <DropdownMenuContent align="end" className="min-w-44">
                   <DropdownMenuItem
                     onSelect={() =>
                       onDialog({
@@ -509,7 +518,7 @@ function MainPane({
                     }
                   >
                     <Pencil className="size-3.5" />
-                    Rename group
+                    Rename
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -520,9 +529,11 @@ function MainPane({
                 {group.entries.map((entry) => (
                   <MainRow
                     key={entry.credentialId}
+                    projectId={projectId}
                     entry={entry}
                     onDialog={onDialog}
                     copy={actions.copy}
+                    onDeleteAction={actions.deleteVariable}
                   />
                 ))}
               </ul>
@@ -607,6 +618,25 @@ function AgreementChip({ count, agree }: { count: number; agree: boolean }) {
   );
 }
 
+async function copyValue(
+  credentialId: string,
+  copy: (id: string) => Promise<CopyResult>,
+  onDone: () => void,
+) {
+  const result = await copy(credentialId);
+  if (!result.ok) {
+    toast.error(result.message);
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(result.value);
+    toast.success("Copied. The access is logged.");
+    onDone();
+  } catch {
+    toast.error("That value could not be copied.");
+  }
+}
+
 function CopyValueButton({
   credentialId,
   copy,
@@ -620,21 +650,12 @@ function CopyValueButton({
     <Button
       variant="admin-secondary"
       size="admin-xs"
-      onClick={async () => {
-        const result = await copy(credentialId);
-        if (!result.ok) {
-          toast.error(result.message);
-          return;
-        }
-        try {
-          await navigator.clipboard.writeText(result.value);
+      onClick={() =>
+        copyValue(credentialId, copy, () => {
           setDone(true);
-          toast.success("Copied · access logged.");
           setTimeout(() => setDone(false), 1500);
-        } catch {
-          toast.error("That value could not be copied.");
-        }
-      }}
+        })
+      }
     >
       {done ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
       {done ? "Copied" : "Copy"}
@@ -643,14 +664,20 @@ function CopyValueButton({
 }
 
 function MainRow({
+  projectId,
   entry,
   onDialog,
   copy,
+  onDeleteAction,
 }: {
+  projectId: string;
   entry: MainEntryRow;
   onDialog: (dialog: Dialog) => void;
   copy: (id: string) => Promise<CopyResult>;
+  onDeleteAction: FormAction;
 }) {
+  const onCopy = () => copyValue(entry.credentialId, copy, () => undefined);
+
   return (
     <li className="flex items-center gap-3 border-b border-black/[0.05] px-3.5 py-2.5 last:border-b-0">
       <div className="min-w-0 flex-1">
@@ -704,17 +731,49 @@ function MainRow({
               <MoreHorizontal className="size-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-52">
-            <DropdownMenuLabel>{entry.key}</DropdownMenuLabel>
+          <DropdownMenuContent align="end" className="min-w-44">
             <DropdownMenuItem
-              onSelect={() => onDialog({ kind: "source", entry })}
+              onSelect={() =>
+                onDialog({
+                  kind: "edit",
+                  credentialId: entry.credentialId,
+                  key: entry.key,
+                  note: entry.note,
+                })
+              }
             >
-              <Move className="size-3.5" />
-              Change source…
+              <Pencil className="size-3.5" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => onCopy()}>
+              <Copy className="size-3.5" />
+              Copy
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => onDialog({ kind: "share", entry })}>
               <Share2 className="size-3.5" />
-              Share with a member…
+              Share
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => onDialog({ kind: "source", entry })}
+            >
+              <Replace className="size-3.5" />
+              Source
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              variant="destructive"
+              onSelect={() =>
+                onDialog({
+                  kind: "confirm",
+                  title: "Delete variable?",
+                  description: `${entry.key} is removed from main. The member copies it came from are untouched.`,
+                  confirm: "Delete",
+                  hidden: { projectId, credentialId: entry.credentialId },
+                  action: onDeleteAction,
+                })
+              }
+            >
+              <Trash2 className="size-3.5" />
+              Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -742,14 +801,7 @@ function VersionPane({
 
   return (
     <div>
-      <PaneHeader
-        title={canEdit ? "My version" : `${version.name}'s version`}
-        subtitle={
-          canEdit
-            ? "Your private working copy. Only you and project owners can see it."
-            : `Read-only. Pull values into main, or delete the version.`
-        }
-      >
+      <PaneHeader title={canEdit ? "My version" : `${version.name}'s version`}>
         {canEdit ? (
           <>
             <Button
@@ -766,7 +818,7 @@ function VersionPane({
               }
             >
               <Plus className="size-4" />
-              Add variable
+              <span className="button-fill-fx__label">Add variable</span>
             </Button>
             {firstGroup ? (
               <Button
@@ -816,17 +868,6 @@ function VersionPane({
           </Button>
         ) : null}
       </PaneHeader>
-
-      {canEdit ? (
-        <p className="mt-3.5 flex items-start gap-2.5 rounded-xl border border-gd-green-edge/22 bg-gd-green/[0.07] px-3.5 py-2.5 text-xs leading-relaxed text-gd-green-ink">
-          <Lock className="mt-0.5 size-3.5 shrink-0" />
-          <span>
-            <b className="font-semibold">Private to you.</b> Owners compare
-            everyone&apos;s versions and choose which value the shared main uses
-            — your copy is never edited for you.
-          </span>
-        </p>
-      ) : null}
 
       <div className="mt-4">
         {version.groups.length ? (
@@ -924,8 +965,7 @@ function GroupCard({
                   <MoreHorizontal className="size-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-52">
-                <DropdownMenuLabel>{group.name}</DropdownMenuLabel>
+              <DropdownMenuContent align="end" className="min-w-44">
                 <DropdownMenuItem
                   onSelect={() =>
                     onDialog({
@@ -937,7 +977,7 @@ function GroupCard({
                   }
                 >
                   <Upload className="size-3.5" />
-                  Upload .env to group
+                  Upload .env
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={() =>
@@ -945,9 +985,8 @@ function GroupCard({
                   }
                 >
                   <Pencil className="size-3.5" />
-                  Rename group
+                  Rename
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   variant="destructive"
                   onSelect={() =>
@@ -962,7 +1001,7 @@ function GroupCard({
                   }
                 >
                   <Trash2 className="size-3.5" />
-                  Delete group
+                  Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -1010,8 +1049,20 @@ function GroupCard({
                           <MoreHorizontal className="size-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="min-w-52">
-                        <DropdownMenuLabel>{variable.key}</DropdownMenuLabel>
+                      <DropdownMenuContent align="end" className="min-w-44">
+                        <DropdownMenuItem
+                          onSelect={() =>
+                            onDialog({
+                              kind: "edit",
+                              credentialId: variable.id,
+                              key: variable.key,
+                              note: variable.note,
+                            })
+                          }
+                        >
+                          <Pencil className="size-3.5" />
+                          Edit
+                        </DropdownMenuItem>
                         <DropdownMenuItem
                           disabled={version.groups.length < 2}
                           onSelect={() =>
@@ -1026,9 +1077,8 @@ function GroupCard({
                           }
                         >
                           <Move className="size-3.5" />
-                          Move to group…
+                          Move
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                           variant="destructive"
                           onSelect={() =>

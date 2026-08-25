@@ -142,3 +142,40 @@ export async function deleteMyGroup(
   refresh();
   return formSuccess("Group deleted.");
 }
+
+export async function shareMainEnv(
+  _state: SimpleFormState,
+  formData: FormData,
+): Promise<SimpleFormState> {
+  await requireRole(["owner"]);
+
+  const profileId = String(formData.get("profileId") ?? "");
+  const groupIds = formData
+    .getAll("groupId")
+    .map((value) => String(value))
+    .filter(isUuid);
+
+  if (!isUuid(profileId)) return formError("Choose who to share it with.");
+  if (!groupIds.length) return formError("Main has no group to share yet.");
+
+  const supabase = await createClient();
+
+  for (const groupId of groupIds) {
+    const { error } = await supabase.rpc("app_share_env_group", {
+      target_group_id: groupId,
+      target_profile_id: profileId,
+      new_access: "use",
+    });
+
+    if (error) {
+      return formError(
+        error.code === "42501" || error.code === "P0001"
+          ? error.message
+          : "Main could not be shared.",
+      );
+    }
+  }
+
+  refresh();
+  return formSuccess("Main shared.");
+}
