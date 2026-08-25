@@ -471,6 +471,7 @@ export function IdeaEditor({
   onChange,
   onAttach,
   attaching,
+  contentClassName,
   ref,
 }: {
   initialDoc: IdeaDoc;
@@ -479,6 +480,7 @@ export function IdeaEditor({
   onChange: (doc: unknown) => void;
   onAttach?: () => void;
   attaching?: boolean;
+  contentClassName?: string;
   ref?: Ref<IdeaEditorHandle>;
 }) {
   const [, setTick] = useState(0);
@@ -573,7 +575,9 @@ export function IdeaEditor({
       ) : null}
 
       <div className="idea-surface min-h-0 flex-1 overflow-y-auto py-4 pr-6 pl-3 sm:pr-8 sm:pl-4">
-        <EditorContent editor={editor} />
+        <div className={contentClassName}>
+          <EditorContent editor={editor} />
+        </div>
       </div>
 
       {editable ? (

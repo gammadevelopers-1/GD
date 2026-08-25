@@ -21,6 +21,7 @@ function readWeekFields(formData: FormData) {
     weekNumber: Number(String(formData.get("weekNumber") ?? "").trim()),
     startsOn: String(formData.get("startsOn") ?? "").trim(),
     dueOn: String(formData.get("dueOn") ?? "").trim(),
+    focus: String(formData.get("focus") ?? "").trim(),
   };
 }
 
@@ -64,6 +65,7 @@ export async function addMilestoneWeek(
       week_number: fields.weekNumber,
       starts_on: fields.startsOn || null,
       due_on: fields.dueOn,
+      focus: fields.focus.slice(0, 240) || null,
     })
     .select("id")
     .single();

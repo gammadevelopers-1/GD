@@ -4,9 +4,14 @@ import { WorkspaceSkeleton } from "@/components/admin/projects/workspace-skeleto
 import { requireRole } from "@/data/auth";
 import { getProjectCore, getProjectWeeks } from "@/data/project-detail";
 import {
+  getWeekTranscripts,
+  signTranscriptMedia,
+} from "@/data/week-transcript";
+import {
   addMilestoneWeek,
   setMilestoneWeekArchived,
   setMilestoneWeekComplete,
+  setMilestoneWeekFocus,
 } from "../../../milestone-actions";
 import { uploadIdeaAttachment } from "../../../idea-actions";
 import {
@@ -18,6 +23,15 @@ import {
   setTaskDone,
   suggestWeekTasks,
 } from "../../../week-actions";
+import {
+  addTranscriptSource,
+  askAi,
+  removeTranscriptPoint,
+  organiseTranscriptPoints,
+  removeTranscriptSource,
+  saveTranscriptPoint,
+  sendPointToWorkBoard,
+} from "../../../transcript-actions";
 
 export default async function ProjectMilestonePage({
   params,
@@ -49,6 +63,14 @@ async function WorkspaceSection({ publicId }: { publicId: string }) {
   const canPlan = isOwner || viewer.id === project.leadId;
   const archived = project.isArchived;
 
+  const transcripts = await getWeekTranscripts(
+    plan.weeks.map((week) => week.id),
+    viewer,
+  );
+  const transcriptMedia = await signTranscriptMedia(
+    Object.values(transcripts).flat(),
+  );
+
   return (
     <WeekPlan
       projectId={project.id}
@@ -66,6 +88,7 @@ async function WorkspaceSection({ publicId }: { publicId: string }) {
       setComplete={setMilestoneWeekComplete}
       addWeek={addMilestoneWeek}
       archiveWeek={setMilestoneWeekArchived}
+      setFocus={setMilestoneWeekFocus}
       saveIdeaBoard={saveWeekIdeaBoard}
       upload={uploadIdeaAttachment}
       workActions={{
@@ -73,6 +96,17 @@ async function WorkspaceSection({ publicId }: { publicId: string }) {
         setTaskDone,
         suggest: suggestWeekTasks,
         accept: acceptWeekTasks,
+      }}
+      transcripts={transcripts}
+      transcriptMedia={transcriptMedia}
+      transcriptActions={{
+        addSource: addTranscriptSource,
+        ask: askAi,
+        sendToWork: sendPointToWorkBoard,
+        removeSource: removeTranscriptSource,
+        removePoint: removeTranscriptPoint,
+        savePoint: saveTranscriptPoint,
+        organise: organiseTranscriptPoints,
       }}
     />
   );

@@ -20,7 +20,7 @@ import { IDLE_FORM, type SimpleFormState } from "@/lib/projects/form-state";
 import {
   ENV_GROUP_NAME_MAX,
   type EnvPair,
-  describeDrafts,
+  isEnvKey,
   parseEnvBlob,
 } from "@/lib/projects/env";
 import { TONE_SOFT } from "@/lib/admin-ui";
@@ -415,30 +415,41 @@ export function UploadDialog({
   const [dragging, setDragging] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const nextId = useRef(0);
   useCloseOnSuccess(state, onClose);
 
   const known = new Set(existingKeys);
   const readable = pasted.trim() ? parseEnvBlob(pasted).pairs.length : 0;
   const conflicts = new Set(
-    drafts.map((draft) => draft.key).filter((key) => known.has(key)),
+    drafts
+      .map((draft) => draft.key.trim())
+      .filter((key) => key && known.has(key)),
   );
 
-  const chosen = drafts.filter(
+  const touched = drafts.filter((draft) => draft.key.trim() || draft.value);
+  const broken = touched.filter(
+    (draft) => draft.include && (!isEnvKey(draft.key.trim()) || !draft.value),
+  );
+  const chosen = touched.filter(
     (draft) =>
       draft.include &&
       draft.value &&
-      (!conflicts.has(draft.key) || draft.replace),
+      isEnvKey(draft.key.trim()) &&
+      (!conflicts.has(draft.key.trim()) || draft.replace),
   );
+  const held = touched.filter(
+    (draft) =>
+      draft.include && conflicts.has(draft.key.trim()) && !draft.replace,
+  ).length;
 
-  const summary = describeDrafts(
-    drafts.map((draft) => ({
-      key: draft.key,
-      value: draft.value,
-      note: "",
-      include: draft.include,
-      conflict: conflicts.has(draft.key),
-    })),
-  );
+  const summary = broken.length
+    ? `${broken.length} ${broken.length === 1 ? "row needs" : "rows need"} a key and a value`
+    : [
+        `${chosen.length} ready to save`,
+        held ? `${held} kept as they are` : null,
+      ]
+        .filter(Boolean)
+        .join(" · ");
 
   function absorb(text: string, source: string) {
     const { pairs, skipped } = parseEnvBlob(text);
@@ -446,21 +457,44 @@ export function UploadDialog({
       setNote(`Nothing readable in ${source}.`);
       return;
     }
-    setDrafts(
-      pairs.map((pair, index) => ({
-        id: index,
+
+    const already = new Set(
+      drafts.map((draft) => draft.key.trim()).filter(Boolean),
+    );
+    const fresh = pairs.filter((pair) => !already.has(pair.key));
+    const seed = nextId.current;
+    nextId.current += fresh.length;
+
+    setDrafts((current) => [
+      ...current.filter((draft) => draft.key.trim() || draft.value),
+      ...fresh.map((pair, index) => ({
+        id: seed + index,
         key: pair.key,
         value: pair.value,
         include: true,
         replace: false,
       })),
-    );
+    ]);
     setReveal(null);
-    setNote(
+
+    const notes = [
       skipped.length
         ? `${skipped.length} line${skipped.length === 1 ? "" : "s"} in ${source} could not be read.`
         : null,
-    );
+      pairs.length - fresh.length
+        ? `${pairs.length - fresh.length} already on this list.`
+        : null,
+    ].filter(Boolean);
+    setNote(notes.length ? notes.join(" ") : null);
+  }
+
+  function addRow() {
+    const id = nextId.current++;
+    setDrafts((current) => [
+      ...current,
+      { id, key: "", value: "", include: true, replace: false },
+    ]);
+    setReveal(id);
   }
 
   async function readFile(file: File | undefined) {
@@ -487,10 +521,20 @@ export function UploadDialog({
       title="Import environment variables"
       onClose={onClose}
     >
+      <input
+        ref={fileInput}
+        type="file"
+        className="sr-only"
+        onChange={(event) => {
+          void readFile(event.target.files?.[0]);
+          event.target.value = "";
+        }}
+      />
+
       {!drafts.length ? (
         <div className="space-y-3">
           <div className="grid gap-3 md:grid-cols-2">
-            <div className="flex min-h-80 min-w-0 flex-col rounded-2xl border border-black/[0.08] bg-white p-3.5 transition-colors duration-150 focus-within:border-gd-green/60">
+            <div className="focus-within:border-gd-green/60 flex min-h-80 min-w-0 flex-col rounded-2xl border border-black/[0.08] bg-white p-3.5 transition-colors duration-150">
               <span className="font-mono text-[9px] tracking-[0.12em] text-black/40 uppercase">
                 Paste
               </span>
@@ -554,15 +598,6 @@ export function UploadDialog({
               <p className="mt-2.5 font-mono text-[9.5px] tracking-[0.1em] text-black/35 uppercase">
                 Any file, up to 1 MB
               </p>
-              <input
-                ref={fileInput}
-                type="file"
-                className="sr-only"
-                onChange={(event) => {
-                  void readFile(event.target.files?.[0]);
-                  event.target.value = "";
-                }}
-              />
             </div>
           </div>
 
@@ -617,7 +652,10 @@ export function UploadDialog({
           >
             <ul className="divide-y divide-black/[0.06]">
               {drafts.map((draft) => {
-                const clash = conflicts.has(draft.key);
+                const key = draft.key.trim();
+                const clash = conflicts.has(key);
+                const badKey = Boolean(key) && !isEnvKey(key);
+                const noValue = Boolean(key) && !draft.value;
                 return (
                   <li key={draft.id} className="space-y-2 px-3 py-2.5">
                     <div className="flex flex-wrap items-center gap-x-2.5 gap-y-2">
@@ -626,18 +664,27 @@ export function UploadDialog({
                         onCheckedChange={(next) =>
                           update(draft.id, { include: next === true })
                         }
-                        aria-label={`Include ${draft.key}`}
+                        aria-label={`Include ${key || "this row"}`}
                         className="data-checked:border-gd-green-edge data-checked:bg-gd-green-edge shrink-0 border-black/20 data-checked:text-white"
                       />
-                      <code
+                      <Input
+                        variant="admin-sm"
+                        value={draft.key}
+                        onChange={(event) =>
+                          update(draft.id, { key: event.target.value })
+                        }
+                        spellCheck={false}
+                        autoComplete="off"
+                        aria-label="Key"
+                        aria-invalid={badKey || undefined}
+                        placeholder="CLIENT_KEY"
                         className={cn(
-                          "min-w-0 flex-1 truncate font-mono text-xs",
-                          draft.include ? "text-black/75" : "text-black/30",
+                          "h-8 min-w-0 flex-1 font-mono",
+                          draft.include ? "text-black/80" : "text-black/35",
+                          badKey && "border-red-400 focus:border-red-500",
                         )}
-                      >
-                        {draft.key}
-                      </code>
-                      <div className="w-full pl-6.5 sm:w-56 sm:pl-0">
+                      />
+                      <div className="w-full pl-6.5 sm:w-72 sm:pl-0">
                         <PasswordInput
                           variant="admin-sm"
                           toggleSize="sm"
@@ -652,7 +699,8 @@ export function UploadDialog({
                           }
                           autoComplete="off"
                           spellCheck={false}
-                          aria-label={`Value for ${draft.key}`}
+                          aria-label="Value"
+                          placeholder="Enter a value"
                           className="h-8 w-full font-mono"
                         />
                       </div>
@@ -661,7 +709,7 @@ export function UploadDialog({
                         variant="admin-icon-danger"
                         size="none"
                         className="shrink-0"
-                        aria-label={`Remove ${draft.key}`}
+                        aria-label={`Remove ${key || "this row"}`}
                         onClick={() =>
                           setDrafts((current) =>
                             current.filter((row) => row.id !== draft.id),
@@ -672,7 +720,17 @@ export function UploadDialog({
                       </Button>
                     </div>
 
-                    {clash && draft.include ? (
+                    {badKey && draft.include ? (
+                      <p className="pl-6.5 text-[11px] text-red-700">
+                        Letters, numbers and underscores only.
+                      </p>
+                    ) : noValue && draft.include ? (
+                      <p className="pl-6.5 text-[11px] text-amber-800">
+                        Needs a value.
+                      </p>
+                    ) : null}
+
+                    {clash && draft.include && !badKey ? (
                       <div className="flex flex-wrap items-center gap-2 pl-6.5 text-[11px]">
                         <span className="text-amber-800">
                           Already in this group.
@@ -715,12 +773,35 @@ export function UploadDialog({
             </ul>
           </ScrollArea>
 
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="admin-dashed"
+              size="none"
+              className="min-w-0 flex-1 py-2.5 text-xs"
+              onClick={addRow}
+            >
+              <Plus className="size-3.5" />
+              Add another variable
+            </Button>
+            <Button
+              type="button"
+              variant="admin-secondary"
+              size="admin"
+              className="text-xs"
+              onClick={() => fileInput.current?.click()}
+            >
+              <FileUp className="size-3.5" />
+              Add from a file
+            </Button>
+          </div>
+
           {note ? <p className="text-xs text-black/50">{note}</p> : null}
 
           <Problem state={state} />
           <Footer
             pending={pending}
-            disabled={!chosen.length}
+            disabled={!chosen.length || broken.length > 0}
             submit={
               chosen.length === 1
                 ? "Save 1 variable"

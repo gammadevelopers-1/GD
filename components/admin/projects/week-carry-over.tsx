@@ -5,6 +5,7 @@ import { CornerDownRight, Loader2, X } from "lucide-react";
 import type { CarryOver } from "@/lib/projects/carry-over";
 import type { SimpleFormState } from "@/lib/projects/form-state";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function WeekCarryOver({
   items,
@@ -23,8 +24,8 @@ export function WeekCarryOver({
 
   if (!items.length) return null;
 
-  return (
-    <ul className="mb-2 space-y-1">
+  const rows = (
+    <ul className="space-y-1">
       {items.map((item) => (
         <li
           key={item.cardId}
@@ -84,5 +85,22 @@ export function WeekCarryOver({
         </li>
       ))}
     </ul>
+  );
+
+  return (
+    <div className="mb-2">
+      <p className="mb-1.5 font-mono text-[9px] tracking-[0.14em] text-amber-800/70 uppercase">
+        {items.length === 1
+          ? "1 still open from an earlier week"
+          : `${items.length} still open from earlier weeks`}
+      </p>
+      {items.length > 6 ? (
+        <ScrollArea className="pr-2" viewportClassName="max-h-56">
+          {rows}
+        </ScrollArea>
+      ) : (
+        rows
+      )}
+    </div>
   );
 }

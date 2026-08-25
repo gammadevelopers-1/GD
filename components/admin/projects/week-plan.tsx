@@ -11,6 +11,7 @@ import {
   Check,
   ChevronRight,
   Loader2,
+  Pencil,
   Plus,
   Trash2,
   TriangleAlert,
@@ -19,6 +20,11 @@ import {
   type UploadResult,
   WeekIdeaBoard,
 } from "@/components/admin/projects/week-idea-board";
+import {
+  TranscriptPanel,
+  type TranscriptActions,
+} from "@/components/admin/projects/transcript-panel";
+import type { WeekTranscript } from "@/lib/projects/transcript";
 import {
   WeekWorkBoard,
   type WorkBoardActions,
@@ -42,6 +48,7 @@ import { TONE_SOFT, TONE_SOLID } from "@/lib/admin-ui";
 import type { SimpleFormState } from "@/lib/projects/form-state";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function WeekPlan({
   projectId,
@@ -60,8 +67,12 @@ export function WeekPlan({
   addWeek,
   archiveWeek,
   saveIdeaBoard,
+  setFocus,
   upload,
   workActions,
+  transcripts,
+  transcriptMedia,
+  transcriptActions,
 }: {
   projectId: string;
   weeks: MilestoneWeek[];
@@ -88,8 +99,12 @@ export function WeekPlan({
   ) => Promise<SimpleFormState & { weekId?: string }>;
   archiveWeek: (formData: FormData) => Promise<void>;
   saveIdeaBoard: (weekId: string, doc: string) => Promise<SimpleFormState>;
+  setFocus: (weekId: string, focus: string) => Promise<SimpleFormState>;
   upload: (state: UploadResult, formData: FormData) => Promise<UploadResult>;
   workActions: WorkBoardActions;
+  transcripts: Record<string, WeekTranscript[]>;
+  transcriptMedia: Record<string, string>;
+  transcriptActions: TranscriptActions;
 }) {
   const storageKey = `gd:week-open:${projectId}`;
   const stored = useStoredWeek(storageKey);
@@ -190,8 +205,12 @@ export function WeekPlan({
               dismissCarry={dismissCarry}
               archiveWeek={archiveWeek}
               saveIdeaBoard={saveIdeaBoard}
+              setFocus={setFocus}
               upload={upload}
               projectId={projectId}
+              transcripts={transcripts[week.id] ?? []}
+              transcriptMedia={transcriptMedia}
+              transcriptActions={transcriptActions}
             />
           ))}
         </div>
@@ -284,7 +303,11 @@ function WeekRow({
   dismissCarry,
   archiveWeek,
   saveIdeaBoard,
+  setFocus,
   upload,
+  transcripts,
+  transcriptMedia,
+  transcriptActions,
 }: {
   projectId: string;
   week: MilestoneWeek;
@@ -311,7 +334,11 @@ function WeekRow({
   ) => Promise<SimpleFormState>;
   archiveWeek: (formData: FormData) => Promise<void>;
   saveIdeaBoard: (weekId: string, doc: string) => Promise<SimpleFormState>;
+  setFocus: (weekId: string, focus: string) => Promise<SimpleFormState>;
   upload: (state: UploadResult, formData: FormData) => Promise<UploadResult>;
+  transcripts: WeekTranscript[];
+  transcriptMedia: Record<string, string>;
+  transcriptActions: TranscriptActions;
 }) {
   const [workOpen, setWorkOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -365,13 +392,20 @@ function WeekRow({
             )}
           />
 
-          <span
-            className={cn(
-              "font-display shrink-0 text-[15px] font-semibold tracking-[-0.02em]",
-              complete ? "text-black/55" : "text-black/85",
-            )}
-          >
-            Week {week.number}
+          <span className="flex min-w-0 shrink-0 items-baseline gap-2">
+            <span
+              className={cn(
+                "font-display truncate text-[15px] font-semibold tracking-[-0.02em]",
+                complete ? "text-black/55" : "text-black/85",
+              )}
+            >
+              {week.focus ?? `Week ${week.number}`}
+            </span>
+            {week.focus ? (
+              <span className="shrink-0 font-mono text-[10px] text-black/40">
+                W{week.number}
+              </span>
+            ) : null}
           </span>
 
           <span className="hidden shrink-0 text-[12px] text-black/60 sm:inline">
@@ -439,6 +473,8 @@ function WeekRow({
             </span>
           </Button>
         ) : null}
+
+        {canPlan ? <RenameWeek week={week} setFocus={setFocus} /> : null}
 
         {isOwner ? (
           <>
@@ -558,6 +594,16 @@ function WeekRow({
             onExpandedChange={onBoardExpandedChange}
             onOpenWork={() => setWorkOpen(true)}
             save={saveIdeaBoard}
+            transcript={
+              <TranscriptPanel
+                projectId={projectId}
+                weekId={week.id}
+                transcripts={transcripts}
+                media={transcriptMedia}
+                canEdit={canWrite}
+                actions={transcriptActions}
+              />
+            }
             workBoard={
               <WeekWorkBoard
                 projectId={projectId}
@@ -576,6 +622,9 @@ function WeekRow({
                 open={workOpen}
                 onClose={() => setWorkOpen(false)}
                 actions={workActions}
+                transcripts={transcripts}
+                transcriptActions={transcriptActions}
+                canEditPoints={canWrite}
               />
             }
           />
@@ -600,100 +649,256 @@ function AddWeek({
   onAdded: (weekId: string) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [named, setNamed] = useState(false);
+  const [name, setName] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
+  const number = nextWeekNumber(weeks);
   const last = weeks[weeks.length - 1];
   const startsOn = last
     ? addDays(last.dueOn, 1)
     : new Date().toISOString().slice(0, 10);
+
+  function close() {
+    setOpen(false);
+    setNamed(false);
+    setName("");
+    setMessage(null);
+  }
 
   function submit(formData: FormData) {
     setMessage(null);
     startTransition(async () => {
       const result = await action({ status: "idle", message: null }, formData);
       if (result.status === "error") {
-        setMessage(result.message);
+        setMessage(result.message ?? "The week could not be added.");
         return;
       }
-      setOpen(false);
+      close();
       if (result.weekId) onAdded(result.weekId);
     });
   }
 
   return (
-    <div className="relative ml-auto">
+    <>
       <Button
         variant="bare"
         size="none"
         type="button"
-        onClick={() => setOpen((value) => !value)}
-        aria-expanded={open}
-        className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-black/[0.09] bg-white px-2 text-[11px] font-medium text-black/60 transition hover:border-black/25 hover:text-black"
+        onClick={() => setOpen(true)}
+        className="ml-auto inline-flex h-7 items-center gap-1.5 rounded-lg border border-black/[0.09] bg-white px-2 text-[11px] font-medium text-black/60 transition hover:border-black/25 hover:text-black"
       >
         <Plus className="size-3" />
         Add week
       </Button>
 
-      {open ? (
-        <form
-          action={submit}
-          className="absolute top-full right-0 z-40 mt-2 w-64 rounded-xl border border-black/[0.09] bg-white p-3 shadow-[0_16px_40px_rgba(20,23,26,0.16)]"
-        >
+      <Modal open={open} onClose={close} title="Add a week">
+        <form action={submit}>
           <input type="hidden" name="projectId" value={projectId} />
-          <input
-            type="hidden"
-            name="weekNumber"
-            value={nextWeekNumber(weeks)}
-          />
-          <p className="text-[11px] font-semibold">
-            Week {nextWeekNumber(weeks)}
-          </p>
-          <label className="mt-2 block text-[10px] text-black/60">
-            Starts
-            <FormDatePicker
-              name="startsOn"
-              defaultValue={startsOn}
-              triggerClassName="mt-1 h-auto w-full rounded-lg border border-black/[0.12] px-2 py-1 text-[11px] outline-none focus-visible:border-black/35 focus-visible:ring-0"
-            />
-          </label>
-          <label className="mt-2 block text-[10px] text-black/60">
-            Due
-            <FormDatePicker
-              name="dueOn"
-              required
-              defaultValue={addDays(startsOn, 6)}
-              triggerClassName="mt-1 h-auto w-full rounded-lg border border-black/[0.12] px-2 py-1 text-[11px] outline-none focus-visible:border-black/35 focus-visible:ring-0"
-            />
-          </label>
+          <input type="hidden" name="weekNumber" value={number} />
+          <input type="hidden" name="focus" value={named ? name.trim() : ""} />
+
+          <div className="space-y-1.5">
+            <span className="text-xs font-medium text-black/70">Name</span>
+            <div className="inline-flex gap-0.5 rounded-xl bg-black/[0.05] p-0.75">
+              <Button
+                variant="bare"
+                size="none"
+                type="button"
+                onClick={() => setNamed(false)}
+                aria-pressed={!named}
+                className={cn(
+                  "rounded-[10px] px-3 py-1.5 text-xs font-medium transition",
+                  named
+                    ? "text-black/55 hover:text-black"
+                    : "bg-white text-black shadow-[0_1px_2px_rgba(20,23,26,0.12)]",
+                )}
+              >
+                Week {number}
+              </Button>
+              <Button
+                variant="bare"
+                size="none"
+                type="button"
+                onClick={() => setNamed(true)}
+                aria-pressed={named}
+                className={cn(
+                  "rounded-[10px] px-3 py-1.5 text-xs font-medium transition",
+                  named
+                    ? "bg-white text-black shadow-[0_1px_2px_rgba(20,23,26,0.12)]"
+                    : "text-black/55 hover:text-black",
+                )}
+              >
+                Custom name
+              </Button>
+            </div>
+            {named ? (
+              <Input
+                variant="admin"
+                autoFocus
+                maxLength={240}
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="Discovery and planning"
+                className="mt-1.5 h-9 text-sm"
+              />
+            ) : null}
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <label className="block space-y-1.5">
+              <span className="text-xs font-medium text-black/70">Starts</span>
+              <FormDatePicker
+                name="startsOn"
+                defaultValue={startsOn}
+                triggerClassName="h-9 w-full rounded-xl border border-black/[0.09] bg-white px-3 text-sm"
+              />
+            </label>
+            <label className="block space-y-1.5">
+              <span className="text-xs font-medium text-black/70">Ends</span>
+              <FormDatePicker
+                name="dueOn"
+                required
+                defaultValue={addDays(startsOn, 6)}
+                triggerClassName="h-9 w-full rounded-xl border border-black/[0.09] bg-white px-3 text-sm"
+              />
+            </label>
+          </div>
+
           {message ? (
-            <p role="alert" className="mt-2 text-[11px] text-red-600">
+            <p role="alert" className="mt-3 text-xs text-red-700">
               {message}
             </p>
           ) : null}
-          <div className="mt-3 flex gap-1.5">
+
+          <div className="mt-5 flex items-center justify-end gap-2">
             <Button
-              variant="bare"
-              size="none"
-              type="submit"
-              disabled={pending}
-              className="bg-gd-panel-dark inline-flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-semibold text-white transition hover:bg-black disabled:opacity-60"
-            >
-              {pending ? <Loader2 className="size-3 animate-spin" /> : null}
-              Add
-            </Button>
-            <Button
-              variant="bare"
-              size="none"
+              variant="admin-ghost"
+              size="admin"
               type="button"
-              onClick={() => setOpen(false)}
-              className="inline-flex h-7 items-center rounded-lg px-2 text-[11px] font-medium text-black/60 transition hover:text-black"
+              onClick={close}
             >
               Cancel
             </Button>
+            <Button
+              variant="admin-cta"
+              size="admin"
+              type="submit"
+              disabled={pending}
+              data-button-fill
+            >
+              {pending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Plus className="size-4" />
+              )}
+              <span className="button-fill-fx__label">Add week</span>
+            </Button>
           </div>
         </form>
-      ) : null}
-    </div>
+      </Modal>
+    </>
+  );
+}
+
+function RenameWeek({
+  week,
+  setFocus,
+}: {
+  week: MilestoneWeek;
+  setFocus: (weekId: string, focus: string) => Promise<SimpleFormState>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState(week.focus ?? "");
+  const [message, setMessage] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function save() {
+    setMessage(null);
+    startTransition(async () => {
+      const result = await setFocus(week.id, name.trim());
+      if (result.status === "error") {
+        setMessage(result.message ?? "That name was not saved.");
+        return;
+      }
+      setOpen(false);
+    });
+  }
+
+  return (
+    <>
+      <Button
+        variant="bare"
+        size="none"
+        type="button"
+        onClick={() => {
+          setName(week.focus ?? "");
+          setMessage(null);
+          setOpen(true);
+        }}
+        title={`Rename Week ${week.number}`}
+        aria-label={`Rename Week ${week.number}`}
+        className="grid size-7 shrink-0 place-items-center rounded-lg text-black/40 transition hover:bg-black/[0.05] hover:text-black"
+      >
+        <Pencil className="size-3.5" />
+      </Button>
+
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title={`Rename Week ${week.number}`}
+      >
+        <label className="block space-y-1.5">
+          <span className="text-xs font-medium text-black/70">Name</span>
+          <Input
+            variant="admin"
+            autoFocus
+            maxLength={240}
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key !== "Enter") return;
+              event.preventDefault();
+              save();
+            }}
+            placeholder={`Week ${week.number}`}
+            className="h-9 text-sm"
+          />
+        </label>
+
+        {message ? (
+          <p role="alert" className="mt-3 text-xs text-red-700">
+            {message}
+          </p>
+        ) : null}
+
+        <div className="mt-5 flex items-center justify-end gap-2">
+          <Button
+            variant="admin-ghost"
+            size="admin"
+            type="button"
+            onClick={() => setOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="admin-cta"
+            size="admin"
+            type="button"
+            onClick={save}
+            disabled={pending}
+            data-button-fill
+          >
+            {pending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Check className="size-4" />
+            )}
+            <span className="button-fill-fx__label">Save name</span>
+          </Button>
+        </div>
+      </Modal>
+    </>
   );
 }

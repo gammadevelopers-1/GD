@@ -1,12 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import {
+  useActionState,
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import {
   AlertTriangle,
   ArrowLeft,
   Check,
   FilePlus2,
   FileText,
+  ListChecks,
+  MessagesSquare,
   Loader2,
   Plus,
   Sparkles,
@@ -25,8 +33,17 @@ import {
   type UploadAction,
   useAttachment,
 } from "@/components/admin/projects/use-attachment";
-import type { SimpleFormState } from "@/lib/projects/form-state";
+import { IDLE_FORM, type SimpleFormState } from "@/lib/projects/form-state";
+import { TONE_SOFT } from "@/lib/admin-ui";
 import type { MilestoneCard } from "@/data/project-detail";
+import {
+  type TranscriptPoint,
+  type WeekTranscript,
+} from "@/lib/projects/transcript";
+import {
+  PointSheet,
+  type TranscriptActions,
+} from "@/components/admin/projects/transcript-panel";
 import { formatDate } from "@/lib/projects/format";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -86,6 +103,9 @@ export function WeekWorkBoard({
   onTaskDone,
   upload,
   actions,
+  transcripts,
+  transcriptActions,
+  canEditPoints,
 }: {
   projectId: string;
   weekId: string;
@@ -101,7 +121,15 @@ export function WeekWorkBoard({
   onTaskDone: (cardId: string, done: boolean) => void;
   upload: UploadAction;
   actions: WorkBoardActions;
+  transcripts: WeekTranscript[];
+  transcriptActions: TranscriptActions;
+  canEditPoints: boolean;
 }) {
+  const [tab, setTab] = useState<"tasks" | "points">("tasks");
+  const [openPoint, setOpenPoint] = useState<TranscriptPoint | null>(null);
+  const [organising, startOrganise] = useTransition();
+  const points = transcripts.flatMap((transcript) => transcript.points);
+
   const [editing, setEditing] = useState<MilestoneCard | "new" | null>(null);
   const [proposals, setProposals] = useState<ProposedTask[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -127,6 +155,18 @@ export function WeekWorkBoard({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, editing, proposals, onClose]);
 
+  function organisePoints() {
+    setError(null);
+    const data = new FormData();
+    data.set("weekId", weekId);
+    startOrganise(async () => {
+      const result = await transcriptActions.organise(IDLE_FORM, data);
+      if (result.status === "error") {
+        setError(result.message ?? "The points could not be organised.");
+      }
+    });
+  }
+
   function suggest() {
     setError(null);
     startBusy(async () => {
@@ -145,17 +185,22 @@ export function WeekWorkBoard({
         aria-hidden
         onClick={onClose}
         className={cn(
-          "absolute inset-0 z-20 bg-black/15 transition-opacity duration-200 ease-in-out supports-backdrop-filter:backdrop-blur-[1px] motion-reduce:transition-none",
+          "absolute inset-0 z-20 bg-black/12 transition-opacity duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none",
           open ? "opacity-100" : "pointer-events-none opacity-0",
         )}
       />
 
       <aside
+        id={`week-work-board-${weekId}`}
         inert={!open}
+        role="dialog"
+        aria-modal={open || undefined}
         aria-label={`Week ${weekNumber} work board`}
         className={cn(
-          "absolute inset-y-0 right-0 left-0 z-30 flex flex-col overflow-hidden rounded-l-xl border-l border-black/[0.09] bg-white shadow-[-18px_0_44px_rgba(20,23,26,0.16)] transition-transform duration-200 ease-in-out will-change-transform motion-reduce:transition-none sm:left-10",
-          open ? "translate-x-0" : "pointer-events-none translate-x-full",
+          "absolute inset-y-0 right-0 left-2 z-30 flex transform-gpu flex-col overflow-hidden rounded-l-2xl border-l border-black/[0.09] bg-white shadow-[-18px_0_50px_rgba(20,23,26,0.22)] transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform backface-hidden motion-reduce:transition-none sm:left-8 lg:left-12",
+          open
+            ? "translate-x-0"
+            : "pointer-events-none translate-x-[calc(100%+2rem)]",
         )}
       >
         <header className="bg-gd-panel-dark flex shrink-0 items-center gap-2 px-3 py-2 text-white">
@@ -180,36 +225,6 @@ export function WeekWorkBoard({
           </span>
         </header>
 
-        {canManage ? (
-          <div className="bg-gd-panel flex shrink-0 items-center gap-2 border-b border-black/[0.07] px-3 py-2">
-            <Button
-              variant="bare"
-              size="none"
-              type="button"
-              onClick={suggest}
-              disabled={busy || !hasNotes}
-              title={
-                hasNotes
-                  ? "Read the idea board and suggest tasks"
-                  : "Write something on the idea board first"
-              }
-              className="bg-gd-panel-dark text-brand inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-[11px] font-semibold transition hover:bg-black disabled:opacity-45"
-            >
-              {busy ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <Sparkles className="size-3.5" />
-              )}
-              Organize with AI
-            </Button>
-            {!hasNotes ? (
-              <span className="text-[10px] text-black/55">
-                Nothing on the idea board yet.
-              </span>
-            ) : null}
-          </div>
-        ) : null}
-
         {error ? (
           <p
             role="alert"
@@ -229,30 +244,96 @@ export function WeekWorkBoard({
           </p>
         ) : null}
 
+        <div className="bg-gd-panel flex shrink-0 items-center gap-1 border-b border-black/[0.07] px-3 py-1.5">
+          <BoardTab
+            on={tab === "tasks"}
+            icon={ListChecks}
+            label="Tasks"
+            count={`${tasks.filter((task) => task.status === "completed").length}/${tasks.length}`}
+            onClick={() => setTab("tasks")}
+          />
+          <BoardTab
+            on={tab === "points"}
+            icon={MessagesSquare}
+            label="Transcript"
+            count={String(points.length)}
+            onClick={() => setTab("points")}
+          />
+        </div>
+
         <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
-          {tasks.length ? (
-            <ul className="space-y-1">
-              {tasks.map((task) => (
-                <TaskRow
-                  key={task.id}
-                  task={task}
-                  hasDetail={hasDetail(task)}
-                  canTick={canTick}
-                  canManage={canManage}
-                  onOpen={() => setEditing(task)}
-                  onDone={onTaskDone}
-                  setDone={actions.setTaskDone}
+          {tab === "tasks" ? (
+            <>
+              {canManage ? (
+                <OrganiseBar
+                  busy={busy}
+                  disabled={busy || !hasNotes}
+                  title={
+                    hasNotes
+                      ? "Read the idea board and suggest tasks"
+                      : "Write something on the idea board first"
+                  }
+                  hint={hasNotes ? null : "Nothing on the idea board yet."}
+                  onClick={suggest}
                 />
-              ))}
-            </ul>
+              ) : null}
+
+              {tasks.length ? (
+                <ul className="space-y-1">
+                  {tasks.map((task) => (
+                    <TaskRow
+                      key={task.id}
+                      task={task}
+                      hasDetail={hasDetail(task)}
+                      canTick={canTick}
+                      canManage={canManage}
+                      onOpen={() => setEditing(task)}
+                      onDone={onTaskDone}
+                      setDone={actions.setTaskDone}
+                    />
+                  ))}
+                </ul>
+              ) : (
+                <p className="px-1 py-8 text-center text-[12px] text-black/55">
+                  No tasks yet.
+                </p>
+              )}
+            </>
           ) : (
-            <p className="px-1 py-8 text-center text-[12px] text-black/55">
-              No tasks yet.
-            </p>
+            <>
+              {canEditPoints && points.length > 1 ? (
+                <OrganiseBar
+                  busy={organising}
+                  disabled={organising}
+                  title="Reword, retag and reorder these points"
+                  hint={null}
+                  onClick={organisePoints}
+                />
+              ) : null}
+
+              {points.length ? (
+                <ul className="space-y-1">
+                  {points.map((point) => (
+                    <PointRow
+                      key={point.id}
+                      point={point}
+                      canCheck={canEditPoints}
+                      sendToWork={transcriptActions.sendToWork}
+                      onOpen={() => setOpenPoint(point)}
+                    />
+                  ))}
+                </ul>
+              ) : (
+                <p className="px-1 py-8 text-center text-[12px] leading-relaxed text-black/55">
+                  No transcript points yet. Give the assistant a file on the
+                  Idea Board and they show up here.
+                </p>
+              )}
+            </>
           )}
         </div>
 
-        {canManage ? (
+        {canManage && tab === "tasks" ? (
           <div className="bg-gd-panel shrink-0 border-t border-black/[0.07] px-3 py-2">
             <Button
               variant="bare"
@@ -280,6 +361,15 @@ export function WeekWorkBoard({
         />
       ) : null}
 
+      {openPoint ? (
+        <PointSheet
+          point={openPoint}
+          editable={canEditPoints}
+          save={transcriptActions.savePoint}
+          onClose={() => setOpenPoint(null)}
+        />
+      ) : null}
+
       {proposals ? (
         <ProposalReview
           projectId={projectId}
@@ -290,6 +380,224 @@ export function WeekWorkBoard({
         />
       ) : null}
     </>
+  );
+}
+
+function OrganiseBar({
+  busy,
+  disabled,
+  title,
+  hint,
+  onClick,
+}: {
+  busy: boolean;
+  disabled: boolean;
+  title: string;
+  hint: string | null;
+  onClick: () => void;
+}) {
+  return (
+    <div className="mb-2 flex items-center gap-2">
+      <Button
+        variant="bare"
+        size="none"
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        title={title}
+        className="bg-gd-panel-dark text-brand inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-[11px] font-semibold transition hover:bg-black disabled:opacity-45"
+      >
+        {busy ? (
+          <Loader2 className="size-3.5 animate-spin" />
+        ) : (
+          <Sparkles className="size-3.5" />
+        )}
+        Organize with AI
+      </Button>
+      {hint ? <span className="text-[10px] text-black/55">{hint}</span> : null}
+    </div>
+  );
+}
+
+function BoardTab({
+  on,
+  icon: Icon,
+  label,
+  count,
+  onClick,
+}: {
+  on: boolean;
+  icon: typeof ListChecks;
+  label: string;
+  count: string;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      variant="bare"
+      size="none"
+      type="button"
+      onClick={onClick}
+      aria-pressed={on}
+      className={cn(
+        "inline-flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-[11.5px] font-medium transition",
+        on
+          ? "bg-black/[0.07] text-black"
+          : "text-black/50 hover:bg-black/[0.04] hover:text-black",
+      )}
+    >
+      <Icon className="size-3.5" />
+      {label}
+      <span className="rounded-full bg-black/[0.06] px-1.5 font-mono text-[9px] text-black/55">
+        {count}
+      </span>
+    </Button>
+  );
+}
+
+function PointRow({
+  point,
+  canCheck,
+  sendToWork,
+  onOpen,
+}: {
+  point: TranscriptPoint;
+  canCheck: boolean;
+  sendToWork: TranscriptActions["sendToWork"];
+  onOpen: () => void;
+}) {
+  const [sendState, send, sending] = useActionState(sendToWork, IDLE_FORM);
+  const checked = Boolean(point.cardId) || sendState.status === "success";
+  const failed = sendState.status === "error";
+
+  return (
+    <li
+      className={cn(
+        BOARD_ROW,
+        failed ? "border-red-200 bg-red-50" : BOARD_ROW_IDLE,
+      )}
+    >
+      <Button
+        variant="bare"
+        size="none"
+        type="button"
+        onClick={onOpen}
+        aria-label={`Open details for ${point.body.slice(0, 60)}`}
+        className={BOARD_ROW_OPEN}
+      >
+        <span className="sr-only">
+          Open details for {point.body.slice(0, 60)}
+        </span>
+      </Button>
+
+      <form action={send} className="relative z-10 shrink-0">
+        <input type="hidden" name="pointId" value={point.id} />
+        <Button
+          variant="bare"
+          size="none"
+          type="submit"
+          disabled={!canCheck || checked || sending}
+          role="checkbox"
+          aria-checked={checked}
+          aria-label={
+            checked
+              ? `${point.body} is on the Work Board`
+              : `Add ${point.body} to the Work Board`
+          }
+          className={cn(
+            BOARD_ROW_CHECK,
+            checked
+              ? "border-gd-green bg-gd-green text-white disabled:opacity-100"
+              : "border-black/20 hover:border-black/45",
+          )}
+        >
+          {sending ? (
+            <Loader2 className="size-3 animate-spin" />
+          ) : checked ? (
+            <Check className="size-3" />
+          ) : null}
+        </Button>
+      </form>
+
+      <span
+        aria-hidden
+        className="pointer-events-none relative z-10 min-w-0 flex-1 truncate py-0.5 text-left text-[12.5px] font-medium text-black/80 transition group-hover:text-black"
+      >
+        {point.body}
+      </span>
+
+      {point.tag ? (
+        <span
+          className={cn(
+            "relative z-10 shrink-0 rounded-full border px-1.5 py-0.5 font-mono text-[8.5px] tracking-[0.08em] whitespace-nowrap uppercase",
+            TONE_SOFT.muted,
+          )}
+        >
+          {point.tag}
+        </span>
+      ) : null}
+
+      <BoardDetailButton hasDetail noun="point" onOpen={onOpen} />
+
+      {failed ? (
+        <span role="alert" className="shrink-0 text-[9px] text-red-600">
+          Not saved
+        </span>
+      ) : null}
+    </li>
+  );
+}
+
+const BOARD_ROW =
+  "group relative flex cursor-pointer items-center gap-2.5 rounded-xl border px-2.5 py-2 transition duration-150";
+
+const BOARD_ROW_IDLE =
+  "border-black/[0.07] bg-white focus-within:border-black/20 focus-within:shadow-[0_5px_14px_rgba(20,23,26,0.05)] hover:border-black/20 hover:bg-[#f8faf7] hover:shadow-[0_5px_14px_rgba(20,23,26,0.05)]";
+
+const BOARD_ROW_OPEN =
+  "focus-visible:ring-gd-green/45 absolute inset-0 z-0 cursor-pointer rounded-xl focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none";
+
+const BOARD_ROW_CHECK =
+  "focus-visible:ring-gd-green/40 relative z-10 grid size-5 shrink-0 cursor-pointer place-items-center rounded-md border bg-white transition focus-visible:ring-2 focus-visible:outline-none disabled:cursor-default disabled:opacity-40";
+
+const BOARD_ROW_DETAIL =
+  "relative z-10 grid size-8 shrink-0 cursor-pointer place-items-center rounded-lg border shadow-sm transition duration-150 active:scale-95";
+
+const BOARD_ROW_DETAIL_FILLED =
+  "border-gd-green/35 bg-gd-green/10 text-gd-green-ink group-hover:border-gd-green/45 hover:border-gd-green/60 hover:bg-gd-green/20";
+
+const BOARD_ROW_DETAIL_EMPTY =
+  "border-dashed border-black/30 bg-white text-black/60 group-hover:border-black/40 hover:border-black/55 hover:bg-black/[0.04] hover:text-black";
+
+function BoardDetailButton({
+  hasDetail,
+  noun,
+  onOpen,
+}: {
+  hasDetail: boolean;
+  noun: "point" | "task";
+  onOpen: () => void;
+}) {
+  return (
+    <Button
+      variant="bare"
+      size="none"
+      type="button"
+      tabIndex={-1}
+      aria-hidden
+      onClick={onOpen}
+      title={hasDetail ? `Open ${noun} details` : `Add ${noun} details`}
+      className={cn(
+        BOARD_ROW_DETAIL,
+        hasDetail ? BOARD_ROW_DETAIL_FILLED : BOARD_ROW_DETAIL_EMPTY,
+      )}
+    >
+      {hasDetail ? (
+        <FileText className="size-4" />
+      ) : (
+        <FilePlus2 className="size-4" />
+      )}
+    </Button>
   );
 }
 
@@ -330,10 +638,8 @@ function TaskRow({
   return (
     <li
       className={cn(
-        "group relative flex cursor-pointer items-center gap-2.5 rounded-xl border px-2.5 py-2 transition duration-150",
-        failed
-          ? "border-red-200 bg-red-50"
-          : "border-black/[0.07] bg-white focus-within:border-black/20 focus-within:shadow-[0_5px_14px_rgba(20,23,26,0.05)] hover:border-black/20 hover:bg-[#f8faf7] hover:shadow-[0_5px_14px_rgba(20,23,26,0.05)]",
+        BOARD_ROW,
+        failed ? "border-red-200 bg-red-50" : BOARD_ROW_IDLE,
       )}
     >
       <Button
@@ -342,7 +648,7 @@ function TaskRow({
         type="button"
         onClick={onOpen}
         aria-label={`${canManage ? "Edit" : "View"} details for ${task.title}`}
-        className="focus-visible:ring-gd-green/45 absolute inset-0 z-0 cursor-pointer rounded-xl focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:outline-none"
+        className={BOARD_ROW_OPEN}
       >
         <span className="sr-only">
           {canManage ? "Edit" : "View"} details for {task.title}
@@ -359,7 +665,7 @@ function TaskRow({
         aria-checked={done}
         aria-label={done ? `Untick ${task.title}` : `Tick ${task.title}`}
         className={cn(
-          "focus-visible:ring-gd-green/40 relative z-10 grid size-5 shrink-0 cursor-pointer place-items-center rounded-md border bg-white transition focus-visible:ring-2 focus-visible:outline-none disabled:cursor-default disabled:opacity-40",
+          BOARD_ROW_CHECK,
           done
             ? "border-gd-green bg-gd-green text-white"
             : "border-black/20 hover:border-black/45",
@@ -379,27 +685,7 @@ function TaskRow({
         {task.title}
       </span>
 
-      <Button
-        variant="bare"
-        size="none"
-        type="button"
-        tabIndex={-1}
-        aria-hidden
-        onClick={onOpen}
-        title={hasDetail ? "Open task details" : "Add task details"}
-        className={cn(
-          "relative z-10 grid size-8 shrink-0 cursor-pointer place-items-center rounded-lg border shadow-sm transition duration-150 active:scale-95",
-          hasDetail
-            ? "border-gd-green/35 bg-gd-green/10 text-gd-green-ink group-hover:border-gd-green/45 hover:border-gd-green/60 hover:bg-gd-green/20"
-            : "border-dashed border-black/30 bg-white text-black/60 group-hover:border-black/40 hover:border-black/55 hover:bg-black/[0.04] hover:text-black",
-        )}
-      >
-        {hasDetail ? (
-          <FileText className="size-4" />
-        ) : (
-          <FilePlus2 className="size-4" />
-        )}
-      </Button>
+      <BoardDetailButton hasDetail={hasDetail} noun="task" onOpen={onOpen} />
 
       {failed ? (
         <span role="alert" className="shrink-0 text-[9px] text-red-600">
@@ -529,8 +815,10 @@ function TaskEditor({
     <Dialog open onOpenChange={(nextOpen) => !nextOpen && onClose()}>
       <DialogContent
         showCloseButton={false}
-        overlayClassName="z-60 bg-black/35 supports-backdrop-filter:backdrop-blur-[2px]"
-        className="z-60 flex h-[min(84dvh,680px)] w-[calc(100%-1.5rem)] max-w-2xl flex-col gap-0 overflow-hidden rounded-2xl border border-white/10 bg-white p-0 shadow-[0_28px_80px_rgba(0,0,0,0.28)]"
+        onPointerDownOutside={(event) => event.preventDefault()}
+        onInteractOutside={(event) => event.preventDefault()}
+        overlayClassName="z-60 bg-black/45 supports-backdrop-filter:backdrop-blur-[3px]"
+        className="z-60 flex h-[min(90dvh,860px)] w-[calc(100%-1.5rem)] max-w-[min(calc(100vw-1.5rem),68rem)] flex-col gap-0 overflow-hidden rounded-2xl border border-white/10 bg-white p-0 shadow-[0_30px_80px_rgba(0,0,0,0.4)] sm:max-w-[min(calc(100vw-1.5rem),68rem)]"
       >
         <div className="bg-gd-panel-dark flex shrink-0 items-center gap-2 px-3 py-2 text-white">
           <Button
@@ -569,6 +857,7 @@ function TaskEditor({
             ref={editor}
             initialDoc={initial}
             editable={editable}
+            contentClassName="mx-auto w-full max-w-3xl"
             placeholder="First line is the task. Everything under it is the detail."
             onChange={(next) => {
               doc.current = next as IdeaDoc;
@@ -591,14 +880,24 @@ function TaskEditor({
             </span>
           )}
           {editable ? (
-            <Button
-              onClick={submit}
-              disabled={pending}
-              className="ml-auto text-[11px]"
-            >
-              {pending ? <Loader2 className="size-3 animate-spin" /> : null}
-              Save changes
-            </Button>
+            <div className="ml-auto flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={onClose}
+                disabled={pending}
+                className="text-[11px]"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={submit}
+                disabled={pending}
+                className="text-[11px]"
+              >
+                {pending ? <Loader2 className="size-3 animate-spin" /> : null}
+                Save changes
+              </Button>
+            </div>
           ) : (
             <Button
               variant="outline"

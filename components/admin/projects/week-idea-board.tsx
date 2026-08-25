@@ -45,6 +45,7 @@ export function WeekIdeaBoard({
   upload,
   onDocChange,
   workBoard,
+  transcript,
   editorRef,
 }: {
   projectId: string;
@@ -63,6 +64,7 @@ export function WeekIdeaBoard({
   upload: (state: UploadResult, formData: FormData) => Promise<UploadResult>;
   onDocChange?: (doc: IdeaDoc) => void;
   workBoard?: ReactNode;
+  transcript?: ReactNode;
   editorRef?: RefObject<IdeaEditorHandle | null>;
 }) {
   const own = useRef<IdeaEditorHandle>(null);
@@ -166,22 +168,27 @@ export function WeekIdeaBoard({
 
       <div
         inert={workOpen || undefined}
-        className="flex min-h-0 flex-1 flex-col"
-        onDrop={attach.onDrop}
-        onDragOver={attach.onDragOver}
+        className="flex min-h-0 flex-1 flex-col md:flex-row"
       >
-        <IdeaEditor
-          ref={editor}
-          initialDoc={initialDoc}
-          editable={canEdit}
-          placeholder="Notes, links, half-formed plans — anything for this week."
-          onChange={(next) => {
-            onDocChange?.(next as IdeaDoc);
-            board.onChange(next);
-          }}
-          onAttach={attach.open}
-          attaching={attach.uploading}
-        />
+        <div
+          className="flex min-h-0 min-w-0 flex-1 flex-col"
+          onDrop={attach.onDrop}
+          onDragOver={attach.onDragOver}
+        >
+          <IdeaEditor
+            ref={editor}
+            initialDoc={initialDoc}
+            editable={canEdit}
+            placeholder="Notes, links, half-formed plans — anything for this week."
+            onChange={(next) => {
+              onDocChange?.(next as IdeaDoc);
+              board.onChange(next);
+            }}
+            onAttach={attach.open}
+            attaching={attach.uploading}
+          />
+        </div>
+        {transcript}
       </div>
 
       <Button
@@ -190,10 +197,13 @@ export function WeekIdeaBoard({
         type="button"
         inert={workOpen || undefined}
         onClick={onOpenWork}
+        aria-expanded={workOpen}
+        aria-haspopup="dialog"
+        aria-controls={`week-work-board-${weekId}`}
         title="Open the Work Board"
-        className="group bg-gd-panel-dark focus-visible:ring-brand/60 absolute top-1/2 right-0 z-10 flex -translate-y-1/2 items-center gap-2 rounded-l-xl py-4 pr-2 pl-2 text-white shadow-[0_10px_30px_rgba(20,23,26,0.2)] transition hover:pr-3 focus-visible:ring-2 focus-visible:outline-none"
+        className="group bg-gd-panel-dark focus-visible:ring-brand/60 absolute top-1/2 right-0 z-10 flex w-12 -translate-y-1/2 flex-col items-center gap-2 rounded-l-xl py-4 text-white shadow-[0_10px_30px_rgba(20,23,26,0.2)] transition-[box-shadow,background-color] duration-200 hover:shadow-[0_14px_36px_rgba(20,23,26,0.24)] focus-visible:ring-2 focus-visible:outline-none motion-reduce:transition-none"
       >
-        <ChevronLeft className="text-brand size-3.5 shrink-0 transition group-hover:-translate-x-0.5" />
+        <ChevronLeft className="text-brand size-3.5 shrink-0 transition-transform duration-200 group-hover:-translate-x-0.5 motion-reduce:transition-none" />
         <span className="text-[11px] font-semibold tracking-[0.04em] [writing-mode:vertical-rl]">
           Work Board
         </span>

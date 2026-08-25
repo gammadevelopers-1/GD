@@ -389,9 +389,7 @@ function VersionChip({
     >
       {badge}
       {label}
-      <span className="font-mono text-[9px] text-black/40 tabular-nums">
-        {count}
-      </span>
+      
     </Button>
   );
 }
