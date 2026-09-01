@@ -8,6 +8,7 @@ import {
   FolderKanban,
   KeyRound,
   ListChecks,
+  ShieldAlert,
   Star,
 } from "lucide-react";
 import { markNotificationsRead } from "@/app/(admin)/notifications/actions";
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/popover";
 import type { Inbox, NotificationKind } from "@/data/notifications";
 import { timeAgo } from "@/lib/projects/format";
+import { useDesktopNotifications } from "@/lib/hooks/use-desktop-notifications";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -27,12 +29,15 @@ const ICONS: Record<NotificationKind, typeof Bell> = {
   project_lead: Star,
   week_planned: CalendarRange,
   task_assigned: ListChecks,
+  session_revoked: ShieldAlert,
 };
 
 export function NotificationBell({ inbox }: { inbox: Inbox }) {
   const [open, setOpen] = useState(false);
   const [, startReading] = useTransition();
   const [readHere, setReadHere] = useState<string[]>([]);
+
+  useDesktopNotifications(inbox.items[0]?.createdAt ?? null);
 
   const shown = useMemo(() => {
     const marked = new Set(readHere);

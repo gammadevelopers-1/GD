@@ -5,7 +5,7 @@ import { SettingsWorkspace } from "@/components/admin/profile/settings-panels";
 import { PanelSkeleton } from "@/components/admin/skeletons";
 import { requireViewer, type Viewer } from "@/data/auth";
 import { getMyProfile } from "@/data/profile";
-import { getMySessions } from "@/data/sessions";
+import { getAllSessions, getMySessions } from "@/data/sessions";
 
 export const metadata = { title: "Settings · Internal platform" };
 
@@ -23,13 +23,17 @@ export default async function SettingsPage() {
 }
 
 async function SettingsBody({ viewer }: { viewer: Viewer }) {
-  const [profile, sessions] = await Promise.all([
+  const isOwner = viewer.role === "owner";
+  const [profile, sessions, people] = await Promise.all([
     getMyProfile(viewer),
     getMySessions(),
+    isOwner ? getAllSessions() : null,
   ]);
   if (!profile) notFound();
 
-  return <SettingsWorkspace profile={profile} sessions={sessions} />;
+  return (
+    <SettingsWorkspace profile={profile} sessions={sessions} people={people} />
+  );
 }
 
 function SettingsSkeleton() {

@@ -9,7 +9,8 @@ export type NotificationKind =
   | "project_member"
   | "project_lead"
   | "week_planned"
-  | "task_assigned";
+  | "task_assigned"
+  | "session_revoked";
 
 export type Notification = {
   id: string;

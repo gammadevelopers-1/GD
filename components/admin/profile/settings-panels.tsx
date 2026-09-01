@@ -1,20 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState, useTransition } from "react";
+import {
+  useActionState,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from "react";
 import {
   Bell,
+  BellOff,
   Check,
+  ChevronRight,
+  ChevronsDownUp,
+  ChevronsUpDown,
   Loader2,
   LogOut,
   Monitor,
+  Search,
+  Send,
   ShieldCheck,
   Smartphone,
   Tablet,
   UserRound,
+  UsersRound,
 } from "lucide-react";
 import {
   changeMyPassword,
+  endEveryUserSession,
+  endUserSession,
   revokeSession,
   saveMyNotifications,
   signOutEverywhere,
@@ -28,17 +43,30 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { MyProfile } from "@/data/profile";
-import type { MySession } from "@/data/sessions";
+import type { MySession, PersonSessions } from "@/data/sessions";
 import { describeDevice } from "@/lib/sessions/user-agent";
-import { IDLE_FORM } from "@/lib/projects/form-state";
+import { IDLE_FORM, type SimpleFormState } from "@/lib/projects/form-state";
 import { PASSWORD_MIN, ROLE_LABELS } from "@/lib/team/records";
 import { formatDate, timeAgo } from "@/lib/projects/format";
 import {
   BUTTON_PRIMARY,
   BUTTON_SECONDARY,
+  FOCUS_RING,
   INPUT,
   TONE_SOFT,
 } from "@/lib/admin-ui";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { toast } from "@/components/ui/sonner";
+import {
+  askForPush,
+  type PushPermission,
+  showPush,
+  usePushPermission,
+} from "@/lib/hooks/use-desktop-notifications";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
@@ -46,7 +74,7 @@ const SECTIONS = [
   { value: "account", label: "Account", icon: UserRound },
   { value: "security", label: "Security", icon: ShieldCheck },
   { value: "notifications", label: "Notifications", icon: Bell },
-  { value: "sessions", label: "Sessions", icon: Monitor },
+  { value: "sessions", label: "My sessions", icon: Monitor },
 ] as const;
 
 const STRENGTH = [
@@ -102,9 +130,11 @@ function Panel({
 export function SettingsWorkspace({
   profile,
   sessions,
+  people,
 }: {
   profile: MyProfile;
   sessions: MySession[];
+  people: PersonSessions[] | null;
 }) {
   return (
     <Tabs orientation="vertical" defaultValue="account" className="gap-6">
@@ -126,6 +156,21 @@ export function SettingsWorkspace({
               {section.label}
             </TabsTrigger>
           ))}
+
+          {people ? (
+            <span className="mt-2.5 block border-t border-black/[0.08] pt-2.5">
+              <TabsTrigger
+                value="people"
+                className="data-[state=active]:bg-brand/10 data-[state=active]:text-gd-green-deep h-auto w-full justify-start gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-black/55 transition-colors duration-150 after:hidden hover:bg-black/[0.04] hover:text-black data-[state=active]:font-semibold"
+              >
+                <UsersRound className="size-3.75" />
+                User sessions
+                <span className="ml-auto rounded-full bg-black/[0.07] px-1.5 py-px font-mono text-[9px] text-black/55 tabular-nums">
+                  {people.length}
+                </span>
+              </TabsTrigger>
+            </span>
+          ) : null}
         </TabsList>
       </div>
 
@@ -142,6 +187,11 @@ export function SettingsWorkspace({
         <TabsContent value="sessions" className="max-w-[680px]">
           <SessionsPanel sessions={sessions} />
         </TabsContent>
+        {people ? (
+          <TabsContent value="people">
+            <UserSessionsPanel people={people} />
+          </TabsContent>
+        ) : null}
       </div>
     </Tabs>
   );
@@ -345,54 +395,58 @@ function NotificationsPanel({ profile }: { profile: MyProfile }) {
   ];
 
   return (
-    <Panel title="Email notifications">
-      <form action={action} className="space-y-3">
-        {rows.map((row) => (
-          <Label
-            key={row.name}
-            className="flex items-center gap-4 rounded-[13px] border border-black/[0.08] bg-white px-4 py-3 transition-colors duration-150 hover:border-black/20"
-          >
-            <span className="min-w-0 flex-1">
-              <span className="block text-[13.5px] font-semibold text-black/85">
-                {row.title}
+    <div className="space-y-4">
+      <BrowserPushPanel />
+
+      <Panel title="Email notifications">
+        <form action={action} className="space-y-3">
+          {rows.map((row) => (
+            <Label
+              key={row.name}
+              className="flex items-center gap-4 rounded-[13px] border border-black/[0.08] bg-white px-4 py-3 transition-colors duration-150 hover:border-black/20"
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13.5px] font-semibold text-black/85">
+                  {row.title}
+                </span>
+                <span className="mt-0.5 block text-[12px] font-normal text-black/50">
+                  {row.body}
+                </span>
               </span>
-              <span className="mt-0.5 block text-[12px] font-normal text-black/50">
-                {row.body}
-              </span>
-            </span>
-            <Switch
-              name={row.name}
-              defaultChecked={row.checked}
-              className="shrink-0"
-            />
-          </Label>
-        ))}
+              <Switch
+                name={row.name}
+                defaultChecked={row.checked}
+                className="shrink-0"
+              />
+            </Label>
+          ))}
 
-        {state.status === "error" && state.message ? (
-          <p role="alert" className="text-[12px] text-red-700">
-            {state.message}
-          </p>
-        ) : null}
-
-        <div className="flex items-center gap-3 pt-1">
-          <Button
-            type="submit"
-            disabled={pending}
-            className={cn(BUTTON_PRIMARY, "h-10")}
-          >
-            {pending ? <Loader2 className="size-4 animate-spin" /> : null}
-            Save preferences
-          </Button>
-
-          {state.status === "success" && state.message ? (
-            <span className="text-gd-green-ink flex items-center gap-1.5 text-[12px]">
-              <Check className="size-3.5" />
+          {state.status === "error" && state.message ? (
+            <p role="alert" className="text-[12px] text-red-700">
               {state.message}
-            </span>
+            </p>
           ) : null}
-        </div>
-      </form>
-    </Panel>
+
+          <div className="flex items-center gap-3 pt-1">
+            <Button
+              type="submit"
+              disabled={pending}
+              className={cn(BUTTON_PRIMARY, "h-10")}
+            >
+              {pending ? <Loader2 className="size-4 animate-spin" /> : null}
+              Save preferences
+            </Button>
+
+            {state.status === "success" && state.message ? (
+              <span className="text-gd-green-ink flex items-center gap-1.5 text-[12px]">
+                <Check className="size-3.5" />
+                {state.message}
+              </span>
+            ) : null}
+          </div>
+        </form>
+      </Panel>
+    </div>
   );
 }
 
@@ -513,6 +567,434 @@ function SessionsPanel({ sessions }: { sessions: MySession[] }) {
           onConfirm={() => startLeaving(() => signOutEverywhere())}
         />
       </div>
+    </Panel>
+  );
+}
+
+const PUSH_LABEL: Record<PushPermission, string> = {
+  granted: "On",
+  denied: "Blocked",
+  default: "Off",
+  unsupported: "Not supported",
+};
+
+const PUSH_TONE: Record<PushPermission, string> = {
+  granted: TONE_SOFT.ok,
+  denied: TONE_SOFT.danger,
+  default: TONE_SOFT.warning,
+  unsupported: TONE_SOFT.muted,
+};
+
+const PUSH_COPY: Record<PushPermission, string> = {
+  granted:
+    "Important events reach this device even when the tab is in the background — a task assigned to you, a milestone due, a device signed out.",
+  denied:
+    "This browser is blocking notifications for the site. Turn them back on in its site settings, then reload.",
+  default:
+    "Get a pop-up on this device for important events — a task assigned to you, a milestone due, a device signed out — even when the tab is behind something else.",
+  unsupported: "This browser cannot show desktop notifications.",
+};
+
+function BrowserPushPanel() {
+  const permission = usePushPermission();
+  const [asking, startAsking] = useTransition();
+
+  return (
+    <Panel title="Browser notifications">
+      <div
+        className={cn(
+          "flex items-start gap-3.5 rounded-[14px] border p-4",
+          permission === "granted"
+            ? "border-gd-green-edge/35 bg-brand/[0.06]"
+            : permission === "denied"
+              ? "border-red-700/20 bg-red-600/[0.03]"
+              : "border-black/10 bg-white",
+        )}
+      >
+        <span
+          className={cn(
+            "grid size-10.5 shrink-0 place-items-center rounded-xl",
+            permission === "denied"
+              ? "bg-red-700 text-white"
+              : "bg-gd-panel-dark text-brand",
+          )}
+        >
+          {permission === "denied" ? (
+            <BellOff className="size-5" />
+          ) : (
+            <Bell className="size-5" />
+          )}
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <p className="flex flex-wrap items-center gap-2 text-[13.5px] font-semibold text-black/85">
+            Desktop pop-ups
+            <Badge
+              variant="outline"
+              className={cn(
+                "rounded-full font-semibold",
+                PUSH_TONE[permission],
+              )}
+            >
+              {PUSH_LABEL[permission]}
+            </Badge>
+          </p>
+
+          <p className="mt-1 mb-3 max-w-[52ch] text-[12.5px] leading-[1.5] text-black/55">
+            {PUSH_COPY[permission]}
+          </p>
+
+          {permission === "granted" ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                const sent = showPush(
+                  "Test notification",
+                  "This is how an important event will reach you.",
+                );
+                if (!sent) {
+                  toast.error("The browser would not show it.");
+                }
+              }}
+              className={cn(BUTTON_SECONDARY, "h-9 px-3.5 text-xs")}
+            >
+              <Send className="size-3.5" />
+              Send a test
+            </Button>
+          ) : permission === "default" ? (
+            <Button
+              type="button"
+              disabled={asking}
+              onClick={() =>
+                startAsking(async () => {
+                  const result = await askForPush();
+                  if (result === "granted") {
+                    showPush(
+                      "Notifications on",
+                      "Important events will reach you here.",
+                    );
+                    toast.success("Browser notifications enabled.");
+                  } else if (result === "denied") {
+                    toast.error("This browser blocked notifications.");
+                  }
+                })
+              }
+              className={cn(BUTTON_PRIMARY, "h-9.5 px-3.5 text-xs")}
+            >
+              {asking ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Bell className="size-3.5" />
+              )}
+              Enable browser notifications
+            </Button>
+          ) : null}
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+function useActionToast(state: SimpleFormState) {
+  useEffect(() => {
+    if (!state.message) return;
+    if (state.status === "success") toast.success(state.message);
+    if (state.status === "error") toast.error(state.message);
+  }, [state]);
+}
+
+function PersonSessionRow({
+  session,
+  person,
+}: {
+  session: MySession;
+  person: PersonSessions;
+}) {
+  const [state, end, ending] = useActionState(endUserSession, IDLE_FORM);
+  useActionToast(state);
+
+  const device = describeDevice(session.device);
+
+  return (
+    <li
+      className={cn(
+        "flex items-center gap-3 rounded-xl border bg-white px-3.5 py-3 transition-colors duration-150",
+        session.current
+          ? "border-brand/45 bg-brand/[0.04]"
+          : "border-black/[0.07] hover:border-black/[0.14]",
+      )}
+    >
+      <span
+        className={cn(
+          "grid size-8 shrink-0 place-items-center rounded-lg",
+          session.current
+            ? "bg-brand/12 text-gd-green-deep"
+            : "bg-black/[0.05] text-black/45",
+        )}
+      >
+        <DeviceIcon kind={session.device.kind} />
+      </span>
+
+      <div className="min-w-0 flex-1">
+        <p className="flex flex-wrap items-center gap-2 text-[13px] font-semibold text-black/85">
+          {device}
+          {session.current ? (
+            <Badge
+              variant="outline"
+              className={cn("rounded-full font-semibold", TONE_SOFT.ok)}
+            >
+              This device
+            </Badge>
+          ) : null}
+        </p>
+        <p className="mt-0.5 font-mono text-[11px] text-black/42 tabular-nums">
+          {session.ip ?? "Address not recorded"} · signed in{" "}
+          {since(session.createdAt)} · active {since(session.lastSeenAt)}
+        </p>
+      </div>
+
+      {session.current ? null : (
+        <ConfirmAction
+          label={
+            <span className="inline-flex items-center gap-1.5">
+              <LogOut className="size-3.5" />
+              Sign out
+            </span>
+          }
+          confirmLabel="Sign out device"
+          question={`${person.name}'s ${device} stops working once its current access token expires, within the hour.`}
+          pending={ending}
+          className={cn(
+            BUTTON_SECONDARY,
+            "h-9 shrink-0 px-3 text-xs hover:border-red-700/40 hover:text-red-700",
+          )}
+          onConfirm={() => {
+            const data = new FormData();
+            data.set("sessionId", session.id);
+            end(data);
+          }}
+        />
+      )}
+    </li>
+  );
+}
+
+function PersonCard({
+  person,
+  open,
+  onOpenChange,
+}: {
+  person: PersonSessions;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const [state, endAll, ending] = useActionState(
+    endEveryUserSession,
+    IDLE_FORM,
+  );
+  useActionToast(state);
+
+  const count = person.sessions.length;
+  const newest = person.sessions[0];
+
+  return (
+    <Collapsible
+      open={open}
+      onOpenChange={onOpenChange}
+      className="overflow-hidden rounded-2xl border border-black/[0.08] bg-white"
+    >
+      <div
+        className={cn(
+          "flex items-center gap-3 bg-[#faf9f4] px-3.5 py-3",
+          open && "border-b border-black/[0.06]",
+        )}
+      >
+        <CollapsibleTrigger asChild>
+          <Button
+            variant="bare"
+            size="none"
+            type="button"
+            aria-label={`${open ? "Collapse" : "Expand"} ${person.name}`}
+            className={cn(
+              "grid size-6 shrink-0 place-items-center rounded-md text-black/45 transition duration-150 hover:bg-black/[0.06] hover:text-black",
+              FOCUS_RING,
+            )}
+          >
+            <ChevronRight
+              className={cn(
+                "size-4 transition-transform duration-200 motion-reduce:transition-none",
+                open && "rotate-90",
+              )}
+            />
+          </Button>
+        </CollapsibleTrigger>
+
+        <span className="bg-gd-panel-dark text-brand grid size-9.5 shrink-0 place-items-center rounded-xl font-mono text-[12px] font-semibold">
+          {person.initials}
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <p className="flex flex-wrap items-center gap-2 text-[14px] font-semibold tracking-[-0.01em] text-black/85">
+            {person.name}
+            <span
+              className={cn(
+                "rounded-full border px-1.5 py-px font-mono text-[8.5px] tracking-[0.1em] uppercase",
+                person.role === "owner" ? TONE_SOFT.ok : TONE_SOFT.muted,
+              )}
+            >
+              {ROLE_LABELS[person.role]}
+            </span>
+            {person.isYou ? (
+              <span
+                className={cn(
+                  "rounded-full border px-1.5 py-px font-mono text-[8.5px] tracking-[0.1em] uppercase",
+                  TONE_SOFT.info,
+                )}
+              >
+                You
+              </span>
+            ) : null}
+          </p>
+          <p className="mt-0.5 truncate text-[11.5px] text-black/50">
+            {person.email} ·{" "}
+            <b className="font-semibold text-black/70">
+              {count} active device{count === 1 ? "" : "s"}
+            </b>
+            {newest ? ` · active ${since(newest.lastSeenAt)}` : null}
+          </p>
+        </div>
+
+        {count ? (
+          <ConfirmAction
+            label={
+              <span className="inline-flex items-center gap-1.5">
+                <LogOut className="size-3.5" />
+                Sign out all
+              </span>
+            }
+            confirmLabel="Sign out all"
+            question={`Every device ${person.name} is signed in on stops working within the hour.${person.isYou ? " The browser you are in now is left alone — end it from My sessions." : ""}`}
+            pending={ending}
+            className={cn(
+              BUTTON_SECONDARY,
+              "h-9 shrink-0 px-3 text-xs hover:border-red-700/40 hover:text-red-700",
+            )}
+            onConfirm={() => {
+              const data = new FormData();
+              data.set("profileId", person.profileId);
+              endAll(data);
+            }}
+          />
+        ) : (
+          <span
+            className={cn(
+              "shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+              TONE_SOFT.muted,
+            )}
+          >
+            Nothing signed in
+          </span>
+        )}
+      </div>
+
+      <CollapsibleContent>
+        {count ? (
+          <ul className="space-y-2 p-3.5">
+            {person.sessions.map((session) => (
+              <PersonSessionRow
+                key={session.id}
+                session={session}
+                person={person}
+              />
+            ))}
+          </ul>
+        ) : (
+          <p className="px-3.5 py-3.5 text-[12px] text-black/40">
+            No device is signed in to this account.
+          </p>
+        )}
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+function UserSessionsPanel({ people }: { people: PersonSessions[] }) {
+  const [query, setQuery] = useState("");
+  const [shut, setShut] = useState<Record<string, boolean>>({});
+
+  const shown = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return people;
+    return people.filter((person) =>
+      `${person.name} ${person.email} ${ROLE_LABELS[person.role]}`
+        .toLowerCase()
+        .includes(needle),
+    );
+  }, [people, query]);
+
+  const allShut =
+    shown.length > 0 && shown.every((person) => shut[person.profileId]);
+  const live = people.reduce(
+    (total, person) => total + person.sessions.length,
+    0,
+  );
+
+  return (
+    <Panel title={`Signed in · ${live} device${live === 1 ? "" : "s"}`}>
+      <div className="mb-3.5 flex flex-wrap items-center gap-2.5">
+        <div className="relative min-w-45 flex-1">
+          <Search className="pointer-events-none absolute top-1/2 left-3 size-3.75 -translate-y-1/2 text-black/40" />
+          <Input
+            variant="admin"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search people…"
+            aria-label="Search people"
+            className="h-9.5 pl-9"
+          />
+        </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => {
+            const next: Record<string, boolean> = {};
+            for (const person of shown) next[person.profileId] = !allShut;
+            setShut(next);
+          }}
+          className={cn(BUTTON_SECONDARY, "h-9.5 px-3.5 text-xs")}
+        >
+          {allShut ? (
+            <ChevronsUpDown className="size-3.5" />
+          ) : (
+            <ChevronsDownUp className="size-3.5" />
+          )}
+          {allShut ? "Expand all" : "Collapse all"}
+        </Button>
+      </div>
+
+      {shown.length ? (
+        <div className="space-y-2.5">
+          {shown.map((person) => (
+            <PersonCard
+              key={person.profileId}
+              person={person}
+              open={!shut[person.profileId]}
+              onOpenChange={(next) =>
+                setShut((current) => ({
+                  ...current,
+                  [person.profileId]: !next,
+                }))
+              }
+            />
+          ))}
+        </div>
+      ) : (
+        <p className="py-2 text-[12px] text-black/40">
+          Nobody matches “{query}”.
+        </p>
+      )}
     </Panel>
   );
 }
