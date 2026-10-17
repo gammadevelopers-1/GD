@@ -3,6 +3,7 @@
 import { useMemo, useState, useSyncExternalStore, type FormEvent } from "react";
 import { ArrowLeft, CalendarDays, Check, Clock, MapPin } from "lucide-react";
 import { Reveal } from "@/components/common/reveal";
+import { Section } from "@/components/common/section";
 import { bookAudit } from "@/lib/content/home";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
@@ -92,74 +93,72 @@ export function BookAuditSection() {
     : bookAudit.picker.prompt;
 
   return (
-    <section
+    <Section
       id="book-audit"
-      className="relative scroll-mt-[90px] overflow-hidden border-t border-black/[0.06] py-26 [background:radial-gradient(ellipse_70%_60%_at_50%_0%,rgba(47,232,92,0.07),transparent_62%),linear-gradient(180deg,#f4f4ee,#eef1ea)]"
+      tone="dark"
+      divide="top"
+      className="scroll-mt-[90px]"
+      containerClassName="max-w-[1120px]"
     >
-      <div className="mx-auto max-w-[1120px] px-5 md:px-6.5">
-        <Reveal className="mb-10 flex flex-wrap items-end justify-between gap-6">
-          <div className="max-w-[600px]">
-            <span className="shimmer-label mb-4.5 inline-flex items-center gap-2 font-mono text-[10.5px] tracking-[0.2em] uppercase">
-              <span className="bg-brand size-1.5 rounded-full shadow-[0_0_9px_rgba(47,232,92,0.6)]" />
-              {bookAudit.eyebrow}
-            </span>
-            <h2 className="font-display text-[clamp(30px,4.2vw,52px)] leading-none font-semibold tracking-[-0.04em] whitespace-pre-line">
-              {bookAudit.title}
-            </h2>
-            <p className="mt-4 text-[16.5px] leading-[1.6] text-[#4b5148]">
-              {bookAudit.body}
-            </p>
-          </div>
-        </Reveal>
+      <Reveal className="mb-10 flex flex-wrap items-end justify-between gap-6">
+        <div className="max-w-[600px]">
+          <span className="shimmer-label mb-4.5 inline-flex items-center gap-2 font-mono text-[10.5px] tracking-[0.2em] uppercase">
+            <span className="bg-brand size-1.5 rounded-full shadow-[0_0_9px_rgba(47,232,92,0.6)]" />
+            {bookAudit.eyebrow}
+          </span>
+          <h2 className="font-display t-h2 whitespace-pre-line">
+            {bookAudit.title}
+          </h2>
+          <p className="text-gd-dark-muted t-lead mt-4">{bookAudit.body}</p>
+        </div>
+      </Reveal>
 
-        <Reveal delay={0.08}>
-          <div className="grid overflow-hidden rounded-[24px] border border-black/[0.08] bg-white shadow-[0_40px_90px_-46px_rgba(16,24,40,0.34)] lg:grid-cols-[0.82fr_1.18fr]">
-            <Brief />
+      <Reveal delay={0.08}>
+        <div className="bg-surface grid overflow-hidden rounded-[24px] border border-white/10 lg:grid-cols-[0.82fr_1.18fr]">
+          <Brief />
 
-            <div className="p-7.5 sm:px-8">
-              {stage === "picker" ? (
-                <div>
-                  <div className="mb-4.5 flex items-center justify-between">
-                    <h3 className="font-display text-[17px] font-semibold tracking-[-0.02em]">
-                      {bookAudit.picker.title}
-                    </h3>
-                    <div className="flex items-center gap-1.5">
-                      <MonthStep
-                        label="Previous month"
-                        disabled={offset === 0}
-                        onClick={() => setOffset(offset - 1)}
-                      />
-                      <span className="min-w-[118px] text-center text-[13.5px] font-semibold tabular-nums">
-                        {shown
-                          ? `${MONTHS[shown.getMonth()]} ${shown.getFullYear()}`
-                          : "—"}
-                      </span>
-                      <MonthStep
-                        label="Next month"
-                        forward
-                        onClick={() => setOffset(offset + 1)}
-                      />
-                    </div>
+          <div className="p-7.5 sm:px-8">
+            {stage === "picker" ? (
+              <div>
+                <div className="mb-4.5 flex items-center justify-between">
+                  <h3 className="font-display text-[18px] font-semibold tracking-[-0.02em]">
+                    {bookAudit.picker.title}
+                  </h3>
+                  <div className="flex items-center gap-1.5">
+                    <MonthStep
+                      label="Previous month"
+                      disabled={offset === 0}
+                      onClick={() => setOffset(offset - 1)}
+                    />
+                    <span className="min-w-[118px] text-center text-[13px] font-semibold tabular-nums">
+                      {shown
+                        ? `${MONTHS[shown.getMonth()]} ${shown.getFullYear()}`
+                        : "—"}
+                    </span>
+                    <MonthStep
+                      label="Next month"
+                      forward
+                      onClick={() => setOffset(offset + 1)}
+                    />
                   </div>
+                </div>
 
-                  <div className="grid gap-5.5 sm:grid-cols-[1.15fr_1fr]">
-                    <div>
-                      <div className="mb-1.5 grid grid-cols-7 gap-0.75">
-                        {WEEKDAYS.map((day, index) => (
-                          <span
-                            key={`${day}-${index}`}
-                            className="text-center font-mono text-[10px] text-[#9aa096]"
-                          >
-                            {day}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="grid grid-cols-7 gap-0.75">
-                        {today && shown
-                          ? buildMonth(
-                              shown.getFullYear(),
-                              shown.getMonth(),
-                            ).map((cell, index) =>
+                <div className="grid gap-5.5 sm:grid-cols-[1.15fr_1fr]">
+                  <div>
+                    <div className="mb-1.5 grid grid-cols-7 gap-0.75">
+                      {WEEKDAYS.map((day, index) => (
+                        <span
+                          key={`${day}-${index}`}
+                          className="text-center font-mono text-[10px] text-[#9aa096]"
+                        >
+                          {day}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-7 gap-0.75">
+                      {today && shown
+                        ? buildMonth(shown.getFullYear(), shown.getMonth()).map(
+                            (cell, index) =>
                               cell ? (
                                 <DayCell
                                   key={cell.getTime()}
@@ -176,145 +175,144 @@ export function BookAuditSection() {
                               ) : (
                                 <span key={`pad-${index}`} />
                               ),
-                            )
-                          : null}
-                      </div>
+                          )
+                        : null}
                     </div>
+                  </div>
 
-                    <div className="flex min-h-[230px] flex-col sm:border-l sm:border-black/[0.07] sm:pl-5">
-                      <p className="mb-3 text-xs text-[#6d736a]">{slotLabel}</p>
-                      <div className="flex max-h-[230px] flex-col gap-2 overflow-auto">
-                        {date
-                          ? bookAudit.picker.slots.map((slot) => (
-                              <Button
-                                variant="bare"
-                                size="none"
-                                key={slot}
-                                type="button"
-                                onClick={() => pickTime(slot)}
-                                className="hover:border-brand focus-visible:ring-gd-green/40 h-10 cursor-pointer rounded-[11px] border border-black/[0.12] bg-white text-[13.5px] font-semibold transition-all duration-150 hover:text-[#0a7a45] focus-visible:ring-2 focus-visible:outline-none"
-                              >
-                                {slot}
-                              </Button>
-                            ))
-                          : null}
-                      </div>
+                  <div className="flex min-h-[230px] flex-col sm:border-l sm:border-black/[0.07] sm:pl-5">
+                    <p className="mb-3 text-xs text-[#6d736a]">{slotLabel}</p>
+                    <div className="flex max-h-[230px] flex-col gap-2 overflow-auto">
+                      {date
+                        ? bookAudit.picker.slots.map((slot) => (
+                            <Button
+                              variant="bare"
+                              size="none"
+                              key={slot}
+                              type="button"
+                              onClick={() => pickTime(slot)}
+                              className="hover:border-brand focus-visible:ring-gd-green/40 hover:text-green-ink h-10 cursor-pointer rounded-[11px] border border-black/[0.12] bg-white text-[13px] font-semibold transition-all duration-150 focus-visible:ring-2 focus-visible:outline-none"
+                            >
+                              {slot}
+                            </Button>
+                          ))
+                        : null}
                     </div>
                   </div>
                 </div>
-              ) : null}
+              </div>
+            ) : null}
 
-              {stage === "form" ? (
-                <form onSubmit={confirm} className="flex flex-col gap-3.5">
-                  <Button
-                    variant="bare"
-                    size="none"
-                    type="button"
-                    onClick={() => setStage("picker")}
-                    className="hover:text-gd-green-ink focus-visible:ring-gd-green/40 inline-flex cursor-pointer items-center gap-1.5 self-start rounded-md text-[12.5px] font-semibold text-[#0a7a45] transition-colors focus-visible:ring-2 focus-visible:outline-none"
-                  >
-                    <ArrowLeft className="size-3.5" />
-                    {bookAudit.form.back}
-                  </Button>
+            {stage === "form" ? (
+              <form onSubmit={confirm} className="flex flex-col gap-3.5">
+                <Button
+                  variant="bare"
+                  size="none"
+                  type="button"
+                  onClick={() => setStage("picker")}
+                  className="hover:text-gd-green-ink focus-visible:ring-gd-green/40 text-green-ink inline-flex cursor-pointer items-center gap-1.5 self-start rounded-md text-[13px] font-semibold transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                >
+                  <ArrowLeft className="size-3.5" />
+                  {bookAudit.form.back}
+                </Button>
 
-                  <div className="flex items-center gap-2.5 rounded-[13px] border border-[rgba(47,232,92,0.28)] bg-[#f2f6f0] px-3.75 py-3.25">
-                    <span className="text-brand grid size-8.5 shrink-0 place-items-center rounded-[10px] bg-[#0f1512]">
-                      <CalendarDays className="size-4.25" strokeWidth={1.5} />
-                    </span>
-                    <div className="leading-[1.35]">
-                      <p className="text-sm font-semibold">{when}</p>
-                      <p className="text-xs text-[#6d736a]">
-                        {bookAudit.form.summary}
-                      </p>
-                    </div>
+                <div className="flex items-center gap-2.5 rounded-[13px] border border-[rgba(47,232,92,0.28)] bg-[#f2f6f0] px-3.75 py-3.25">
+                  <span className="text-brand grid size-8.5 shrink-0 place-items-center rounded-[10px] bg-[#0f1512]">
+                    <CalendarDays className="size-4.25" strokeWidth={1.5} />
+                  </span>
+                  <div className="leading-[1.35]">
+                    <p className="text-sm font-semibold">{when}</p>
+                    <p className="text-xs text-[#6d736a]">
+                      {bookAudit.form.summary}
+                    </p>
                   </div>
+                </div>
 
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <label className="block">
-                      <span className={FIELD_LABEL}>
-                        {bookAudit.form.name.label}
-                      </span>
-                      <Input
-                        variant="bare"
-                        required
-                        name="name"
-                        placeholder={bookAudit.form.name.placeholder}
-                        className={FIELD}
-                      />
-                    </label>
-                    <label className="block">
-                      <span className={FIELD_LABEL}>
-                        {bookAudit.form.email.label}
-                      </span>
-                      <Input
-                        variant="bare"
-                        required
-                        type="email"
-                        name="email"
-                        placeholder={bookAudit.form.email.placeholder}
-                        className={FIELD}
-                      />
-                    </label>
-                  </div>
-
+                <div className="grid gap-3 sm:grid-cols-2">
                   <label className="block">
                     <span className={FIELD_LABEL}>
-                      {bookAudit.form.note.label}{" "}
-                      <span className="text-[#9aa096]">
-                        {bookAudit.form.note.hint}
-                      </span>
+                      {bookAudit.form.name.label}
                     </span>
-                    <Textarea
-                      rows={2}
-                      name="note"
-                      placeholder={bookAudit.form.note.placeholder}
+                    <Input
                       variant="bare"
-                      className={cn(FIELD, "h-auto resize-y py-2.75")}
+                      required
+                      name="name"
+                      placeholder={bookAudit.form.name.placeholder}
+                      className={FIELD}
                     />
                   </label>
-
-                  <Button
-                    variant="marketing"
-                    size="marketing"
-                    type="submit"
-                    data-button-fill
-                    className="w-full cursor-pointer"
-                  >
-                    <span className="button-fill-fx__label">
-                      {bookAudit.form.cta}
+                  <label className="block">
+                    <span className={FIELD_LABEL}>
+                      {bookAudit.form.email.label}
                     </span>
-                  </Button>
-                </form>
-              ) : null}
-
-              {stage === "done" ? (
-                <div className="flex flex-col items-center px-5 py-9.5 text-center">
-                  <span className="mb-4.5 grid size-15.5 place-items-center rounded-full bg-[#eef6f0] text-[#0a7a45]">
-                    <Check className="size-7.5" strokeWidth={1.8} />
-                  </span>
-                  <h3 className="font-display mb-2 text-[22px] font-semibold tracking-[-0.02em]">
-                    {bookAudit.done.title}
-                  </h3>
-                  <p className="mb-5 max-w-[38ch] text-sm leading-[1.6] text-[#4b5148]">
-                    Your {bookAudit.brief.kind} is set for {when}. A calendar
-                    invite and Google Meet link are on their way to your inbox.
-                  </p>
-                  <Button
-                    variant="bare"
-                    size="none"
-                    type="button"
-                    onClick={reset}
-                    className="hover:border-brand focus-visible:ring-gd-green/40 h-10.5 cursor-pointer rounded-[11px] border border-black/[0.12] bg-white px-5 text-[13px] font-semibold transition-all duration-150 hover:text-[#0a7a45] focus-visible:ring-2 focus-visible:outline-none"
-                  >
-                    {bookAudit.done.cta}
-                  </Button>
+                    <Input
+                      variant="bare"
+                      required
+                      type="email"
+                      name="email"
+                      placeholder={bookAudit.form.email.placeholder}
+                      className={FIELD}
+                    />
+                  </label>
                 </div>
-              ) : null}
-            </div>
+
+                <label className="block">
+                  <span className={FIELD_LABEL}>
+                    {bookAudit.form.note.label}{" "}
+                    <span className="text-[#9aa096]">
+                      {bookAudit.form.note.hint}
+                    </span>
+                  </span>
+                  <Textarea
+                    rows={2}
+                    name="note"
+                    placeholder={bookAudit.form.note.placeholder}
+                    variant="bare"
+                    className={cn(FIELD, "h-auto resize-y py-2.75")}
+                  />
+                </label>
+
+                <Button
+                  variant="marketing"
+                  size="marketing"
+                  type="submit"
+                  data-button-fill
+                  className="w-full cursor-pointer"
+                >
+                  <span className="button-fill-fx__label">
+                    {bookAudit.form.cta}
+                  </span>
+                </Button>
+              </form>
+            ) : null}
+
+            {stage === "done" ? (
+              <div className="flex flex-col items-center px-5 py-9.5 text-center">
+                <span className="text-green-ink mb-4.5 grid size-15.5 place-items-center rounded-full bg-[rgba(47,232,92,0.14)]">
+                  <Check className="size-7.5" strokeWidth={1.8} />
+                </span>
+                <h3 className="font-display mb-2 text-[20px] font-semibold tracking-[-0.02em]">
+                  {bookAudit.done.title}
+                </h3>
+                <p className="mb-5 max-w-[38ch] text-sm leading-[1.6] text-[#4b5148]">
+                  Your {bookAudit.brief.kind} is set for {when}. A calendar
+                  invite and Google Meet link are on their way to your inbox.
+                </p>
+                <Button
+                  variant="bare"
+                  size="none"
+                  type="button"
+                  onClick={reset}
+                  className="hover:border-brand focus-visible:ring-gd-green/40 hover:text-green-ink h-10.5 cursor-pointer rounded-[11px] border border-black/[0.12] bg-white px-5 text-[13px] font-semibold transition-all duration-150 focus-visible:ring-2 focus-visible:outline-none"
+                >
+                  {bookAudit.done.cta}
+                </Button>
+              </div>
+            ) : null}
           </div>
-        </Reveal>
-      </div>
-    </section>
+        </div>
+      </Reveal>
+    </Section>
   );
 }
 
@@ -382,7 +380,7 @@ function MonthStep({
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className="hover:border-brand focus-visible:ring-gd-green/40 grid size-7.5 cursor-pointer place-items-center rounded-[9px] border border-black/[0.1] bg-white text-[#4b5148] transition-all duration-150 hover:text-[#0a7a45] focus-visible:ring-2 focus-visible:outline-none disabled:cursor-default disabled:opacity-35 disabled:hover:border-black/[0.1] disabled:hover:text-[#4b5148]"
+      className="hover:border-brand focus-visible:ring-gd-green/40 hover:text-green-ink grid size-7.5 cursor-pointer place-items-center rounded-[9px] border border-black/[0.1] bg-white text-[#4b5148] transition-all duration-150 focus-visible:ring-2 focus-visible:outline-none disabled:cursor-default disabled:opacity-35 disabled:hover:border-black/[0.1] disabled:hover:text-[#4b5148]"
     >
       <ArrowLeft className={cn("size-3.75", forward && "rotate-180")} />
     </Button>
@@ -433,7 +431,7 @@ function Brief() {
               <span className="text-brand mt-px grid size-5.5 shrink-0 place-items-center rounded-md bg-[rgba(47,232,92,0.14)]">
                 <Check className="size-2.75" strokeWidth={2.4} />
               </span>
-              <span className="text-[13.5px] leading-[1.5] text-[#c8ccc2]">
+              <span className="text-[13px] leading-[1.5] text-[#c8ccc2]">
                 {promise}
               </span>
             </li>
@@ -445,7 +443,7 @@ function Brief() {
             {bookAudit.brief.host.initials}
           </span>
           <div className="leading-[1.35]">
-            <p className="text-[13.5px] font-semibold">
+            <p className="text-[13px] font-semibold">
               {bookAudit.brief.host.name}
             </p>
             <p className="text-xs text-[#9aa096]">

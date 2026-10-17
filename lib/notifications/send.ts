@@ -17,10 +17,13 @@ export async function sendEmail({
   to,
   subject,
   body,
+  replyTo,
 }: {
   to: string | string[];
   subject: string;
   body: string;
+  /** Set so hitting Reply answers the person, not this mailbox. */
+  replyTo?: string;
 }): Promise<EmailResult> {
   const apiKey = process.env.RESEND_API_KEY?.trim();
   const from = process.env.NOTIFICATIONS_FROM?.trim();
@@ -42,6 +45,7 @@ export async function sendEmail({
         to: recipients,
         subject,
         text: body,
+        ...(replyTo ? { reply_to: replyTo } : null),
       }),
     });
 
@@ -66,6 +70,7 @@ export async function sendEmailQuietly(input: {
   to: string | string[];
   subject: string;
   body: string;
+  replyTo?: string;
 }) {
   try {
     return await sendEmail(input);

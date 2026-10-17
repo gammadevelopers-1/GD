@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Mark } from "@/components/layout/mark";
+import { BrandLogo } from "@/components/common/brand-logo";
+import { ConsentLink } from "@/components/common/consent-link";
 import { newsletter } from "@/lib/content/home";
 import {
   footerColumns,
@@ -38,13 +39,8 @@ export function SiteFooter() {
       <div className="relative z-2 mx-auto max-w-[1160px] px-5 md:px-6.5">
         <div className="grid gap-9 pt-2 pb-9 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1.5fr]">
           <div>
-            <div className="flex items-center gap-2.25">
-              <Mark className="!size-6.5 !bg-[#eceae2] !text-[11px] !text-[#0f1512]" />
-              <span className="text-base font-semibold tracking-[-0.02em]">
-                {site.name}
-              </span>
-            </div>
-            <p className="mt-3.5 max-w-[30ch] text-[13.5px] leading-[1.6] text-[#9aa096]">
+            <BrandLogo tone="light" className="h-[24px]" />
+            <p className="mt-3.5 max-w-[30ch] text-[13px] leading-[1.6] text-[#9aa096]">
               {site.tagline}
             </p>
             <div className="mt-4 flex gap-2.25">
@@ -71,7 +67,7 @@ export function SiteFooter() {
           {footerColumns.map((col) => (
             <div key={col.title}>
               <ColumnTitle>{col.title}</ColumnTitle>
-              <ul className="flex flex-col gap-2.5 text-[13.5px]">
+              <ul className="flex flex-col gap-2.5 text-[13px]">
                 {col.links.map((l) => (
                   <li key={l.label}>
                     <Link
@@ -88,7 +84,7 @@ export function SiteFooter() {
 
           <div>
             <ColumnTitle>{newsletter.title}</ColumnTitle>
-            <p className="mb-3 text-[13.5px] leading-[1.55] text-[#9aa096]">
+            <p className="mb-3 text-[13px] leading-[1.55] text-[#9aa096]">
               {newsletter.body}
             </p>
             <NewsletterForm />
@@ -110,6 +106,7 @@ export function SiteFooter() {
                 {l.label}
               </Link>
             ))}
+            <ConsentLink className="transition-colors hover:text-[#eceae2]" />
           </div>
           <div className="flex flex-wrap items-center gap-4">
             <span className="inline-flex items-center gap-1.75">
@@ -117,7 +114,6 @@ export function SiteFooter() {
               All systems operational
             </span>
             <Dot />
-            <span>Built in Pakistan</span>
             <Link
               href="#top"
               className="transition-colors hover:text-[#eceae2]"

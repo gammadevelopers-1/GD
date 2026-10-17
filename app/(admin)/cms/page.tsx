@@ -1,61 +1,58 @@
 import { Suspense } from "react";
-import { FilePenLine } from "lucide-react";
-import { ComingSoon } from "@/components/admin/coming-soon";
+import Link from "next/link";
+import { FileText, Plus } from "lucide-react";
+
+import { CaseStudyList } from "@/components/admin/cms/case-study-list";
+import { ImportCaseStudies } from "@/components/admin/cms/import-case-studies";
 import { EmptyState } from "@/components/admin/empty-state";
 import { PageHeading } from "@/components/admin/page-heading";
 import { PanelSkeleton } from "@/components/admin/skeletons";
 import { requireRole } from "@/data/auth";
-import { getCmsPages } from "@/data/resources";
+import { getAllCaseRecords } from "@/data/case-studies";
 
 export default async function CmsPage() {
   await requireRole(["owner"]);
+
   return (
     <div className="mx-auto max-w-[1480px]">
-      <PageHeading title="CMS" />
-      <ComingSoon
-        title="CMS authoring and publishing"
-        description="Content records can be listed today, but the writing workflow is not ready. Drafting, previewing, publishing and revision history will arrive here."
-        items={["Content editor", "Live preview", "Publishing", "Revisions"]}
-      />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <PageHeading title="Case studies" />
+        <Link
+          href="/cms/new"
+          className="inline-flex h-10 items-center gap-2 rounded-full bg-black px-5 text-[13px] font-semibold text-white transition-colors hover:bg-black/85"
+        >
+          <Plus className="size-4" />
+          New case study
+        </Link>
+      </div>
+
+      <p className="mt-2 max-w-[70ch] text-[12.5px] text-black/50">
+        What is live here is what the website shows. Taking one off the site
+        hides it from /work, the footer and search engines immediately.
+      </p>
+
       <div className="mt-6">
         <Suspense fallback={<PanelSkeleton lines={5} />}>
-          <CmsPageList />
+          <CaseStudies />
         </Suspense>
       </div>
     </div>
   );
 }
 
-async function CmsPageList() {
-  const pages = await getCmsPages();
-  return (
-    <>
-      {pages.length ? (
-        <div className="bg-gd-panel overflow-hidden rounded-[20px] border border-black/[0.07]">
-          {pages.map((page) => (
-            <div
-              key={page.id}
-              className="flex items-center justify-between gap-4 border-b border-black/[0.055] px-5 py-4 last:border-0"
-            >
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold">{page.title}</p>
-                <p className="mt-1 truncate font-mono text-[9px] text-black/35">
-                  /{page.slug}
-                </p>
-              </div>
-              <span className="shrink-0 rounded-full bg-black/[0.045] px-2.5 py-1 text-[9px] font-semibold text-black/45 capitalize">
-                {page.status}
-              </span>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <EmptyState
-          icon={FilePenLine}
-          title="No CMS pages yet"
-          description="The marketing site remains code-driven until the authoring workflow is ready."
-        />
-      )}
-    </>
-  );
+async function CaseStudies() {
+  const records = await getAllCaseRecords();
+
+  if (!records.length) {
+    return (
+      <EmptyState
+        icon={FileText}
+        title="Nothing here yet"
+        description="The website is running on the case studies written into the code. Import them to start editing them here, or write a new one from scratch."
+        action={<ImportCaseStudies />}
+      />
+    );
+  }
+
+  return <CaseStudyList records={records} />;
 }

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { AlertTriangle } from "lucide-react";
-import { Mark } from "@/components/layout/mark";
+import { BrandLogo } from "@/components/common/brand-logo";
 import { LinkSpentNotice } from "@/components/auth/link-spent-notice";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
@@ -34,8 +34,7 @@ export default async function SetPasswordPage({
 
       <section className="relative w-full max-w-[430px]">
         <div className="mb-10 flex items-center gap-3">
-          <Mark className="size-9 rounded-[10px]" />
-          <span className="font-medium text-white">Gamma Developers</span>
+          <BrandLogo tone="light" className="h-[24px]" />
         </div>
 
         <p className="text-brand font-mono text-[10px] tracking-[0.16em] uppercase">

@@ -47,7 +47,8 @@ type Editing = { id: string; field: "value" | "label" } | null;
 
 function useToastOnSettle(state: SimpleFormState) {
   useEffect(() => {
-    if (state.status === "success" && state.message) toast.success(state.message);
+    if (state.status === "success" && state.message)
+      toast.success(state.message);
     if (state.status === "error" && state.message) toast.error(state.message);
   }, [state]);
 }
@@ -138,7 +139,7 @@ function LinkRow({
         <div className="flex min-w-0 items-center gap-2 text-[13px] font-medium text-black/60">
           <span className="truncate">{row.label}</span>
           {!row.slug ? (
-            <span className="rounded-full bg-gd-green/12 px-1.5 py-0.5 font-mono text-[8px] tracking-[0.1em] text-gd-green-deep uppercase">
+            <span className="bg-gd-green/12 text-gd-green-deep rounded-full px-1.5 py-0.5 font-mono text-[8px] tracking-[0.1em] uppercase">
               Custom
             </span>
           ) : null}
@@ -163,7 +164,7 @@ function LinkRow({
                 href={linkHref(row.value)}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="inline-flex min-w-0 items-center gap-1.5 text-[13px] font-semibold text-gd-green-deep hover:underline"
+                className="text-gd-green-deep inline-flex min-w-0 items-center gap-1.5 text-[13px] font-semibold hover:underline"
               >
                 <span className="truncate">{linkDisplay(row.value)}</span>
                 <ExternalLink className="size-3.5 shrink-0" />
@@ -175,7 +176,7 @@ function LinkRow({
               size="none"
               onClick={() => onEdit({ id: row.id, field: "value" })}
               className={cn(
-                "inline-flex h-[30px] items-center gap-1.5 rounded-lg border border-dashed border-black/20 px-2.5 text-xs text-black/50 transition duration-150 hover:border-brand/60 hover:bg-brand/[0.06] hover:text-gd-green-deep",
+                "hover:border-brand/60 hover:bg-brand/[0.06] hover:text-gd-green-deep inline-flex h-[30px] items-center gap-1.5 rounded-lg border border-dashed border-black/20 px-2.5 text-xs text-black/50 transition duration-150",
                 FOCUS_RING,
               )}
             >
@@ -247,7 +248,7 @@ function CopyLinkButton({ value, label }: { value: string; label: string }) {
       }}
     >
       {done ? (
-        <Check className="size-4 text-gd-green-deep" />
+        <Check className="text-gd-green-deep size-4" />
       ) : (
         <Copy className="size-4" />
       )}

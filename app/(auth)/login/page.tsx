@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
-import { Mark } from "@/components/layout/mark";
+import { BrandLogo } from "@/components/common/brand-logo";
 import { getViewer } from "@/data/auth";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { LoginForm } from "./login-form";
@@ -27,8 +27,7 @@ export default async function LoginPage({
           href="/"
           className="flex w-fit items-center gap-3 text-sm font-medium text-white/80"
         >
-          <Mark className="size-8 rounded-[9px]" />
-          Gamma Developers
+          <BrandLogo tone="light" className="h-[22px]" />
         </Link>
 
         <div className="max-w-xl pb-8">
@@ -56,8 +55,7 @@ export default async function LoginPage({
           </Link>
 
           <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <Mark className="size-9 rounded-[10px]" />
-            <span className="font-medium text-white">Gamma Developers</span>
+            <BrandLogo tone="light" className="h-[24px]" />
           </div>
 
           <p className="text-brand font-mono text-[10px] tracking-[0.16em] uppercase">

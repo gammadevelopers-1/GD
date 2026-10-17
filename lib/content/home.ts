@@ -1,15 +1,17 @@
 export const hero = {
+  eyebrow: "25+ businesses across the GCC and US",
   headline: { before: "Messy in", accent: "Aligned", after: "out" },
-  lead: "Tell us what’s broken. We’ll show you the fix",
+  lead: "We map where your team's hours actually go, then build the systems that give them back. Your tools stay. Nobody learns new software.",
+  cta: "Book the audit",
+  note: "Free · 30 minutes · you keep the findings either way",
   typingPrompts: [
     "Run an audit to spot workflow flaws",
-    "What’s slowing your team down?",
+    "What's slowing your team down?",
     "e.g. I run a dental clinic with three staff...",
     "Leads arrive on WhatsApp and get missed...",
     "We enter every booking into two systems...",
     "Approvals still happen manually by email...",
   ],
-  cta: "Analyze my workflow",
 } as const;
 
 export const marquee = {
@@ -342,20 +344,74 @@ export const newsletter = {
   success: "You’re in — watch your inbox for the next dispatch.",
 } as const;
 
-export const contact = {
-  eyebrow: "Talk to us",
-  title: "Let’s find what’s slowing you down.",
-  body: "Tell us a little about how you work today. We’ll reply within one business day — usually with a first thing worth automating.",
-  teamSizes: ["1–10", "11–50", "51–200", "200+"],
-  disclaimer:
-    "By sending this you agree to our privacy policy. We never share your details.",
-  cta: "Send message",
-  success:
-    "Thanks — your message is on its way. We’ll reply within one business day.",
-  aside: {
-    eyebrow: "Skip the form",
-    title: "Book a 30-min audit.",
-    body: "Grab a slot and we’ll walk through your workflow live.",
-    cta: "Open the calendar →",
+export const problem = {
+  eyebrow: "The leak",
+  title: "You don't have a growth problem.",
+  body: "The revenue was already paid for. It leaks out of the gaps between the tools, the people, and the hours nobody is working.",
+  scenarios: [
+    {
+      when: "Friday, 7:04pm",
+      body: "A lead fills in the form. Everyone has gone home. By Monday they have already spoken to someone else.",
+    },
+    {
+      when: "Monday, 9:15am",
+      body: "Someone opens two systems side by side and retypes last week's bookings from one into the other.",
+    },
+    {
+      when: "Every quarter",
+      body: "Eight thousand contacts sit in the database. They cost money to collect. Nobody has emailed them since.",
+    },
+    {
+      when: "Friday, all afternoon",
+      body: "The weekly report gets rebuilt by hand from four exports, so it can say roughly what it said last week.",
+    },
+  ],
+  close:
+    "None of that is a people problem. Every one of those gaps sits between two job descriptions.",
+} as const;
+
+export const objections = {
+  eyebrow: "Before you ask",
+  title: "The questions you're already thinking.",
+  items: [
+    {
+      q: "We tried automation and it broke.",
+      a: "What broke, usually, is that nothing handled the exceptions and nobody owned it after launch. Both are design failures, not automation failures. We build the exception path first and we stay on after it ships.",
+    },
+    {
+      q: "My business is too unique for this.",
+      a: "The judgment is unique. The typing isn't. We automate the typing and leave the judgment where it belongs.",
+    },
+    {
+      q: "We don't have the data for it.",
+      a: "Then the first engagement is finding out what you actually have. That's a deliverable, not a blocker.",
+    },
+    {
+      q: "My team will resist it.",
+      a: "People resist being replaced. They don't resist losing the task they already complain about every week.",
+    },
+    {
+      q: "What if it makes a mistake?",
+      a: "It will. So does the manual process, you just don't measure that one. The real design question is what happens when it isn't sure, and the answer is that a person sees it.",
+    },
+    {
+      q: "Can't we just use ChatGPT?",
+      a: "For one document, yes. The work is what happens on document two hundred, at 2am, when one arrives in a format nobody expected.",
+    },
+    {
+      q: "This sounds expensive.",
+      a: "Compared to what? Most of what we replace was already on the roadmap to be fixed by hiring someone. Run the numbers against that salary, not against a software subscription.",
+    },
+  ],
+  limit: {
+    title: "What we won't do",
+    body: "We don't automate judgment calls, anything that needs a relationship, or a process nobody can explain out loud yet. If a decision needs a person, it keeps one.",
   },
+} as const;
+
+export const whatWeFix = {
+  eyebrow: "What we fix",
+  title: "Five things that quietly cost you money.",
+  body: "None of this needs new software to learn. Your team keeps working the way they already work.",
+  cta: "See how it works",
 } as const;

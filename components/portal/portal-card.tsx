@@ -1,4 +1,4 @@
-import { Mark } from "@/components/layout/mark";
+import { BrandLogo } from "@/components/common/brand-logo";
 
 export function PortalCard({
   eyebrow,
@@ -18,8 +18,7 @@ export function PortalCard({
 
       <section className="relative hidden min-h-dvh flex-col justify-between border-r border-white/[0.07] p-12 lg:flex xl:p-16">
         <span className="flex w-fit items-center gap-3 text-sm font-medium text-white/80">
-          <Mark className="size-8 rounded-[9px]" />
-          Gamma Developers
+          <BrandLogo tone="light" className="h-[22px]" />
         </span>
 
         <div className="max-w-xl pb-8">
@@ -40,8 +39,7 @@ export function PortalCard({
       <section className="relative flex min-h-dvh items-center justify-center px-5 py-10 sm:px-10">
         <div className="w-full max-w-[430px]">
           <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <Mark className="size-9 rounded-[10px]" />
-            <span className="font-medium text-white">Gamma Developers</span>
+            <BrandLogo tone="light" className="h-[24px]" />
           </div>
 
           <p className="text-brand font-mono text-[10px] tracking-[0.16em] uppercase">

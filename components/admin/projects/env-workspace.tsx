@@ -156,7 +156,7 @@ export function EnvWorkspace({
               count={workspace.mainTotal}
               label="Main"
               badge={
-                <span className="grid size-5 place-items-center rounded-md bg-gd-green/18 text-gd-green-deep">
+                <span className="bg-gd-green/18 text-gd-green-deep grid size-5 place-items-center rounded-md">
                   <Shield className="size-3" />
                 </span>
               }
@@ -169,7 +169,7 @@ export function EnvWorkspace({
                 count={version.total}
                 label={`${version.name.split(" ")[0]}${version.isViewer ? " · you" : ""}`}
                 badge={
-                  <span className="grid size-5 place-items-center rounded-md bg-gd-panel-dark font-mono text-[8.5px] font-semibold text-gd-primary">
+                  <span className="bg-gd-panel-dark text-gd-primary grid size-5 place-items-center rounded-md font-mono text-[8.5px] font-semibold">
                     {version.initials}
                   </span>
                 }
@@ -257,9 +257,7 @@ export function EnvWorkspace({
           projectId={projectId}
           groupId={dialog.groupId}
           existingKeys={dialog.keys}
-          action={
-            dialog.scope === "main" ? actions.uploadMain : actions.upload
-          }
+          action={dialog.scope === "main" ? actions.uploadMain : actions.upload}
           onClose={() => setDialog(null)}
         />
       ) : null}
@@ -389,7 +387,6 @@ function VersionChip({
     >
       {badge}
       {label}
-      
     </Button>
   );
 }
@@ -403,7 +400,9 @@ function PaneHeader({
 }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <h3 className="text-[14.5px] font-semibold tracking-[-0.02em]">{title}</h3>
+      <h3 className="text-[14.5px] font-semibold tracking-[-0.02em]">
+        {title}
+      </h3>
       <div className="flex flex-wrap items-center gap-2">{children}</div>
     </div>
   );
@@ -511,7 +510,11 @@ function MainPane({
                       onDialog({
                         kind: "group",
                         scope: "main",
-                        group: { id: group.id, name: group.name, variables: [] },
+                        group: {
+                          id: group.id,
+                          name: group.name,
+                          variables: [],
+                        },
                       })
                     }
                   >
@@ -564,7 +567,7 @@ function MainPane({
                       <span
                         key={holder.credentialId}
                         title={holder.name}
-                        className="grid size-4.5 place-items-center rounded bg-gd-panel-dark font-mono text-[7.5px] font-semibold text-gd-primary"
+                        className="bg-gd-panel-dark text-gd-primary grid size-4.5 place-items-center rounded font-mono text-[7.5px] font-semibold"
                       >
                         {holder.initials}
                       </span>
@@ -685,10 +688,11 @@ function MainRow({
         <div className="mt-1.5 flex flex-wrap items-center gap-2">
           {entry.sourceName ? (
             <span className="inline-flex items-center gap-1.5 text-[10.5px] text-black/50">
-              <span className="grid size-4.5 place-items-center rounded bg-gd-panel-dark font-mono text-[7.5px] font-semibold text-gd-primary">
+              <span className="bg-gd-panel-dark text-gd-primary grid size-4.5 place-items-center rounded font-mono text-[7.5px] font-semibold">
                 {entry.sourceInitials}
               </span>
-              from <b className="font-semibold text-black/70">
+              from{" "}
+              <b className="font-semibold text-black/70">
                 {entry.sourceName.split(" ")[0]}
               </b>
               &apos;s version
@@ -708,10 +712,7 @@ function MainRow({
               onClick={() => onDialog({ kind: "source", entry })}
               className={cn("cursor-pointer rounded-full", FOCUS_RING)}
             >
-              <AgreementChip
-                count={entry.holders.length}
-                agree={entry.agree}
-              />
+              <AgreementChip count={entry.holders.length} agree={entry.agree} />
             </Button>
           ) : null}
         </div>
@@ -747,7 +748,9 @@ function MainRow({
               <Copy className="size-3.5" />
               Copy
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => onDialog({ kind: "share", entry })}>
+            <DropdownMenuItem
+              onSelect={() => onDialog({ kind: "share", entry })}
+            >
               <Share2 className="size-3.5" />
               Share
             </DropdownMenuItem>
@@ -920,7 +923,10 @@ function GroupCard({
           variant="bare"
           size="none"
           onClick={() => setOpen((was) => !was)}
-          className={cn("flex min-w-0 cursor-pointer items-center gap-2", FOCUS_RING)}
+          className={cn(
+            "flex min-w-0 cursor-pointer items-center gap-2",
+            FOCUS_RING,
+          )}
         >
           <ChevronRight
             className={cn(

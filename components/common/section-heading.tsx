@@ -1,3 +1,4 @@
+import { Eyebrow } from "@/components/common/eyebrow";
 import { cn } from "@/lib/utils";
 
 interface SectionHeadingProps {
@@ -13,13 +14,8 @@ export function SectionHeading({
 }: SectionHeadingProps) {
   return (
     <div className={cn("max-w-[620px]", className)}>
-      <span className="shimmer-label mb-5 inline-flex items-center gap-2 font-mono text-[10.5px] tracking-[0.18em] uppercase">
-        <span className="bg-brand size-1.5 rounded-full shadow-[0_0_9px_rgba(47,232,92,0.6)]" />
-        {eyebrow}
-      </span>
-      <h2 className="font-display text-[clamp(2rem,4vw,3rem)] leading-[1.02] font-semibold tracking-[-0.045em]">
-        {title}
-      </h2>
+      <Eyebrow className="mb-5">{eyebrow}</Eyebrow>
+      <h2 className="font-display t-h2">{title}</h2>
     </div>
   );
 }

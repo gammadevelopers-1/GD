@@ -7,11 +7,13 @@ import {
   CircleGauge,
   FilePenLine,
   FolderKanban,
+  Inbox,
   LogOut,
   Settings,
   UserRound,
   UsersRound,
 } from "lucide-react";
+import { BrandLogo } from "@/components/common/brand-logo";
 import { Mark } from "@/components/layout/mark";
 import { logout } from "@/app/(auth)/login/actions";
 import {
@@ -64,6 +66,12 @@ const workspaceNav: NavItem[] = [
     label: "Clients",
     href: "/clients",
     icon: Building2,
+    roles: ["owner"],
+  },
+  {
+    label: "Contact leads",
+    href: "/leads",
+    icon: Inbox,
     roles: ["owner"],
   },
   {
@@ -128,10 +136,17 @@ export function AdminShell({
                   className="group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0!"
                 >
                   <Link href="/dashboard">
-                    <Mark className="size-8 rounded-[9px] border border-white/10" />
-                    <span className="font-semibold tracking-[-0.02em] text-white group-data-[collapsible=icon]:hidden">
-                      Gamma Developers
+                    {/* The wordmark is 5.6:1, so the collapsed icon rail keeps
+                        the square badge instead. Visibility is on the wrapper:
+                        Mark composes its class with a template string, not cn(),
+                        so passing it `hidden` would race its own `grid`. */}
+                    <span className="hidden group-data-[collapsible=icon]:block">
+                      <Mark className="size-8 rounded-[9px] border border-white/10" />
                     </span>
+                    <BrandLogo
+                      tone="light"
+                      className="h-[21px] group-data-[collapsible=icon]:hidden"
+                    />
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

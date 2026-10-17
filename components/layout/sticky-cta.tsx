@@ -28,7 +28,7 @@ export function StickyCta() {
       <div
         aria-hidden
         className={cn(
-          "pointer-events-none fixed inset-0 z-[200] flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] [background:linear-gradient(120deg,#101512_0%,#059669_58%,#2fe85c_100%)]",
+          "bg-brand pointer-events-none fixed inset-0 z-[200] flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)]",
           leaving ? "translate-x-0" : "translate-x-full",
         )}
       >

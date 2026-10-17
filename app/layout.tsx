@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { ButtonFillEffects } from "@/components/common/button-fill-effects";
+import { ConsentBanner } from "@/components/common/consent-banner";
+import { SiteAnalytics } from "@/components/common/site-analytics";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 import { configuredOrigin } from "@/lib/site/origin";
@@ -20,6 +22,18 @@ const generalSans = localFont({
 const jetbrainsMono = localFont({
   src: "./fonts/JetBrainsMono-Regular.ttf",
   variable: "--font-jetbrains",
+  display: "swap",
+});
+
+const hikasami = localFont({
+  src: [
+    {
+      path: "./fonts/Hikasami-VF.woff2",
+      weight: "400 700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-hikasami",
   display: "swap",
 });
 
@@ -61,13 +75,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${generalSans.variable} ${jetbrainsMono.variable} ${syne.variable}`}
+      className={`${generalSans.variable} ${hikasami.variable} ${jetbrainsMono.variable} ${syne.variable}`}
       data-scroll-behavior="smooth"
     >
       <body className="bg-background text-foreground font-body antialiased">
         <ButtonFillEffects />
         {children}
         <Toaster />
+        <SiteAnalytics />
+        <ConsentBanner />
       </body>
     </html>
   );

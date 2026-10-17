@@ -204,8 +204,7 @@ export function LogoMarquee() {
             onMouseLeave={blur}
             className={cn(
               "group/logo inline-flex cursor-default items-center gap-2.5 text-[#8a8b84] transition-[transform,color,opacity,filter] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform",
-              focused === i &&
-                "scale-[1.1] text-[#059669] opacity-100 drop-shadow-[0_8px_18px_rgba(5,150,105,0.18)]",
+              focused === i && "text-brand scale-[1.1] opacity-100",
               focused !== null && focused !== i && "opacity-65",
             )}
           >

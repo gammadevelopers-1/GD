@@ -1,4 +1,4 @@
-import { Mark } from "@/components/layout/mark";
+import { BrandLogo } from "@/components/common/brand-logo";
 import { signOutClient } from "@/app/(portal)/portal/sign-in/actions";
 import { PortalTabs } from "@/components/portal/portal-tabs";
 import { ProjectSwitcher } from "@/components/portal/project-switcher";
@@ -31,10 +31,7 @@ export function PortalTopBar({
     <header className="sticky top-0 z-30 bg-[#eef0e9]/80 backdrop-blur-xl">
       <div className="mx-auto flex h-14 w-full max-w-[1480px] items-center gap-3 px-4 sm:px-6 lg:px-8 xl:px-10">
         <span className="flex items-center gap-2.5">
-          <Mark />
-          <span className="hidden text-[13px] font-medium text-black/70 sm:inline">
-            Gamma Developers
-          </span>
+          <BrandLogo tone="dark" className="h-[19px]" />
         </span>
 
         {viewer && currentPublicId ? (

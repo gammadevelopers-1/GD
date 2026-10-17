@@ -27,7 +27,7 @@ export function NewsletterForm() {
             type="email"
             required
             placeholder={newsletter.placeholder}
-            className="w-full border-0 bg-transparent text-[13.5px] text-[#eceae2] outline-none placeholder:text-[#6d736a]"
+            className="w-full border-0 bg-transparent text-[13px] text-[#eceae2] outline-none placeholder:text-[#6d736a]"
           />
         </label>
         <Button
@@ -55,7 +55,7 @@ export function NewsletterForm() {
       </form>
       <p
         aria-live="polite"
-        className="mt-2.25 min-h-[15px] text-[11.5px] text-[#6d736a]"
+        className="mt-2.25 min-h-[15px] text-[11px] text-[#6d736a]"
       >
         {message}
       </p>

@@ -1,4 +1,3 @@
-import { SiteLoader } from "@/components/common/site-loader";
 import { ScrollProgress } from "@/components/layout/scroll-progress";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteNav } from "@/components/layout/site-nav";
@@ -9,7 +8,6 @@ export default function MarketingLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <>
-      <SiteLoader />
       <ScrollProgress />
       <SiteNav />
       <StickyCta />
