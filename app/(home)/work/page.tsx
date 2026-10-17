@@ -28,6 +28,12 @@ export default async function WorkIndexPage() {
   }));
   const images = stream.length ? [...stream, ...stream] : [];
 
+  // Read off the work rather than written by hand, so the strip cannot claim
+  // a market we no longer have a case study for.
+  const verticals = [...new Set(items.map((item) => item.vertical))].filter(
+    Boolean,
+  );
+
   return (
     <main id="top">
       <section id="hero" className="bg-dark relative isolate overflow-hidden">
@@ -35,32 +41,40 @@ export default async function WorkIndexPage() {
           images={images}
           cards={9}
           speed={26}
-          axis={52}
-          className="min-h-[560px] md:min-h-[680px]"
+          axis={50}
+          // The source artwork is dim, and a corridor the viewer cannot read
+          // is just texture. Lifted here rather than in the component so the
+          // component stays generic.
+          className="min-h-[520px] md:min-h-[620px] [&_img]:brightness-[1.18] [&_img]:saturate-[1.12]"
         >
-          {/* The corridor runs behind the copy, so the copy needs its own
-              floor to stay legible as bright artwork passes under it. */}
+          {/* Three separate scrims instead of one heavy blanket. The first
+              only covers the copy column, so the rails stay bright out at the
+              flanks where there is no text to protect. */}
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(74%_62%_at_50%_52%,rgba(22,24,28,0.94)_0%,rgba(22,24,28,0.82)_38%,rgba(22,24,28,0.42)_70%,rgba(22,24,28,0.18)_100%)]"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(54%_56%_at_50%_48%,rgba(22,24,28,0.92)_0%,rgba(22,24,28,0.78)_40%,rgba(22,24,28,0.34)_72%,transparent_100%)]"
           />
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(to_top,#16181c_0%,rgba(22,24,28,0.7)_48%,transparent_100%)]"
+            className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-[linear-gradient(to_bottom,rgba(22,24,28,0.92)_0%,rgba(22,24,28,0.5)_55%,transparent_100%)]"
+          />
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-[linear-gradient(to_top,#16181c_0%,rgba(22,24,28,0.72)_52%,transparent_100%)]"
           />
 
-          <div className="relative flex min-h-[560px] flex-col md:min-h-[680px]">
+          <div className="relative flex min-h-[520px] flex-col md:min-h-[620px]">
             {/* Clears the fixed StickyNav, which is dark over this hero. */}
             <div aria-hidden className="h-[72px] shrink-0" />
 
-            <div className="mx-auto flex w-full max-w-[1280px] flex-1 flex-col items-center justify-center px-6 py-[clamp(40px,5vw,72px)] text-center">
+            <div className="mx-auto flex w-full max-w-[1280px] flex-1 flex-col items-center justify-center px-6 pt-[clamp(18px,2.2vw,32px)] pb-[clamp(8px,1.2vw,16px)] text-center">
               <p className="t-eyebrow text-dim-dark flex items-center gap-3">
                 <span aria-hidden className="bg-dark-line-strong h-px w-8" />
                 {workIndex.eyebrow}
                 <span aria-hidden className="bg-dark-line-strong h-px w-8" />
               </p>
 
-              <h1 className="font-display mt-6 text-[clamp(36px,5.6vw,74px)] leading-[0.94] font-bold tracking-[-0.05em] uppercase">
+              <h1 className="font-display mt-[clamp(16px,1.9vw,26px)] text-[clamp(36px,5.6vw,74px)] leading-[0.94] font-bold tracking-[-0.05em] uppercase [text-shadow:0_2px_30px_rgba(16,18,21,0.75)]">
                 <span className="text-dark-head block">
                   {workIndex.heading.one}
                 </span>
@@ -69,19 +83,45 @@ export default async function WorkIndexPage() {
                 </span>
               </h1>
 
-              <p className="text-dark-body mt-6 max-w-[60ch] text-[17px] leading-[1.6] text-pretty">
+              <p className="text-dark-body mt-[clamp(16px,1.8vw,24px)] max-w-[54ch] text-[16.5px] leading-[1.6] text-balance [text-shadow:0_1px_16px_rgba(16,18,21,0.95)]">
                 {workIndex.lead}
               </p>
 
-              <a
-                href={site.book}
-                className="bg-brand text-ink hover:bg-brand-hover focus-visible:outline-dark-head mt-8 inline-flex h-[54px] items-center rounded-full px-8 text-[15px] font-semibold shadow-[0_18px_44px_-18px_rgba(47,232,92,0.7)] transition-colors duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-[3px]"
-              >
-                {workIndex.cta.label}
-              </a>
-
-              <p className="t-meta text-dim-dark mt-4">{workIndex.cta.note}</p>
+              {/* Button and note on one line: stacked, they left a column of
+                  dead space under the fold. */}
+              <div className="mt-[clamp(22px,2.6vw,34px)] flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
+                <a
+                  href={site.book}
+                  className="bg-brand text-ink hover:bg-brand-hover focus-visible:outline-dark-head inline-flex h-[52px] items-center rounded-full px-7 text-[15px] font-semibold shadow-[0_18px_44px_-18px_rgba(47,232,92,0.7)] transition-colors duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-[3px]"
+                >
+                  {workIndex.cta.label}
+                </a>
+                <p className="t-meta text-dim-dark">{workIndex.cta.note}</p>
+              </div>
             </div>
+
+            {verticals.length ? (
+              <div className="mx-auto w-full max-w-[1280px] px-6 pb-[clamp(20px,2.4vw,32px)]">
+                <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2.5 border-t border-white/[0.09] pt-[clamp(16px,1.9vw,24px)]">
+                  {verticals.map((vertical, i) => (
+                    <li
+                      key={vertical}
+                      className="flex items-center gap-x-5 last:after:hidden"
+                    >
+                      <span className="t-eyebrow text-[#a7ada3]">
+                        {vertical}
+                      </span>
+                      {i < verticals.length - 1 ? (
+                        <span
+                          aria-hidden
+                          className="bg-brand/45 size-[3px] rounded-full"
+                        />
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </div>
         </ImageStreamHero>
       </section>
