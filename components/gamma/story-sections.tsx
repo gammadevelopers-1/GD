@@ -181,7 +181,7 @@ export function StoryAbout({
 
   const meta = [
     { label: labels.industry, value: study.sector },
-    { label: labels.location, value: study.region },
+    { label: study.regionLabel ?? labels.location, value: study.region },
     { label: labels.builtBy, value: site.name },
   ];
 

@@ -560,7 +560,6 @@ export const footer = {
       heading: "Explore",
       links: [
         { label: "AI audit", href: "/audit" },
-        { label: "Hiretics", href: "/products/hiretics" },
         { label: "Book a call", href: site.book },
       ],
     },
