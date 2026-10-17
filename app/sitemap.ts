@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 
 import { getPublishedCases } from "@/data/case-studies";
 import { legalDocuments } from "@/lib/content/legal";
+import { products } from "@/lib/content/products";
 import { services } from "@/lib/content/services";
 import { configuredOrigin } from "@/lib/site/origin";
 
@@ -12,15 +13,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPaths = ["", "/audit", "/book", "/work", "/about", "/contact"];
   const legalPaths = legalDocuments.map((doc) => `/${doc.slug}`);
   const servicePaths = services.map((service) => `/services/${service.slug}`);
-  const casePaths = (await getPublishedCases()).map((item) => `/work/${item.slug}`);
-
-  return [...staticPaths, ...servicePaths, ...casePaths, ...legalPaths].map(
-    (path) => ({
-      url: `${origin}${path}`,
-      lastModified: updated,
-      changeFrequency: path === "" ? "weekly" : "monthly",
-      priority:
-        path === "" ? 1 : path === "/audit" || path === "/book" ? 0.9 : 0.6,
-    }),
+  const productPaths = products.map((item) => `/products/${item.slug}`);
+  const casePaths = (await getPublishedCases()).map(
+    (item) => `/work/${item.slug}`,
   );
+
+  return [
+    ...staticPaths,
+    ...productPaths,
+    ...servicePaths,
+    ...casePaths,
+    ...legalPaths,
+  ].map((path) => ({
+    url: `${origin}${path}`,
+    lastModified: updated,
+    changeFrequency: path === "" ? "weekly" : "monthly",
+    priority:
+      path === "" ? 1 : path === "/audit" || path === "/book" ? 0.9 : 0.6,
+  }));
 }

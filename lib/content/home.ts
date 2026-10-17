@@ -251,40 +251,6 @@ export const testimonials = {
   ],
 } as const;
 
-export const compliance = {
-  eyebrow: "Compliance & trust",
-  title: "Built to the rules your regulators already check.",
-  body: "We handle real business data, so governance isn’t an afterthought. Every agent action is logged and auditable, and our delivery is aligned to the standards below.",
-  note: "Row-level security, encrypted document storage, and full audit trails on every deployment.",
-  cta: "Request trust report",
-  standards: [
-    {
-      name: "SOC 2 Type II",
-      body: "Security, availability and confidentiality controls, independently audited.",
-    },
-    {
-      name: "ISO/IEC 27001",
-      body: "Information-security management applied across our delivery lifecycle.",
-    },
-    {
-      name: "GDPR",
-      body: "Lawful processing, data-subject rights and EU data handling by default.",
-    },
-    {
-      name: "PCI DSS",
-      body: "Cardholder data handled to Level 1 service-provider standards.",
-    },
-    {
-      name: "HIPAA",
-      body: "Safeguards for protected health data on healthcare engagements.",
-    },
-    {
-      name: "Pakistan PDPB",
-      body: "Aligned with the Personal Data Protection Bill and local residency.",
-    },
-  ],
-} as const;
-
 export const bookAudit = {
   eyebrow: "Book your audit",
   title: "Grab a time.\nSee where the time goes.",
@@ -341,7 +307,9 @@ export const newsletter = {
   title: "Newsletter",
   body: "One useful email a month. No fluff.",
   placeholder: "you@company.com",
-  success: "You’re in — watch your inbox for the next dispatch.",
+  sending: "Signing you up…",
+  success: "Got it. You are on the list for the next one.",
+  error: "Something went wrong at our end.",
 } as const;
 
 export const problem = {

@@ -1,17 +1,57 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { newsletter } from "@/lib/content/home";
-import { Input } from "@/components/ui/input";
+
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { newsletter } from "@/lib/content/home";
+
+type State =
+  | { kind: "idle" }
+  | { kind: "sending" }
+  | { kind: "done" }
+  | { kind: "error"; message: string };
 
 export function NewsletterForm() {
-  const [message, setMessage] = useState("");
+  const [state, setState] = useState<State>({ kind: "idle" });
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setMessage(newsletter.success);
+    const form = event.currentTarget;
+    const data = new FormData(form);
+
+    setState({ kind: "sending" });
+
+    try {
+      const response = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: String(data.get("email") ?? ""),
+          website: String(data.get("website") ?? ""),
+        }),
+      });
+      const result = (await response.json()) as {
+        ok?: boolean;
+        error?: string;
+      } | null;
+
+      if (!response.ok || !result?.ok) {
+        setState({
+          kind: "error",
+          message: result?.error || newsletter.error,
+        });
+        return;
+      }
+
+      form.reset();
+      setState({ kind: "done" });
+    } catch {
+      setState({ kind: "error", message: newsletter.error });
+    }
   }
+
+  const busy = state.kind === "sending";
 
   return (
     <div>
@@ -25,17 +65,32 @@ export function NewsletterForm() {
           <Input
             variant="bare"
             type="email"
+            name="email"
             required
+            disabled={busy}
             placeholder={newsletter.placeholder}
             className="w-full border-0 bg-transparent text-[13px] text-[#eceae2] outline-none placeholder:text-[#6d736a]"
           />
         </label>
+
+        {/* Off-screen and hidden from assistive tech. Bots fill it, people
+            never see it. */}
+        <input
+          type="text"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden
+          className="pointer-events-none absolute -left-[9999px] size-px opacity-0"
+        />
+
         <Button
           variant="bare"
           size="none"
           type="submit"
+          disabled={busy}
           aria-label="Subscribe"
-          className="bg-brand focus-visible:ring-brand/50 grid size-8.5 shrink-0 cursor-pointer place-items-center rounded-lg text-[#0f1512] transition-transform duration-200 hover:-translate-y-px focus-visible:ring-2 focus-visible:outline-none"
+          className="bg-brand focus-visible:ring-brand/50 grid size-8.5 shrink-0 cursor-pointer place-items-center rounded-lg text-[#0f1512] transition-transform duration-200 hover:-translate-y-px focus-visible:ring-2 focus-visible:outline-none disabled:opacity-60"
         >
           <svg
             aria-hidden
@@ -53,11 +108,16 @@ export function NewsletterForm() {
           </svg>
         </Button>
       </form>
+
       <p
         aria-live="polite"
-        className="mt-2.25 min-h-[15px] text-[11px] text-[#6d736a]"
+        className={`mt-2.25 min-h-[15px] text-[11px] ${
+          state.kind === "error" ? "text-[#ff8f8f]" : "text-[#6d736a]"
+        }`}
       >
-        {message}
+        {state.kind === "sending" ? newsletter.sending : null}
+        {state.kind === "done" ? newsletter.success : null}
+        {state.kind === "error" ? state.message : null}
       </p>
     </div>
   );
