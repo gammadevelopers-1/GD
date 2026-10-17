@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import type { CaseStudy } from "@/lib/content/cases";
+import { testimonials } from "@/lib/gamma-content";
 import { site } from "@/lib/content/site";
 
 /**
@@ -25,6 +26,7 @@ export type StoryLabels = {
   readonly human: string;
   readonly takeaway: string;
   readonly gallery: string;
+  readonly testimonial: string;
   readonly industry: string;
   readonly location: string;
   readonly builtBy: string;
@@ -165,6 +167,67 @@ export function StoryHero({
             ))}
           </dl>
         ) : null}
+      </div>
+    </section>
+  );
+}
+
+/**
+ * The client's own words, directly under the hero, because a stranger decides
+ * whether to keep reading long before they reach the results.
+ *
+ * Attribution follows the page it sits on. A case study that calls its client
+ * "a UAE wills firm" cannot then credit the quote to a company by name on the
+ * same screen, so the name is only used where the client agreed to be named.
+ */
+export function StoryTestimonial({
+  study,
+  labels,
+}: {
+  study: Story;
+  labels: StoryLabels;
+}) {
+  if (!study.testimonial) return null;
+
+  const quote = testimonials.items.find(
+    (item) => item.company === study.testimonial,
+  );
+  if (!quote?.quote) return null;
+
+  const role = quote.descriptor.split("\u00b7")[0]?.trim() || quote.descriptor;
+  const credit = study.named
+    ? `${quote.company} \u00b7 ${role}`
+    : `${role} \u00b7 ${study.client}`;
+
+  return (
+    <section className="bg-ground">
+      <div className="mx-auto w-full max-w-[1280px] px-6 pt-[clamp(44px,5vw,76px)]">
+        <figure className="border-line bg-surface relative overflow-hidden rounded-[18px] border p-[clamp(26px,3.2vw,52px)]">
+          <span
+            aria-hidden
+            className="pointer-events-none absolute -top-24 -right-20 size-60 rounded-full bg-[radial-gradient(circle,rgba(13,119,40,0.11),transparent_66%)]"
+          />
+
+          <p className="t-eyebrow text-dim relative flex items-center gap-3">
+            <span aria-hidden className="bg-line-strong h-px w-8" />
+            {labels.testimonial}
+          </p>
+
+          <blockquote className="text-ink relative mt-6 max-w-[62ch] text-[clamp(18px,1.9vw,25px)] leading-[1.45] tracking-[-0.015em] text-pretty">
+            <span
+              aria-hidden
+              className="text-green-ink/35 mr-1.5 text-[28px] leading-none font-bold"
+            >
+              &ldquo;
+            </span>
+            {quote.quote}
+          </blockquote>
+
+          <figcaption className="relative mt-7 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+            <span aria-hidden className="bg-green-ink/50 h-px w-8" />
+            <span className="t-eyebrow text-dim">{credit}</span>
+          </figcaption>
+        </figure>
       </div>
     </section>
   );
@@ -443,7 +506,6 @@ export function StoryCloser({
   labels: StoryLabels;
   next?: { href: string; label: string; title: string };
 }) {
-
   return (
     <section className="bg-dark relative isolate overflow-hidden">
       <span
@@ -492,4 +554,3 @@ export function StoryCloser({
     </section>
   );
 }
-

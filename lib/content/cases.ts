@@ -34,6 +34,10 @@ export type CaseStudy = {
   /** Overrides the "Location" label on the about rail. Our own product has a
    *  status, not a place. */
   regionLabel?: string;
+  /** Company of the testimonial that belongs to this client, matched against
+   *  the wall in gamma-content. Only set it where the quote is genuinely from
+   *  this engagement. */
+  testimonial?: string;
   /** The line under the hero eyebrow, as written in the portfolio doc. */
   category: string;
 
@@ -73,6 +77,7 @@ export type CaseStudy = {
 export const caseStudies: readonly CaseStudy[] = [
   {
     slug: "car-rental-saas",
+    testimonial: "Drive247",
     status: "published",
     order: 1,
     client: "A US car rental SaaS",
@@ -369,6 +374,7 @@ export const caseStudies: readonly CaseStudy[] = [
 
   {
     slug: "wills-firm-document-ai",
+    testimonial: "Just Wills",
     status: "published",
     order: 4,
     client: "A UAE wills firm",
@@ -466,6 +472,7 @@ export const caseStudies: readonly CaseStudy[] = [
 
   {
     slug: "physioguidance",
+    testimonial: "PhysioGuidance",
     status: "published",
     order: 5,
     client: "PhysioGuidance",
@@ -748,6 +755,7 @@ export const caseLabels = {
   human: "What's still human",
   takeaway: "Takeaway",
   gallery: "Inside the build",
+  testimonial: "In their words",
   industry: "Industry",
   location: "Location",
   builtBy: "Built by",

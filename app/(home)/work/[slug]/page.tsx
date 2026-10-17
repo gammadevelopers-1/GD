@@ -11,6 +11,7 @@ import {
   StoryLeak,
   StoryResults,
   StoryTakeaway,
+  StoryTestimonial,
 } from "@/components/gamma/story-sections";
 import {
   getNextCase,
@@ -64,6 +65,7 @@ export default async function CaseStudyPage({
   return (
     <main id="top">
       <StoryHero study={study} labels={caseLabels} backHref="/work" />
+      <StoryTestimonial study={study} labels={caseLabels} />
       <StoryAbout study={study} labels={caseLabels} />
       <StoryLeak study={study} labels={caseLabels} />
       <StoryBuilt study={study} labels={caseLabels} />
