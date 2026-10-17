@@ -15,7 +15,8 @@
     "seed:demo": "node scripts/seed-demo.mjs",
     "release:check": "node scripts/release-check.mjs",
     "credential:key": "node scripts/credential-key.mjs",
-    "test:links": "node scripts/link-base-check.mjs"
+    "test:links": "node scripts/link-base-check.mjs",
+    "create:owner": "node scripts/create-owner.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
