@@ -320,6 +320,15 @@ export function CaseStudyForm({
             defaultValue={(study?.leak?.body ?? []).join("\n")}
           />
         </Field>
+        <Field label="Banner" hint="Optional. A wide image under the heading.">
+          <Input
+            variant="admin"
+            name="leakImage"
+            defaultValue={study?.leak?.image}
+            placeholder="/casestudy-images/…"
+            className="h-10"
+          />
+        </Field>
       </Group>
 
       <Group step="05" title="What we built" note="The work itself.">

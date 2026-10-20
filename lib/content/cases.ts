@@ -43,6 +43,11 @@ export type CaseStudy = {
 
   /** The headline. A problem turning into an outcome, never a company name. */
   title: string;
+  /** Optional display treatment for the hero only: one entry per line, a
+   *  quiet opener marked `small`, and `**stars**` on the words that go
+   *  green. The hero falls back to `title` without it, and `title` is still
+   *  what the card, the metadata and the next-case link use. */
+  heroLines?: readonly { text: string; small?: boolean }[];
   /** Card summary. One sentence. */
   body: string;
   tags: readonly string[];
@@ -60,7 +65,9 @@ export type CaseStudy = {
   stats: readonly CaseStat[];
 
   about?: string;
-  leak?: { heading: string; body: readonly string[] };
+  /** A wide banner under the heading. Optional: the section reads fine
+   *  as prose, so it stays empty until real artwork exists. */
+  leak?: { heading: string; body: readonly string[]; image?: string };
   built?: { heading: string; items: readonly BuiltItem[] };
   results?: {
     heading: string;
@@ -87,9 +94,15 @@ export const caseStudies: readonly CaseStudy[] = [
     region: "United States",
     category: "Car rental · Multi-tenant SaaS · AI operations",
     title: "Rental operators left Turo and launched their own brand in 40 seconds",
+    heroLines: [
+      { text: "They left Turo behind.", small: true },
+      { text: "Their own brand," },
+      { text: "live in **40 seconds**." },
+    ],
     body: "A platform that gives independent operators their own booking site, fleet, insurance, agreements and payments in one place.",
     tags: ["Multi-tenant SaaS", "Payments", "AI operations"],
     image: "/casestudy-images/drive-cover.jpeg",
+    heroImage: "/casestudy-images/drive-hero.jpeg",
     gallery: [],
     stats: [
       { value: "30+", label: "operators running their own brand" },
@@ -99,6 +112,7 @@ export const caseStudies: readonly CaseStudy[] = [
     about:
       "A US car rental software platform that gives independent operators **everything they need to run their own business**: a branded booking site, fleet management, insurance, agreements, payments and customer communication in one place. Operators range from budget fleets to luxury rentals. We designed, built and still run it end to end.",
     leak: {
+      image: "/casestudy-images/drive-theleak.jpeg",
       heading:
         "Their business lived on someone else's marketplace and a phone full of notes",
       body: [

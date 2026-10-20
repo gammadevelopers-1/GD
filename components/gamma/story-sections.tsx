@@ -86,11 +86,16 @@ function SectionLabel({
  * weight without the layout guessing which one matters. The marker is
  * Markdown's, because the CMS editor already knows it.
  */
-function Prose({ text }: { text: string }) {
+function Prose({ text, dark }: { text: string; dark?: boolean }) {
   // split() with a capturing group puts the captures at the odd indices.
   return text.split(/\*\*(.+?)\*\*/g).map((part, i) =>
     i % 2 ? (
-      <strong key={i} className="text-green-ink font-semibold">
+      // The ink green is unreadable on the dark sections, so those get the
+      // bright brand green instead.
+      <strong
+        key={i}
+        className={dark ? "text-brand" : "text-green-ink font-semibold"}
+      >
         {part}
       </strong>
     ) : (
@@ -159,6 +164,64 @@ export function StoryProgress() {
 
 /* ── the hero ────────────────────────────────────────────────── */
 
+/** The three figures. The first carries the brand fill: there is always one
+ *  that matters most, and a flat row of three made the reader decide which. */
+function HeroStats({
+  stats,
+  className = "",
+  stacked,
+}: {
+  stats: Story["stats"];
+  className?: string;
+  /** Beside the image the cards are wide and short, so the figure and its
+   *  label share a line rather than leaving the right half of each empty. */
+  stacked?: boolean;
+}) {
+  if (!stats.length) return null;
+
+  return (
+    <dl className={`grid gap-3 ${className}`}>
+      {stats.map((stat, i) => {
+        const lead = i === 0;
+        return (
+          <div
+            key={stat.label}
+            className={`rounded-[16px] p-[clamp(20px,2vw,28px)] ${
+              lead
+                ? "bg-brand shadow-[0_22px_52px_-26px_rgba(47,232,92,0.6)]"
+                : "border border-white/[0.1] bg-white/[0.035]"
+            }`}
+          >
+            <dt className="sr-only">{stat.label}</dt>
+            <dd
+              className={
+                stacked
+                  ? "flex flex-wrap items-baseline justify-between gap-x-5 gap-y-1.5 lg:flex-nowrap"
+                  : ""
+              }
+            >
+              <span
+                className={`font-display block text-[clamp(26px,2.8vw,38px)] leading-none font-bold tracking-[-0.04em] ${
+                  lead ? "text-ink" : "text-brand"
+                }`}
+              >
+                {stat.value}
+              </span>
+              <span
+                className={`block text-[13.5px] leading-[1.5] ${
+                  stacked ? "lg:max-w-[20ch] lg:text-right" : "mt-2.5"
+                } ${lead ? "text-ink/70" : "text-dim-dark"}`}
+              >
+                {stat.label}
+              </span>
+            </dd>
+          </div>
+        );
+      })}
+    </dl>
+  );
+}
+
 export function StoryHero({
   study,
   labels,
@@ -218,25 +281,44 @@ export function StoryHero({
           {study.category}
         </p>
 
-        <div
-          className={
-            study.heroImage
-              ? "grid items-center gap-x-[clamp(40px,5vw,88px)] gap-y-10 lg:grid-cols-[1.1fr_0.9fr]"
-              : ""
-          }
+        {/* Full width, so the headline can actually be a headline. Beside
+            the image it was boxed into half a row, which capped the type at
+            a size that left the column empty above and below it. */}
+        <h1
+          className={`font-display text-dark-head mt-[clamp(14px,1.6vw,22px)] font-bold tracking-[-0.045em] uppercase ${
+            study.heroLines?.length
+              ? // Each line sets its own size, so the element must not.
+                "leading-[0.96]"
+              : "max-w-[38ch] text-[clamp(32px,5vw,66px)] leading-[0.98] text-balance"
+          }`}
         >
-          <h1
-            className={`font-display text-dark-head mt-5 leading-[0.98] font-bold tracking-[-0.045em] text-balance uppercase ${
-              study.heroImage
-                ? "text-[clamp(32px,4.2vw,54px)]"
-                : "max-w-[38ch] text-[clamp(32px,5vw,66px)]"
-            }`}
-          >
-            {study.title}
-          </h1>
+          {study.heroLines?.length
+            ? // Set line by line, because where it breaks and which words
+              // carry the green is a decision about this headline, not
+              // something a measure can be trusted to find.
+              study.heroLines.map((line) => (
+                <span
+                  key={line.text}
+                  className={
+                    line.small
+                      ? "text-dim-dark mb-[clamp(8px,1vw,14px)] block text-[clamp(16px,1.8vw,24px)] font-medium tracking-[-0.01em] normal-case"
+                      : "block text-[clamp(34px,5.4vw,74px)]"
+                  }
+                >
+                  <Prose text={line.text} dark />
+                </span>
+              ))
+            : study.title}
+        </h1>
 
-          {study.heroImage ? (
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[18px] border border-white/[0.09]">
+        {study.heroImage ? (
+          // Image and figures share the row under the headline. The image
+          // keeps its width this way, and the stats fill the column beside
+          // it instead of the headline leaving one empty.
+          <div className="mt-[clamp(28px,3.2vw,46px)] grid items-center gap-[clamp(20px,2.4vw,40px)] lg:grid-cols-[1.5fr_1fr]">
+            {/* 16:9, the shape these compositions are cropped to. A 4:3 box
+                left the artwork swimming in its own dark padding. */}
+            <div className="relative aspect-video w-full overflow-hidden rounded-[18px] border border-white/[0.09]">
               <Image
                 src={study.heroImage}
                 alt=""
@@ -245,51 +327,23 @@ export function StoryHero({
                 // deprecated in Next 16, and these two say what it meant.
                 loading="eager"
                 fetchPriority="high"
-                sizes="(min-width: 1024px) 540px, 92vw"
-                className="object-cover object-top"
+                sizes="(min-width: 1024px) 740px, 92vw"
+                className="object-cover"
               />
             </div>
-          ) : null}
-        </div>
 
-        {/* Cards rather than a bare row, and the first one carries the brand
-            fill: there is always one figure that matters most, and a flat row
-            of three made the reader decide which. */}
-        {study.stats.length ? (
-          <dl className="mt-[clamp(34px,4vw,56px)] grid gap-3 sm:grid-cols-3">
-            {study.stats.map((stat, i) => {
-              const lead = i === 0;
-              return (
-                <div
-                  key={stat.label}
-                  className={`rounded-[16px] p-[clamp(20px,2vw,28px)] ${
-                    lead
-                      ? "bg-brand shadow-[0_22px_52px_-26px_rgba(47,232,92,0.6)]"
-                      : "border border-white/[0.1] bg-white/[0.035]"
-                  }`}
-                >
-                  <dt className="sr-only">{stat.label}</dt>
-                  <dd>
-                    <span
-                      className={`font-display block text-[clamp(28px,3.2vw,42px)] leading-none font-bold tracking-[-0.04em] ${
-                        lead ? "text-ink" : "text-brand"
-                      }`}
-                    >
-                      {stat.value}
-                    </span>
-                    <span
-                      className={`mt-3 block text-[13.5px] leading-[1.5] ${
-                        lead ? "text-ink/70" : "text-dim-dark"
-                      }`}
-                    >
-                      {stat.label}
-                    </span>
-                  </dd>
-                </div>
-              );
-            })}
-          </dl>
-        ) : null}
+            <HeroStats
+              stats={study.stats}
+              stacked
+              className="sm:grid-cols-3 lg:grid-cols-1"
+            />
+          </div>
+        ) : (
+          <HeroStats
+            stats={study.stats}
+            className="mt-[clamp(34px,4vw,56px)] sm:grid-cols-3"
+          />
+        )}
       </div>
     </section>
   );
@@ -395,30 +449,59 @@ export function StoryLeak({
 
   return (
     <section id="leak" className={block}>
-      <SectionLabel>{labels.leak}</SectionLabel>
+      {/* A panel rather than loose prose on the page background, and the
+          paragraphs set as numbered points: this is the section a reader
+          skims, and a wall of four paragraphs is what they skip. */}
+      <div
+        className={`bg-surface border-line relative overflow-hidden border ${panel}`}
+      >
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -top-28 -right-24 size-72 rounded-full bg-[radial-gradient(circle,rgba(13,119,40,0.08),transparent_68%)]"
+        />
 
-      <h2 className={`${heading} text-ink`}>{study.leak.heading}</h2>
+        <div className="relative">
+          <SectionLabel>{labels.leak}</SectionLabel>
 
-      {lead ? (
-        <p className="text-ink mt-[clamp(22px,2.4vw,32px)] text-[clamp(17px,1.7vw,21px)] leading-[1.6] text-pretty">
-          <Prose text={lead} />
-        </p>
-      ) : null}
+          <h2 className={`${heading} text-ink`}>{study.leak.heading}</h2>
 
-      {/* The rest runs in two columns. One column at this width finished
-          halfway across and left the other half blank. */}
-      {rest.length ? (
-        <div className="mt-7 grid gap-x-[clamp(32px,3.4vw,60px)] gap-y-5 md:grid-cols-2">
-          {rest.map((para) => (
-            <p
-              key={para.slice(0, 40)}
-              className="text-ink-soft text-[16px] leading-[1.7] text-pretty"
-            >
-              <Prose text={para} />
+          {study.leak.image ? (
+            <div className="bg-ground relative mt-[clamp(22px,2.4vw,34px)] aspect-[21/9] w-full overflow-hidden rounded-[16px]">
+              <Image
+                src={study.leak.image}
+                alt=""
+                fill
+                sizes="(min-width: 1024px) 900px, 92vw"
+                className="object-cover"
+              />
+            </div>
+          ) : null}
+
+          {lead ? (
+            <p className="text-ink mt-[clamp(22px,2.4vw,32px)] text-[clamp(17px,1.7vw,21px)] leading-[1.6] text-pretty">
+              <Prose text={lead} />
             </p>
-          ))}
+          ) : null}
+
+          {rest.length ? (
+            <ol className="mt-[clamp(22px,2.4vw,32px)] grid gap-3 md:grid-cols-2">
+              {rest.map((para, i) => (
+                <li
+                  key={para.slice(0, 40)}
+                  className="border-line-soft bg-ground rounded-[14px] border p-[clamp(18px,1.9vw,24px)]"
+                >
+                  <span className="text-green-ink border-green-ink/20 bg-green-tint/60 mb-3 grid size-7 place-items-center rounded-full border font-mono text-[10.5px] tracking-[0.08em]">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <p className="text-ink-soft text-[15.5px] leading-[1.68] text-pretty">
+                    <Prose text={para} />
+                  </p>
+                </li>
+              ))}
+            </ol>
+          ) : null}
         </div>
-      ) : null}
+      </div>
     </section>
   );
 }

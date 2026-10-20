@@ -117,7 +117,13 @@ export function toCaseStudy(row: Row): CaseRecord | null {
     stats: list(content.stats, stat),
     ...(str(content.about) ? { about: str(content.about) } : {}),
     ...(str(leak.heading)
-      ? { leak: { heading: str(leak.heading), body: strings(leak.body) } }
+      ? {
+          leak: {
+            heading: str(leak.heading),
+            body: strings(leak.body),
+            ...(str(leak.image) ? { image: str(leak.image) } : {}),
+          },
+        }
       : {}),
     ...(str(built.heading)
       ? {

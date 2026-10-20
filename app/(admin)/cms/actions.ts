@@ -61,6 +61,7 @@ function readStudy(form: FormData, slug: string): CaseStudy {
   const leakBody = lines(form, "leakBody");
   const builtItems = pairs(form, "builtItems");
   const leakHeading = text(form, "leakHeading", 300);
+  const leakImage = text(form, "leakImage", 400);
   const builtHeading = text(form, "builtHeading", 300);
   const resultsHeading = text(form, "resultsHeading", 300);
   const takeawayLine = text(form, "takeawayLine", 400);
@@ -90,7 +91,15 @@ function readStudy(form: FormData, slug: string): CaseStudy {
     })),
     stats,
     ...(about ? { about } : {}),
-    ...(leakHeading ? { leak: { heading: leakHeading, body: leakBody } } : {}),
+    ...(leakHeading
+      ? {
+          leak: {
+            heading: leakHeading,
+            body: leakBody,
+            ...(leakImage ? { image: leakImage } : {}),
+          },
+        }
+      : {}),
     ...(builtHeading
       ? { built: { heading: builtHeading, items: builtItems } }
       : {}),

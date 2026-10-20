@@ -19,13 +19,12 @@ export const revalidate = 300;
 export default async function WorkIndexPage() {
   const items = await getPublishedCases();
 
-  // The corridor runs the work itself. A hero mockup where one exists, card
-  // artwork otherwise. The sequence is doubled because both rails walk the
-  // same list, and a short list would otherwise sit opposite itself.
-  const stream = items.map((item) => ({
-    src: item.heroImage ?? item.image,
-    alt: "",
-  }));
+  // The corridor runs the work itself, off the card artwork rather than the
+  // hero mockups: a cover is already made to be read at thumbnail size, and
+  // the mockups are dark UI that disappears against a dark corridor. The
+  // sequence is doubled because both rails walk the same list, and a short
+  // list would otherwise sit opposite itself.
+  const stream = items.map((item) => ({ src: item.image, alt: "" }));
   const images = stream.length ? [...stream, ...stream] : [];
 
   // Read off the work rather than written by hand, so the strip cannot claim
