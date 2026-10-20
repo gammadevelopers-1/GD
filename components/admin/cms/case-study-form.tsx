@@ -407,6 +407,15 @@ export function CaseStudyForm({
         <Field label="What's still human" hint="Wrap a phrase in **stars** to pick it out in green.">
           <Textarea name="human" rows={3} defaultValue={study?.human} />
         </Field>
+        <Field label="Picture" hint="Optional. Sits beside the copy.">
+          <Input
+            variant="admin"
+            name="humanImage"
+            defaultValue={study?.humanImage}
+            placeholder="/casestudy-images/…"
+            className="h-10"
+          />
+        </Field>
         <Field label="Takeaway" hint="The one line worth remembering.">
           <Input
             variant="admin"

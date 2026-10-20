@@ -76,6 +76,9 @@ export type CaseStudy = {
     points: readonly ResultPoint[];
   };
   human?: string;
+  /** Optional picture beside the "what's still human" copy. A sibling
+   *  rather than a nested block, because `human` is a bare string. */
+  humanImage?: string;
   takeaway?: { line: string; body: string };
   cta?: string;
 
@@ -185,6 +188,7 @@ export const caseStudies: readonly CaseStudy[] = [
         },
       ],
     },
+    humanImage: "/casestudy-images/drive-huma.jpeg",
     human:
       "Operators still set their prices, approve their customers and hand over the keys. AI flags identity mismatches and suggests prices and replies, but **the operator makes the call**. The platform does the paperwork. The owner runs the business.",
     takeaway: {

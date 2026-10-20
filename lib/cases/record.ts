@@ -144,6 +144,9 @@ export function toCaseStudy(row: Row): CaseRecord | null {
         }
       : {}),
     ...(str(content.human) ? { human: str(content.human) } : {}),
+    ...(str(content.humanImage)
+      ? { humanImage: str(content.humanImage) }
+      : {}),
     ...(str(takeaway.line)
       ? { takeaway: { line: str(takeaway.line), body: str(takeaway.body) } }
       : {}),

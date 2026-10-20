@@ -68,6 +68,7 @@ function readStudy(form: FormData, slug: string): CaseStudy {
   const takeawayLine = text(form, "takeawayLine", 400);
   const about = text(form, "about", 2000);
   const human = text(form, "human", 2000);
+  const humanImage = text(form, "humanImage", 400);
   const cta = text(form, "cta", 400);
   const heroImage = text(form, "heroImage", 400);
 
@@ -120,6 +121,7 @@ function readStudy(form: FormData, slug: string): CaseStudy {
         }
       : {}),
     ...(human ? { human } : {}),
+    ...(humanImage ? { humanImage } : {}),
     ...(takeawayLine
       ? {
           takeaway: {

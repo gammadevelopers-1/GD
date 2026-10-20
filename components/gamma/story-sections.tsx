@@ -732,10 +732,35 @@ export function StoryHuman({
   return (
     <section id="human" className={block}>
       <div className={`bg-gd-panel border-line border ${panel}`}>
-        <SectionLabel>{labels.human}</SectionLabel>
-        <p className="text-ink mt-6 text-[clamp(16.5px,1.7vw,21px)] leading-[1.6] text-pretty">
-          <Prose text={study.human} />
-        </p>
+        {study.humanImage ? (
+          // Copy left, picture right. The paragraph alone is short, so full
+          // width it sat in a band of empty panel.
+          <div className="grid items-center gap-x-[clamp(28px,3.2vw,56px)] gap-y-7 lg:grid-cols-[1fr_1.1fr]">
+            <div>
+              <SectionLabel>{labels.human}</SectionLabel>
+              <p className="text-ink mt-6 text-[clamp(16.5px,1.7vw,21px)] leading-[1.6] text-pretty">
+                <Prose text={study.human} />
+              </p>
+            </div>
+
+            <div className="bg-ground relative aspect-video w-full overflow-hidden rounded-[16px]">
+              <Image
+                src={study.humanImage}
+                alt=""
+                fill
+                sizes="(min-width: 1024px) 600px, 92vw"
+                className="object-cover"
+              />
+            </div>
+          </div>
+        ) : (
+          <>
+            <SectionLabel>{labels.human}</SectionLabel>
+            <p className="text-ink mt-6 text-[clamp(16.5px,1.7vw,21px)] leading-[1.6] text-pretty">
+              <Prose text={study.human} />
+            </p>
+          </>
+        )}
       </div>
     </section>
   );
