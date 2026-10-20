@@ -237,7 +237,7 @@ export const caseStudies: readonly CaseStudy[] = [
     body: "A recruitment group whose leads, follow-up, email and invoicing now run themselves on one system they own.",
     tags: ["Workflow automation", "Agentic AI", "Payments"],
 
-    image: "/case-study2.jpg",
+    image: "/casestudy-images/ifg-cover.jpeg",
     gallery: [],
 
     stats: [

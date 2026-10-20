@@ -529,7 +529,11 @@ export function StoryLeak({
               {rest.map((para, i) => (
                 <li
                   key={para.slice(0, 40)}
-                  className="border-line-soft bg-ground rounded-[14px] border p-[clamp(18px,1.9vw,24px)]"
+                  className={`border-line-soft bg-ground rounded-[14px] border p-[clamp(18px,1.9vw,24px)] ${
+                    i === rest.length - 1 && rest.length % 2 === 1
+                      ? "md:col-span-2"
+                      : ""
+                  }`}
                 >
                   <span className="text-green-ink border-green-ink/20 bg-green-tint/60 mb-3 grid size-7 place-items-center rounded-full border font-mono text-[10.5px] tracking-[0.08em]">
                     {String(i + 1).padStart(2, "0")}
@@ -598,7 +602,15 @@ export function StoryBuilt({
           {study.built.items.map((item, i) => (
             <li
               key={item.label}
-              className="bg-dark-row flex flex-col gap-2.5 p-[clamp(20px,2.1vw,28px)]"
+              // An odd last item takes the whole row. Two columns otherwise
+              // leave a hole in the grid, and the fix belongs here rather
+              // than in a rule that the content has to come in pairs.
+              className={`bg-dark-row flex flex-col gap-2.5 p-[clamp(20px,2.1vw,28px)] ${
+                i === study.built!.items.length - 1 &&
+                study.built!.items.length % 2 === 1
+                  ? "md:col-span-2"
+                  : ""
+              }`}
             >
               <span className="text-brand font-mono text-[10.5px] tracking-[0.16em]">
                 {String(i + 1).padStart(2, "0")}
@@ -646,10 +658,14 @@ export function StoryAI({
       {/* Green-edged rather than the plain hairline the other cards use, so
           the layer reads as its own thing at a glance. */}
       <ul className="mt-[clamp(26px,3vw,42px)] grid gap-4 md:grid-cols-2">
-        {study.ai.items.map((item) => (
+        {study.ai.items.map((item, i) => (
           <li
             key={item.label}
-            className="border-green-ink/20 bg-surface hover:border-green-ink/45 relative overflow-hidden rounded-[16px] border p-[clamp(20px,2.1vw,28px)] transition-colors duration-300 ease-out"
+            className={`border-green-ink/20 bg-surface hover:border-green-ink/45 relative overflow-hidden rounded-[16px] border p-[clamp(20px,2.1vw,28px)] transition-colors duration-300 ease-out ${
+              i === study.ai!.items.length - 1 && study.ai!.items.length % 2 === 1
+                ? "md:col-span-2"
+                : ""
+            }`}
           >
             <span
               aria-hidden
