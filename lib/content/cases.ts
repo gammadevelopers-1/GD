@@ -416,7 +416,7 @@ export const caseStudies: readonly CaseStudy[] = [
     body: "A luxury networking club across three cities, where the daily management job the founder was about to hire for is done by AI.",
     tags: ["AI agents", "Workflow automation", "Events"],
 
-    image: "/case-study.jpg",
+    image: "/casestudy-images/club-cover.jpeg",
     gallery: [],
 
     stats: [
