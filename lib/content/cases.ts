@@ -404,25 +404,27 @@ export const caseStudies: readonly CaseStudy[] = [
     category:
       "Private members' club \u00b7 Workflow automation \u00b7 AI agents",
 
-    title: "She runs a three-city club without hiring a manager",
+    title: "Seven AI agents run the club. She runs the room.",
     heroLines: [
       {
-        text: "150+ members across London, Manchester and Leeds.",
+        text: "A chief of staff, a receptionist and a matchmaker.",
         small: true,
       },
-      { text: "She never hired the manager." },
-      { text: "**The AI does that job.**" },
+      { text: "Seven agents run the club." },
+      { text: "**She runs the room.**" },
     ],
-    body: "A luxury networking club across three cities, where the daily management job the founder was about to hire for is done by AI.",
+    body: "A luxury networking club across three cities where a chief of staff, a receptionist and a matchmaker keep the day running, and none of them are people.",
     tags: ["AI agents", "Workflow automation", "Events"],
 
     image: "/casestudy-images/club-cover.jpeg",
+    heroImage: "/casestudy-images/club-hero.jpeg",
+    heroAspect: "21 / 9",
     gallery: [],
 
     stats: [
-      { value: "0", label: "managers hired to run the day to day" },
-      { value: "7", label: "AI systems doing that job instead" },
-      { value: "150+", label: "members across three cities" },
+      { value: "7", label: "AI agents running the club day to day" },
+      { value: "150+", label: "members across London, Manchester and Leeds" },
+      { value: "~3 months", label: "from first meeting to live" },
     ],
 
     about:
@@ -478,7 +480,7 @@ export const caseStudies: readonly CaseStudy[] = [
     },
 
     ai: {
-      heading: "Seven agents, and not one of them needed a desk",
+      heading: "Seven agents, each with a piece of the day",
       lead: "The management job she was about to hire for is split across seven systems. Each one does a piece of it, every day.",
       items: [
         {
@@ -513,13 +515,16 @@ export const caseStudies: readonly CaseStudy[] = [
     },
 
     results: {
-      heading: "The management job, done, with nobody on the payroll for it",
-      lead: "The platform went live in about three months and the club has run on it every day since, now across three cities with 150+ members.",
+      heading: "The admin runs on agents. She runs the relationships.",
+      lead: "The platform went live in about three months and the club has run on it every day since, now across three cities with 150+ members \u2014 and **the manager she was about to hire was never needed**.",
       points: [
-        { value: "0", text: "managers hired to run the day to day" },
         {
           value: "7",
-          text: "AI systems covering the briefing, the phone, the matching and the marketing",
+          text: "AI agents covering the briefing, the phone, the matching and the marketing",
+        },
+        {
+          value: "7am",
+          text: "daily briefing on memberships, sales, events, team, finance and risks",
         },
         { value: "150+", text: "members across London, Manchester and Leeds" },
         {
