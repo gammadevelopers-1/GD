@@ -395,66 +395,76 @@ export const caseStudies: readonly CaseStudy[] = [
     slug: "members-club-platform",
     status: "published",
     order: 3,
+
     client: "A UK private members' club",
     named: false,
     sector: "Private members' club",
     vertical: "Members' Clubs",
     region: "United Kingdom",
-    category: "Private members' club · Membership CRM · AI agents",
-    title: "Spreadsheets and WhatsApp groups became an AI chief of staff",
-    body: "A luxury networking club where the founder held everything in her head, rebuilt as one system that briefs her every morning.",
-    tags: ["Membership CRM", "AI agents", "Events"],
+    category:
+      "Private members' club \u00b7 Workflow automation \u00b7 AI agents",
+
+    title: "She runs a three-city club without hiring a manager",
+    heroLines: [
+      {
+        text: "150+ members across London, Manchester and Leeds.",
+        small: true,
+      },
+      { text: "She never hired the manager." },
+      { text: "**The AI does that job.**" },
+    ],
+    body: "A luxury networking club across three cities, where the daily management job the founder was about to hire for is done by AI.",
+    tags: ["AI agents", "Workflow automation", "Events"],
+
     image: "/case-study.jpg",
     gallery: [],
+
     stats: [
-      { value: "1", label: "system replacing 5+ scattered tools" },
-      { value: "3", label: "AI agents working for the founder daily" },
-      { value: "~3 months", label: "from first meeting to live" },
+      { value: "0", label: "managers hired to run the day to day" },
+      { value: "7", label: "AI systems doing that job instead" },
+      { value: "150+", label: "members across three cities" },
     ],
+
     about:
-      "A luxury private members' networking club in the North of England, bringing business owners together through curated events, retreats and introductions. Memberships range from £1,500 to £5,000 a year across three tiers. We built the full platform end to end: the public website, member portal, admin dashboard, staff workspace and sponsor portal.",
+      "A luxury private members' networking club bringing business owners together across London, Manchester and Leeds through curated events, retreats and introductions. Memberships run from \u00a31,500 to \u00a35,000 a year across three tiers, with 150+ members. We built the platform end to end \u2014 the public website, member dashboards, admin, staff workspace and sponsor portal \u2014 and still run it.",
+
     leak: {
-      heading: "A premium experience on the outside, chaos on the inside",
+      heading:
+        "The next thing she needed was a manager, and she didn't want one",
       body: [
-        "Members saw a polished, high-end club. Behind it, the founder was running everything herself across Excel sheets, WhatsApp groups, Gmail and a separate lead tool. Applications in one place, payments in another, event lists in a spreadsheet, introductions in her head.",
-        "Nothing talked to anything else. To answer a simple question like who is renewing next month, or which sponsor fits this event, she had to dig through five places and hope the information was current.",
-        "The club was growing. The founder was the only thing holding it together, and that doesn't scale.",
+        "Members saw a polished, high-end club. Behind it, the founder was running all of it herself across Excel sheets, WhatsApp groups, Gmail and a separate lead tool. Applications in one place, payments in another, event lists in a spreadsheet, introductions in her head.",
+        "Nothing talked to anything else. To answer a simple question \u2014 who is renewing next month, which sponsor fits this event \u2014 she had to dig through five places and hope what she found was current, while **a stack of third-party tools took money every month to hold data she already owned**.",
+        "None of the day to day moved on its own either. Renewal invoices, failed payments, post-event follow-ups, guest nurture, introduction notes: every one of them waited for her to remember.",
+        "The obvious answer was to hire. Someone to hold the diary, chase the money and brief her each morning. **She didn't want a manager. She wanted the job done.**",
       ],
     },
+
     built: {
-      heading: "We started with her chaos, not with software",
+      heading: "One system, and a day that runs without her",
       items: [
         {
           label: "One home for everything",
-          body: "Members, applications, events, bookings, sponsors, finance and team, all on one database. Approve a member and they appear everywhere instantly.",
+          body: "Members, applications, events, bookings, sponsors, finance and team on one database. Approve a member and they appear everywhere instantly.",
         },
         {
           label: "A luxury website that books for her",
-          body: "Visitors browse events, apply to join and request places. Their card is held and only charged when she approves.",
+          body: "Visitors browse events, apply to join and request places. Their card is held and only charged once she approves.",
         },
         {
-          label: "An AI chief of staff",
-          body: "Every morning at 7am, a briefing lands covering memberships, sales, events, team, finance and risks.",
+          label: "Lifecycle emails that send themselves",
+          body: "Renewal reminders, failed-payment notices, post-event follow-ups, guest nurture, invoice chasing and introduction notifications all run on a daily schedule. She can preview or trigger any of them, but none of them wait for her.",
         },
         {
-          label: "A member success manager",
-          body: "Flags members who are at risk, due to renew, going quiet, or ready to upgrade.",
+          label: "Renewals invoiced automatically",
+          body: "A membership coming up for renewal raises and sends its own invoice, and chases it if it goes unpaid.",
         },
         {
-          label: "A website concierge",
-          body: "A luxury AI chat that answers visitors any time and turns them into qualified enquiries.",
-        },
-        {
-          label: "Introductions that explain themselves",
-          body: "Members get matched, and AI explains why the match makes sense, using what each member said they want and offer.",
-        },
-        {
-          label: "A marketing engine in her voice",
-          body: "One event, topic or voice note becomes blogs, LinkedIn posts, captions, newsletters and press releases, written in two voices: the club's and the founder's.",
+          label: "A dashboard for every member",
+          body: "Members see their membership, their events, their bookings and their introductions without emailing the office.",
         },
         {
           label: "Sponsors matched to the room",
-          body: "AI matches sponsors to each event and its guest list, and drafts the outreach.",
+          body: "Each event's guest list is matched against the sponsor list, and the outreach is drafted ready to send.",
         },
         {
           label: "A team that knows what it owns",
@@ -462,42 +472,80 @@ export const caseStudies: readonly CaseStudy[] = [
         },
         {
           label: "Every channel in one place",
-          body: "Email, WhatsApp, contracts and payments, connected to accounting. Nothing customer-facing goes out without her approval.",
+          body: "Email, WhatsApp, contracts and payments, connected to accounting. Nothing customer-facing leaves without her approval.",
         },
       ],
     },
+
+    ai: {
+      heading: "Seven agents, and not one of them needed a desk",
+      lead: "The management job she was about to hire for is split across seven systems. Each one does a piece of it, every day.",
+      items: [
+        {
+          label: "Chief of Staff",
+          body: "Every morning at 7am a briefing lands covering memberships, sales, events, team, finance and risks. Every figure is read off live data rather than a report somebody had to build.",
+        },
+        {
+          label: "A receptionist that answers the phone",
+          body: "Takes the call in place of a human receptionist, talks to the caller, and books the meeting, the event place or the seat they were ringing about.",
+        },
+        {
+          label: "Member Success",
+          body: "Watches the membership for anyone going quiet, coming up for renewal, at risk of leaving or ready to upgrade, and flags them earlier than a person scanning a spreadsheet would.",
+        },
+        {
+          label: "Introductions that know why",
+          body: "The founder's whole idea was spotting what two members have in common. AI reads what each one said they want and offer, finds the overlap, and explains the match so she can make the introduction at the next event.",
+        },
+        {
+          label: "A concierge on the website",
+          body: "Answers visitors at any hour and turns them into qualified enquiries instead of a form nobody fills in.",
+        },
+        {
+          label: "An agent that designs the email",
+          body: "Describe the email and it comes back finished: the copy, the layout, the colours and the type, rather than a blank template builder.",
+        },
+        {
+          label: "Marketing that posts itself",
+          body: "One event, topic or voice note becomes blogs, LinkedIn posts, captions and newsletters in two voices, the club's and the founder's, then goes out on a schedule through Metricool.",
+        },
+      ],
+    },
+
     results: {
-      heading:
-        "From holding everything in her head to a system that briefs her",
-      lead: "The platform went live in about three months, and the founder and her team now run the club on it every day.",
+      heading: "The management job, done, with nobody on the payroll for it",
+      lead: "The platform went live in about three months and the club has run on it every day since, now across three cities with 150+ members.",
       points: [
+        { value: "0", text: "managers hired to run the day to day" },
+        {
+          value: "7",
+          text: "AI systems covering the briefing, the phone, the matching and the marketing",
+        },
+        { value: "150+", text: "members across London, Manchester and Leeds" },
         {
           value: "5",
-          text: "front doors on one database: website, member portal, admin, staff workspace and sponsor portal",
+          text: "front doors on one database: website, member dashboards, admin, staff workspace and sponsor portal",
         },
         {
           value: "3",
-          text: "AI agents running daily: chief of staff, member success and website concierge",
+          text: "membership tiers, invoiced and renewed on their own",
         },
+        { value: "~3 months", text: "from first meeting to live" },
         {
-          value: "1",
-          text: "system replacing spreadsheets, WhatsApp groups, inbox juggling and a separate lead tool",
-        },
-        {
-          text: "Every workflow mapped out of the founder's head into a written spec.",
-        },
-        {
-          text: "A new public website that raised the bar on her previous one.",
+          text: "Renewals, failed payments, follow-ups, nurture and introduction notices all send on a daily schedule without anyone starting them.",
         },
       ],
     },
+
     human:
-      "The founder still approves every member, every introduction and every message that leaves the club. AI writes the drafts, spots the risks and prepares the briefing. She makes the calls and builds the relationships, which is the part of the business only she can do.",
+      "The founder still approves every member, every introduction and every message that leaves the club. AI writes the drafts, spots the risks, answers the phone and prepares the briefing. **She makes the calls and builds the relationships**, which is the part of the business only she can do.",
+
     takeaway: {
-      line: "If your business only works because you remember everything, you don't have a system. You have a bottleneck.",
-      body: "This founder didn't need more apps. She needed someone to map her chaos and turn it into one place that works the way she does.",
+      line: "The job you are about to hire for is usually a description of work nobody has automated yet.",
+      body: "This founder didn't need more apps, and she didn't need a manager. She needed the day to run itself, and to keep **the part only she can do**.",
     },
-    cta: "Running your business across spreadsheets and WhatsApp groups? Let's map where it's leaking.",
+
+    cta: "About to hire someone to hold it all together? Let's find where it's leaking.",
   },
 
   {
