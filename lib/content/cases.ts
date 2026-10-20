@@ -73,7 +73,13 @@ export type CaseStudy = {
    *  as prose, so it stays empty until real artwork exists. */
   leak?: { heading: string; body: readonly string[]; image?: string };
   /** Same optional banner as the leak, under the heading. */
-  built?: { heading: string; items: readonly BuiltItem[]; image?: string };
+  built?: {
+    heading: string;
+    items: readonly BuiltItem[];
+    image?: string;
+    /** Shape of the banner box. Defaults to 2 / 1. */
+    imageAspect?: string;
+  };
   /** The AI layer, where there is enough of one to be worth its own
    *  section rather than a few lines inside "what we built". */
   ai?: { heading: string; lead?: string; items: readonly BuiltItem[] };
@@ -268,6 +274,8 @@ export const caseStudies: readonly CaseStudy[] = [
     },
 
     built: {
+      image: "/casestudy-images/ifg-leak-fix.jpeg",
+      imageAspect: "21 / 9",
       heading: "One system where every stage triggers the next one",
       items: [
         {

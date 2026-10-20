@@ -365,12 +365,24 @@ export function CaseStudyForm({
             placeholder="AI reads the ID :: Clients upload an Emirates ID and the details land in the will."
           />
         </Field>
-        <Field label="Banner" hint="Optional. A wide image under the heading.">
+        <Field label="Banner" hint="Optional. Sits beside the heading.">
           <Input
             variant="admin"
             name="builtImage"
             defaultValue={study?.built?.image}
             placeholder="/casestudy-images/…"
+            className="h-10"
+          />
+        </Field>
+        <Field
+          label="Banner shape"
+          hint="Defaults to 2 / 1. Use 21 / 9 for a wide one."
+        >
+          <Input
+            variant="admin"
+            name="builtImageAspect"
+            defaultValue={study?.built?.imageAspect}
+            placeholder="2 / 1"
             className="h-10"
           />
         </Field>

@@ -586,7 +586,10 @@ export function StoryBuilt({
               {study.built.heading}
             </h2>
 
-            <div className="relative aspect-[2/1] w-full overflow-hidden rounded-[16px] border border-white/[0.09]">
+            <div
+              className="relative w-full overflow-hidden rounded-[16px] border border-white/[0.09]"
+              style={{ aspectRatio: study.built.imageAspect ?? "2 / 1" }}
+            >
               <Image
                 src={study.built.image}
                 alt=""

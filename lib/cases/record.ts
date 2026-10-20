@@ -135,6 +135,9 @@ export function toCaseStudy(row: Row): CaseRecord | null {
             heading: str(built.heading),
             items: list(built.items, builtItem),
             ...(str(built.image) ? { image: str(built.image) } : {}),
+            ...(str(built.imageAspect)
+              ? { imageAspect: str(built.imageAspect) }
+              : {}),
           },
         }
       : {}),
