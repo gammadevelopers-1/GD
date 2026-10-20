@@ -104,6 +104,8 @@ export type CaseStudy = {
   /** Optional picture beside the "what's still human" copy. A sibling
    *  rather than a nested block, because `human` is a bare string. */
   humanImage?: string;
+  /** Shape of that picture. Defaults to 16 / 9. */
+  humanImageAspect?: string;
   takeaway?: { line: string; body: string };
   cta?: string;
   /** Optional background behind the closing call to action. It needs a
@@ -375,6 +377,8 @@ export const caseStudies: readonly CaseStudy[] = [
       ],
     },
 
+    humanImage: "/casestudy-images/ifg-huma.jpeg",
+    humanImageAspect: "21 / 9",
     human:
       "Recruiters still run every interview and make every offer decision. When the system isn't sure who a reply belongs to, it suggests a match with a confidence level and a person confirms it. **Automation handles the typing. People handle the judgment.**",
 

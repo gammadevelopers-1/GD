@@ -860,7 +860,10 @@ export function StoryHuman({
               </p>
             </div>
 
-            <div className="bg-ground relative aspect-video w-full overflow-hidden rounded-[16px]">
+            <div
+              className="bg-ground relative w-full overflow-hidden rounded-[16px]"
+              style={{ aspectRatio: study.humanImageAspect ?? "16 / 9" }}
+            >
               <Image
                 src={study.humanImage}
                 alt=""
