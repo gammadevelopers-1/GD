@@ -579,7 +579,7 @@ export const caseStudies: readonly CaseStudy[] = [
     body: "An estate planning firm in Dubai where every will began with someone copying an Emirates ID by hand, in two languages.",
     tags: ["Document AI", "Bilingual", "Multi-department"],
 
-    image: "/case-study2.jpg",
+    image: "/casestudy-images/will-cover.jpeg",
     gallery: [],
 
     stats: [
