@@ -388,6 +388,7 @@ export const caseStudies: readonly CaseStudy[] = [
     },
 
     cta: "Still pushing every lead through by hand? Let's find where it's leaking.",
+    ctaImage: "/casestudy-images/ifg-cta.jpeg",
   },
 
   {
