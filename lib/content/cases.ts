@@ -580,6 +580,8 @@ export const caseStudies: readonly CaseStudy[] = [
     tags: ["Document AI", "Bilingual", "Multi-department"],
 
     image: "/casestudy-images/will-cover.jpeg",
+    heroImage: "/casestudy-images/will-hero.jpeg",
+    heroAspect: "21 / 9",
     gallery: [],
 
     stats: [
