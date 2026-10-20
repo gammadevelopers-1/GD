@@ -547,6 +547,7 @@ export const caseStudies: readonly CaseStudy[] = [
       ],
     },
 
+    humanImage: "/casestudy-images/club-human.jpeg",
     human:
       "The founder still approves every member, every introduction and every message that leaves the club. AI writes the drafts, spots the risks, answers the phone and prepares the briefing. **She makes the calls and builds the relationships**, which is the part of the business only she can do.",
 
