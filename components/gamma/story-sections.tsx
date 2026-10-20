@@ -251,17 +251,20 @@ export function StoryHero({
             "radial-gradient(125% 115% at 0% 0%, #000 0%, rgba(0,0,0,0.5) 44%, transparent 80%)",
         }}
       />
+      {/* The same grid the other heroes use, carried a little further here:
+          this one sits behind a much taller hero, and at the shared weight it
+          disappeared long before the bottom of it. */}
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.55]"
+        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.75]"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(236,236,228,0.028) 1px, transparent 1px), linear-gradient(90deg, rgba(236,236,228,0.028) 1px, transparent 1px)",
+            "linear-gradient(rgba(236,236,228,0.062) 1px, transparent 1px), linear-gradient(90deg, rgba(236,236,228,0.062) 1px, transparent 1px)",
           backgroundSize: "64px 64px",
           maskImage:
-            "radial-gradient(80% 74% at 50% 42%, #000 0%, transparent 78%)",
+            "radial-gradient(92% 86% at 50% 42%, #000 0%, rgba(0,0,0,0.65) 54%, transparent 88%)",
           WebkitMaskImage:
-            "radial-gradient(80% 74% at 50% 42%, #000 0%, transparent 78%)",
+            "radial-gradient(92% 86% at 50% 42%, #000 0%, rgba(0,0,0,0.65) 54%, transparent 88%)",
         }}
       />
 
