@@ -386,6 +386,17 @@ export function CaseStudyForm({
             className="h-10"
           />
         </Field>
+        <label className="flex items-center gap-2.5">
+          <input
+            type="checkbox"
+            name="builtImageFull"
+            defaultChecked={study?.built?.imageFull}
+            className="size-4 accent-black"
+          />
+          <span className="text-[12px] text-black/55">
+            Banner runs the full width, under the heading rather than beside it
+          </span>
+        </label>
       </Group>
 
       <Group

@@ -555,6 +555,31 @@ export function StoryLeak({
   );
 }
 
+/** The banner in "what we built", full width or beside the heading. */
+function BuiltBanner({
+  built,
+  sizes,
+}: {
+  built: NonNullable<Story["built"]>;
+  sizes: string;
+}) {
+  if (!built.image) return null;
+  return (
+    <div
+      className="relative w-full overflow-hidden rounded-[16px] border border-white/[0.09]"
+      style={{ aspectRatio: built.imageAspect ?? "2 / 1" }}
+    >
+      <Image
+        src={built.image}
+        alt=""
+        fill
+        sizes={sizes}
+        className="object-cover"
+      />
+    </div>
+  );
+}
+
 export function StoryBuilt({
   study,
   labels,
@@ -577,32 +602,33 @@ export function StoryBuilt({
 
         <SectionLabel tone="dark">{labels.built}</SectionLabel>
 
-        {/* With a banner the heading takes the left of the row and the
-            picture the right, which keeps the section from opening with two
-            full-width blocks stacked on each other. */}
-        {study.built.image ? (
+        {/* Beside the heading by default, which keeps the section from
+            opening with two full-width blocks stacked on each other. A wide
+            scene takes the full width instead: in the narrow column it is a
+            strip too thin to read. */}
+        {study.built.image && !study.built.imageFull ? (
           <div className="mt-[clamp(18px,2vw,30px)] grid items-center gap-x-[clamp(28px,3.2vw,56px)] gap-y-7 lg:grid-cols-[0.82fr_1.18fr]">
             <h2 className={`${heading} text-dark-head`}>
               {study.built.heading}
             </h2>
 
-            <div
-              className="relative w-full overflow-hidden rounded-[16px] border border-white/[0.09]"
-              style={{ aspectRatio: study.built.imageAspect ?? "2 / 1" }}
-            >
-              <Image
-                src={study.built.image}
-                alt=""
-                fill
-                sizes="(min-width: 1024px) 660px, 92vw"
-                className="object-cover"
-              />
-            </div>
+            <BuiltBanner built={study.built} sizes="(min-width: 1024px) 660px, 92vw" />
           </div>
         ) : (
-          <h2 className={`${heading} text-dark-head mt-6`}>
-            {study.built.heading}
-          </h2>
+          <>
+            <h2 className={`${heading} text-dark-head mt-6`}>
+              {study.built.heading}
+            </h2>
+
+            {study.built.image ? (
+              <div className="mt-[clamp(22px,2.4vw,34px)]">
+                <BuiltBanner
+                  built={study.built}
+                  sizes="(min-width: 1024px) 1060px, 92vw"
+                />
+              </div>
+            ) : null}
+          </>
         )}
 
         <ul className="mt-[clamp(26px,3vw,42px)] grid gap-px overflow-hidden rounded-[16px] border border-white/[0.09] bg-white/[0.09] md:grid-cols-2">

@@ -118,6 +118,9 @@ function readStudy(form: FormData, slug: string): CaseStudy {
             ...(builtImageAspect
               ? { imageAspect: builtImageAspect }
               : {}),
+            ...(form.get("builtImageFull") === "on"
+              ? { imageFull: true }
+              : {}),
           },
         }
       : {}),

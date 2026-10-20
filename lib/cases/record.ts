@@ -138,6 +138,7 @@ export function toCaseStudy(row: Row): CaseRecord | null {
             ...(str(built.imageAspect)
               ? { imageAspect: str(built.imageAspect) }
               : {}),
+            ...(built.imageFull ? { imageFull: true } : {}),
           },
         }
       : {}),

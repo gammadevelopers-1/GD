@@ -79,6 +79,10 @@ export type CaseStudy = {
     image?: string;
     /** Shape of the banner box. Defaults to 2 / 1. */
     imageAspect?: string;
+    /** Run the banner the full width under the heading instead of beside
+     *  it. A wide, detailed scene needs the room; a squarer diagram reads
+     *  better in the column next to the words. */
+    imageFull?: boolean;
   };
   /** The AI layer, where there is enough of one to be worth its own
    *  section rather than a few lines inside "what we built". */
@@ -276,6 +280,7 @@ export const caseStudies: readonly CaseStudy[] = [
     built: {
       image: "/casestudy-images/ifg-leak-fix.jpeg",
       imageAspect: "21 / 9",
+      imageFull: true,
       heading: "One system where every stage triggers the next one",
       items: [
         {
