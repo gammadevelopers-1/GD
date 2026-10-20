@@ -557,6 +557,7 @@ export const caseStudies: readonly CaseStudy[] = [
     },
 
     cta: "About to hire someone to hold it all together? Let's find where it's leaking.",
+    ctaImage: "/casestudy-images/club-cta.jpeg",
   },
 
   {
