@@ -114,6 +114,9 @@ export function toCaseStudy(row: Row): CaseRecord | null {
     tags: strings(content.tags),
     image: str(content.image, "/case-study.jpg"),
     ...(str(content.heroImage) ? { heroImage: str(content.heroImage) } : {}),
+    ...(str(content.heroAspect)
+      ? { heroAspect: str(content.heroAspect) }
+      : {}),
     gallery: list(content.gallery, shot),
     stats: list(content.stats, stat),
     ...(str(content.about) ? { about: str(content.about) } : {}),

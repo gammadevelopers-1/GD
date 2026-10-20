@@ -356,9 +356,13 @@ export function StoryHero({
           // keeps its width this way, and the stats fill the column beside
           // it instead of the headline leaving one empty.
           <div className="mt-[clamp(28px,3.2vw,46px)] grid items-center gap-[clamp(20px,2.4vw,40px)] lg:grid-cols-[1.5fr_1fr]">
-            {/* 16:9, the shape these compositions are cropped to. A 4:3 box
-                left the artwork swimming in its own dark padding. */}
-            <div className="relative aspect-video w-full overflow-hidden rounded-[18px] border border-white/[0.09]">
+            {/* The box takes the artwork's shape. An inline ratio rather
+                than a Tailwind class, because the value comes from content
+                and Tailwind only generates the classes it can see. */}
+            <div
+              className="relative w-full overflow-hidden rounded-[18px] border border-white/[0.09]"
+              style={{ aspectRatio: study.heroAspect ?? "16 / 9" }}
+            >
               <Image
                 src={study.heroImage}
                 alt=""

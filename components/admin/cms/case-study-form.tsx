@@ -246,7 +246,16 @@ export function CaseStudyForm({
               variant="admin"
               name="heroImage"
               defaultValue={study?.heroImage}
-              placeholder="/work/wills-hero.png"
+              placeholder="/casestudy-images/…"
+              className="h-10"
+            />
+          </Field>
+          <Field label="Hero shape" hint="Defaults to 16 / 9. Use 21 / 9 for a wide one.">
+            <Input
+              variant="admin"
+              name="heroAspect"
+              defaultValue={study?.heroAspect}
+              placeholder="16 / 9"
               className="h-10"
             />
           </Field>

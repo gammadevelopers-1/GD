@@ -58,6 +58,10 @@ export type CaseStudy = {
    *  without one, so it stays empty until a real visual exists rather than
    *  being filled with stock. */
   heroImage?: string;
+  /** Shape of the hero image box, as a CSS aspect-ratio. Artwork arrives in
+   *  different crops, and forcing a panoramic composition into 16:9 cuts
+   *  the ends off it. Defaults to 16 / 9. */
+  heroAspect?: string;
   /** Screenshots and mockups of the work. Empty until the visuals land. */
   gallery: readonly { src: string; caption: string }[];
 
@@ -238,6 +242,8 @@ export const caseStudies: readonly CaseStudy[] = [
     tags: ["Workflow automation", "Agentic AI", "Payments"],
 
     image: "/casestudy-images/ifg-cover.jpeg",
+    heroImage: "/casestudy-images/ifg-hero.jpeg",
+    heroAspect: "21 / 9",
     gallery: [],
 
     stats: [

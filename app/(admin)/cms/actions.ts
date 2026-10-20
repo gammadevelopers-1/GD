@@ -75,6 +75,7 @@ function readStudy(form: FormData, slug: string): CaseStudy {
   const cta = text(form, "cta", 400);
   const ctaImage = text(form, "ctaImage", 400);
   const heroImage = text(form, "heroImage", 400);
+  const heroAspect = text(form, "heroAspect", 20);
 
   return {
     slug,
@@ -91,6 +92,7 @@ function readStudy(form: FormData, slug: string): CaseStudy {
     tags: lines(form, "tags"),
     image: text(form, "image", 400) || "/case-study.jpg",
     ...(heroImage ? { heroImage } : {}),
+    ...(heroAspect ? { heroAspect } : {}),
     gallery: pairs(form, "gallery").map((row) => ({
       src: row.label,
       caption: row.body,
