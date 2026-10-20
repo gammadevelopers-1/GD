@@ -565,47 +565,63 @@ export const caseStudies: readonly CaseStudy[] = [
     testimonial: "Just Wills",
     status: "published",
     order: 4,
+
     client: "A UAE wills firm",
     named: false,
     sector: "Legal services",
     vertical: "Legal",
     region: "United Arab Emirates",
-    category: "Legal services · Document AI · Multi-department platform",
+    category:
+      "Legal services \u00b7 Document AI \u00b7 Multi-department platform",
+
     title:
       "They stopped retyping client IDs. AI reads them and fills the will.",
     body: "An estate planning firm in Dubai where every will began with someone copying an Emirates ID by hand, in two languages.",
     tags: ["Document AI", "Bilingual", "Multi-department"],
+
     image: "/case-study2.jpg",
     gallery: [],
+
     stats: [
-      { value: "Seconds", label: "to pull ID details into a will" },
-      { value: "AR + EN", label: "names captured from every ID" },
-      { value: "4+", label: "departments running on one platform" },
+      { value: "7", label: "roles on one platform, super admin down to HR" },
+      { value: "4", label: "departments working from one client record" },
+      {
+        value: "Seconds",
+        label: "for an ID to fill a will, in both languages",
+      },
     ],
+
     about:
-      "An established wills and estate planning firm based in Dubai, serving clients across the UAE. A larger organisation with separate teams for will drafting, sales, HR and finance. We built the full platform end to end, in English and Arabic.",
+      "An established wills and estate planning firm based in Dubai, serving clients across the UAE. A larger organisation with separate teams for will drafting, sales, HR and finance, and seven roles on the platform from super admin down to marketing. We built it end to end, in English and Arabic, and still run it.",
+
     leak: {
       heading: "Every will started with someone retyping an ID card",
       body: [
-        "A will is only as good as the details in it. Every client meant copying names, ID numbers and dates from an Emirates ID or passport into the will, often in both Arabic and English. One wrong letter in a name on a legal document means a redraft, a delay, and a client who loses confidence.",
-        "Around that, each department ran on its own system. Sales tracked leads in one place, drafting in another, HR and finance somewhere else. Nobody had the full picture of a client, and clients had no way to see where their will was without calling the office.",
+        "A will is only as good as the details in it. Every client meant copying names, ID numbers and dates from an Emirates ID or passport into the will, often in both Arabic and English. **One wrong letter in a name on a legal document** means a redraft, a delay, and a client who loses confidence.",
+        "Writing the document was manual too. The firm's drafting rules lived in people's heads and in old files, so every will was assembled by hand from a template somebody had to find first.",
+        "Around that, each department ran on its own system. Sales tracked leads in one place, drafting in another, HR and finance somewhere else. Mail about a client sat in whoever's inbox it arrived in. Nobody had the full picture, and clients had no way to see where their will was without calling the office.",
         "The team was careful. The process just made them do the same work twice, in two languages, across systems that didn't talk.",
       ],
     },
+
     built: {
       heading: "ID in, will out, and every department on one platform",
       items: [
         {
           label: "AI reads the ID",
-          body: "Clients or staff upload an Emirates ID or passport. AI extracts the name in Arabic and English plus the ID details, and drops them straight into the will. If AI can't read it, a backup reader steps in.",
+          body: "Clients or staff upload an Emirates ID or passport. AI extracts the name in Arabic and English plus the ID details, and drops them straight into the will. If it can't read the document, a second reader steps in rather than handing the job back to a person.",
+        },
+        {
+          label: "AI writes the document",
+          body: "The firm's drafting rules are baked into the system. Give it a client's details and it produces the will or the agreement in court-ready wording, then sends it to the person who applied, without anyone finding a template first.",
         },
         {
           label: "A guided will builder",
           body: "Beneficiaries, executors, guardians and assets captured step by step, in English or Arabic.",
         },
         {
-          label: "Drafts generated automatically",
-          body: "Court-ready wording produced as PDF and Word, watermarked until final.",
+          label: "PDF and Word, watermarked until final",
+          body: "Every draft comes out in both formats and stays watermarked until the will is signed off.",
         },
         {
           label: "Every version kept",
@@ -613,53 +629,71 @@ export const caseStudies: readonly CaseStudy[] = [
         },
         {
           label: "A portal for every client",
-          body: "Clients log in, check their will's status, request changes and sign.",
+          body: "Clients log in, check their will's status, request changes and sign, instead of ringing the office to ask.",
         },
         {
           label: "Released when paid",
           body: "The final will is released only once payment clears, and executors are notified when needed.",
         },
         {
-          label: "Sales in the same system",
-          body: "Lead sources, salesperson assignment, call reminders, proposals with automatic follow-ups, and invoices with VAT.",
+          label: "Leads on a funnel, not a list",
+          body: "Enquiries land with a source, get assigned to a salesperson, and move through the stages on their own: call reminders, proposals, automatic follow-ups, then invoices with VAT.",
+        },
+        {
+          label: "Everyone's own Outlook, in one place",
+          body: "Each member of the team connects their own Outlook, so the mail about a client sits with that client's record instead of in a personal inbox.",
+        },
+        {
+          label: "Seven roles, each seeing their own",
+          body: "Super admin, HR, lead owners, marketing and the drafting team each get the part of the platform that belongs to them, and nothing else.",
         },
         {
           label: "HR built in",
           body: "Attendance, leave approvals with delegation and escalation, monthly and quarterly KPI reviews, and employee documents with expiry alerts.",
         },
         {
-          label: "Finance built in",
-          body: "Transactions, receipts and a daily digest of outstanding balances, with daily backups of every will and record.",
+          label: "Finance and backups",
+          body: "Transactions, receipts and a daily digest of outstanding balances, with every will and record backed up daily.",
         },
       ],
     },
+
     results: {
-      heading: "From retyping IDs to a will that starts itself",
-      lead: "The firm now runs drafting, sales, HR and finance from one record of each client, in both languages.",
+      heading: "From retyping IDs to a will that writes itself",
+      lead: "The firm runs drafting, sales, HR and finance from **one record of each client**, in both languages, with every role seeing only the part that belongs to it.",
       points: [
         {
           value: "Seconds",
           text: "for ID details to land in the will, in both languages, instead of being typed by hand",
         },
         {
-          value: "1",
-          text: "platform for drafting, sales, HR and finance, instead of separate systems per department",
+          value: "7",
+          text: "roles on one platform: super admin, HR, lead owners, marketing and the drafting team among them",
         },
         {
-          text: "Clients track their own will online, so fewer “where's my will?” calls.",
+          value: "4",
+          text: "departments working from one record instead of a system each",
         },
         {
-          text: "Every draft versioned, and the final will released only when paid.",
+          text: "Wills and agreements are written from the firm's own drafting rules and sent to the applicant without anyone opening a template.",
         },
-        { text: "Delivered complete, end to end, in English and Arabic." },
+        {
+          text: "English and Arabic run through every screen and every document, rather than a translation bolted on at the end.",
+        },
+        {
+          text: "Clients track their own will online, and the final will is released only once payment clears.",
+        },
       ],
     },
+
     human:
-      "Lawyers still review every will before it's final. AI fills in the details, but people check the wording, meet the client and sign off. The system removes the retyping. The firm keeps the judgment.",
+      "Lawyers still review every will before it is final. AI reads the ID and writes the draft from the firm's own rules, but a person checks the wording, meets the client and signs off. **The system removes the retyping. The firm keeps the judgment.**",
+
     takeaway: {
       line: "If your team retypes the same details twice, the mistake isn't a matter of if. It's when.",
-      body: "This firm didn't need faster typists. It needed the ID to fill the will, and every department working from the same record.",
+      body: "This firm didn't need faster typists. It needed **the ID to fill the will**, the rules to write it, and every department working from the same record.",
     },
+
     cta: "Still retyping documents into your system? Let's find where it's leaking.",
   },
 
