@@ -292,7 +292,10 @@ export function CaseStudyForm({
           />
         </Field>
 
-        <Field label="About" hint="Who they are and what we did, in one go.">
+        <Field
+          label="About"
+          hint="Who they are and what we did, in one go. Wrap a phrase in **stars** to pick it out in green."
+        >
           <Textarea name="about" rows={4} defaultValue={study?.about} />
         </Field>
       </Group>
@@ -355,7 +358,7 @@ export function CaseStudyForm({
             className="h-10"
           />
         </Field>
-        <Field label="Opening paragraph">
+        <Field label="Opening paragraph" hint="Wrap a phrase in **stars** to pick it out in green.">
           <Textarea
             name="resultsLead"
             rows={3}
@@ -383,7 +386,7 @@ export function CaseStudyForm({
         title="The close"
         note="What people still do, the lesson, and the ask."
       >
-        <Field label="What's still human">
+        <Field label="What's still human" hint="Wrap a phrase in **stars** to pick it out in green.">
           <Textarea name="human" rows={3} defaultValue={study?.human} />
         </Field>
         <Field label="Takeaway" hint="The one line worth remembering.">
@@ -394,7 +397,7 @@ export function CaseStudyForm({
             className="h-10"
           />
         </Field>
-        <Field label="Takeaway, explained">
+        <Field label="Takeaway, explained" hint="Wrap a phrase in **stars** to pick it out in green.">
           <Textarea
             name="takeawayBody"
             rows={3}

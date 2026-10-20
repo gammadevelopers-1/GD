@@ -1946,3 +1946,30 @@ p {
     opacity: 0.35;
   }
 }
+
+/* Page reading progress, driven by the scroll timeline rather than a listener,
+   so it runs on the compositor and costs the page no JavaScript at all.
+   Without support the bar stays at scaleX(0), which is simply invisible.
+
+   Kept out of the reduced-motion case on purpose: the global reduce block
+   clamps animation-duration to 0.01ms, and a scroll-timeline animation with a
+   fixed duration finishes in the first pixel of scroll — a bar stuck at full
+   is worse than no bar. */
+@keyframes g-scroll-progress {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    .g-scroll-progress {
+      animation: g-scroll-progress linear;
+      animation-timeline: scroll(root block);
+    }
+  }
+}

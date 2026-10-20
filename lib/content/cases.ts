@@ -97,15 +97,15 @@ export const caseStudies: readonly CaseStudy[] = [
       { value: "40 sec", label: "from signup to a live booking site" },
     ],
     about:
-      "A US car rental software platform that gives independent operators everything they need to run their own business: a branded booking site, fleet management, insurance, agreements, payments and customer communication in one place. Operators range from budget fleets to luxury rentals. We designed, built and still run it end to end.",
+      "A US car rental software platform that gives independent operators **everything they need to run their own business**: a branded booking site, fleet management, insurance, agreements, payments and customer communication in one place. Operators range from budget fleets to luxury rentals. We designed, built and still run it end to end.",
     leak: {
       heading:
         "Their business lived on someone else's marketplace and a phone full of notes",
       body: [
-        "Most operators started on Turo. It got them their first customers, but it never felt like their own business. Customers saw Turo's brand, not theirs. Fees were high, support was slow, and they had no website and no customer list they truly owned.",
-        "Behind the scenes, everything ran on a phone. Bookings in messages, details in notes, insurance arranged with a separate company before every rental, agreements signed on another platform, calls and texts on personal apps. Every tool worked alone. None of them talked to each other.",
-        "That works at 3 cars. At 20, the owner becomes the bottleneck: copying the same details into four places, chasing signatures, checking insurance, and hoping nothing gets missed.",
-        "The operators weren't disorganised. They were running a real business on tools that were never built to work together.",
+        "Most operators started on Turo. It got them their first customers, but it **never felt like their own business**. Customers saw Turo's brand, not theirs. Fees were high, support was slow, and they had no website and no customer list they truly owned.",
+        "Behind the scenes, everything ran on a phone. Bookings in messages, details in notes, insurance arranged with a separate company before every rental, agreements signed on another platform, calls and texts on personal apps. Every tool worked alone. **None of them talked to each other.**",
+        "That works at 3 cars. At 20, **the owner becomes the bottleneck**: copying the same details into four places, chasing signatures, checking insurance, and hoping nothing gets missed.",
+        "The operators weren't disorganised. They were running a real business on **tools that were never built to work together**.",
       ],
     },
     built: {
@@ -155,7 +155,7 @@ export const caseStudies: readonly CaseStudy[] = [
     },
     results: {
       heading: "From a phone full of notes to a business they own",
-      lead: "The first operator was taking real payments five weeks after the first line of code. Since then, the money operators process each month has grown from $805 to $32,900.",
+      lead: "The first operator was taking real payments five weeks after the first line of code. Since then, the money operators process each month has grown from **$805 to $32,900**.",
       points: [
         { value: "~$76k", text: "ARR in under a year, from zero" },
         { value: "3x", text: "more bookings in September than any month before" },
@@ -165,15 +165,15 @@ export const caseStudies: readonly CaseStudy[] = [
         { value: "~12", text: "new operators joining every month" },
         { value: "9", text: "operators running their business on it for 6+ months" },
         {
-          text: "The platform is now being rebuilt from the inside, one area at a time, without a single live operator having to switch or notice.",
+          text: "The platform is now being rebuilt from the inside, one area at a time, **without a single live operator having to switch or notice**.",
         },
       ],
     },
     human:
-      "Operators still set their prices, approve their customers and hand over the keys. AI flags identity mismatches and suggests prices and replies, but the operator makes the call. The platform does the paperwork. The owner runs the business.",
+      "Operators still set their prices, approve their customers and hand over the keys. AI flags identity mismatches and suggests prices and replies, but **the operator makes the call**. The platform does the paperwork. The owner runs the business.",
     takeaway: {
       line: "If your customers only know you through someone else's platform, you're building their brand, not yours.",
-      body: "These operators didn't need another app. They needed one place to run the whole business, with their own name on the front door.",
+      body: "These operators didn't need another app. They needed one place to run the whole business, with **their own name on the front door**.",
     },
     cta: "Running your business across five tools and a phone? Let's find where it's leaking.",
   },

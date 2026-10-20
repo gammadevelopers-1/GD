@@ -2,13 +2,22 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
+import type {
+  StoryMetaRow,
+  StorySection,
+} from "@/components/gamma/story-rail";
 import type { CaseStudy } from "@/lib/content/cases";
 import { testimonials } from "@/lib/gamma-content";
 import { site } from "@/lib/content/site";
 
 /**
- * The layout a long-form story uses: hero stats, about, the problem, what we
- * built, a gallery, results, what is still human, the takeaway and a closer.
+ * The layout a long-form story uses: a dark hero, then the story itself in a
+ * single column beside a sticky contents rail, then a closer.
+ *
+ * Everything between the hero and the closer is a plain block — no background,
+ * no container of its own — because the page puts them all in one column next
+ * to the rail. Sections that want to stand out do it with a panel inside that
+ * column rather than by going full-bleed, which the rail would not survive.
  *
  * Case studies and products are the same shape, so they share this rather
  * than keeping two copies of three hundred lines of layout in step.
@@ -35,30 +44,120 @@ export type StoryLabels = {
   readonly cta: { readonly label: string; readonly note: string };
 };
 
-/** The eyebrow rail every section below the hero opens with. */
+/* ── shared bits ─────────────────────────────────────────────── */
+
+/** Every block the rail can reach. The clearance stops the fixed nav from
+ *  covering the heading when an anchor scrolls to it. */
+const block = "scroll-mt-[108px]";
+
+/** Section headings run the full width of the column. They used to be capped
+ *  at 24ch inside a 1280px row, which left the right half empty and folded
+ *  every heading onto three or four lines. */
+const heading =
+  "font-display mt-6 text-[clamp(25px,2.9vw,38px)] leading-[1.08] font-bold tracking-[-0.04em] text-balance uppercase";
+
+const panel = "rounded-[20px] p-[clamp(24px,2.8vw,44px)]";
+
+const TONE = {
+  light: { text: "text-dim", rule: "bg-line" },
+  dark: { text: "text-dim-dark", rule: "bg-dark-line" },
+  green: { text: "text-green-ink/75", rule: "bg-green-ink/20" },
+} as const;
+
+/** The eyebrow every section opens with. The hairline runs out to the edge of
+ *  the column, so the label row fills its width instead of trailing off. */
 function SectionLabel({
   children,
-  dark,
+  tone = "light",
 }: {
   children: string;
-  dark?: boolean;
+  tone?: keyof typeof TONE;
 }) {
   return (
-    <p
-      className={
-        dark
-          ? "t-eyebrow text-dim-dark flex items-center gap-3"
-          : "t-eyebrow text-dim flex items-center gap-3"
-      }
-    >
-      <span
-        aria-hidden
-        className={`h-px w-8 ${dark ? "bg-dark-line-strong" : "bg-line-strong"}`}
-      />
-      {children}
+    <p className={`t-eyebrow flex items-center gap-4 ${TONE[tone].text}`}>
+      <span className="shrink-0">{children}</span>
+      <span aria-hidden className={`h-px flex-1 ${TONE[tone].rule}`} />
     </p>
   );
 }
+
+/**
+ * `**like this**` becomes a green emphasis, so a sentence can carry its own
+ * weight without the layout guessing which one matters. The marker is
+ * Markdown's, because the CMS editor already knows it.
+ */
+function Prose({ text }: { text: string }) {
+  // split() with a capturing group puts the captures at the odd indices.
+  return text.split(/\*\*(.+?)\*\*/g).map((part, i) =>
+    i % 2 ? (
+      <strong key={i} className="text-green-ink font-semibold">
+        {part}
+      </strong>
+    ) : (
+      part
+    ),
+  );
+}
+
+/* ── what the rail needs ─────────────────────────────────────── */
+
+/** The rail may only offer "In their words" when there is a quote to scroll
+ *  to, so it and the section resolve it the same way. */
+export function storyQuote(study: Story) {
+  if (!study.testimonial) return null;
+  const quote = testimonials.items.find(
+    (item) => item.company === study.testimonial,
+  );
+  return quote?.quote ? quote : null;
+}
+
+/** Sections in the order the page renders them, minus the ones this study has
+ *  nothing for. The page and the rail both read this, so the rail can never
+ *  list an anchor that is not on the page. */
+export function storySections(
+  study: Story,
+  labels: StoryLabels,
+): StorySection[] {
+  const all: (StorySection | false)[] = [
+    Boolean(storyQuote(study)) && { id: "words", label: labels.testimonial },
+    Boolean(study.about) && { id: "about", label: labels.about },
+    Boolean(study.leak) && { id: "leak", label: labels.leak },
+    Boolean(study.built) && { id: "built", label: labels.built },
+    study.gallery.length > 0 && { id: "gallery", label: labels.gallery },
+    Boolean(study.results) && { id: "results", label: labels.results },
+    Boolean(study.human) && { id: "human", label: labels.human },
+    Boolean(study.takeaway) && { id: "takeaway", label: labels.takeaway },
+  ];
+  return all.filter((item): item is StorySection => item !== false);
+}
+
+export function storyMeta(study: Story, labels: StoryLabels): StoryMetaRow[] {
+  return [
+    { label: labels.industry, value: study.sector },
+    { label: study.regionLabel ?? labels.location, value: study.region },
+    { label: labels.builtBy, value: site.name },
+  ];
+}
+
+/* ── the page's reading progress ─────────────────────────────── */
+
+/**
+ * The bar under the nav. A scroll timeline drives it from CSS, so it runs on
+ * the compositor and the page carries no scroll listener for it — see
+ * `.g-scroll-progress` in globals.css.
+ */
+export function StoryProgress() {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none fixed inset-x-0 top-[72px] z-50 h-[3px]"
+    >
+      <div className="g-scroll-progress bg-brand h-full w-full origin-left scale-x-0 shadow-[0_0_14px_rgba(47,232,92,0.65)]" />
+    </div>
+  );
+}
+
+/* ── the hero ────────────────────────────────────────────────── */
 
 export function StoryHero({
   study,
@@ -130,7 +229,7 @@ export function StoryHero({
             className={`font-display text-dark-head mt-5 leading-[0.98] font-bold tracking-[-0.045em] text-balance uppercase ${
               study.heroImage
                 ? "text-[clamp(32px,4.2vw,54px)]"
-                : "max-w-[22ch] text-[clamp(32px,5vw,66px)]"
+                : "max-w-[38ch] text-[clamp(32px,5vw,66px)]"
             }`}
           >
             {study.title}
@@ -142,7 +241,10 @@ export function StoryHero({
                 src={study.heroImage}
                 alt=""
                 fill
-                priority
+                // The hero image is the LCP element here. `priority` is
+                // deprecated in Next 16, and these two say what it meant.
+                loading="eager"
+                fetchPriority="high"
                 sizes="(min-width: 1024px) 540px, 92vw"
                 className="object-cover object-top"
               />
@@ -150,21 +252,42 @@ export function StoryHero({
           ) : null}
         </div>
 
+        {/* Cards rather than a bare row, and the first one carries the brand
+            fill: there is always one figure that matters most, and a flat row
+            of three made the reader decide which. */}
         {study.stats.length ? (
-          <dl className="mt-[clamp(34px,4vw,56px)] grid gap-x-10 gap-y-8 border-t border-white/[0.09] pt-[clamp(26px,3vw,40px)] sm:grid-cols-3">
-            {study.stats.map((stat) => (
-              <div key={stat.label}>
-                <dt className="sr-only">{stat.label}</dt>
-                <dd>
-                  <span className="font-display text-brand block text-[clamp(30px,3.6vw,46px)] leading-none font-bold tracking-[-0.04em]">
-                    {stat.value}
-                  </span>
-                  <span className="text-dim-dark mt-3 block max-w-[26ch] text-[13.5px] leading-[1.5]">
-                    {stat.label}
-                  </span>
-                </dd>
-              </div>
-            ))}
+          <dl className="mt-[clamp(34px,4vw,56px)] grid gap-3 sm:grid-cols-3">
+            {study.stats.map((stat, i) => {
+              const lead = i === 0;
+              return (
+                <div
+                  key={stat.label}
+                  className={`rounded-[16px] p-[clamp(20px,2vw,28px)] ${
+                    lead
+                      ? "bg-brand shadow-[0_22px_52px_-26px_rgba(47,232,92,0.6)]"
+                      : "border border-white/[0.1] bg-white/[0.035]"
+                  }`}
+                >
+                  <dt className="sr-only">{stat.label}</dt>
+                  <dd>
+                    <span
+                      className={`font-display block text-[clamp(28px,3.2vw,42px)] leading-none font-bold tracking-[-0.04em] ${
+                        lead ? "text-ink" : "text-brand"
+                      }`}
+                    >
+                      {stat.value}
+                    </span>
+                    <span
+                      className={`mt-3 block text-[13.5px] leading-[1.5] ${
+                        lead ? "text-ink/70" : "text-dim-dark"
+                      }`}
+                    >
+                      {stat.label}
+                    </span>
+                  </dd>
+                </div>
+              );
+            })}
           </dl>
         ) : null}
       </div>
@@ -172,9 +295,11 @@ export function StoryHero({
   );
 }
 
+/* ── the story ───────────────────────────────────────────────── */
+
 /**
- * The client's own words, directly under the hero, because a stranger decides
- * whether to keep reading long before they reach the results.
+ * The client's own words, first thing in the column, because a stranger
+ * decides whether to keep reading long before they reach the results.
  *
  * Attribution follows the page it sits on. A case study that calls its client
  * "a UAE wills firm" cannot then credit the quote to a company by name on the
@@ -187,48 +312,39 @@ export function StoryTestimonial({
   study: Story;
   labels: StoryLabels;
 }) {
-  if (!study.testimonial) return null;
+  const quote = storyQuote(study);
+  if (!quote) return null;
 
-  const quote = testimonials.items.find(
-    (item) => item.company === study.testimonial,
-  );
-  if (!quote?.quote) return null;
-
-  const role = quote.descriptor.split("\u00b7")[0]?.trim() || quote.descriptor;
+  const role = quote.descriptor.split("·")[0]?.trim() || quote.descriptor;
   const credit = study.named
-    ? `${quote.company} \u00b7 ${role}`
-    : `${role} \u00b7 ${study.client}`;
+    ? `${quote.company} · ${role}`
+    : `${role} · ${study.client}`;
 
   return (
-    <section className="bg-ground">
-      <div className="mx-auto w-full max-w-[1280px] px-6 pt-[clamp(44px,5vw,76px)]">
-        <figure className="border-line bg-surface relative overflow-hidden rounded-[18px] border p-[clamp(26px,3.2vw,52px)]">
-          <span
-            aria-hidden
-            className="pointer-events-none absolute -top-24 -right-20 size-60 rounded-full bg-[radial-gradient(circle,rgba(13,119,40,0.11),transparent_66%)]"
-          />
+    <section id="words" className={block}>
+      <figure
+        className={`border-line bg-surface relative overflow-hidden border ${panel}`}
+      >
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -top-24 -right-20 size-60 rounded-full bg-[radial-gradient(circle,rgba(13,119,40,0.11),transparent_66%)]"
+        />
 
-          <p className="t-eyebrow text-dim relative flex items-center gap-3">
-            <span aria-hidden className="bg-line-strong h-px w-8" />
-            {labels.testimonial}
-          </p>
+        <div className="relative">
+          <SectionLabel>{labels.testimonial}</SectionLabel>
+        </div>
 
-          <blockquote className="text-ink relative mt-6 max-w-[62ch] text-[clamp(18px,1.9vw,25px)] leading-[1.45] tracking-[-0.015em] text-pretty">
-            <span
-              aria-hidden
-              className="text-green-ink/35 mr-1.5 text-[28px] leading-none font-bold"
-            >
-              &ldquo;
-            </span>
-            {quote.quote}
-          </blockquote>
+        {/* No measure cap. The quote now has a column of its own rather than
+            half of a 1280px row, so capping it only re-opened the gap. */}
+        <blockquote className="text-ink border-green-ink/35 relative mt-7 border-l-2 pl-[clamp(16px,1.8vw,26px)] text-[clamp(18px,1.85vw,24px)] leading-[1.45] tracking-[-0.015em] text-pretty">
+          {quote.quote}
+        </blockquote>
 
-          <figcaption className="relative mt-7 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-            <span aria-hidden className="bg-green-ink/50 h-px w-8" />
-            <span className="t-eyebrow text-dim">{credit}</span>
-          </figcaption>
-        </figure>
-      </div>
+        <figcaption className="relative mt-7 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+          <span aria-hidden className="bg-green-ink/50 h-px w-8" />
+          <span className="t-eyebrow text-dim">{credit}</span>
+        </figcaption>
+      </figure>
     </section>
   );
 }
@@ -242,36 +358,26 @@ export function StoryAbout({
 }) {
   if (!study.about) return null;
 
-  const meta = [
-    { label: labels.industry, value: study.sector },
-    { label: study.regionLabel ?? labels.location, value: study.region },
-    { label: labels.builtBy, value: site.name },
-  ];
-
   return (
-    <section className="bg-ground">
-      <div className="mx-auto grid w-full max-w-[1280px] gap-x-[clamp(40px,5vw,96px)] gap-y-10 px-6 py-[clamp(52px,5.6vw,88px)] lg:grid-cols-[1.45fr_1fr]">
-        <div>
-          <SectionLabel>{labels.about}</SectionLabel>
-          <p className="text-ink mt-6 max-w-[62ch] text-[clamp(16.5px,1.5vw,19px)] leading-[1.65] text-pretty">
-            {study.about}
-          </p>
-        </div>
+    <section id="about" className={block}>
+      <SectionLabel>{labels.about}</SectionLabel>
 
-        <dl className="border-line divide-line grid divide-y self-start rounded-[16px] border">
-          {meta.map((row) => (
-            <div
-              key={row.label}
-              className="flex items-baseline justify-between gap-6 px-5 py-4"
-            >
-              <dt className="t-eyebrow text-dim">{row.label}</dt>
-              <dd className="text-ink text-right text-[14.5px] font-medium">
-                {row.value}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </div>
+      <p className="text-ink mt-6 text-[clamp(16.5px,1.6vw,19.5px)] leading-[1.65] text-pretty">
+        <Prose text={study.about} />
+      </p>
+
+      {/* The rail carries these on a wide screen. Below it there is no rail,
+          so they run as a strip here instead. */}
+      <dl className="border-line mt-8 grid gap-x-8 gap-y-5 border-t pt-6 sm:grid-cols-3 lg:hidden">
+        {storyMeta(study, labels).map((row) => (
+          <div key={row.label}>
+            <dt className="t-eyebrow text-dim">{row.label}</dt>
+            <dd className="text-ink mt-1.5 text-[14.5px] font-medium">
+              {row.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
     </section>
   );
 }
@@ -285,28 +391,34 @@ export function StoryLeak({
 }) {
   if (!study.leak) return null;
 
+  const [lead, ...rest] = study.leak.body;
+
   return (
-    <section className="bg-ground">
-      <div className="mx-auto w-full max-w-[1280px] px-6 pb-[clamp(52px,5.6vw,88px)]">
-        <div className="border-line border-t pt-[clamp(40px,4.4vw,68px)]">
-          <SectionLabel>{labels.leak}</SectionLabel>
+    <section id="leak" className={block}>
+      <SectionLabel>{labels.leak}</SectionLabel>
 
-          <h2 className="font-display text-ink mt-6 max-w-[24ch] text-[clamp(24px,3.1vw,40px)] leading-[1.05] font-bold tracking-[-0.04em] text-balance uppercase">
-            {study.leak.heading}
-          </h2>
+      <h2 className={`${heading} text-ink`}>{study.leak.heading}</h2>
 
-          <div className="mt-[clamp(26px,3vw,40px)] grid gap-6 md:grid-cols-2 md:gap-x-[clamp(40px,4.4vw,80px)]">
-            {study.leak.body.map((para) => (
-              <p
-                key={para.slice(0, 40)}
-                className="text-ink-soft text-[16px] leading-[1.7] text-pretty"
-              >
-                {para}
-              </p>
-            ))}
-          </div>
+      {lead ? (
+        <p className="text-ink mt-[clamp(22px,2.4vw,32px)] text-[clamp(17px,1.7vw,21px)] leading-[1.6] text-pretty">
+          <Prose text={lead} />
+        </p>
+      ) : null}
+
+      {/* The rest runs in two columns. One column at this width finished
+          halfway across and left the other half blank. */}
+      {rest.length ? (
+        <div className="mt-7 grid gap-x-[clamp(32px,3.4vw,60px)] gap-y-5 md:grid-cols-2">
+          {rest.map((para) => (
+            <p
+              key={para.slice(0, 40)}
+              className="text-ink-soft text-[16px] leading-[1.7] text-pretty"
+            >
+              <Prose text={para} />
+            </p>
+          ))}
         </div>
-      </div>
+      ) : null}
     </section>
   );
 }
@@ -321,26 +433,26 @@ export function StoryBuilt({
   if (!study.built) return null;
 
   return (
-    <section className="bg-dark relative isolate overflow-hidden">
-      <span
-        aria-hidden
-        className="pointer-events-none absolute -top-40 right-0 -z-10 size-[620px] rounded-full bg-[radial-gradient(circle,rgba(47,232,92,0.13),transparent_68%)]"
-      />
+    <section id="built" className={block}>
+      <div
+        className={`bg-dark relative isolate overflow-hidden ${panel}`}
+      >
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -top-32 -right-24 -z-10 size-[460px] rounded-full bg-[radial-gradient(circle,rgba(47,232,92,0.16),transparent_68%)]"
+        />
 
-      <div className="mx-auto w-full max-w-[1280px] px-6 py-[clamp(56px,6vw,96px)]">
-        <SectionLabel dark>{labels.built}</SectionLabel>
+        <SectionLabel tone="dark">{labels.built}</SectionLabel>
 
-        <h2 className="font-display text-dark-head mt-6 max-w-[24ch] text-[clamp(24px,3.1vw,40px)] leading-[1.05] font-bold tracking-[-0.04em] text-balance uppercase">
-          {study.built.heading}
-        </h2>
+        <h2 className={`${heading} text-dark-head`}>{study.built.heading}</h2>
 
-        <ul className="mt-[clamp(34px,4vw,58px)] grid gap-px overflow-hidden rounded-[18px] border border-white/[0.08] bg-white/[0.08] md:grid-cols-2">
+        <ul className="mt-[clamp(26px,3vw,42px)] grid gap-px overflow-hidden rounded-[16px] border border-white/[0.09] bg-white/[0.09] md:grid-cols-2">
           {study.built.items.map((item, i) => (
             <li
               key={item.label}
-              className="bg-dark flex flex-col gap-2.5 p-[clamp(22px,2.3vw,32px)]"
+              className="bg-dark-row flex flex-col gap-2.5 p-[clamp(20px,2.1vw,28px)]"
             >
-              <span className="text-brand/70 font-mono text-[10.5px] tracking-[0.16em]">
+              <span className="text-brand font-mono text-[10.5px] tracking-[0.16em]">
                 {String(i + 1).padStart(2, "0")}
               </span>
               <h3 className="text-dark-head text-[16.5px] leading-[1.3] font-semibold tracking-[-0.015em]">
@@ -367,31 +479,29 @@ export function StoryGallery({
   if (!study.gallery.length) return null;
 
   return (
-    <section className="bg-ground">
-      <div className="mx-auto w-full max-w-[1280px] px-6 py-[clamp(52px,5.6vw,88px)]">
-        <SectionLabel>{labels.gallery}</SectionLabel>
+    <section id="gallery" className={block}>
+      <SectionLabel>{labels.gallery}</SectionLabel>
 
-        <ul className="mt-[clamp(28px,3.2vw,48px)] grid gap-5 md:grid-cols-2">
-          {study.gallery.map((shot) => (
-            <li key={shot.src}>
-              <figure>
-                <div className="border-line bg-surface relative aspect-[16/10] overflow-hidden rounded-[16px] border">
-                  <Image
-                    src={shot.src}
-                    alt={shot.caption}
-                    fill
-                    sizes="(min-width: 768px) 620px, 92vw"
-                    className="object-cover object-top"
-                  />
-                </div>
-                <figcaption className="t-meta text-dim mt-3">
-                  {shot.caption}
-                </figcaption>
-              </figure>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <ul className="mt-[clamp(24px,2.8vw,40px)] grid gap-5 md:grid-cols-2">
+        {study.gallery.map((shot) => (
+          <li key={shot.src}>
+            <figure>
+              <div className="border-line bg-surface relative aspect-[16/10] overflow-hidden rounded-[16px] border">
+                <Image
+                  src={shot.src}
+                  alt={shot.caption}
+                  fill
+                  sizes="(min-width: 1024px) 460px, (min-width: 768px) 46vw, 92vw"
+                  className="object-cover object-top"
+                />
+              </div>
+              <figcaption className="t-meta text-dim mt-3">
+                {shot.caption}
+              </figcaption>
+            </figure>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
@@ -406,42 +516,53 @@ export function StoryResults({
   if (!study.results) return null;
 
   return (
-    <section className="bg-ground">
-      <div className="mx-auto w-full max-w-[1280px] px-6 pb-[clamp(52px,5.6vw,88px)]">
-        <div className="border-line border-t pt-[clamp(40px,4.4vw,68px)]">
-          <SectionLabel>{labels.results}</SectionLabel>
+    <section id="results" className={block}>
+      <SectionLabel>{labels.results}</SectionLabel>
 
-          <h2 className="font-display text-ink mt-6 max-w-[24ch] text-[clamp(24px,3.1vw,40px)] leading-[1.05] font-bold tracking-[-0.04em] text-balance uppercase">
-            {study.results.heading}
-          </h2>
+      <h2 className={`${heading} text-ink`}>{study.results.heading}</h2>
 
-          <p className="text-ink-soft mt-6 max-w-[68ch] text-[16.5px] leading-[1.7] text-pretty">
-            {study.results.lead}
-          </p>
+      <p className="text-ink mt-6 text-[clamp(16.5px,1.65vw,20px)] leading-[1.65] text-pretty">
+        <Prose text={study.results.lead} />
+      </p>
 
-          <ul className="mt-[clamp(30px,3.4vw,50px)] grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {study.results.points.map((point) => (
-              <li
-                key={point.text}
-                className="border-line bg-surface hover:border-green-ink/30 rounded-[14px] border p-[clamp(20px,2vw,26px)] transition-colors duration-300 ease-out"
-              >
-                {point.value ? (
-                  <p className="font-display text-green-ink text-[clamp(22px,2.4vw,30px)] leading-none font-bold tracking-[-0.035em]">
-                    {point.value}
-                  </p>
-                ) : null}
+      <ul className="mt-[clamp(26px,3vw,42px)] grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {study.results.points.map((point, i) => {
+          // The strongest figure takes the brand fill, and a point with no
+          // figure is a sentence rather than a tile, so it takes the row.
+          const lead = i === 0 && Boolean(point.value);
+          return (
+            <li
+              key={point.text}
+              className={`rounded-[14px] p-[clamp(18px,1.9vw,24px)] ${
+                point.value ? "" : "sm:col-span-2 lg:col-span-3"
+              } ${
+                lead
+                  ? "bg-brand shadow-[0_20px_44px_-26px_rgba(47,232,92,0.55)]"
+                  : "border-line bg-surface hover:border-green-ink/35 border transition-colors duration-300 ease-out"
+              }`}
+            >
+              {point.value ? (
                 <p
-                  className={`text-[14.5px] leading-[1.6] text-pretty ${
-                    point.value ? "text-ink-soft mt-3" : "text-ink"
+                  className={`font-display text-[clamp(22px,2.4vw,30px)] leading-none font-bold tracking-[-0.035em] ${
+                    lead ? "text-ink" : "text-green-ink"
                   }`}
                 >
-                  {point.text}
+                  {point.value}
                 </p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+              ) : null}
+              <p
+                className={`text-[14.5px] leading-[1.6] text-pretty ${
+                  point.value
+                    ? `mt-3 ${lead ? "text-ink/75" : "text-ink-soft"}`
+                    : "text-ink text-[15.5px] leading-[1.65]"
+                }`}
+              >
+                <Prose text={point.text} />
+              </p>
+            </li>
+          );
+        })}
+      </ul>
     </section>
   );
 }
@@ -456,14 +577,12 @@ export function StoryHuman({
   if (!study.human) return null;
 
   return (
-    <section className="bg-ground">
-      <div className="mx-auto w-full max-w-[1280px] px-6 pb-[clamp(52px,5.6vw,88px)]">
-        <div className="bg-gd-panel border-line rounded-[18px] border p-[clamp(26px,3.2vw,52px)]">
-          <SectionLabel>{labels.human}</SectionLabel>
-          <p className="text-ink mt-6 max-w-[66ch] text-[clamp(16.5px,1.6vw,20px)] leading-[1.6] text-pretty">
-            {study.human}
-          </p>
-        </div>
+    <section id="human" className={block}>
+      <div className={`bg-gd-panel border-line border ${panel}`}>
+        <SectionLabel>{labels.human}</SectionLabel>
+        <p className="text-ink mt-6 text-[clamp(16.5px,1.7vw,21px)] leading-[1.6] text-pretty">
+          <Prose text={study.human} />
+        </p>
       </div>
     </section>
   );
@@ -479,23 +598,27 @@ export function StoryTakeaway({
   if (!study.takeaway) return null;
 
   return (
-    <section className="bg-ground">
-      <div className="mx-auto w-full max-w-[1280px] px-6 pb-[clamp(56px,6vw,92px)]">
-        <div className="border-line border-t pt-[clamp(40px,4.4vw,68px)]">
-          <SectionLabel>{labels.takeaway}</SectionLabel>
+    <section id="takeaway" className={block}>
+      {/* The one line to remember, so it gets the brand's own tint rather
+          than another white card. */}
+      <div
+        className={`bg-green-tint border-green-ink/15 relative overflow-hidden border ${panel}`}
+      >
+        <SectionLabel tone="green">{labels.takeaway}</SectionLabel>
 
-          <p className="font-display text-ink mt-7 max-w-[26ch] text-[clamp(26px,3.6vw,48px)] leading-[1.05] font-bold tracking-[-0.04em] text-balance">
-            {study.takeaway.line}
-          </p>
+        <p className="font-display text-green-ink mt-7 text-[clamp(24px,3.1vw,42px)] leading-[1.08] font-bold tracking-[-0.04em] text-balance">
+          {study.takeaway.line}
+        </p>
 
-          <p className="text-ink-soft mt-7 max-w-[62ch] text-[16.5px] leading-[1.7] text-pretty">
-            {study.takeaway.body}
-          </p>
-        </div>
+        <p className="text-ink mt-6 text-[clamp(16px,1.6vw,19px)] leading-[1.65] text-pretty">
+          <Prose text={study.takeaway.body} />
+        </p>
       </div>
     </section>
   );
 }
+
+/* ── the closer ──────────────────────────────────────────────── */
 
 export function StoryCloser({
   study,
@@ -519,7 +642,7 @@ export function StoryCloser({
 
       <div className="mx-auto w-full max-w-[1280px] px-6 py-[clamp(56px,6vw,96px)]">
         <div className="flex flex-col items-start gap-y-7">
-          <h2 className="font-display text-dark-head max-w-[22ch] text-[clamp(24px,3.4vw,44px)] leading-[1.05] font-bold tracking-[-0.04em] text-balance uppercase">
+          <h2 className="font-display text-dark-head max-w-[26ch] text-[clamp(24px,3.4vw,44px)] leading-[1.05] font-bold tracking-[-0.04em] text-balance uppercase">
             {study.cta}
           </h2>
 

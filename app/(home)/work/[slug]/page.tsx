@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { StoryRail } from "@/components/gamma/story-rail";
 import {
   StoryAbout,
   StoryBuilt,
@@ -9,9 +10,12 @@ import {
   StoryHero,
   StoryHuman,
   StoryLeak,
+  StoryProgress,
   StoryResults,
   StoryTakeaway,
   StoryTestimonial,
+  storyMeta,
+  storySections,
 } from "@/components/gamma/story-sections";
 import {
   getNextCase,
@@ -64,15 +68,34 @@ export default async function CaseStudyPage({
 
   return (
     <main id="top">
+      <StoryProgress />
+
       <StoryHero study={study} labels={caseLabels} backHref="/work" />
-      <StoryTestimonial study={study} labels={caseLabels} />
-      <StoryAbout study={study} labels={caseLabels} />
-      <StoryLeak study={study} labels={caseLabels} />
-      <StoryBuilt study={study} labels={caseLabels} />
-      <StoryGallery study={study} labels={caseLabels} />
-      <StoryResults study={study} labels={caseLabels} />
-      <StoryHuman study={study} labels={caseLabels} />
-      <StoryTakeaway study={study} labels={caseLabels} />
+
+      {/* The story runs in one column beside the rail. Giving the column its
+          own width is what fixes the empty right-hand half: the headings and
+          prose now fill what they are given instead of stopping at a measure
+          set for a row twice as wide. */}
+      <div className="bg-ground">
+        <div className="mx-auto grid w-full max-w-[1280px] gap-x-[clamp(32px,3.6vw,72px)] px-6 py-[clamp(44px,4.8vw,76px)] lg:grid-cols-[224px_minmax(0,1fr)]">
+          <StoryRail
+            sections={storySections(study, caseLabels)}
+            meta={storyMeta(study, caseLabels)}
+          />
+
+          <div className="flex min-w-0 flex-col gap-y-[clamp(40px,4.4vw,68px)]">
+            <StoryTestimonial study={study} labels={caseLabels} />
+            <StoryAbout study={study} labels={caseLabels} />
+            <StoryLeak study={study} labels={caseLabels} />
+            <StoryBuilt study={study} labels={caseLabels} />
+            <StoryGallery study={study} labels={caseLabels} />
+            <StoryResults study={study} labels={caseLabels} />
+            <StoryHuman study={study} labels={caseLabels} />
+            <StoryTakeaway study={study} labels={caseLabels} />
+          </div>
+        </div>
+      </div>
+
       <StoryCloser
         study={study}
         labels={caseLabels}
