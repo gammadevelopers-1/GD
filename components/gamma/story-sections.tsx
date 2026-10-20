@@ -54,7 +54,7 @@ const block = "scroll-mt-[108px]";
  *  at 24ch inside a 1280px row, which left the right half empty and folded
  *  every heading onto three or four lines. */
 const heading =
-  "font-display mt-6 text-[clamp(25px,2.9vw,38px)] leading-[1.08] font-bold tracking-[-0.04em] text-balance uppercase";
+  "font-display text-[clamp(25px,2.9vw,38px)] leading-[1.08] font-bold tracking-[-0.04em] text-balance uppercase";
 
 const panel = "rounded-[20px] p-[clamp(24px,2.8vw,44px)]";
 
@@ -502,7 +502,7 @@ export function StoryLeak({
         <div className="relative">
           <SectionLabel>{labels.leak}</SectionLabel>
 
-          <h2 className={`${heading} text-ink`}>{study.leak.heading}</h2>
+          <h2 className={`${heading} text-ink mt-6`}>{study.leak.heading}</h2>
 
           {study.leak.image ? (
             <div className="bg-ground relative mt-[clamp(22px,2.4vw,34px)] aspect-[21/9] w-full overflow-hidden rounded-[16px]">
@@ -567,7 +567,30 @@ export function StoryBuilt({
 
         <SectionLabel tone="dark">{labels.built}</SectionLabel>
 
-        <h2 className={`${heading} text-dark-head`}>{study.built.heading}</h2>
+        {/* With a banner the heading takes the left of the row and the
+            picture the right, which keeps the section from opening with two
+            full-width blocks stacked on each other. */}
+        {study.built.image ? (
+          <div className="mt-[clamp(18px,2vw,30px)] grid items-center gap-x-[clamp(28px,3.2vw,56px)] gap-y-7 lg:grid-cols-[0.82fr_1.18fr]">
+            <h2 className={`${heading} text-dark-head`}>
+              {study.built.heading}
+            </h2>
+
+            <div className="relative aspect-[2/1] w-full overflow-hidden rounded-[16px] border border-white/[0.09]">
+              <Image
+                src={study.built.image}
+                alt=""
+                fill
+                sizes="(min-width: 1024px) 660px, 92vw"
+                className="object-cover"
+              />
+            </div>
+          </div>
+        ) : (
+          <h2 className={`${heading} text-dark-head mt-6`}>
+            {study.built.heading}
+          </h2>
+        )}
 
         <ul className="mt-[clamp(26px,3vw,42px)] grid gap-px overflow-hidden rounded-[16px] border border-white/[0.09] bg-white/[0.09] md:grid-cols-2">
           {study.built.items.map((item, i) => (
@@ -649,7 +672,7 @@ export function StoryResults({
       />
       <SectionLabel>{labels.results}</SectionLabel>
 
-      <h2 className={`${heading} text-ink`}>{study.results.heading}</h2>
+      <h2 className={`${heading} text-ink mt-6`}>{study.results.heading}</h2>
 
       <p className="text-ink mt-6 text-[clamp(16.5px,1.65vw,20px)] leading-[1.65] text-pretty">
         <Prose text={study.results.lead} />

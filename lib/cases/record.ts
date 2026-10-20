@@ -130,6 +130,7 @@ export function toCaseStudy(row: Row): CaseRecord | null {
           built: {
             heading: str(built.heading),
             items: list(built.items, builtItem),
+            ...(str(built.image) ? { image: str(built.image) } : {}),
           },
         }
       : {}),

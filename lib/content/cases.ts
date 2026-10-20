@@ -68,7 +68,8 @@ export type CaseStudy = {
   /** A wide banner under the heading. Optional: the section reads fine
    *  as prose, so it stays empty until real artwork exists. */
   leak?: { heading: string; body: readonly string[]; image?: string };
-  built?: { heading: string; items: readonly BuiltItem[] };
+  /** Same optional banner as the leak, under the heading. */
+  built?: { heading: string; items: readonly BuiltItem[]; image?: string };
   results?: {
     heading: string;
     lead: string;
@@ -123,6 +124,7 @@ export const caseStudies: readonly CaseStudy[] = [
       ],
     },
     built: {
+      image: "/casestudy-images/drive-webuild.jpeg",
       heading: "One platform where every operator runs their own brand",
       items: [
         {

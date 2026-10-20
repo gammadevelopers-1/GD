@@ -356,6 +356,15 @@ export function CaseStudyForm({
             placeholder="AI reads the ID :: Clients upload an Emirates ID and the details land in the will."
           />
         </Field>
+        <Field label="Banner" hint="Optional. A wide image under the heading.">
+          <Input
+            variant="admin"
+            name="builtImage"
+            defaultValue={study?.built?.image}
+            placeholder="/casestudy-images/…"
+            className="h-10"
+          />
+        </Field>
       </Group>
 
       <Group step="06" title="Results" note="What changed, with the figures.">
