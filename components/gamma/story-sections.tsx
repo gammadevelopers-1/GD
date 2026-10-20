@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 
 import type {
   StoryMetaRow,
@@ -778,6 +778,9 @@ export function StoryResults({
 }) {
   if (!study.results) return null;
 
+  const figures = study.results.points.filter((point) => point.value);
+  const notes = study.results.points.filter((point) => !point.value);
+
   return (
     <section id="results" className={`relative isolate ${block}`}>
       {/* No panel here, so the lattice sits straight on the page and gives
@@ -795,23 +798,23 @@ export function StoryResults({
         <Prose text={study.results.lead} />
       </p>
 
-      <ul className="mt-[clamp(26px,3vw,42px)] grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {study.results.points.map((point, i) => {
-          // The strongest figure takes the brand fill, and a point with no
-          // figure is a sentence rather than a tile, so it takes the row.
-          const lead = i === 0 && Boolean(point.value);
-          return (
-            <li
-              key={point.text}
-              className={`rounded-[14px] p-[clamp(18px,1.9vw,24px)] ${
-                point.value ? "" : "sm:col-span-2 lg:col-span-3"
-              } ${
-                lead
-                  ? "bg-brand shadow-[0_20px_44px_-26px_rgba(47,232,92,0.55)]"
-                  : "border-line bg-surface hover:border-green-ink/35 border transition-colors duration-300 ease-out"
-              }`}
-            >
-              {point.value ? (
+      {/* A figure and a statement are different things, so they stop
+          sharing a grid. Figures are tiles; the rest is a list underneath.
+          Spanning a statement across the row made one look deliberate and
+          three look like a wall of empty cards. */}
+      {figures.length ? (
+        <ul className="mt-[clamp(26px,3vw,42px)] grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {figures.map((point, i) => {
+            const lead = i === 0;
+            return (
+              <li
+                key={point.text}
+                className={`rounded-[14px] p-[clamp(18px,1.9vw,24px)] ${
+                  lead
+                    ? "bg-brand shadow-[0_20px_44px_-26px_rgba(47,232,92,0.55)]"
+                    : "border-line bg-surface hover:border-green-ink/35 border transition-colors duration-300 ease-out"
+                }`}
+              >
                 <p
                   className={`font-display text-[clamp(22px,2.4vw,30px)] leading-none font-bold tracking-[-0.035em] ${
                     lead ? "text-ink" : "text-green-ink"
@@ -819,20 +822,43 @@ export function StoryResults({
                 >
                   {point.value}
                 </p>
-              ) : null}
-              <p
-                className={`text-[14.5px] leading-[1.6] text-pretty ${
-                  point.value
-                    ? `mt-3 ${lead ? "text-ink/75" : "text-ink-soft"}`
-                    : "text-ink text-[15.5px] leading-[1.65]"
-                }`}
-              >
+                <p
+                  className={`mt-3 text-[14.5px] leading-[1.6] text-pretty ${
+                    lead ? "text-ink/75" : "text-ink-soft"
+                  }`}
+                >
+                  <Prose text={point.text} />
+                </p>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+
+      {notes.length ? (
+        <ul
+          className={`grid gap-x-[clamp(28px,3.2vw,56px)] gap-y-3.5 md:grid-cols-2 ${
+            figures.length
+              ? "border-line mt-[clamp(22px,2.4vw,32px)] border-t pt-[clamp(20px,2.2vw,30px)]"
+              : "mt-[clamp(26px,3vw,42px)]"
+          }`}
+        >
+          {notes.map((point) => (
+            <li
+              key={point.text}
+              className="text-ink-soft flex gap-3 text-[15px] leading-[1.65] text-pretty"
+            >
+              <Check
+                aria-hidden
+                className="text-green-ink mt-[3px] size-4 shrink-0"
+              />
+              <span>
                 <Prose text={point.text} />
-              </p>
+              </span>
             </li>
-          );
-        })}
-      </ul>
+          ))}
+        </ul>
+      ) : null}
     </section>
   );
 }
