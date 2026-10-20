@@ -244,14 +244,14 @@ export const caseStudies: readonly CaseStudy[] = [
     ],
 
     about:
-      "A UK-based football education group that places ambitious young players into elite pathways: university programmes, gap years, residencies and training experiences with top European clubs. A team of 10+ recruiters guides each lead from first enquiry to arrival, with programme fees around \u00a310,000. We designed, built and still run the platform it all moves through.",
+      "A UK-based football education group that places ambitious young players into elite pathways: degree programmes run with a UK university partner, gap years, residencies and training experiences with top European clubs. A team of 10+ recruiters guides each lead from first enquiry to arrival, on programmes costing upwards of \u00a325,000. We designed, built and still run the platform it all moves through.",
 
     leak: {
       heading:
         "Their data sat on four platforms, and every stage waited for a person",
       body: [
         "Every player journey is long. Enquiry, first call, interview, application, offer, deposit, balance, paperwork, departure. Each step needs a message at the right time, and each one is a chance for a lead to go quiet.",
-        "The work ran across ActiveCampaign, Plumb, Xero and a pile of spreadsheets. **Between $8,000 and $10,000 a month** left the business for tools that mostly just held their own data. None of them talked to each other, so a single lead was spread across four places and nobody could see all of it at once.",
+        "The work ran across ActiveCampaign, Publuu, Xero and a pile of spreadsheets. **Between $8,000 and $10,000 a month** left the business for tools that mostly just held their own data. None of them talked to each other, so a single lead was spread across four places and nobody could see all of it at once.",
         "Nothing moved on its own. A lead arrived and someone assigned it. An interview was booked and someone sent the confirmation. An offer went out and someone raised the invoice, watched for the payment, then chased it. **Every stage waited for a person to push it.**",
         "The biggest gap was replies. When they sent a campaign to thousands of past enquiries, answers came back as bare phone numbers. Someone had to open the spreadsheet, find who that number belonged to, and update the record by hand. Warm leads who had just said \u201cyes, I'm interested\u201d sat waiting while that happened.",
         "The team wasn't the problem. They were doing by hand the work the stack was being paid for and couldn't do.",
