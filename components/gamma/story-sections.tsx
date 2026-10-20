@@ -31,6 +31,7 @@ export type StoryLabels = {
   readonly about: string;
   readonly leak: string;
   readonly built: string;
+  readonly ai: string;
   readonly results: string;
   readonly human: string;
   readonly takeaway: string;
@@ -173,6 +174,7 @@ export function storySections(
     Boolean(study.about) && { id: "about", label: labels.about },
     Boolean(study.leak) && { id: "leak", label: labels.leak },
     Boolean(study.built) && { id: "built", label: labels.built },
+    Boolean(study.ai) && { id: "ai", label: labels.ai },
     study.gallery.length > 0 && { id: "gallery", label: labels.gallery },
     Boolean(study.results) && { id: "results", label: labels.results },
     Boolean(study.human) && { id: "human", label: labels.human },
@@ -611,6 +613,57 @@ export function StoryBuilt({
           ))}
         </ul>
       </div>
+    </section>
+  );
+}
+
+/**
+ * The AI layer. Its own section rather than a few lines inside "what we
+ * built", because an agent that can act on the business is a different
+ * claim from a feature list, and buried in a list of ten it read as one.
+ */
+export function StoryAI({
+  study,
+  labels,
+}: {
+  study: Story;
+  labels: StoryLabels;
+}) {
+  if (!study.ai) return null;
+
+  return (
+    <section id="ai" className={block}>
+      <SectionLabel>{labels.ai}</SectionLabel>
+
+      <h2 className={`${heading} text-ink mt-6`}>{study.ai.heading}</h2>
+
+      {study.ai.lead ? (
+        <p className="text-ink mt-6 text-[clamp(16.5px,1.65vw,20px)] leading-[1.65] text-pretty">
+          <Prose text={study.ai.lead} />
+        </p>
+      ) : null}
+
+      {/* Green-edged rather than the plain hairline the other cards use, so
+          the layer reads as its own thing at a glance. */}
+      <ul className="mt-[clamp(26px,3vw,42px)] grid gap-4 md:grid-cols-2">
+        {study.ai.items.map((item) => (
+          <li
+            key={item.label}
+            className="border-green-ink/20 bg-surface hover:border-green-ink/45 relative overflow-hidden rounded-[16px] border p-[clamp(20px,2.1vw,28px)] transition-colors duration-300 ease-out"
+          >
+            <span
+              aria-hidden
+              className="bg-green-ink/45 absolute inset-y-0 left-0 w-[3px]"
+            />
+            <h3 className="text-ink text-[16.5px] leading-[1.3] font-semibold tracking-[-0.015em]">
+              {item.label}
+            </h3>
+            <p className="text-ink-soft mt-2.5 text-[15px] leading-[1.65] text-pretty">
+              <Prose text={item.body} />
+            </p>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

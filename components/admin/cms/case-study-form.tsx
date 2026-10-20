@@ -367,7 +367,37 @@ export function CaseStudyForm({
         </Field>
       </Group>
 
-      <Group step="06" title="Results" note="What changed, with the figures.">
+      <Group
+        step="06"
+        title="The AI layer"
+        note="Only where there is enough of one to be worth its own section."
+      >
+        <Field label="Heading">
+          <Input
+            variant="admin"
+            name="aiHeading"
+            defaultValue={study?.ai?.heading}
+            className="h-10"
+          />
+        </Field>
+        <Field label="Opening paragraph" hint="Wrap a phrase in **stars** to pick it out in green.">
+          <Textarea name="aiLead" rows={2} defaultValue={study?.ai?.lead} />
+        </Field>
+        <Field label="Items" hint="One per line: name :: what it does.">
+          <Textarea
+            name="aiItems"
+            rows={6}
+            defaultValue={pairText(
+              (study?.ai?.items ?? []).map((item) => ({
+                a: item.label,
+                b: item.body,
+              })),
+            )}
+          />
+        </Field>
+      </Group>
+
+      <Group step="07" title="Results" note="What changed, with the figures.">
         <Field label="Heading">
           <Input
             variant="admin"
@@ -400,7 +430,7 @@ export function CaseStudyForm({
       </Group>
 
       <Group
-        step="07"
+        step="08"
         title="The close"
         note="What people still do, the lesson, and the ask."
       >

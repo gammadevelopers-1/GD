@@ -70,6 +70,9 @@ export type CaseStudy = {
   leak?: { heading: string; body: readonly string[]; image?: string };
   /** Same optional banner as the leak, under the heading. */
   built?: { heading: string; items: readonly BuiltItem[]; image?: string };
+  /** The AI layer, where there is enough of one to be worth its own
+   *  section rather than a few lines inside "what we built". */
+  ai?: { heading: string; lead?: string; items: readonly BuiltItem[] };
   results?: {
     heading: string;
     lead: string;
@@ -274,10 +277,6 @@ export const caseStudies: readonly CaseStudy[] = [
           body: "Every reply finds the right lead automatically, even from a parent's phone or a slightly different name. AI reads it, sorts it into interested, question or not now, and moves the card forward.",
         },
         {
-          label: "Email templates an agent designs",
-          body: "An AI agent writes and lays out the templates the team sends, so a recruiter describes the message instead of building it.",
-        },
-        {
           label: "Outreach that keeps going",
           body: "Campaigns go out to past enquiries and the follow-up runs itself, stopping the moment someone replies.",
         },
@@ -293,13 +292,28 @@ export const caseStudies: readonly CaseStudy[] = [
           label: "A portal for players and parents",
           body: "Each enrolled player gets their own portal to see their balance, pay, and upload documents like passports, without emailing the office.",
         },
+      ],
+    },
+
+    ai: {
+      heading: "An AI that doesn't just answer. It acts.",
+      lead: "Two systems sit on top of the platform. One runs the business alongside the team. The other does the work nobody enjoys.",
+      items: [
         {
-          label: "Answers on demand",
-          body: "Leadership can ask the system a plain question, like how many deposits came in this month for the gap year programme, and get the answer in seconds instead of building a spreadsheet.",
+          label: "Scout, for the people running it",
+          body: "Super admins ask Scout about the business in plain English: how a programme is filling, what came in this month, where a lead has stalled. It answers from the live data rather than a report somebody had to build.",
         },
         {
-          label: "After hours",
-          body: "An assistant on the website answers visitor questions and captures their details at any hour, so a 2am enquiry is on the board by morning.",
+          label: "Scout can act, not only answer",
+          body: "Ask it to raise a $5,000 invoice for a programme and email it to a lead, create a contact, or move a card to the next stage, and it does it. The instruction is a sentence, not a form.",
+        },
+        {
+          label: "The same agent, facing the public",
+          body: "Scout also sits on the public site, where students and parents ask about programmes, fees and entry routes. It answers out of a maintained knowledge base of the group's own material, retrieved and quoted rather than recalled, so it isn't guessing.",
+        },
+        {
+          label: "An agent that designs the email, not just writes it",
+          body: "Describe the email and the agent produces it finished: the copy, the fonts, the colours, the background and the pattern work. The team sends a designed email without opening a template builder.",
         },
       ],
     },
@@ -848,6 +862,7 @@ export const caseLabels = {
   about: "About",
   leak: "The leak",
   built: "What we built",
+  ai: "The AI layer",
   results: "Results",
   human: "What's still human",
   takeaway: "Takeaway",

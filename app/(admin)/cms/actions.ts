@@ -60,10 +60,13 @@ function readStudy(form: FormData, slug: string): CaseStudy {
 
   const leakBody = lines(form, "leakBody");
   const builtItems = pairs(form, "builtItems");
+  const aiItems = pairs(form, "aiItems");
   const leakHeading = text(form, "leakHeading", 300);
   const leakImage = text(form, "leakImage", 400);
   const builtHeading = text(form, "builtHeading", 300);
   const builtImage = text(form, "builtImage", 400);
+  const aiHeading = text(form, "aiHeading", 300);
+  const aiLead = text(form, "aiLead", 1200);
   const resultsHeading = text(form, "resultsHeading", 300);
   const takeawayLine = text(form, "takeawayLine", 400);
   const about = text(form, "about", 2000);
@@ -109,6 +112,15 @@ function readStudy(form: FormData, slug: string): CaseStudy {
             heading: builtHeading,
             items: builtItems,
             ...(builtImage ? { image: builtImage } : {}),
+          },
+        }
+      : {}),
+    ...(aiHeading
+      ? {
+          ai: {
+            heading: aiHeading,
+            ...(aiLead ? { lead: aiLead } : {}),
+            items: aiItems,
           },
         }
       : {}),

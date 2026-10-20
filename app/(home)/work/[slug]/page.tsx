@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { StoryRail } from "@/components/gamma/story-rail";
 import {
   StoryAbout,
+  StoryAI,
   StoryBuilt,
   StoryCloser,
   StoryGallery,
@@ -88,6 +89,7 @@ export default async function CaseStudyPage({
             <StoryAbout study={study} labels={caseLabels} />
             <StoryLeak study={study} labels={caseLabels} />
             <StoryBuilt study={study} labels={caseLabels} />
+            <StoryAI study={study} labels={caseLabels} />
             <StoryGallery study={study} labels={caseLabels} />
             <StoryResults study={study} labels={caseLabels} />
             <StoryHuman study={study} labels={caseLabels} />

@@ -93,6 +93,7 @@ export function toCaseStudy(row: Row): CaseRecord | null {
 
   const leak = section(content.leak);
   const built = section(content.built);
+  const ai = section(content.ai);
   const results = section(content.results);
   const takeaway = section(content.takeaway);
 
@@ -131,6 +132,15 @@ export function toCaseStudy(row: Row): CaseRecord | null {
             heading: str(built.heading),
             items: list(built.items, builtItem),
             ...(str(built.image) ? { image: str(built.image) } : {}),
+          },
+        }
+      : {}),
+    ...(str(ai.heading)
+      ? {
+          ai: {
+            heading: str(ai.heading),
+            ...(str(ai.lead) ? { lead: str(ai.lead) } : {}),
+            items: list(ai.items, builtItem),
           },
         }
       : {}),
