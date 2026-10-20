@@ -81,6 +81,9 @@ export type CaseStudy = {
   humanImage?: string;
   takeaway?: { line: string; body: string };
   cta?: string;
+  /** Optional background behind the closing call to action. It needs a
+   *  quiet left half, because the copy sits there. */
+  ctaImage?: string;
 
   nda?: boolean;
 };
@@ -196,6 +199,7 @@ export const caseStudies: readonly CaseStudy[] = [
       body: "These operators didn't need another app. They needed one place to run the whole business, with **their own name on the front door**.",
     },
     cta: "Running your business across five tools and a phone? Let's find where it's leaking.",
+    ctaImage: "/casestudy-images/drive-cta.jpeg",
   },
 
   {

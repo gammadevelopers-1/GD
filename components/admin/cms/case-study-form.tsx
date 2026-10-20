@@ -440,6 +440,18 @@ export function CaseStudyForm({
             className="h-10"
           />
         </Field>
+        <Field
+          label="Background"
+          hint="Optional. Needs a quiet left half — the copy sits there."
+        >
+          <Input
+            variant="admin"
+            name="ctaImage"
+            defaultValue={study?.ctaImage}
+            placeholder="/casestudy-images/…"
+            className="h-10"
+          />
+        </Field>
         <Field label="Tags" hint="One per line.">
           <Textarea
             name="tags"

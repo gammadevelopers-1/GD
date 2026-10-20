@@ -70,6 +70,7 @@ function readStudy(form: FormData, slug: string): CaseStudy {
   const human = text(form, "human", 2000);
   const humanImage = text(form, "humanImage", 400);
   const cta = text(form, "cta", 400);
+  const ctaImage = text(form, "ctaImage", 400);
   const heroImage = text(form, "heroImage", 400);
 
   return {
@@ -131,6 +132,7 @@ function readStudy(form: FormData, slug: string): CaseStudy {
         }
       : {}),
     ...(cta ? { cta } : {}),
+    ...(ctaImage ? { ctaImage } : {}),
   };
 }
 

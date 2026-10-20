@@ -105,6 +105,9 @@ export default async function CaseStudyPage({
                 href: `/work/${next.slug}`,
                 label: caseLabels.next,
                 title: next.title,
+                image: next.image,
+                body: next.body,
+                eyebrow: `${next.vertical} \u00b7 ${next.region}`,
               }
             : undefined
         }

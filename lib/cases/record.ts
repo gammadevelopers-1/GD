@@ -151,6 +151,7 @@ export function toCaseStudy(row: Row): CaseRecord | null {
       ? { takeaway: { line: str(takeaway.line), body: str(takeaway.body) } }
       : {}),
     ...(str(content.cta) ? { cta: str(content.cta) } : {}),
+    ...(str(content.ctaImage) ? { ctaImage: str(content.ctaImage) } : {}),
     ...(content.nda === true ? { nda: true } : {}),
   };
 

@@ -805,54 +805,154 @@ export function StoryCloser({
 }: {
   study: Story;
   labels: StoryLabels;
-  next?: { href: string; label: string; title: string };
+  next?: {
+    href: string;
+    label: string;
+    title: string;
+    image: string;
+    eyebrow: string;
+    body: string;
+  };
 }) {
   return (
-    <section className="bg-dark relative isolate overflow-hidden">
-      <GridLayer level="faded" />
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[70%]"
-        style={{
-          background:
-            "radial-gradient(60% 100% at 50% 100%, rgba(47,232,92,0.16) 0%, rgba(47,232,92,0.04) 46%, transparent 76%)",
-        }}
-      />
+    <>
+      <section className="bg-dark relative isolate overflow-hidden">
+        {study.ctaImage ? (
+          <>
+            {/* Full bleed behind the copy. The artwork keeps its left half
+                quiet, and the scrim carries that the rest of the way so the
+                heading never sits on the bright part of it. */}
+            <Image
+              src={study.ctaImage}
+              alt=""
+              fill
+              sizes="100vw"
+              className="-z-30 object-cover object-center"
+            />
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 -z-20"
+              style={{
+                background:
+                  "linear-gradient(to right, #16181c 0%, rgba(22,24,28,0.94) 34%, rgba(22,24,28,0.72) 56%, rgba(22,24,28,0.38) 78%, rgba(22,24,28,0.22) 100%)",
+              }}
+            />
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 -z-20"
+              style={{
+                background:
+                  "linear-gradient(to bottom, rgba(22,24,28,0.75) 0%, transparent 22%, transparent 78%, rgba(22,24,28,0.75) 100%)",
+              }}
+            />
+          </>
+        ) : (
+          <>
+            <GridLayer level="faded" />
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[70%]"
+              style={{
+                background:
+                  "radial-gradient(60% 100% at 50% 100%, rgba(47,232,92,0.16) 0%, rgba(47,232,92,0.04) 46%, transparent 76%)",
+              }}
+            />
+          </>
+        )}
 
-      <div className="mx-auto w-full max-w-[1280px] px-6 py-[clamp(56px,6vw,96px)]">
-        <div className="flex flex-col items-start gap-y-7">
-          <h2 className="font-display text-dark-head max-w-[26ch] text-[clamp(24px,3.4vw,44px)] leading-[1.05] font-bold tracking-[-0.04em] text-balance uppercase">
-            {study.cta}
-          </h2>
-
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
-            <a
-              href={site.book}
-              className="bg-brand text-ink hover:bg-brand-hover focus-visible:outline-dark-head inline-flex h-[54px] items-center rounded-full px-8 text-[15px] font-semibold shadow-[0_18px_44px_-18px_rgba(47,232,92,0.7)] transition-colors duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-[3px]"
-            >
-              {labels.cta.label}
-            </a>
-            <p className="t-meta text-dim-dark">{labels.cta.note}</p>
-          </div>
-        </div>
-
-        {next ? (
-          <Link
-            href={next.href}
-            className="group mt-[clamp(44px,5vw,76px)] flex flex-wrap items-end justify-between gap-x-8 gap-y-4 border-t border-white/[0.09] pt-[clamp(26px,3vw,40px)]"
+        <div className="mx-auto w-full max-w-[1280px] px-6 py-[clamp(64px,7vw,112px)]">
+          {/* Half the row, so the copy clears the artwork. The old 26ch cap
+              broke the line four times inside a column twice that wide. */}
+          <div
+            className={`flex flex-col items-start gap-y-7 ${
+              study.ctaImage ? "lg:max-w-[56%]" : ""
+            }`}
           >
-            <div className="min-w-0">
-              <p className="t-eyebrow text-dim-dark">{next.label}</p>
-              <p className="font-display text-dark-head group-hover:text-brand mt-3 max-w-[30ch] text-[clamp(18px,2vw,26px)] leading-[1.15] font-bold tracking-[-0.035em] text-pretty uppercase transition-colors duration-200">
-                {next.title}
+            <h2
+              className={`font-display text-dark-head text-[clamp(24px,3.4vw,44px)] leading-[1.05] font-bold tracking-[-0.04em] text-balance uppercase ${
+                study.ctaImage
+                  ? "[text-shadow:0_2px_24px_rgba(16,18,21,0.85)]"
+                  : "max-w-[26ch]"
+              }`}
+            >
+              {study.cta}
+            </h2>
+
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+              <a
+                href={site.book}
+                className="bg-brand text-ink hover:bg-brand-hover focus-visible:outline-dark-head inline-flex h-[54px] items-center rounded-full px-8 text-[15px] font-semibold shadow-[0_18px_44px_-18px_rgba(47,232,92,0.7)] transition-colors duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-[3px]"
+              >
+                {labels.cta.label}
+              </a>
+              <p
+                className={`t-meta text-dim-dark ${
+                  study.ctaImage
+                    ? "[text-shadow:0_1px_12px_rgba(16,18,21,0.95)]"
+                    : ""
+                }`}
+              >
+                {labels.cta.note}
               </p>
             </div>
-            <span className="bg-brand text-ink grid size-12 shrink-0 place-items-center rounded-full transition-transform duration-300 ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-x-1">
-              <ArrowRight aria-hidden className="size-4" />
-            </span>
-          </Link>
-        ) : null}
-      </div>
-    </section>
+          </div>
+        </div>
+      </section>
+
+      {/* Its own band on the light background. Sharing the dark section with
+          the call to action, separated by one hairline, read as a footnote
+          stuck to the bottom of the pitch rather than the next story. */}
+      {next ? (
+        <section className="bg-ground">
+          <div className="mx-auto w-full max-w-[1280px] px-6 py-[clamp(44px,5vw,76px)]">
+            <Link
+              href={next.href}
+              className="group focus-visible:outline-green-ink block rounded-[20px] focus-visible:outline-2 focus-visible:outline-offset-[3px]"
+            >
+              <article className="border-line bg-surface hover:border-green-ink/30 grid overflow-hidden rounded-[20px] border transition-[border-color,box-shadow,transform] duration-300 ease-out group-hover:-translate-y-[3px] group-hover:shadow-[0_26px_56px_-34px_rgba(20,23,26,0.45)] md:grid-cols-[minmax(0,320px)_1fr]">
+                <div className="bg-dark relative aspect-[16/10] w-full overflow-hidden md:aspect-auto md:min-h-[224px]">
+                  <Image
+                    src={next.image}
+                    alt=""
+                    fill
+                    sizes="(min-width: 768px) 320px, 92vw"
+                    className="object-cover object-center transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-[1.05]"
+                  />
+                </div>
+
+                <div className="relative flex flex-col justify-center p-[clamp(24px,2.8vw,44px)]">
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute -top-20 -right-16 size-52 rounded-full bg-[radial-gradient(circle,rgba(13,119,40,0.1),transparent_66%)]"
+                  />
+
+                  <p className="t-eyebrow text-green-ink relative">
+                    {next.label}
+                  </p>
+
+                  <h2 className="font-display text-ink relative mt-4 text-[clamp(21px,2.4vw,31px)] leading-[1.12] font-bold tracking-[-0.035em] text-pretty uppercase">
+                    {next.title}
+                  </h2>
+
+                  <p className="t-meta text-ink-soft relative mt-3 line-clamp-2 leading-[1.55]">
+                    {next.body}
+                  </p>
+
+                  <span className="t-meta text-ink relative mt-6 inline-flex items-center gap-2 font-semibold">
+                    {next.eyebrow}
+                    <span
+                      aria-hidden
+                      className="bg-brand text-ink ml-2 grid size-9 place-items-center rounded-full transition-transform duration-300 ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-x-1"
+                    >
+                      <ArrowRight className="size-4" />
+                    </span>
+                  </span>
+                </div>
+              </article>
+            </Link>
+          </div>
+        </section>
+      ) : null}
+    </>
   );
 }
