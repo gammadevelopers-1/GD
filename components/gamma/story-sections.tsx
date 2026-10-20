@@ -64,6 +64,51 @@ const TONE = {
   green: { text: "text-green-ink/75", rule: "bg-green-ink/20" },
 } as const;
 
+/**
+ * The 64px lattice. One layer, three strengths, so the page has a rhythm
+ * instead of a uniform texture: it carries the hero and "what we built",
+ * shows faintly under the leak, the results and the closer, and is simply
+ * absent from the rest.
+ *
+ * Alpha is baked in rather than split between a colour and an element
+ * opacity, because two multiplied numbers made the real strength impossible
+ * to read off the markup.
+ */
+const GRID = {
+  dark: { prominent: "rgba(236,236,228,0.030)", faded: "rgba(236,236,228,0.017)" },
+  light: { prominent: "rgba(20,23,26,0.040)", faded: "rgba(20,23,26,0.024)" },
+} as const;
+
+/** Fades downward, so a panel does not look like it has a spotlight in it. */
+const GRID_MASK =
+  "radial-gradient(118% 100% at 50% 0%, #000 0%, rgba(0,0,0,0.55) 58%, transparent 94%)";
+
+function GridLayer({
+  level,
+  tone = "dark",
+  mask = GRID_MASK,
+}: {
+  level: "prominent" | "faded";
+  tone?: keyof typeof GRID;
+  mask?: string;
+}) {
+  const line = GRID[tone][level];
+  return (
+    // -z-10 keeps it above the container's own background and below the
+    // content, which only holds while that container is `isolate`.
+    <span
+      aria-hidden
+      className="pointer-events-none absolute inset-0 -z-10"
+      style={{
+        backgroundImage: `linear-gradient(${line} 1px, transparent 1px), linear-gradient(90deg, ${line} 1px, transparent 1px)`,
+        backgroundSize: "64px 64px",
+        maskImage: mask,
+        WebkitMaskImage: mask,
+      }}
+    />
+  );
+}
+
 /** The eyebrow every section opens with. The hairline runs out to the edge of
  *  the column, so the label row fills its width instead of trailing off. */
 function SectionLabel({
@@ -251,21 +296,11 @@ export function StoryHero({
             "radial-gradient(125% 115% at 0% 0%, #000 0%, rgba(0,0,0,0.5) 44%, transparent 80%)",
         }}
       />
-      {/* The same grid the other heroes use, carried a little further here:
-          this one sits behind a much taller hero, and at the shared weight it
-          disappeared long before the bottom of it. */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.75]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(236,236,228,0.062) 1px, transparent 1px), linear-gradient(90deg, rgba(236,236,228,0.062) 1px, transparent 1px)",
-          backgroundSize: "64px 64px",
-          maskImage:
-            "radial-gradient(92% 86% at 50% 42%, #000 0%, rgba(0,0,0,0.65) 54%, transparent 88%)",
-          WebkitMaskImage:
-            "radial-gradient(92% 86% at 50% 42%, #000 0%, rgba(0,0,0,0.65) 54%, transparent 88%)",
-        }}
+      {/* The hero carries it strongest. Its own mask, centred rather than
+          top-down, because there is no panel edge here to fade against. */}
+      <GridLayer
+        level="prominent"
+        mask="radial-gradient(94% 88% at 50% 44%, #000 0%, rgba(0,0,0,0.62) 56%, transparent 90%)"
       />
 
       {/* Clears the fixed StickyNav, which is dark while this hero is behind it. */}
@@ -456,8 +491,9 @@ export function StoryLeak({
           paragraphs set as numbered points: this is the section a reader
           skims, and a wall of four paragraphs is what they skip. */}
       <div
-        className={`bg-surface border-line relative overflow-hidden border ${panel}`}
+        className={`bg-surface border-line relative isolate overflow-hidden border ${panel}`}
       >
+        <GridLayer level="faded" tone="light" />
         <span
           aria-hidden
           className="pointer-events-none absolute -top-28 -right-24 size-72 rounded-full bg-[radial-gradient(circle,rgba(13,119,40,0.08),transparent_68%)]"
@@ -523,6 +559,7 @@ export function StoryBuilt({
       <div
         className={`bg-dark relative isolate overflow-hidden ${panel}`}
       >
+        <GridLayer level="prominent" />
         <span
           aria-hidden
           className="pointer-events-none absolute -top-32 -right-24 -z-10 size-[460px] rounded-full bg-[radial-gradient(circle,rgba(47,232,92,0.16),transparent_68%)]"
@@ -602,7 +639,14 @@ export function StoryResults({
   if (!study.results) return null;
 
   return (
-    <section id="results" className={block}>
+    <section id="results" className={`relative isolate ${block}`}>
+      {/* No panel here, so the lattice sits straight on the page and gives
+          the run of result tiles something to stand on. */}
+      <GridLayer
+        level="faded"
+        tone="light"
+        mask="radial-gradient(110% 100% at 50% 50%, #000 0%, rgba(0,0,0,0.5) 62%, transparent 95%)"
+      />
       <SectionLabel>{labels.results}</SectionLabel>
 
       <h2 className={`${heading} text-ink`}>{study.results.heading}</h2>
@@ -717,6 +761,7 @@ export function StoryCloser({
 }) {
   return (
     <section className="bg-dark relative isolate overflow-hidden">
+      <GridLayer level="faded" />
       <span
         aria-hidden
         className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[70%]"
