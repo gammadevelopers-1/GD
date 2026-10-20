@@ -483,6 +483,8 @@ export const caseStudies: readonly CaseStudy[] = [
     },
 
     ai: {
+      image: "/casestudy-images/club-ai.jpeg",
+      imageAspect: "21 / 9",
       heading: "Seven agents, each with a piece of the day",
       lead: "The management job she was about to hire for is split across seven systems. Each one does a piece of it, every day.",
       items: [
