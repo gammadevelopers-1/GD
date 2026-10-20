@@ -442,6 +442,9 @@ export const caseStudies: readonly CaseStudy[] = [
     },
 
     built: {
+      image: "/casestudy-images/club-leak-fix.jpeg",
+      imageAspect: "21 / 9",
+      imageFull: true,
       heading: "One system, and a day that runs without her",
       items: [
         {
