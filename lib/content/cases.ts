@@ -100,7 +100,8 @@ export const caseStudies: readonly CaseStudy[] = [
     vertical: "Car Rental",
     region: "United States",
     category: "Car rental · Multi-tenant SaaS · AI operations",
-    title: "Rental operators left Turo and launched their own brand in 40 seconds",
+    title:
+      "Rental operators left Turo and launched their own brand in 40 seconds",
     heroLines: [
       { text: "They left Turo behind.", small: true },
       { text: "Their own brand," },
@@ -180,12 +181,18 @@ export const caseStudies: readonly CaseStudy[] = [
       lead: "The first operator was taking real payments five weeks after the first line of code. Since then, the money operators process each month has grown from **$805 to $32,900**.",
       points: [
         { value: "~$76k", text: "ARR in under a year, from zero" },
-        { value: "3x", text: "more bookings in September than any month before" },
+        {
+          value: "3x",
+          text: "more bookings in September than any month before",
+        },
         { value: "4.4x", text: "growth in subscription revenue in 3 months" },
         { value: "$133k+", text: "processed for operators so far" },
         { value: "195", text: "vehicles and 540+ customers managed" },
         { value: "~12", text: "new operators joining every month" },
-        { value: "9", text: "operators running their business on it for 6+ months" },
+        {
+          value: "9",
+          text: "operators running their business on it for 6+ months",
+        },
         {
           text: "The platform is now being rebuilt from the inside, one area at a time, **without a single live operator having to switch or notice**.",
         },
@@ -206,55 +213,84 @@ export const caseStudies: readonly CaseStudy[] = [
     slug: "football-recruitment-platform",
     status: "published",
     order: 2,
+
     client: "A UK football education group",
     named: false,
     sector: "Education and sports recruitment",
     vertical: "Sports Recruitment",
     region: "United Kingdom",
-    category: "Education and sports recruitment · Operations automation",
-    title: "They outgrew ActiveCampaign, so we built a system they own",
-    body: "A recruitment group placing young players into elite pathways, running on one system shaped around how they actually recruit.",
-    tags: ["CRM", "Automation", "Payments"],
+    category:
+      "Education and sports recruitment \u00b7 Workflow automation \u00b7 AI",
+
+    title: "Their funnel runs itself, from first enquiry to paid invoice",
+    heroLines: [
+      {
+        text: "183,000 leads. 50,000 emails a month.",
+        small: true,
+      },
+      { text: "The funnel runs itself." },
+      { text: "The bill dropped **80%**." },
+    ],
+    body: "A recruitment group whose leads, follow-up, email and invoicing now run themselves on one system they own.",
+    tags: ["Workflow automation", "Agentic AI", "Payments"],
+
     image: "/case-study2.jpg",
     gallery: [],
+
     stats: [
-      { value: "13,000+", label: "contacts on one system they own" },
-      { value: "12", label: "automations running on their own rules" },
-      { value: "~45 hrs", label: "of weekly spreadsheet work removed" },
+      { value: "80%", label: "cut from their monthly software bill" },
+      { value: "50,000+", label: "emails a month across the whole team" },
+      { value: "183,000", label: "leads on one system they own" },
     ],
+
     about:
-      "A UK-based football education group that places ambitious young players into elite pathways: university programmes, gap years, residencies and training experiences with top European clubs. A team of 10+ recruiters guides each player from first enquiry to arrival, with programme fees around £10,000.",
+      "A UK-based football education group that places ambitious young players into elite pathways: university programmes, gap years, residencies and training experiences with top European clubs. A team of 10+ recruiters guides each lead from first enquiry to arrival, with programme fees around \u00a310,000. We designed, built and still run the platform it all moves through.",
+
     leak: {
       heading:
-        "The business was running on ActiveCampaign and a pile of spreadsheets",
+        "Their data sat on four platforms, and every stage waited for a person",
       body: [
-        "Every player journey is long. Enquiry, first call, interview, application, offer, deposit, balance, paperwork, departure. Each step needs a message at the right time, and each one is a chance for a player to go quiet.",
-        "The group ran all of this through ActiveCampaign. It is a capable marketing tool, but it is built for everyone, not for a business that recruits players into £10,000 programmes. They were paying roughly £2,500 a month for it, with large spreadsheets filling the gaps. The bill kept growing, they had little control over how things worked, and some of the steps their business needed simply did not exist in it. So the team did those by hand.",
-        "The biggest gap was replies. When they sent a text campaign to thousands of past enquiries, answers came back as bare phone numbers. Someone had to open the spreadsheet, find who that number belonged to, and update their record manually. Warm players who had just said “yes, I'm interested” sat waiting while that happened.",
-        "The team wasn't the problem. They were working hard to cover for a system that didn't fit how the business actually runs.",
+        "Every player journey is long. Enquiry, first call, interview, application, offer, deposit, balance, paperwork, departure. Each step needs a message at the right time, and each one is a chance for a lead to go quiet.",
+        "The work ran across ActiveCampaign, Plumb, Xero and a pile of spreadsheets. **Between $8,000 and $10,000 a month** left the business for tools that mostly just held their own data. None of them talked to each other, so a single lead was spread across four places and nobody could see all of it at once.",
+        "Nothing moved on its own. A lead arrived and someone assigned it. An interview was booked and someone sent the confirmation. An offer went out and someone raised the invoice, watched for the payment, then chased it. **Every stage waited for a person to push it.**",
+        "The biggest gap was replies. When they sent a campaign to thousands of past enquiries, answers came back as bare phone numbers. Someone had to open the spreadsheet, find who that number belonged to, and update the record by hand. Warm leads who had just said \u201cyes, I'm interested\u201d sat waiting while that happened.",
+        "The team wasn't the problem. They were doing by hand the work the stack was being paid for and couldn't do.",
       ],
     },
+
     built: {
-      heading: "One system, built around how they recruit, that they own outright",
+      heading: "One system where every stage triggers the next one",
       items: [
         {
-          label: "Leads",
-          body: "Website forms, campaigns and recruiter entries from tournaments all land in one place. Every new player gets a recruiter assigned automatically and fairly, with no one managing the rota.",
+          label: "A board the whole funnel moves across",
+          body: "Every lead sits on a board by stage. Moving a card fires that stage's automation on its own: the email, the reminder, the task, the invoice. Nobody has to remember what comes next.",
         },
         {
-          label: "Replies",
-          body: "Every reply is matched to the right player automatically, even when it comes from a parent's phone or a slightly different name. AI then reads the reply, sorts it into interested, question or not now, and moves the player forward on its own.",
+          label: "Leads from everywhere, in one place",
+          body: "Website forms, campaigns and recruiter entries from tournaments all land on the same board, and every new lead gets a recruiter assigned automatically and fairly, with no one managing a rota.",
         },
         {
-          label: "Follow-up",
-          body: "12 automations handle the journey: follow-ups that stop the moment a player replies, interview reminders, confirmations, and pre-departure checklists. Each one runs on the group's own rules, including ones ActiveCampaign couldn't do.",
+          label: "Replies matched on their own",
+          body: "Every reply finds the right lead automatically, even from a parent's phone or a slightly different name. AI reads it, sorts it into interested, question or not now, and moves the card forward.",
         },
         {
-          label: "Payments",
-          body: "Offers turn into deposit invoices automatically. Players can pay online, spread fees across a payment plan, and get a polite reminder if a payment is late. The reminder stops as soon as they pay.",
+          label: "Email templates an agent designs",
+          body: "An AI agent writes and lays out the templates the team sends, so a recruiter describes the message instead of building it.",
         },
         {
-          label: "Players and parents",
+          label: "Outreach that keeps going",
+          body: "Campaigns go out to past enquiries and the follow-up runs itself, stopping the moment someone replies.",
+        },
+        {
+          label: "Invoices raised, sent and chased",
+          body: "An offer becomes a deposit invoice without anyone opening an accounting tool. Leads pay online, spread fees across a plan, and get a polite reminder if a payment is late. The reminder stops as soon as they pay.",
+        },
+        {
+          label: "Their platform, their data",
+          body: "The public website and the system behind it are theirs. Contact records, email history and documents sit on their own infrastructure rather than inside four subscriptions.",
+        },
+        {
+          label: "A portal for players and parents",
           body: "Each enrolled player gets their own portal to see their balance, pay, and upload documents like passports, without emailing the office.",
         },
         {
@@ -263,15 +299,21 @@ export const caseStudies: readonly CaseStudy[] = [
         },
         {
           label: "After hours",
-          body: "An assistant on the website answers visitor questions and captures their details at any hour, so a 2am enquiry is waiting in the system by morning.",
+          body: "An assistant on the website answers visitor questions and captures their details at any hour, so a 2am enquiry is on the board by morning.",
         },
       ],
     },
+
     results: {
-      heading: "From ActiveCampaign and spreadsheets to one system they control",
-      lead: "The core platform went live in about 12 weeks, built by a team of three, and has been improved every month since. Every player, reply, invoice and document now lives in one place. Recruiters spend their time on calls with players instead of matching phone numbers in spreadsheets.",
+      heading: "The work that needed a person now needs a trigger",
+      lead: "The core platform went live in about 12 weeks, built by a team of three, and has been improved every month since. More than 50,000 emails a month move through it across every recruiter, and the stack it replaced was costing **$8,000 to $10,000 a month**.",
       points: [
-        { value: "13,000+", text: "contacts managed in one system" },
+        { value: "80%", text: "cut from the monthly software bill" },
+        {
+          value: "50,000+",
+          text: "emails a month sent and received across the team",
+        },
+        { value: "183,000", text: "leads managed in one system they own" },
         {
           value: "~45 hrs/week",
           text: "of manual spreadsheet work removed, estimated across the recruiting team",
@@ -280,16 +322,25 @@ export const caseStudies: readonly CaseStudy[] = [
           value: "12",
           text: "automations covering the full journey, from first enquiry to departure day",
         },
-        { value: "12 weeks", text: "from first line of code to the platform going live" },
+        {
+          value: "12 weeks",
+          text: "from first line of code to the platform going live",
+        },
+        {
+          text: "Invoices are raised, sent and chased without anyone opening an accounting tool, and the chase stops the moment a lead pays.",
+        },
       ],
     },
+
     human:
-      "Recruiters still run every interview and make every offer decision. When the system isn't sure who a reply belongs to, it suggests a match with a confidence level and a person confirms it. Automation handles the typing. People handle the judgment.",
+      "Recruiters still run every interview and make every offer decision. When the system isn't sure who a reply belongs to, it suggests a match with a confidence level and a person confirms it. **Automation handles the typing. People handle the judgment.**",
+
     takeaway: {
-      line: "If your business runs on software you can't change, your process ends up shaped around the software.",
-      body: "This group didn't need more tools. They needed one system shaped around how they already recruit, and the freedom to change it whenever the business does.",
+      line: "If every stage of your funnel waits for a person, you don't have a system. You have a to-do list.",
+      body: "This group didn't need more tools. They needed the work to move on its own, and the record of it to live somewhere **they own**.",
     },
-    cta: "Paying for software that doesn't fit how you work? Let's find where it's leaking.",
+
+    cta: "Still pushing every lead through by hand? Let's find where it's leaking.",
   },
 
   {
@@ -368,7 +419,8 @@ export const caseStudies: readonly CaseStudy[] = [
       ],
     },
     results: {
-      heading: "From holding everything in her head to a system that briefs her",
+      heading:
+        "From holding everything in her head to a system that briefs her",
       lead: "The platform went live in about three months, and the founder and her team now run the club on it every day.",
       points: [
         {
@@ -383,8 +435,12 @@ export const caseStudies: readonly CaseStudy[] = [
           value: "1",
           text: "system replacing spreadsheets, WhatsApp groups, inbox juggling and a separate lead tool",
         },
-        { text: "Every workflow mapped out of the founder's head into a written spec." },
-        { text: "A new public website that raised the bar on her previous one." },
+        {
+          text: "Every workflow mapped out of the founder's head into a written spec.",
+        },
+        {
+          text: "A new public website that raised the bar on her previous one.",
+        },
       ],
     },
     human:
@@ -407,7 +463,8 @@ export const caseStudies: readonly CaseStudy[] = [
     vertical: "Legal",
     region: "United Arab Emirates",
     category: "Legal services · Document AI · Multi-department platform",
-    title: "They stopped retyping client IDs. AI reads them and fills the will.",
+    title:
+      "They stopped retyping client IDs. AI reads them and fills the will.",
     body: "An estate planning firm in Dubai where every will began with someone copying an Emirates ID by hand, in two languages.",
     tags: ["Document AI", "Bilingual", "Multi-department"],
     image: "/case-study2.jpg",
@@ -480,8 +537,12 @@ export const caseStudies: readonly CaseStudy[] = [
           value: "1",
           text: "platform for drafting, sales, HR and finance, instead of separate systems per department",
         },
-        { text: "Clients track their own will online, so fewer “where's my will?” calls." },
-        { text: "Every draft versioned, and the final will released only when paid." },
+        {
+          text: "Clients track their own will online, so fewer “where's my will?” calls.",
+        },
+        {
+          text: "Every draft versioned, and the final will released only when paid.",
+        },
         { text: "Delivered complete, end to end, in English and Arabic." },
       ],
     },
@@ -511,7 +572,10 @@ export const caseStudies: readonly CaseStudy[] = [
     image: "/case-study.jpg",
     gallery: [],
     stats: [
-      { value: "NELC", label: "approved by Saudi Arabia's National eLearning Center" },
+      {
+        value: "NELC",
+        label: "approved by Saudi Arabia's National eLearning Center",
+      },
       { value: "100+", label: "healthcare learners in the first 3 months" },
       { value: "5", label: "dashboards in Arabic and English" },
     ],
@@ -574,9 +638,18 @@ export const caseStudies: readonly CaseStudy[] = [
       heading: "From manual training to an approved national platform",
       lead: "The platform passed Saudi Arabia's national eLearning review and is now the way PhysioGuidance teaches.",
       points: [
-        { value: "NELC approved", text: "the platform passed the national eLearning review" },
-        { value: "100+", text: "healthcare learners enrolled in the first 3 months after launch" },
-        { value: "Zero", text: "manual attendance tracking: live class attendance syncs on its own" },
+        {
+          value: "NELC approved",
+          text: "the platform passed the national eLearning review",
+        },
+        {
+          value: "100+",
+          text: "healthcare learners enrolled in the first 3 months after launch",
+        },
+        {
+          value: "Zero",
+          text: "manual attendance tracking: live class attendance syncs on its own",
+        },
         { text: "Every certificate verifiable by QR code." },
         { text: "Every course video captioned without anyone typing." },
         { text: "Built end to end, from requirements to launch." },
@@ -785,5 +858,8 @@ export const caseLabels = {
   builtBy: "Built by",
   next: "Next case study",
   back: "All case studies",
-  cta: { label: "Book a call", note: "Free · 30 minutes · no preparation needed" },
+  cta: {
+    label: "Book a call",
+    note: "Free · 30 minutes · no preparation needed",
+  },
 } as const;
