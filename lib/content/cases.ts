@@ -86,7 +86,15 @@ export type CaseStudy = {
   };
   /** The AI layer, where there is enough of one to be worth its own
    *  section rather than a few lines inside "what we built". */
-  ai?: { heading: string; lead?: string; items: readonly BuiltItem[] };
+  ai?: {
+    heading: string;
+    lead?: string;
+    items: readonly BuiltItem[];
+    /** A banner between the lead and the items. */
+    image?: string;
+    /** Shape of that banner. Defaults to 2 / 1. */
+    imageAspect?: string;
+  };
   results?: {
     heading: string;
     lead: string;
@@ -315,6 +323,8 @@ export const caseStudies: readonly CaseStudy[] = [
     },
 
     ai: {
+      image: "/casestudy-images/ifg-ai.jpeg",
+      imageAspect: "21 / 9",
       heading: "An AI that doesn't just answer. It acts.",
       lead: "Two systems sit on top of the platform. One runs the business alongside the team. The other does the work nobody enjoys.",
       items: [

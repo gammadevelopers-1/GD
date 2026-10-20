@@ -415,6 +415,26 @@ export function CaseStudyForm({
         <Field label="Opening paragraph" hint="Wrap a phrase in **stars** to pick it out in green.">
           <Textarea name="aiLead" rows={2} defaultValue={study?.ai?.lead} />
         </Field>
+        <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
+          <Field label="Banner" hint="Optional. Sits between the opener and the items.">
+            <Input
+              variant="admin"
+              name="aiImage"
+              defaultValue={study?.ai?.image}
+              placeholder="/casestudy-images/…"
+              className="h-10"
+            />
+          </Field>
+          <Field label="Banner shape" hint="Defaults to 2 / 1.">
+            <Input
+              variant="admin"
+              name="aiImageAspect"
+              defaultValue={study?.ai?.imageAspect}
+              placeholder="2 / 1"
+              className="h-10"
+            />
+          </Field>
+        </div>
         <Field label="Items" hint="One per line: name :: what it does.">
           <Textarea
             name="aiItems"

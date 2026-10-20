@@ -68,6 +68,8 @@ function readStudy(form: FormData, slug: string): CaseStudy {
   const builtImageAspect = text(form, "builtImageAspect", 20);
   const aiHeading = text(form, "aiHeading", 300);
   const aiLead = text(form, "aiLead", 1200);
+  const aiImage = text(form, "aiImage", 400);
+  const aiImageAspect = text(form, "aiImageAspect", 20);
   const resultsHeading = text(form, "resultsHeading", 300);
   const takeawayLine = text(form, "takeawayLine", 400);
   const about = text(form, "about", 2000);
@@ -129,6 +131,8 @@ function readStudy(form: FormData, slug: string): CaseStudy {
           ai: {
             heading: aiHeading,
             ...(aiLead ? { lead: aiLead } : {}),
+            ...(aiImage ? { image: aiImage } : {}),
+            ...(aiImageAspect ? { imageAspect: aiImageAspect } : {}),
             items: aiItems,
           },
         }

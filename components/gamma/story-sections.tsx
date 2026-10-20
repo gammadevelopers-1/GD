@@ -688,6 +688,21 @@ export function StoryAI({
         </p>
       ) : null}
 
+      {study.ai.image ? (
+        <div
+          className="bg-dark relative mt-[clamp(24px,2.8vw,38px)] w-full overflow-hidden rounded-[16px]"
+          style={{ aspectRatio: study.ai.imageAspect ?? "2 / 1" }}
+        >
+          <Image
+            src={study.ai.image}
+            alt=""
+            fill
+            sizes="(min-width: 1024px) 1000px, 92vw"
+            className="object-cover"
+          />
+        </div>
+      ) : null}
+
       {/* Green-edged rather than the plain hairline the other cards use, so
           the layer reads as its own thing at a glance. */}
       <ul className="mt-[clamp(26px,3vw,42px)] grid gap-4 md:grid-cols-2">

@@ -147,6 +147,10 @@ export function toCaseStudy(row: Row): CaseRecord | null {
           ai: {
             heading: str(ai.heading),
             ...(str(ai.lead) ? { lead: str(ai.lead) } : {}),
+            ...(str(ai.image) ? { image: str(ai.image) } : {}),
+            ...(str(ai.imageAspect)
+              ? { imageAspect: str(ai.imageAspect) }
+              : {}),
             items: list(ai.items, builtItem),
           },
         }
