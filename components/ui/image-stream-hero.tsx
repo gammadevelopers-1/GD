@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
@@ -222,13 +223,15 @@ export function ImageStreamHero({
                   }}
                 >
                   {img ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    // Through next/image, not a bare tag: a card is about a
+                    // fifth of the viewport wide, and the raw originals
+                    // behind these are megabytes each.
+                    <Image
                       src={img.src}
                       alt={img.alt ?? ""}
-                      loading="lazy"
-                      decoding="async"
-                      className="h-full w-full object-cover"
+                      fill
+                      sizes="20vw"
+                      className="object-cover"
                       draggable={false}
                     />
                   ) : null}

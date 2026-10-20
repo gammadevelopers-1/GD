@@ -89,7 +89,7 @@ export const caseStudies: readonly CaseStudy[] = [
     title: "Rental operators left Turo and launched their own brand in 40 seconds",
     body: "A platform that gives independent operators their own booking site, fleet, insurance, agreements and payments in one place.",
     tags: ["Multi-tenant SaaS", "Payments", "AI operations"],
-    image: "/case-study.jpg",
+    image: "/casestudy-images/drive-cover.jpeg",
     gallery: [],
     stats: [
       { value: "30+", label: "operators running their own brand" },
