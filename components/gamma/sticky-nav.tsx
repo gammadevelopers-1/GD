@@ -9,29 +9,6 @@ import { site } from "@/lib/content/site";
 import { BrandLogo } from "@/components/common/brand-logo";
 import { cn } from "@/lib/utils";
 
-/** Routes that open with a dark hero the bar has to sit on top of. */
-const HERO_ROUTES = new Set([
-  "/",
-  "/audit",
-  "/about",
-  "/work",
-  "/contact",
-  "/book",
-  "/privacy",
-  "/terms",
-]);
-
-/** Whole trees of them. Every case study opens on the same dark hero, and an
- *  exact-match set left the bar light over all of them. */
-const HERO_TREES = ["/work/"];
-
-function hasDarkHero(pathname: string) {
-  return (
-    HERO_ROUTES.has(pathname) ||
-    HERO_TREES.some((tree) => pathname.startsWith(tree))
-  );
-}
-
 const linkBase =
   "group relative py-1 text-[15px] font-medium tracking-[-0.01em] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current";
 
@@ -58,7 +35,13 @@ export function StickyNav() {
     setOpen(false);
   }
 
-  const dark = hasDarkHero(pathname) && overHero;
+  // Not keyed to the pathname. This bar is mounted only by the (home)
+  // layout and every route in that group opens on the same dark hero, so the
+  // route list was redundant — and it was wrong: Vercel prerendered the root
+  // route with a pathname that missed the list, shipping a light bar over the
+  // dark hero until hydration corrected it. Anything added to (home) without
+  // a dark hero needs this to become a prop, not a path lookup.
+  const dark = overHero;
 
   useEffect(() => {
     const onScroll = () => setAtTop(window.scrollY < 8);

@@ -16,6 +16,12 @@ import { configuredOrigin } from "@/lib/site/origin";
 /** Longest a title can be before Google starts truncating it, brand included. */
 const TITLE_BUDGET = 60;
 
+/** The site-wide social card. An explicit `openGraph` object overrides
+ *  Next.js file conventions entirely, so naming the image here is not
+ *  belt-and-braces: without it every page shipped with no og:image at all
+ *  and link previews rendered as a bare URL. */
+export const OG_IMAGE = "/opengraph-image.jpg";
+
 export function absoluteUrl(path = "/") {
   const origin = configuredOrigin() ?? "http://localhost:3000";
   return path === "/" ? origin : `${origin}${path}`;
@@ -45,6 +51,7 @@ export function pageMeta({
 }: PageMeta): Metadata {
   const url = absoluteUrl(path);
   const social = absoluteTitle ? title : `${title} · ${site.name}`;
+  const card = absoluteUrl(image ?? OG_IMAGE);
 
   return {
     title: absoluteTitle ? { absolute: title } : title,
@@ -56,13 +63,13 @@ export function pageMeta({
       siteName: site.name,
       title: social,
       description,
-      ...(image ? { images: [{ url: image }] } : {}),
+      images: [{ url: card, width: 1200, height: 630, alt: site.name }],
     },
     twitter: {
       card: "summary_large_image",
       title: social,
       description,
-      ...(image ? { images: [image] } : {}),
+      images: [card],
     },
   };
 }

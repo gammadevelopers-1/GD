@@ -180,12 +180,6 @@ export function ShaderBackground({ className }: { className?: string }) {
       return;
     }
 
-    // Skip GPU work once the hero has scrolled away.
-    let visible = true;
-    const io = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting;
-    });
-    io.observe(canvas);
 
     // Tracked on window, not the canvas: the canvas sits behind the copy, so
     // pointer events never reach it.
@@ -207,10 +201,22 @@ export function ShaderBackground({ className }: { className?: string }) {
 
     let raf = 0;
     const loop = (time: number) => {
-      if (visible) draw(time);
+      draw(time);
       raf = requestAnimationFrame(loop);
     };
-    raf = requestAnimationFrame(loop);
+
+    // Park the loop once the hero scrolls away. Skipping the draw but still
+    // booking the next frame kept the main thread waking 60x a second for
+    // the whole page.
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        raf ||= requestAnimationFrame(loop);
+      } else if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    });
+    io.observe(canvas);
 
     return () => {
       cancelAnimationFrame(raf);

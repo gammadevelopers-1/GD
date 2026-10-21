@@ -81,7 +81,7 @@ export function WorkSection({ featured }: { featured: readonly CaseStudy[] }) {
           middle of the row and not at the midpoint of whatever the dots and
           arrows happen to measure. */}
       <div className="mx-auto mt-[clamp(28px,3vw,44px)] grid w-full max-w-[1280px] grid-cols-2 items-center gap-x-6 gap-y-7 px-6 sm:grid-cols-[1fr_auto_1fr]">
-        <div className="order-2 flex gap-2 sm:order-none">
+        <div className="order-2 flex sm:order-none">
           {canPrev || canNext
             ? featured.map((item, i) => (
                 <button
@@ -90,13 +90,19 @@ export function WorkSection({ featured }: { featured: readonly CaseStudy[] }) {
                   onClick={() => api?.scrollTo(i)}
                   aria-label={`Go to ${item.client}`}
                   aria-current={current === i}
-                  className={cn(
-                    "h-[6px] rounded-full transition-all duration-300 ease-out",
-                    current === i
-                      ? "bg-green-ink w-6"
-                      : "bg-line-strong w-[6px]",
-                  )}
-                />
+                  // The bar is 6px, but the button carries a 24px box
+                  // around it so the tap target meets the minimum.
+                  className="grid h-6 min-w-6 place-items-center"
+                >
+                  <span
+                    className={cn(
+                      "h-[6px] rounded-full transition-all duration-300 ease-out",
+                      current === i
+                        ? "bg-green-ink w-6"
+                        : "bg-line-strong w-[6px]",
+                    )}
+                  />
+                </button>
               ))
             : null}
         </div>
