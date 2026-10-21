@@ -66,7 +66,7 @@ export const about = {
       {
         initials: "MA",
         name: "Muhammad Abubakar",
-        role: "Co-founder & Managing Director",
+        role: "Co-founder & MD",
         photo: "/team/abubakar.jpeg",
       },
     ],
