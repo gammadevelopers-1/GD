@@ -130,7 +130,7 @@ export function CaseStudyForm({
               className="h-10"
             />
           </Field>
-          <Field label="Web address" hint="gammadevelopers.com/work/…">
+          <Field label="Web address" hint="gammadevelopers.ai/work/…">
             <Input
               variant="admin"
               name="slug"
