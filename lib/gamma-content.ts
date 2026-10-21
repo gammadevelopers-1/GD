@@ -23,14 +23,17 @@ export const hero = {
 } as const;
 
 export const trustBar = {
-  label: "Teams we’ve built for",
+  label: "Businesses we’ve built for",
   wordmarks: [
     "D360 Bank",
     "Drive-247",
+    "PhysioGuidance",
     "Hiretics",
+    "The Club",
     "Vidacure",
     "METER",
     "IFG",
+    "CostSavvy",
     "MCR Group",
     "Cars BN",
     "Royal Tap",
