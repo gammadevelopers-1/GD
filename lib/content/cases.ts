@@ -973,6 +973,8 @@ export const caseStudies: readonly CaseStudy[] = [
         },
       ],
     },
+    humanImage: "/casestudy-images/hire-human.jpeg",
+    humanImageAspect: "2 / 1",
     human:
       "Hiretics ranks and explains. Recruiters still read the shortlist, run the interviews and make the hire. The AI removes the hours of first-pass reading so people spend their time on the candidates who matter.",
     takeaway: {
