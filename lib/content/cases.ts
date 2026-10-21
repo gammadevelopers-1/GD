@@ -732,6 +732,8 @@ export const caseStudies: readonly CaseStudy[] = [
     tags: ["E-learning", "Compliance", "Bilingual"],
 
     image: "/casestudy-images/physio-cover.jpeg",
+    heroImage: "/casestudy-images/physio-hero.jpeg",
+    heroAspect: "21 / 9",
     gallery: [],
 
     stats: [
