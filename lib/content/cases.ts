@@ -238,11 +238,12 @@ export const caseStudies: readonly CaseStudy[] = [
 
   {
     slug: "football-recruitment-platform",
+    testimonial: "International Football Group",
     status: "published",
     order: 2,
 
-    client: "A UK football education group",
-    named: false,
+    client: "International Football Group",
+    named: true,
     sector: "Education and sports recruitment",
     vertical: "Sports Recruitment",
     region: "United Kingdom",
@@ -273,7 +274,7 @@ export const caseStudies: readonly CaseStudy[] = [
     ],
 
     about:
-      "A UK-based football education group that places ambitious young players into elite pathways: degree programmes run with a UK university partner, gap years, residencies and training experiences with top European clubs. A team of 10+ recruiters guides each lead from first enquiry to arrival, on programmes costing upwards of \u00a325,000. We designed, built and still run the platform it all moves through.",
+      "International Football Group places ambitious young players into elite pathways: degree programmes run with a UK university partner, gap years, residencies and training experiences with top European clubs. A team of 10+ recruiters guides each lead from first enquiry to arrival, on programmes costing upwards of \u00a325,000. We designed, built and still run the platform it all moves through.",
 
     leak: {
       heading:
@@ -393,6 +394,7 @@ export const caseStudies: readonly CaseStudy[] = [
 
   {
     slug: "members-club-platform",
+    testimonial: "Private members' club",
     status: "published",
     order: 3,
 

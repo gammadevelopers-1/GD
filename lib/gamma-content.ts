@@ -256,6 +256,22 @@ export const testimonials = {
     },
     {
       quote:
+        "The team understood our vision and brought it to life brilliantly. Running the club is now much smoother, giving me the freedom to focus on our members and growth instead of getting lost in daily operations. The whole experience has been excellent.",
+      name: "",
+      role: "",
+      company: "Private members' club",
+      descriptor: "CEO",
+    },
+    {
+      quote:
+        "The Gamma Developers team has been fantastic to work with. They took the time to understand our challenges, identified the core issues, and delivered a solution that has made a real difference to our business. Their professionalism, clear communication, and commitment to getting things right gave us complete confidence throughout the process. We now have much more peace of mind knowing things are running smoothly and efficiently. We'd happily recommend them to any business looking for a team that genuinely cares about delivering results.",
+      name: "",
+      role: "",
+      company: "International Football Group",
+      descriptor: "Managing Director",
+    },
+    {
+      quote:
         "Strong commitment, professionalism and technical expertise from start to finish. Ghulam and his team were responsive to every piece of feedback, and whenever a requirement changed or something difficult came up, they came back with a solution. I would recommend them for complex, long-term work, and I look forward to continuing the collaboration.",
       name: "",
       role: "",
