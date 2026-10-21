@@ -922,6 +922,9 @@ export const caseStudies: readonly CaseStudy[] = [
       ],
     },
     built: {
+      image: "/casestudy-images/hire-leak-fix.jpeg",
+      imageAspect: "21 / 9",
+      imageFull: true,
       heading: "AI that reads every CV like a recruiter, and explains itself",
       items: [
         {
