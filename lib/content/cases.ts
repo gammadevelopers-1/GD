@@ -746,7 +746,7 @@ export const caseStudies: readonly CaseStudy[] = [
     ],
 
     about:
-      "PhysioGuidance, by Roya Almustaqbal for Health Training, delivers accredited online and in-person courses with CME hours for healthcare professionals in Saudi Arabia, with more than 1,000 learners on the platform. We built the whole product end to end \u2014 the public site, seven roles from learner to finance, every local way to pay, live classes, support, and the compliance layer \u2014 and still run it.",
+      "PhysioGuidance, by Roya Almustaqbal for Health Training, delivers accredited online and in-person courses with CME hours for healthcare professionals in Saudi Arabia, with more than 1,000 learners on the platform. We built the whole product end to end \u2014 the public site, seven roles from learner to finance, every local way to pay, live classes, support, and a compliance layer answering to both NELC and the national data protection law \u2014 and still run it.",
 
     leak: {
       heading: "Great courses, no platform, and a regulator to satisfy",
@@ -754,6 +754,7 @@ export const caseStudies: readonly CaseStudy[] = [
         "PhysioGuidance had the instructors and the courses. What it didn't have was a system. Enrolments, attendance, certificates and payments were all handled by hand.",
         "That might work for a small in-person class. It doesn't work for online training in Saudi Arabia, where courses must meet the National eLearning Center's rules and healthcare learners need recognised CME hours. NELC checks things a spreadsheet can't prove: that attendance was tracked, that class sizes stayed within limits, that certificates are genuine, that the platform is accessible and secure.",
         "Producing the courses was slow as well. Turning study material into a lesson, then captioning it so learners in more than one language could follow, was work somebody did by hand for every module.",
+        "And NELC is not the only authority involved. Any platform holding Saudi citizens' records answers to the Personal Data Protection Law as well, which the Saudi Data and Artificial Intelligence Authority administers.",
         "To launch online, PhysioGuidance didn't just need software. **It needed software a regulator would approve.**",
       ],
     },
@@ -825,6 +826,10 @@ export const caseStudies: readonly CaseStudy[] = [
           body: "Every screen, every document and every certificate, accessible to WCAG 2.1 AA.",
         },
         {
+          label: "Built to the data law, not just the course rules",
+          body: "The platform is built to comply with Saudi Arabia's Personal Data Protection Law, administered by the Saudi Data and Artificial Intelligence Authority (SDAIA), alongside the NELC rules that govern the courses themselves.",
+        },
+        {
           label: "Security built for auditors",
           body: "Strong login protection, rate limits, upload malware scanning and a documented recovery plan.",
         },
@@ -842,6 +847,10 @@ export const caseStudies: readonly CaseStudy[] = [
         {
           value: "NELC",
           text: "approved: the platform passed the national e-learning review",
+        },
+        {
+          value: "PDPL",
+          text: "built to Saudi Arabia's data protection law, administered by SDAIA",
         },
         {
           value: "7",
@@ -865,6 +874,8 @@ export const caseStudies: readonly CaseStudy[] = [
       ],
     },
 
+    humanImage: "/casestudy-images/physio-human.jpeg",
+    humanImageAspect: "2 / 1",
     human:
       "Instructors still teach every class and course managers still decide what gets published. The platform tracks attendance, enforces the rules, makes the lessons and prepares the evidence. **People do the teaching and make the calls.**",
 
