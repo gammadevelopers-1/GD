@@ -32,9 +32,9 @@ export function AboutPeople() {
         <ul className="mx-auto mt-[clamp(36px,3.8vw,56px)] grid max-w-[560px] gap-[clamp(18px,2.2vw,32px)] sm:grid-cols-2">
           {members.map((person) => (
             <li key={person.name} className="group">
-              {/* The glare lives inside the frame. Behind the card it was a
-                  dim green wash over near-black, which reads as a smudge on
-                  the section rather than as light. */}
+              {/* No glow over the photograph. Behind the card it smudged the
+                  section; inside the frame it sat on the subject as a green
+                  blob. The brand colour stays on the frame's own edge. */}
               <div className="border-dark-line relative aspect-[4/5] overflow-hidden rounded-[18px] border transition-[border-color,box-shadow] duration-500 ease-out group-hover:border-brand/40 group-hover:shadow-[0_20px_52px_-26px_rgba(47,232,92,0.4)]">
                 {person.photo ? (
                   <Image
@@ -56,12 +56,6 @@ export function AboutPeople() {
                   </div>
                 )}
 
-                {/* A corner of brand light falling across the top of the
-                    frame, brightening on hover. */}
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute -top-16 -right-14 size-48 rounded-full bg-[radial-gradient(circle,rgba(47,232,92,0.50),rgba(47,232,92,0.12)_44%,transparent_72%)] opacity-45 mix-blend-screen transition-opacity duration-500 ease-out group-hover:opacity-90"
-                />
                 <span
                   aria-hidden
                   className="group-hover:ring-brand/25 pointer-events-none absolute inset-0 rounded-[18px] ring-1 ring-white/[0.06] ring-inset transition-[--tw-ring-color] duration-500 ease-out"
