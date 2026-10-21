@@ -742,11 +742,11 @@ export const caseStudies: readonly CaseStudy[] = [
         value: "NELC",
         label: "approved by Saudi Arabia's national e-learning regulator",
       },
-      { value: "7", label: "role dashboards, in Arabic and English" },
+      { value: "7", label: "roles on the platform, in Arabic and English" },
     ],
 
     about:
-      "PhysioGuidance, by Roya Almustaqbal for Health Training, delivers accredited online and in-person courses with CME hours for healthcare professionals in Saudi Arabia, with more than 1,000 learners on the platform. We built the whole product end to end \u2014 the public site, seven role dashboards, payments, live classes, support, and the compliance layer \u2014 and still run it.",
+      "PhysioGuidance, by Roya Almustaqbal for Health Training, delivers accredited online and in-person courses with CME hours for healthcare professionals in Saudi Arabia, with more than 1,000 learners on the platform. We built the whole product end to end \u2014 the public site, seven roles from learner to finance, every local way to pay, live classes, support, and the compliance layer \u2014 and still run it.",
 
     leak: {
       heading: "Great courses, no platform, and a regulator to satisfy",
@@ -759,6 +759,9 @@ export const caseStudies: readonly CaseStudy[] = [
     },
 
     built: {
+      image: "/casestudy-images/physio-leak-fix.jpeg",
+      imageAspect: "21 / 9",
+      imageFull: true,
       heading: "A platform where the rules are built in, not bolted on",
       items: [
         {
@@ -786,6 +789,22 @@ export const caseStudies: readonly CaseStudy[] = [
           body: "Learners review both the course and the instructor before their certificate unlocks, so quality data comes in on every course.",
         },
         {
+          label: "Every way Saudi pays",
+          body: "mada, Visa and Mastercard, plus Apple Pay, Google Pay and Samsung Pay, all running through Moyasar.",
+        },
+        {
+          label: "Course fees in instalments",
+          body: "Learners split a fee with Tabby or Tamara, and their place is confirmed the moment the provider approves it.",
+        },
+        {
+          label: "Bank transfers approved in the platform",
+          body: "A learner paying by transfer uploads the proof and finance approves or rejects it without anyone leaving the system or chasing a statement.",
+        },
+        {
+          label: "Refunds, whole or partial",
+          body: "Finance issues a full or partial refund and the learner's enrolment follows it automatically, rather than being corrected by hand afterwards.",
+        },
+        {
           label: "Support with a queue, not an inbox",
           body: "Learners and staff raise tickets, and the support team works them in a dashboard of their own rather than in somebody's email.",
         },
@@ -798,12 +817,12 @@ export const caseStudies: readonly CaseStudy[] = [
           body: "A points system rewards sign-ups, completed courses and reviews.",
         },
         {
-          label: "Seven role dashboards",
-          body: "Learner, instructor, course manager, admin, support and the roles above them, each seeing only what belongs to them.",
+          label: "Seven roles, each seeing their own",
+          body: "Learner, instructor, course manager, admin, support and finance, each with the part of the platform that belongs to them and nothing else.",
         },
         {
           label: "Arabic and English throughout",
-          body: "Accessible to WCAG 2.1 AA, with mada, Apple Pay, Visa and Mastercard for local payment.",
+          body: "Every screen, every document and every certificate, accessible to WCAG 2.1 AA.",
         },
         {
           label: "Security built for auditors",
@@ -831,6 +850,10 @@ export const caseStudies: readonly CaseStudy[] = [
         {
           value: "Zero",
           text: "manual attendance tracking: live class attendance syncs on its own",
+        },
+        {
+          value: "9",
+          text: "ways to pay: mada, Visa, Mastercard, Apple Pay, Google Pay, Samsung Pay, Tabby, Tamara and bank transfer",
         },
         {
           text: "Lesson videos, transcripts and captions are produced from the study material, in several languages, without anyone recording or subtitling by hand.",
