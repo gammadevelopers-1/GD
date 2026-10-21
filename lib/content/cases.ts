@@ -873,7 +873,7 @@ export const caseStudies: readonly CaseStudy[] = [
       body: "PhysioGuidance didn't need an off-the-shelf course website. It needed a platform where **every rule the regulator checks is already handled**, so they could focus on teaching.",
     },
 
-    cta: "Launching a training business in a regulated market? Let's map what your platform needs to prove.",
+    cta: "Building in a regulated market? Let's map what your platform has to prove.",
   },
 
   {
