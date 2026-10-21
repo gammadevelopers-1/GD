@@ -332,8 +332,15 @@ body:has(.admin-shell)
   box-shadow: none !important;
 }
 
-p {
-  text-wrap: pretty;
+/* In @layer base, not bare. `text-wrap` is a shorthand that writes
+   text-wrap-mode, which is the same thing `white-space: nowrap` sets — and
+   unlayered CSS beats anything in a layer, so an unlayered rule here
+   silently cancelled Tailwind's truncate and whitespace-nowrap on every
+   <p> in the project. */
+@layer base {
+  p {
+    text-wrap: pretty;
+  }
 }
 
 /* Marketing primitives keep the home page's rhythm and brand actions aligned. */
