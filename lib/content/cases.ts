@@ -885,6 +885,7 @@ export const caseStudies: readonly CaseStudy[] = [
     },
 
     cta: "Building in a regulated market? Let's map what your platform has to prove.",
+    ctaImage: "/casestudy-images/physio-cta.jpeg",
   },
 
   {
