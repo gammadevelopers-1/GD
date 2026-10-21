@@ -710,38 +710,59 @@ export const caseStudies: readonly CaseStudy[] = [
     testimonial: "PhysioGuidance",
     status: "published",
     order: 5,
+
     client: "PhysioGuidance",
     named: true,
     sector: "Healthcare education",
     vertical: "Healthcare Training",
     region: "Saudi Arabia",
-    category: "Healthcare education · eLearning platform · Saudi compliance",
-    title: "Manual training became a government-approved eLearning platform",
+    category:
+      "Healthcare education \u00b7 E-learning SaaS \u00b7 Saudi compliance",
+
+    title: "Manual training became a government-approved e-learning platform",
+    heroLines: [
+      {
+        text: "1,000+ healthcare professionals across Saudi Arabia.",
+        small: true,
+      },
+      { text: "A national regulator" },
+      { text: "**approved the platform.**" },
+    ],
     body: "Accredited CME courses for healthcare professionals, on a platform built so the regulator's rules are enforced automatically.",
-    tags: ["eLearning", "Compliance", "Bilingual"],
-    image: "/case-study.jpg",
+    tags: ["E-learning", "Compliance", "Bilingual"],
+
+    image: "/casestudy-images/physio-cover.jpeg",
     gallery: [],
+
     stats: [
+      { value: "1,000+", label: "healthcare professionals learning on it" },
       {
         value: "NELC",
-        label: "approved by Saudi Arabia's National eLearning Center",
+        label: "approved by Saudi Arabia's national e-learning regulator",
       },
-      { value: "100+", label: "healthcare learners in the first 3 months" },
-      { value: "5", label: "dashboards in Arabic and English" },
+      { value: "7", label: "role dashboards, in Arabic and English" },
     ],
+
     about:
-      "PhysioGuidance, by Roya Almustaqbal for Health Training, delivers accredited online and in-person courses with CME hours for healthcare professionals in Saudi Arabia. We built the full platform end to end: the public site, learner, instructor, course manager, admin and support dashboards, payments, live classes and the compliance layer.",
+      "PhysioGuidance, by Roya Almustaqbal for Health Training, delivers accredited online and in-person courses with CME hours for healthcare professionals in Saudi Arabia, with more than 1,000 learners on the platform. We built the whole product end to end \u2014 the public site, seven role dashboards, payments, live classes, support, and the compliance layer \u2014 and still run it.",
+
     leak: {
       heading: "Great courses, no platform, and a regulator to satisfy",
       body: [
         "PhysioGuidance had the instructors and the courses. What it didn't have was a system. Enrolments, attendance, certificates and payments were all handled by hand.",
         "That might work for a small in-person class. It doesn't work for online training in Saudi Arabia, where courses must meet the National eLearning Center's rules and healthcare learners need recognised CME hours. NELC checks things a spreadsheet can't prove: that attendance was tracked, that class sizes stayed within limits, that certificates are genuine, that the platform is accessible and secure.",
-        "To launch online, PhysioGuidance didn't just need software. It needed software a regulator would approve.",
+        "Producing the courses was slow as well. Turning study material into a lesson, then captioning it so learners in more than one language could follow, was work somebody did by hand for every module.",
+        "To launch online, PhysioGuidance didn't just need software. **It needed software a regulator would approve.**",
       ],
     },
+
     built: {
       heading: "A platform where the rules are built in, not bolted on",
       items: [
+        {
+          label: "Lessons made from the study material",
+          body: "Give the AI the course content and it produces the lesson video, then the transcript and captions for it in several languages, instead of someone recording and subtitling every module by hand.",
+        },
         {
           label: "Live classes that track themselves",
           body: "Zoom sessions are built in, attendance syncs automatically, and the 70% minimum is enforced before a learner can complete.",
@@ -752,27 +773,31 @@ export const caseStudies: readonly CaseStudy[] = [
         },
         {
           label: "Audit evidence on demand",
-          body: "Course managers export the evidence NELC asks for, without chasing data.",
+          body: "Course managers export the evidence the regulator asks for, without chasing data.",
         },
         {
           label: "Certificates anyone can verify",
-          body: "Every certificate carries a QR code that proves it's real.",
+          body: "Every certificate carries a QR code that proves it is real.",
         },
         {
           label: "Feedback before certificates",
           body: "Learners review both the course and the instructor before their certificate unlocks, so quality data comes in on every course.",
         },
         {
-          label: "Every video captioned automatically",
-          body: "Uploaded lessons are processed and AI generates captions and transcripts.",
+          label: "Support with a queue, not an inbox",
+          body: "Learners and staff raise tickets, and the support team works them in a dashboard of their own rather than in somebody's email.",
+        },
+        {
+          label: "The team talks inside the platform",
+          body: "Instructors, course managers and support message each other where the work is, rather than in a separate chat tool.",
         },
         {
           label: "Learners rewarded for learning",
           body: "A points system rewards sign-ups, completed courses and reviews.",
         },
         {
-          label: "A dashboard for every role",
-          body: "Learner, instructor, course manager, admin and support, each seeing only what they should.",
+          label: "Seven role dashboards",
+          body: "Learner, instructor, course manager, admin, support and the roles above them, each seeing only what belongs to them.",
         },
         {
           label: "Arabic and English throughout",
@@ -784,33 +809,45 @@ export const caseStudies: readonly CaseStudy[] = [
         },
       ],
     },
+
     results: {
       heading: "From manual training to an approved national platform",
-      lead: "The platform passed Saudi Arabia's national eLearning review and is now the way PhysioGuidance teaches.",
+      lead: "The platform passed Saudi Arabia's national e-learning review and is now the way PhysioGuidance teaches, with **more than a thousand healthcare professionals** learning on it.",
       points: [
         {
-          value: "NELC approved",
-          text: "the platform passed the national eLearning review",
+          value: "1,000+",
+          text: "healthcare professionals learning on the platform",
         },
         {
-          value: "100+",
-          text: "healthcare learners enrolled in the first 3 months after launch",
+          value: "NELC",
+          text: "approved: the platform passed the national e-learning review",
+        },
+        {
+          value: "7",
+          text: "role dashboards, each seeing only what belongs to it",
         },
         {
           value: "Zero",
           text: "manual attendance tracking: live class attendance syncs on its own",
         },
-        { text: "Every certificate verifiable by QR code." },
-        { text: "Every course video captioned without anyone typing." },
-        { text: "Built end to end, from requirements to launch." },
+        {
+          text: "Lesson videos, transcripts and captions are produced from the study material, in several languages, without anyone recording or subtitling by hand.",
+        },
+        { text: "Every certificate is verifiable by QR code." },
+        {
+          text: "Support runs on a ticket queue and the team talks inside the platform, not around it.",
+        },
       ],
     },
+
     human:
-      "Instructors still teach every class and course managers still decide what gets published. The platform tracks attendance, enforces the rules and prepares the evidence. People do the teaching and make the calls.",
+      "Instructors still teach every class and course managers still decide what gets published. The platform tracks attendance, enforces the rules, makes the lessons and prepares the evidence. **People do the teaching and make the calls.**",
+
     takeaway: {
       line: "In a regulated market, the software isn't just a tool. It's your proof.",
-      body: "PhysioGuidance didn't need an off-the-shelf course website. It needed a platform where every rule the regulator checks is already handled, so they could focus on teaching.",
+      body: "PhysioGuidance didn't need an off-the-shelf course website. It needed a platform where **every rule the regulator checks is already handled**, so they could focus on teaching.",
     },
+
     cta: "Launching a training business in a regulated market? Let's map what your platform needs to prove.",
   },
 
