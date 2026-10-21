@@ -52,14 +52,6 @@ export const metadata: Metadata = {
   },
   description:
     "We analyze how SMBs actually run, then build production-grade AI agents that reach production and double their output.",
-  icons: {
-    icon: [
-      { url: "/icon-32.png", sizes: "32x32", type: "image/png" },
-      { url: "/icon-64.png", sizes: "64x64", type: "image/png" },
-    ],
-    shortcut: "/favicon.ico",
-    apple: "/apple-icon.png",
-  },
   openGraph: { type: "website", siteName: "Gamma Developers" },
 };
 
