@@ -1,3 +1,14 @@
+/** One of the people on /about. `photo` is empty until a headshot exists,
+ *  and the card falls back to initials — typed here rather than inferred,
+ *  so `as const` does not narrow an empty photo out of existence the moment
+ *  everybody listed happens to have one. */
+export type TeamMember = {
+  initials: string;
+  name: string;
+  role: string;
+  photo: string;
+};
+
 export const about = {
   hero: {
     eyebrow: "About",
@@ -50,37 +61,13 @@ export const about = {
         initials: "GM",
         name: "Ghulam Mohi Ud Din",
         role: "Co-founder & CEO",
-        photo: "",
+        photo: "/team/ghulam.jpeg",
       },
       {
         initials: "MA",
         name: "Muhammad Abubakar",
         role: "Co-founder & Managing Director",
-        photo: "",
-      },
-      {
-        initials: "\u2014",
-        name: "NAME PENDING",
-        role: "Lead Engineer",
-        photo: "",
-      },
-      {
-        initials: "\u2014",
-        name: "NAME PENDING",
-        role: "Consultant",
-        photo: "",
-      },
-      {
-        initials: "\u2014",
-        name: "NAME PENDING",
-        role: "Consultant",
-        photo: "",
-      },
-      {
-        initials: "\u2014",
-        name: "NAME PENDING",
-        role: "Consultant",
-        photo: "",
+        photo: "/team/abubakar.jpeg",
       },
     ],
   },
