@@ -5,12 +5,13 @@ import { AboutHero } from "@/components/gamma/about-hero";
 import { AboutPeople } from "@/components/gamma/about-people";
 import { AboutPractice } from "@/components/gamma/about-practice";
 import { about } from "@/lib/content/about";
-import { site } from "@/lib/content/site";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: `About · ${site.name}`,
+export const metadata: Metadata = pageMeta({
+  title: "About",
   description: about.hero.lead,
-};
+  path: "/about",
+});
 
 export default function AboutPage() {
   return (

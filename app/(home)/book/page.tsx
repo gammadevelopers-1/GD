@@ -3,13 +3,15 @@ import type { Metadata } from "next";
 import { CalendlyEmbed } from "@/components/common/calendly-embed";
 import { book } from "@/lib/content/book";
 import { site } from "@/lib/content/site";
+import { pageMeta } from "@/lib/seo";
 import { cardLight, edgeBar } from "@/lib/gamma-ui";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = {
-  title: `${book.title.one} ${book.title.two} · ${site.name}`,
+export const metadata: Metadata = pageMeta({
+  title: `${book.title.one} ${book.title.two}`,
   description: book.lead,
-};
+  path: "/book",
+});
 
 export default function BookPage() {
   return (

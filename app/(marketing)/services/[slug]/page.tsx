@@ -11,6 +11,8 @@ import { SectionHeading } from "@/components/common/section-heading";
 import { Button } from "@/components/ui/button";
 import { serviceBySlug, services } from "@/lib/content/services";
 import { site } from "@/lib/content/site";
+import { pageMeta } from "@/lib/seo";
+import { BreadcrumbJsonLd, ServiceJsonLd } from "@/components/common/json-ld";
 
 export const dynamicParams = false;
 
@@ -27,10 +29,11 @@ export async function generateMetadata({
   const service = serviceBySlug(slug);
   if (!service) return {};
 
-  return {
-    title: `Gamma — ${service.name.toLowerCase()}`,
+  return pageMeta({
+    title: service.name,
     description: service.title,
-  };
+    path: `/services/${slug}`,
+  });
 }
 
 export default async function ServicePage({
@@ -44,6 +47,18 @@ export default async function ServicePage({
 
   return (
     <main id="top">
+      <ServiceJsonLd
+        name={service.name}
+        description={service.title}
+        path={`/services/${slug}`}
+      />
+      <BreadcrumbJsonLd
+        trail={[
+          { name: "Home", path: "/" },
+          { name: service.name, path: `/services/${slug}` },
+        ]}
+      />
+
       <PageHero eyebrow={service.name} title={service.title}>
         <p className="font-display text-gd-light-muted mt-6 max-w-[54ch] text-[clamp(17px,2vw,21px)] leading-[1.4] font-medium tracking-[-0.02em]">
           {service.symptom}

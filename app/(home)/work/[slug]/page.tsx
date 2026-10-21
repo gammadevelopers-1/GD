@@ -24,7 +24,11 @@ import {
   getPublishedCases,
 } from "@/data/case-studies";
 import { caseLabels } from "@/lib/content/cases";
-import { site } from "@/lib/content/site";
+import { absoluteUrl, clipTitle, pageMeta } from "@/lib/seo";
+import {
+  BreadcrumbJsonLd,
+  CaseStudyJsonLd,
+} from "@/components/common/json-ld";
 
 // A case study written in the console gets its page without a deploy, so
 // unknown slugs are rendered on demand rather than 404ed.
@@ -45,15 +49,15 @@ export async function generateMetadata({
   const study = await getPublishedCase(slug);
   if (!study) return {};
 
-  return {
-    title: `${study.title} · ${site.name}`,
+  return pageMeta({
+    // The headline runs long. The page keeps all of it; the tab and the
+    // search result get a version that ends on a word.
+    title: clipTitle(study.title),
     description: study.body,
-    openGraph: {
-      title: study.title,
-      description: study.body,
-      images: [study.image],
-    },
-  };
+    path: `/work/${slug}`,
+    image: absoluteUrl(study.image),
+    type: "article",
+  });
 }
 
 export default async function CaseStudyPage({
@@ -69,6 +73,22 @@ export default async function CaseStudyPage({
 
   return (
     <main id="top">
+      <CaseStudyJsonLd
+        title={study.title}
+        description={study.body}
+        path={`/work/${slug}`}
+        image={study.image}
+        sector={study.sector}
+        region={study.region}
+      />
+      <BreadcrumbJsonLd
+        trail={[
+          { name: "Home", path: "/" },
+          { name: "Case studies", path: "/work" },
+          { name: study.title, path: `/work/${slug}` },
+        ]}
+      />
+
       <StoryProgress />
 
       <StoryHero study={study} labels={caseLabels} backHref="/work" />

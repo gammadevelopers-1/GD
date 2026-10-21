@@ -5,11 +5,13 @@ import { ImageStreamHero } from "@/components/ui/image-stream-hero";
 import { getPublishedCases } from "@/data/case-studies";
 import { workIndex } from "@/lib/content/cases";
 import { site } from "@/lib/content/site";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: `Case studies · ${site.name}`,
+export const metadata: Metadata = pageMeta({
+  title: "Case studies",
   description: workIndex.lead,
-};
+  path: "/work",
+});
 
 // Published case studies come from the console, so adding one does not need
 // a deploy. Five minutes is the longest a change waits; saving in the console

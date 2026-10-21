@@ -6,12 +6,13 @@ import { AuditScope } from "@/components/gamma/audit-scope";
 import { AuditSession } from "@/components/gamma/audit-session";
 import { ObjectionsSection } from "@/components/gamma/objections-section";
 import { audit } from "@/lib/content/audit";
-import { site } from "@/lib/content/site";
+import { pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: `The audit · ${site.name}`,
+export const metadata: Metadata = pageMeta({
+  title: "The audit",
   description: audit.hero.lead,
-};
+  path: "/audit",
+});
 
 export default function AuditPage() {
   return (

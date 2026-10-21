@@ -9,6 +9,18 @@ import { TestimonialsSection } from "@/components/gamma/testimonials-section";
 import { TrustLine } from "@/components/gamma/trust-line";
 import { getPublishedCases } from "@/data/case-studies";
 import { work } from "@/lib/gamma-content";
+import { site } from "@/lib/content/site";
+import { pageMeta } from "@/lib/seo";
+
+export const metadata = pageMeta({
+  // Leads on the keyword rather than the brand, because the brand is
+  // appended anyway and a search result is read left to right.
+  title: `AI agents for SMBs that actually ship \u00b7 ${site.name}`,
+  description:
+    "AI agents and workflow automation for small and medium businesses. We map how your business actually runs, then build systems that reach production.",
+  path: "/",
+  absoluteTitle: true,
+});
 
 export const revalidate = 300;
 

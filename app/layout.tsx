@@ -6,6 +6,10 @@ import { SiteAnalytics } from "@/components/common/site-analytics";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 import { configuredOrigin } from "@/lib/site/origin";
+import {
+  OrganizationJsonLd,
+  WebSiteJsonLd,
+} from "@/components/common/json-ld";
 
 const generalSans = localFont({
   src: [
@@ -47,11 +51,11 @@ const syne = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL(configuredOrigin() ?? "http://localhost:3000"),
   title: {
-    default: "Gamma Developers — AI agents that actually ship",
+    default: "AI agents for SMBs that actually ship · Gamma Developers",
     template: "%s · Gamma Developers",
   },
   description:
-    "We analyze how SMBs actually run, then build production-grade AI agents that reach production and double their output.",
+    "AI agents and workflow automation for small and medium businesses. We map how your business actually runs, then build systems that reach production.",
   openGraph: { type: "website", siteName: "Gamma Developers" },
 };
 
@@ -71,6 +75,8 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
     >
       <body className="bg-background text-foreground font-body antialiased">
+        <OrganizationJsonLd />
+        <WebSiteJsonLd />
         <ButtonFillEffects />
         {children}
         <Toaster />

@@ -4,16 +4,17 @@ import { Mail, MapPin, Phone } from "lucide-react";
 
 import { ContactForm } from "@/components/gamma/contact-form";
 import { contactPage } from "@/lib/content/contact";
-import { site } from "@/lib/content/site";
+import { pageMeta } from "@/lib/seo";
 
 const { hero, details, form, closer } = contactPage;
 
 const ICONS = { mail: Mail, phone: Phone, pin: MapPin } as const;
 
-export const metadata: Metadata = {
-  title: `Contact · ${site.name}`,
+export const metadata: Metadata = pageMeta({
+  title: "Contact",
   description: hero.lead,
-};
+  path: "/contact",
+});
 
 export default function ContactPage() {
   return (
