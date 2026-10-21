@@ -607,6 +607,9 @@ export const caseStudies: readonly CaseStudy[] = [
     },
 
     built: {
+      image: "/casestudy-images/will-leak-fix.jpeg",
+      imageAspect: "21 / 9",
+      imageFull: true,
       heading: "ID in, will out, and every department on one platform",
       items: [
         {
