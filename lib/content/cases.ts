@@ -691,6 +691,8 @@ export const caseStudies: readonly CaseStudy[] = [
       ],
     },
 
+    humanImage: "/casestudy-images/will-human.jpeg",
+    humanImageAspect: "2 / 1",
     human:
       "Lawyers still review every will before it is final. AI reads the ID and writes the draft from the firm's own rules, but a person checks the wording, meets the client and signs off. **The system removes the retyping. The firm keeps the judgment.**",
 
@@ -700,6 +702,7 @@ export const caseStudies: readonly CaseStudy[] = [
     },
 
     cta: "Still retyping documents into your system? Let's find where it's leaking.",
+    ctaImage: "/casestudy-images/will-cta.jpeg",
   },
 
   {
