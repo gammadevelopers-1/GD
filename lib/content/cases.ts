@@ -982,6 +982,7 @@ export const caseStudies: readonly CaseStudy[] = [
       body: "We built Hiretics because hiring shouldn't cost small teams a fortune or good candidates their shot. It is also proof of how we work: we build AI products we would use ourselves.",
     },
     cta: "Want AI working inside your own hiring or operations? Let's talk.",
+    ctaImage: "/casestudy-images/hire-cta.jpeg",
   },
 
   // Written before the portfolio rewrite and not yet brought up to the same
