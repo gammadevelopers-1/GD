@@ -557,10 +557,16 @@ export const objections = {
 export const trust = {
   eyebrow: "Data and compliance",
   line: {
-    one: "We\u2019ve shipped under HIPAA, GDPR and WCAG.",
+    one: "We\u2019ve shipped under HIPAA, GDPR, NELC and PDPL.",
     two: "Your data stays in your systems, and every action is logged.",
   },
-  badges: ["HIPAA", "GDPR", "WCAG"],
+  badges: [
+    "HIPAA",
+    "GDPR",
+    "NELC approved",
+    "PDPL / SDAIA",
+    "WCAG 2.1 AA",
+  ],
 } as const;
 
 export const finalCta = {

@@ -29,12 +29,6 @@ export default async function WorkIndexPage() {
   const stream = items.map((item) => ({ src: item.image, alt: "" }));
   const images = stream.length ? [...stream, ...stream] : [];
 
-  // Read off the work rather than written by hand, so the strip cannot claim
-  // a market we no longer have a case study for.
-  const verticals = [...new Set(items.map((item) => item.vertical))].filter(
-    Boolean,
-  );
-
   return (
     <main id="top">
       <section id="hero" className="bg-dark relative isolate overflow-hidden">
@@ -100,29 +94,6 @@ export default async function WorkIndexPage() {
                 <p className="t-meta text-dim-dark">{workIndex.cta.note}</p>
               </div>
             </div>
-
-            {verticals.length ? (
-              <div className="mx-auto w-full max-w-[1280px] px-6 pb-[clamp(20px,2.4vw,32px)]">
-                <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2.5 border-t border-white/[0.09] pt-[clamp(16px,1.9vw,24px)]">
-                  {verticals.map((vertical, i) => (
-                    <li
-                      key={vertical}
-                      className="flex items-center gap-x-5 last:after:hidden"
-                    >
-                      <span className="t-eyebrow text-[#a7ada3]">
-                        {vertical}
-                      </span>
-                      {i < verticals.length - 1 ? (
-                        <span
-                          aria-hidden
-                          className="bg-brand/45 size-[3px] rounded-full"
-                        />
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
           </div>
         </ImageStreamHero>
       </section>

@@ -17,6 +17,8 @@ const HERO_ROUTES = new Set([
   "/work",
   "/contact",
   "/book",
+  "/privacy",
+  "/terms",
 ]);
 
 /** Whole trees of them. Every case study opens on the same dark hero, and an
