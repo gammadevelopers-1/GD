@@ -26,9 +26,10 @@ export function AboutPeople() {
           lead={people.lead}
         />
 
-        {/* Capped and centred. Across the full row two portraits would be
-            760px tall apiece, which is a poster, not a team section. */}
-        <ul className="mx-auto mt-[clamp(40px,4.4vw,64px)] grid max-w-[820px] gap-[clamp(20px,2.6vw,40px)] sm:grid-cols-2">
+        {/* Small and centred. Across the full row these are 760px tall
+            apiece, which is a poster; left-aligned at this size they look
+            like a placeholder with the rest of the row missing. */}
+        <ul className="mx-auto mt-[clamp(36px,3.8vw,56px)] grid max-w-[560px] gap-[clamp(18px,2.2vw,32px)] sm:grid-cols-2">
           {members.map((person) => (
             <li key={person.name} className="group">
               <div className="border-dark-line relative aspect-[4/5] overflow-hidden rounded-[18px] border">
@@ -37,7 +38,7 @@ export function AboutPeople() {
                     src={person.photo}
                     alt=""
                     fill
-                    sizes="(min-width: 640px) 390px, 92vw"
+                    sizes="(min-width: 640px) 264px, 92vw"
                     className="object-cover object-top grayscale transition-[filter,transform] duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:scale-[1.03] group-hover:grayscale-0"
                   />
                 ) : (
@@ -46,7 +47,7 @@ export function AboutPeople() {
                       aria-hidden
                       className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(135deg,rgba(236,236,228,0.035)_0_1px,transparent_1px_9px)]"
                     />
-                    <span className="text-brand/35 font-display relative text-[46px] leading-none font-bold tracking-[-0.04em]">
+                    <span className="text-brand/35 font-display relative text-[34px] leading-none font-bold tracking-[-0.04em]">
                       {person.initials}
                     </span>
                   </div>
@@ -60,12 +61,17 @@ export function AboutPeople() {
 
               {/* Under the picture rather than on a scrim over it. At this
                   size the name has room to be read rather than survived. */}
-              <div className="mt-5">
-                <p className="font-display text-dark-head text-[clamp(18px,1.9vw,22px)] leading-[1.15] font-bold tracking-[-0.03em] uppercase">
+              <div className="mt-4">
+                <p className="font-display text-dark-head text-[clamp(16px,1.5vw,19px)] leading-[1.15] font-bold tracking-[-0.03em] uppercase">
                   {person.name}
                 </p>
-                <p className="t-eyebrow text-brand mt-2.5 flex items-center gap-3">
-                  <span aria-hidden className="bg-brand/45 h-px w-6" />
+                {/* Top-aligned: a two-line role left the rule hanging
+                    against the middle of the block. */}
+                <p className="t-eyebrow text-brand mt-2.5 flex items-start gap-3 leading-[1.5]">
+                  <span
+                    aria-hidden
+                    className="bg-brand/45 mt-[7px] h-px w-6 shrink-0"
+                  />
                   {person.role}
                 </p>
               </div>
