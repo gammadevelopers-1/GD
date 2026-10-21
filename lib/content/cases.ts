@@ -903,6 +903,8 @@ export const caseStudies: readonly CaseStudy[] = [
     body: "Our own AI hiring platform. Recruiters get a live, ranked shortlist with a written reason for every score.",
     tags: ["AI scoring", "Pay per CV", "Live beta"],
     image: "/casestudy-images/hire-cover.jpeg",
+    heroImage: "/casestudy-images/hire-hero.jpeg",
+    heroAspect: "21 / 9",
     gallery: [],
     stats: [
       { value: "97%", label: "ranking accuracy in testing" },
